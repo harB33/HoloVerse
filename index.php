@@ -24,15 +24,21 @@ include 'Database/dbconnect.php';
                     <path id="watermark-circle-middle" d="M 450,350 m -285,0 a 285,285 0 1,1 570,0 a 285,285 0 1,1 -570,0" />
                     <path id="watermark-circle-inner" d="M 450,350 m -150,0 a 150,150 0 1,1 300,0 a 150,150 0 1,1 -300,0" />
                 </defs>
-                <text>
+                <g class="watermark-ring watermark-ring-outer">
+                    <text>
                     <textPath href="#watermark-circle-outer">hololive production merchandise   hololive production merchandise   </textPath>
-                </text>
-                <text>
+                    </text>
+                </g>
+                <g class="watermark-ring watermark-ring-middle">
+                    <text>
                     <textPath href="#watermark-circle-middle">hololive production merchandise   hololive production merchandise   </textPath>
-                </text>
-                <text>
+                    </text>
+                </g>
+                <g class="watermark-ring watermark-ring-inner">
+                    <text>
                     <textPath href="#watermark-circle-inner">hololive production merchandise   hololive production merchandise   </textPath>
-                </text>
+                    </text>
+                </g>
             </svg>
         </div>
 
