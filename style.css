@@ -55,6 +55,31 @@ body {
 	letter-spacing: 2px;
 }
 
+.watermark-ring {
+	transform-box: view-box;
+	transform-origin: center;
+}
+
+.watermark-ring-outer { animation: watermark-outer 70s linear infinite; }
+.watermark-ring-middle { animation: watermark-middle 52s linear infinite reverse; }
+.watermark-ring-inner { animation: watermark-inner 34s linear infinite; }
+
+@keyframes watermark-outer {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes watermark-middle {
+	to { transform: rotate(360deg); }
+}
+
+@keyframes watermark-inner {
+	to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.watermark-ring { animation: none; }
+}
+
 .site-header {
 	align-items: center;
 	display: flex;
