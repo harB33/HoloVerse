@@ -60,9 +60,9 @@ body {
 	transform-origin: center;
 }
 
-.watermark-ring-outer { animation: watermark-outer 70s linear infinite; }
-.watermark-ring-middle { animation: watermark-middle 52s linear infinite reverse; }
-.watermark-ring-inner { animation: watermark-inner 34s linear infinite; }
+.watermark-ring-outer { animation: watermark-outer 120s linear infinite; }
+.watermark-ring-middle { animation: watermark-middle 95s linear infinite reverse; }
+.watermark-ring-inner { animation: watermark-inner 70s linear infinite; }
 
 @keyframes watermark-outer {
 	to { transform: rotate(360deg); }
