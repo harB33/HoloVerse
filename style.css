@@ -31,10 +31,6 @@ body {
 
 .watermark {
 	color: #f4f4f4;
-	font-size: clamp(52px, 8vw, 124px);
-	font-weight: 800;
-	letter-spacing: .02em;
-	line-height: .85;
 	pointer-events: none;
 	position: absolute;
 	inset: 0;
@@ -42,14 +38,22 @@ body {
 	overflow: hidden;
 }
 
-.watermark span {
+.watermark svg {
+	height: 115%;
+	left: 50%;
 	position: absolute;
-	white-space: nowrap;
+	top: 50%;
+	transform: translate(-50%, -50%) rotate(-12deg);
+	width: 125%;
 }
 
-.watermark-left { left: -18%; top: 33%; transform: rotate(-69deg); }
-.watermark-right { right: -19%; top: 26%; transform: rotate(70deg); }
-.watermark-bottom { bottom: 1%; left: 14%; transform: rotate(-12deg); }
+.watermark text {
+	fill: #f4f4f4;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 40px;
+	font-weight: 800;
+	letter-spacing: 2px;
+}
 
 .site-header {
 	align-items: center;
