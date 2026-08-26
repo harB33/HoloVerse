@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 26, 2026 at 10:09 AM
+-- Generation Time: Aug 26, 2026 at 12:08 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -24,15 +24,12 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_tbl`
+-- Table structure for table `talent_tbl`
 --
 
-CREATE TABLE `user_tbl` (
-  `user_id` int(11) NOT NULL,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `role` varchar(50) NOT NULL
+CREATE TABLE `talent_tbl` (
+  `talent_id` int(10) NOT NULL,
+  `talent_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -40,20 +37,20 @@ CREATE TABLE `user_tbl` (
 --
 
 --
--- Indexes for table `user_tbl`
+-- Indexes for table `talent_tbl`
 --
-ALTER TABLE `user_tbl`
-  ADD PRIMARY KEY (`user_id`);
+ALTER TABLE `talent_tbl`
+  ADD PRIMARY KEY (`talent_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT for table `user_tbl`
+-- AUTO_INCREMENT for table `talent_tbl`
 --
-ALTER TABLE `user_tbl`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `talent_tbl`
+  MODIFY `talent_id` int(10) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
