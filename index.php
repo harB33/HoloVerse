@@ -20,23 +20,23 @@ include 'Database/dbconnect.php';
         <div class="watermark" aria-hidden="true">
             <svg viewBox="0 0 900 700" role="presentation">
                 <defs>
-                    <path id="watermark-circle-outer" d="M 450,350 m -550,0 a 550,550 0 1,1 1100,0 a 550,550 0 1,1 -1100,0" />
-                    <path id="watermark-circle-middle" d="M 450,350 m -415,0 a 415,415 0 1,1 830,0 a 415,415 0 1,1 -830,0" />
-                    <path id="watermark-circle-inner" d="M 450,350 m -280,0 a 280,280 0 1,1 560,0 a 280,280 0 1,1 -560,0" />
+                    <path id="watermark-circle-outer" d="M 450,350 m -525,0 a 525,525 0 1,1 1050,0 a 525,525 0 1,1 -1050,0" />
+                    <path id="watermark-circle-middle" d="M 450,350 m -360,0 a 360,360 0 1,1 720,0 a 360,360 0 1,1 -720,0" />
+                    <path id="watermark-circle-inner" d="M 450,350 m -200,0 a 200,200 0 1,1 400,0 a 200,200 0 1,1 -400,0" />
                 </defs>
                 <g class="watermark-ring watermark-ring-outer">
                     <text>
-                        <textPath href="#watermark-circle-outer">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
+                        <textPath href="#watermark-circle-outer">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise</textPath>
                     </text>
                 </g>
                 <g class="watermark-ring watermark-ring-middle">
                     <text>
-                        <textPath href="#watermark-circle-middle">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
+                        <textPath href="#watermark-circle-middle">hololive production merchandise hololive production merchandise hololive production merchandise</textPath>
                     </text>
                 </g>
                 <g class="watermark-ring watermark-ring-inner">
                     <text>
-                        <textPath href="#watermark-circle-inner">hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
+                        <textPath href="#watermark-circle-inner">hololive production merchandise hololive production</textPath>
                     </text>
                 </g>
             </svg>
@@ -71,10 +71,8 @@ include 'Database/dbconnect.php';
                 <p>Limited-Edition items for all hololive fans.</p>
             </section>
 
-            <div class="hero-symbol" aria-label="hololive play symbol">
-                <div class="symbol-layer symbol-back"></div>
-                <div class="symbol-layer symbol-mid"></div>
-                <div class="symbol-layer symbol-front"></div>
+            <div class="hero-symbol">
+                <img src="Assets/logo.png" alt="hololive logo">
             </div>
         </main>
     </div>
