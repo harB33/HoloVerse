@@ -52,7 +52,7 @@ include 'Database/dbconnect.php';
                 <a href="#featured">Featured Items</a>
                 <a href="#process">Order Process</a>
                 <a href="#shipping">Shipping Info</a>
-                <a href="#support">Customer Support</a>
+                <a href="#support">About Us</a>
             </nav>
 
             <div class="header-actions">
