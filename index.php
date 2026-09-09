@@ -26,17 +26,17 @@ include 'Database/dbconnect.php';
                 </defs>
                 <g class="watermark-ring watermark-ring-outer">
                     <text>
-                    <textPath href="#watermark-circle-outer">hololive production merchandise   hololive production merchandise   hololive production merchandise  hololive production merchandise  hololive production merchandise   </textPath>
+                        <textPath href="#watermark-circle-outer">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
                     </text>
                 </g>
                 <g class="watermark-ring watermark-ring-middle">
                     <text>
-                    <textPath href="#watermark-circle-middle">hololive production merchandise   hololive production merchandise  hololive production merchandise   hololive production merchandise   </textPath>
+                        <textPath href="#watermark-circle-middle">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
                     </text>
                 </g>
                 <g class="watermark-ring watermark-ring-inner">
                     <text>
-                    <textPath href="#watermark-circle-inner">hololive production merchandise   hololive production merchandise   hololive production merchandise   </textPath>
+                        <textPath href="#watermark-circle-inner">hololive production merchandise hololive production merchandise hololive production merchandise </textPath>
                     </text>
                 </g>
             </svg>
@@ -44,8 +44,7 @@ include 'Database/dbconnect.php';
 
         <header class="site-header">
             <a class="brand" href="#top" aria-label="hololive home">
-                <span class="brand-mark"><span></span></span>
-                <span class="brand-copy"><strong>hololive</strong><small>production</small></span>
+                <img class="brand-logo" src="Assets/hololive.png" alt="hololive production">
             </a>
 
             <nav class="main-nav" aria-label="Main navigation">
