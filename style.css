@@ -242,16 +242,12 @@ body {
 	background: #000;
 	color: #fff;
 	display: table;
-	font-size: clamp(14px, 1.6vw, 24px);
+	font-size: clamp(15px, 1.9vw, 22px);
 	font-weight: 800;
-	letter-spacing: .005em;
+	letter-spacing: .1em;
 	line-height: 1.2;
-	margin: 3px 0;
-	padding: 3px 9px 4px;
-}
-
-.hero-copy p+p {
-	margin-top: -4px;
+	margin: 15px 0;
+	padding: 3px 7px 4px;
 }
 
 .hero-symbol {
