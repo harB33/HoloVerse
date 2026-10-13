@@ -59,7 +59,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
             </nav>
 
             <div class="header-actions">
-                <a class="entry-button" href="featured-items.php">Shop Now<span aria-hidden="true">&#8594;</span></a>
+                <a class="entry-button" href="login.php">Log In<span aria-hidden="true">&#8594;</span></a>
             </div>
         </header>
 

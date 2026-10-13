@@ -53,7 +53,7 @@
             </nav>
 
             <div class="header-actions">
-                <a class="entry-button" href="order-process.php">Order Guide<span aria-hidden="true">&#8594;</span></a>
+                <a class="entry-button" href="login.php">Log In<span aria-hidden="true">&#8594;</span></a>
             </div>
         </header>
 

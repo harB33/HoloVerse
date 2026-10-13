@@ -57,7 +57,7 @@ include 'Database/dbconnect.php';
             </nav>
 
             <div class="header-actions">
-                <a class="entry-button" href="#featured">Sign Up<span aria-hidden="true">&#8594;</span></a>
+                <a class="entry-button" href="Functions/login.php">Log In<span aria-hidden="true">&#8594;</span></a>
 
             </div>
         </header>
