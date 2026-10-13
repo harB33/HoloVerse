@@ -48,10 +48,10 @@ include 'Database/dbconnect.php';
             </a>
 
             <nav class="main-nav" aria-label="Main navigation">
-                <a href="#new-arrivals">New Arrivals</a>
-                <a href="../Functions/featured-items.php">Featured Items</a>
-                <a href="../Functions/order-process.php">Order Process</a>
-                <a href="../Functions/shipping-info.php">Shipping Info</a>
+                <a href="Functions/pre_order.php">Pre-Order</a>
+                <a href="../Functions/featured-items.php">Flash Sales</a>
+                <a href="../Functions/order-process.php">Collector Showcase</a>
+                <a href="../Functions/shipping-info.php">Personalized</a>
                 <a href="../Functions/about-us.php">About Us</a>
             </nav>
 
