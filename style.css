@@ -24,7 +24,7 @@ body {
 
 .page-shell {
   min-height: 100vh;
-  overflow: hidden;
+  overflow: clip;
   position: relative;
   isolation: isolate;
 }
@@ -109,13 +109,16 @@ body {
 
 .site-header {
   align-items: center;
-  display: flex;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
   gap: 28px;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   padding: 7px;
   padding-left: 20px;
   padding-right: 20px;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 2;
 }
 
@@ -144,7 +147,7 @@ body {
   display: flex;
   gap: clamp(18px, 1.8vw, 34px);
   justify-content: center;
-  margin-left: auto;
+  justify-self: center;
   padding: 12px 26px;
   box-shadow:
     0 0 14px rgba(81, 195, 245, 0.4),
@@ -163,6 +166,7 @@ body {
   align-items: center;
   display: flex;
   gap: 9px;
+  justify-self: end;
 }
 
 .entry-button {
@@ -333,6 +337,7 @@ body {
 
 @media (max-width: 760px) {
   .site-header {
+    display: flex;
     flex-wrap: wrap;
     padding: 15px 20px;
   }

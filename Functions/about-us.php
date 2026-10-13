@@ -206,10 +206,10 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
             </a>
 
             <nav class="main-nav" aria-label="Main navigation">
-                <a href="../index.php">Home</a>
-                <a href="featured-items.php">Featured Items</a>
-                <a href="order-process.php">Order Process</a>
-                <a href="shipping-info.php">Shipping Info</a>
+                <a href="pre_order.php">Pre-Order</a>
+                <a href="featured-items.php">Flash Sales</a>
+                <a href="order-process.php">Collector Showcase</a>
+                <a href="shipping-info.php">Personalized</a>
                 <a href="about-us.php">About Us</a>
             </nav>
 

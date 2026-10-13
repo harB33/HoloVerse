@@ -49,10 +49,10 @@ include 'Database/dbconnect.php';
 
             <nav class="main-nav" aria-label="Main navigation">
                 <a href="Functions/pre_order.php">Pre-Order</a>
-                <a href="../Functions/featured-items.php">Flash Sales</a>
-                <a href="../Functions/order-process.php">Collector Showcase</a>
-                <a href="../Functions/shipping-info.php">Personalized</a>
-                <a href="../Functions/about-us.php">About Us</a>
+                <a href="Functions/featured-items.php">Flash Sales</a>
+                <a href="Functions/order-process.php">Collector Showcase</a>
+                <a href="Functions/shipping-info.php">Personalized</a>
+                <a href="Functions/about-us.php">About Us</a>
             </nav>
 
             <div class="header-actions">
