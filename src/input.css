@@ -114,13 +114,18 @@
   }
 
   .main-nav a::after {
-    @apply absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-[#1da3d8] transition-transform duration-200 content-[''];
+    @apply absolute -bottom-1 left-0 h-0.5 w-full origin-center scale-x-0 bg-[#1da3d8] transition-transform duration-200 content-[''];
   }
 
   .main-nav a:hover::after,
   .main-nav a:focus-visible::after,
   .main-nav a[aria-current="page"]::after {
     @apply scale-x-100;
+  }
+
+  .main-nav:has(a:hover) a[aria-current="page"]:not(:hover)::after,
+  .main-nav:has(a:focus-visible) a[aria-current="page"]:not(:focus-visible)::after {
+    @apply scale-x-0;
   }
 
   .header-actions {
