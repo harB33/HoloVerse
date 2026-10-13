@@ -43,8 +43,9 @@ include 'Database/dbconnect.php';
         </div>
 
         <header class="site-header">
-            <a class="brand" href="#top" aria-label="hololive home">
-                <img class="brand-logo" src="Assets/hololive.png" alt="hololive production">
+            <a class="brand" href="#top" aria-label="HoloVerse Store home">
+                <img class="brand-logo" src="Assets/logo.png" alt="">
+                <span class="brand-wordmark">holo<span>verse</span></span>
             </a>
 
             <nav class="main-nav" aria-label="Main navigation">

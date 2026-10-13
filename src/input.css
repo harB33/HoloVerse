@@ -85,11 +85,23 @@
   }
 
   .brand {
-    @apply flex w-[182px] flex-none items-center overflow-hidden no-underline;
+    @apply flex w-fit flex-none items-center gap-1.5 overflow-visible no-underline;
   }
 
   .brand-logo {
-    @apply block h-auto w-64 max-w-none -translate-x-[37px];
+    @apply block size-9 max-w-none object-contain;
+  }
+
+  .brand-wordmark {
+    @apply text-[22px] font-bold tracking-tight text-[#101829];
+  }
+
+  .brand-wordmark span {
+    @apply text-[#05a9cf];
+  }
+
+  .brand-store {
+    @apply ml-1 rounded-[3px] bg-[#e7f7fc] px-2 py-1 font-montserrat text-[8px] font-bold uppercase text-[#087fa8];
   }
 
   .main-nav {
