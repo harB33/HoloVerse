@@ -378,6 +378,118 @@
     @apply hidden;
   }
 
+  .footer {
+    @apply border-t border-[#e5ebf2] bg-white px-6 pb-5 pt-12;
+  }
+
+  .radar-signup {
+    @apply mx-auto mb-12 max-w-[1440px] rounded-[20px] border border-[#27364d] bg-[linear-gradient(115deg,#101829_0%,#07344d_56%,#101829_100%)] px-10 py-10 text-white;
+  }
+
+  .radar-eyebrow {
+    @apply mb-2 block font-montserrat text-[9px] font-bold uppercase tracking-[0.08em] text-[#13c5ed];
+  }
+
+  .radar-signup h2 {
+    @apply mb-1 mt-0 text-[clamp(24px,3vw,34px)] font-bold leading-tight;
+  }
+
+  .radar-signup > p:not(.radar-feedback) {
+    @apply mb-5 mt-0 max-w-[700px] text-[13px] leading-relaxed text-[#e3edf6];
+  }
+
+  .radar-desktop-break {
+    @apply inline;
+  }
+
+  .radar-form {
+    @apply flex max-w-[560px] gap-2;
+  }
+
+  .radar-form input[type="email"] {
+    @apply min-w-0 flex-1 rounded-xl border border-[#34445a] bg-[#1b293d] px-3 py-[10px] text-[12px] text-white placeholder:text-[#9aabc0] focus:border-[#10bde4] focus:outline-none focus:ring-2 focus:ring-[#10bde4]/30;
+  }
+
+  .radar-form button {
+    @apply flex-none cursor-pointer rounded-xl bg-[#06b9dc] px-4 py-[10px] text-[12px] font-bold text-white transition-colors hover:bg-[#089fbe] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67e5ff];
+  }
+
+  .radar-preferences {
+    @apply mt-3 flex flex-wrap gap-x-3 gap-y-2 border-0 p-0;
+  }
+
+  .radar-preferences label {
+    @apply flex cursor-pointer items-center gap-1.5 font-montserrat text-[9px] text-[#d4e0ed];
+  }
+
+  .radar-preferences input {
+    @apply size-3 accent-[#08bce9];
+  }
+
+  .radar-feedback {
+    @apply m-0 mt-2 min-h-4 text-[11px] text-[#9feaff];
+  }
+
+  .footer-main {
+    @apply mx-auto grid max-w-[1440px] grid-cols-[1.8fr_0.85fr_0.85fr_0.85fr] gap-10 pb-10;
+  }
+
+  .footer-brand {
+    @apply mb-3 flex w-fit items-center gap-1.5 no-underline;
+  }
+
+  .footer-brand img {
+    @apply size-8 object-contain;
+  }
+
+  .footer-brand > span {
+    @apply text-[19px] font-bold tracking-tight text-[#101829];
+  }
+
+  .footer-brand > span span {
+    @apply text-[#05a9cf];
+  }
+
+  .footer-brand small {
+    @apply ml-1 rounded-[3px] bg-[#e7f7fc] px-2 py-1 font-montserrat text-[8px] font-bold uppercase text-[#087fa8];
+  }
+
+  .footer-about > p {
+    @apply mb-3 mt-0 max-w-[330px] text-[11px] leading-relaxed text-[#718096];
+  }
+
+  .footer-hubs {
+    @apply font-montserrat text-[9px] text-[#8594a8];
+  }
+
+  .footer-links {
+    @apply flex flex-col items-start gap-1.5;
+  }
+
+  .footer-links h3 {
+    @apply mb-1 mt-0 text-[11px] font-semibold text-[#101829];
+  }
+
+  .footer-links a {
+    @apply text-[10px] leading-relaxed text-[#586a80] no-underline hover:text-[#078bbd] focus-visible:text-[#078bbd];
+  }
+
+  .footer-bottom {
+    @apply mx-auto flex max-w-[1440px] items-center justify-between gap-4 border-t border-[#e5ebf2] pt-5;
+  }
+
+  .footer-bottom p {
+    @apply m-0 text-[10px] text-[#8594a8];
+  }
+
+  .footer-bottom nav {
+    @apply flex flex-wrap items-center gap-3 text-[10px] text-[#8594a8];
+  }
+
+  .footer-bottom a {
+    @apply text-inherit no-underline hover:text-[#078bbd] focus-visible:text-[#078bbd];
+  }
+
   .info-page {
     @apply min-h-screen;
   }
@@ -791,6 +903,14 @@
   .talent-grid {
     @apply grid-cols-4;
   }
+
+  .footer-main {
+    @apply grid-cols-2 gap-8;
+  }
+
+  .footer-about {
+    @apply col-span-2;
+  }
 }
 
 @media (min-width: 641px) {
@@ -908,6 +1028,22 @@
     @apply px-5 py-12;
   }
 
+  .footer {
+    @apply px-5 pt-8;
+  }
+
+  .radar-signup {
+    @apply mb-8 rounded-2xl px-6 py-7;
+  }
+
+  .radar-desktop-break {
+    @apply hidden;
+  }
+
+  .footer-bottom {
+    @apply items-start flex-col;
+  }
+
   .explore-filters {
     @apply flex-nowrap justify-start overflow-x-auto pb-2;
   }
@@ -947,6 +1083,26 @@
 
   .talent-grid {
     @apply grid-cols-2;
+  }
+
+  .radar-form {
+    @apply flex-col;
+  }
+
+  .radar-form button {
+    @apply self-start;
+  }
+
+  .footer-main {
+    @apply grid-cols-1 gap-7;
+  }
+
+  .footer-about {
+    @apply col-span-1;
+  }
+
+  .footer-bottom nav {
+    @apply gap-x-2 gap-y-1;
   }
 }
 
