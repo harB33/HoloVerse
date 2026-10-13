@@ -13,182 +13,12 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
     <title>Featured Items | hololive merchandise</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
-    <style>
-        .info-page {
-            background: linear-gradient(180deg, #fbfdff 0%, #edf9ff 100%);
-            min-height: 100vh;
-        }
-
-        .info-main {
-            margin: 0 auto;
-            max-width: 1180px;
-            padding: 34px 24px 80px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .page-intro {
-            margin-bottom: 30px;
-            max-width: 820px;
-        }
-
-        .eyebrow {
-            display: inline-block;
-            background: rgba(49, 180, 207, 0.12);
-            border: 1px solid rgba(36, 126, 202, 0.2);
-            border-radius: 999px;
-            color: #0a6cae;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            margin-bottom: 18px;
-            padding: 8px 14px;
-            text-transform: uppercase;
-        }
-
-        .page-intro h1 {
-            font-size: clamp(2.6rem, 5vw, 5rem);
-            letter-spacing: -0.05em;
-            line-height: 0.98;
-            margin: 0 0 18px;
-        }
-
-        .page-intro p {
-            color: #2f3e4e;
-            font-size: 1.08rem;
-            line-height: 1.7;
-            margin: 0;
-        }
-
-        .product-grid {
-            display: grid;
-            gap: 26px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .product-card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(49, 180, 207, 0.2);
-            border-radius: 26px;
-            box-shadow: 0 24px 40px rgba(17, 41, 73, 0.06);
-            overflow: hidden;
-        }
-
-        .product-thumb {
-            align-items: center;
-            background: linear-gradient(135deg, #d8f8ff 0%, #bae8ff 38%, #7fcff0 100%);
-            display: flex;
-            justify-content: center;
-            min-height: 220px;
-            position: relative;
-        }
-
-        .product-thumb::before {
-            background: rgba(12, 77, 120, 0.12);
-            border-radius: 32px;
-            content: "";
-            height: 120px;
-            left: 22px;
-            position: absolute;
-            width: calc(100% - 44px);
-        }
-
-        .product-badge {
-            background: linear-gradient(135deg, #67d8f1, #1da3d8);
-            border-radius: 999px;
-            color: #fff;
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            padding: 8px 12px;
-            position: absolute;
-            right: 18px;
-            text-transform: uppercase;
-            top: 18px;
-        }
-
-        .product-symbol {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(9, 79, 130, 0.08);
-            border-radius: 22px;
-            color: #0d5d96;
-            font-size: 2.3rem;
-            font-weight: 900;
-            height: 92px;
-            letter-spacing: -0.06em;
-            line-height: 92px;
-            position: relative;
-            text-align: center;
-            width: 92px;
-            z-index: 1;
-        }
-
-        .product-body {
-            padding: 22px 20px 24px;
-        }
-
-        .product-meta {
-            color: #0d6bab;
-            font-size: 0.76rem;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .product-card h2 {
-            font-size: 1.7rem;
-            margin: 10px 0 12px;
-        }
-
-        .product-card p {
-            color: #42566d;
-            line-height: 1.65;
-            margin: 0 0 18px;
-        }
-
-        .product-footer {
-            align-items: center;
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .price {
-            color: #0f213d;
-            font-size: 1.45rem;
-            font-weight: 800;
-        }
-
-        .shop-button {
-            background: linear-gradient(135deg, #67d8f1, #1da3d8);
-            border-radius: 999px;
-            color: #fff;
-            font-size: 0.8rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            padding: 10px 14px;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 920px) {
-            .product-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/tailwind.css">
 </head>
 
 <body>
-    <div class="page-shell info-page">
+    <div class="page-shell info-page featured-page">
         <div class="watermark" aria-hidden="true">
             <svg viewBox="0 0 900 700" role="presentation">
                 <defs>
@@ -257,7 +87,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
                 </article>
 
                 <article class="product-card">
-                    <div class="product-thumb" style="background: linear-gradient(135deg, #d3e4ff 0%, #b7d0ff 35%, #8ab0ff 100%);">
+                    <div class="product-thumb bg-[linear-gradient(135deg,#d3e4ff_0%,#b7d0ff_35%,#8ab0ff_100%)]">
                         <span class="product-badge">Best Seller</span>
                         <div class="product-symbol">A</div>
                     </div>
@@ -273,7 +103,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
                 </article>
 
                 <article class="product-card">
-                    <div class="product-thumb" style="background: linear-gradient(135deg, #ffe9d3 0%, #ffd7b0 35%, #f6b673 100%);">
+                    <div class="product-thumb bg-[linear-gradient(135deg,#ffe9d3_0%,#ffd7b0_35%,#f6b673_100%)]">
                         <span class="product-badge">Limited</span>
                         <div class="product-symbol">S</div>
                     </div>

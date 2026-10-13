@@ -13,168 +13,12 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
     <title>About Us | hololive merchandise</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
-    <style>
-        .info-page {
-            background: linear-gradient(180deg, #ffffff 0%, #f3fbff 100%);
-            min-height: 100vh;
-        }
-
-        .info-main {
-            margin: 0 auto;
-            max-width: 1200px;
-            padding: 34px 24px 80px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .page-intro {
-            margin-bottom: 26px;
-            max-width: 760px;
-        }
-
-        .eyebrow {
-            display: inline-block;
-            background: rgba(49, 180, 207, 0.12);
-            border: 1px solid rgba(36, 126, 202, 0.2);
-            border-radius: 999px;
-            color: #0a6cae;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            margin-bottom: 18px;
-            padding: 8px 14px;
-            text-transform: uppercase;
-        }
-
-        .page-intro h1 {
-            font-size: clamp(2.5rem, 5vw, 5rem);
-            letter-spacing: -0.05em;
-            line-height: 0.96;
-            margin: 0 0 18px;
-        }
-
-        .page-intro p {
-            color: #2f3e4e;
-            font-size: 1.08rem;
-            line-height: 1.7;
-            margin: 0;
-        }
-
-        .content-grid {
-            display: grid;
-            gap: 24px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin: 32px 0 28px;
-        }
-
-        .info-card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(49, 180, 207, 0.2);
-            border-radius: 24px;
-            box-shadow: 0 22px 40px rgba(15, 37, 71, 0.06);
-            overflow: hidden;
-            padding: 26px 22px;
-        }
-
-        .info-card .badge {
-            display: inline-flex;
-            align-items: center;
-            background: linear-gradient(135deg, #67d8f1, #1da3d8);
-            border-radius: 999px;
-            color: #fff;
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            margin-bottom: 16px;
-            padding: 7px 12px;
-            text-transform: uppercase;
-        }
-
-        .info-card h2 {
-            font-size: 1.55rem;
-            margin: 0 0 12px;
-        }
-
-        .info-card p,
-        .info-card li {
-            color: #42566d;
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-
-        .info-card ul {
-            margin: 18px 0 0;
-            padding-left: 18px;
-        }
-
-        .feature-banner {
-            align-items: center;
-            background: linear-gradient(120deg, #101d35 0%, #0d6bab 55%, #31b4cf 100%);
-            border-radius: 28px;
-            color: #fff;
-            display: grid;
-            gap: 18px;
-            grid-template-columns: 1.3fr 1fr;
-            margin-top: 20px;
-            padding: 32px 28px;
-        }
-
-        .feature-banner h2 {
-            font-size: clamp(1.6rem, 2vw, 2.4rem);
-            line-height: 1.1;
-            margin: 0 0 12px;
-        }
-
-        .feature-banner p {
-            color: rgba(255, 255, 255, 0.84);
-            line-height: 1.7;
-            margin: 0;
-        }
-
-        .stats {
-            display: grid;
-            gap: 12px;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin-top: 18px;
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 18px;
-            padding: 16px 14px;
-            text-align: center;
-        }
-
-        .stat-box strong {
-            display: block;
-            font-size: 1.8rem;
-            margin-bottom: 4px;
-        }
-
-        .stat-box span {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.82rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 900px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .feature-banner {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../Assets/tailwind.css">
 </head>
 
 <body>
-    <div class="page-shell info-page">
+    <div class="page-shell info-page about-page">
         <div class="watermark" aria-hidden="true">
             <svg viewBox="0 0 900 700" role="presentation">
                 <defs>
@@ -251,7 +95,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
 
             <section class="feature-banner">
                 <div>
-                    <span class="eyebrow" style="background: rgba(255,255,255,0.08); color: #e9faff; border-color: rgba(255,255,255,0.2);">Why fans choose us</span>
+                    <span class="eyebrow banner-eyebrow">Why fans choose us</span>
                     <h2>Premium pieces, unforgettable energy.</h2>
                     <p>From casual staples to event-exclusive collectibles, our store is built around identity, design, and fandom pride. We aim to keep every release exciting, accessible, and worthy of display.</p>
                 </div>
