@@ -98,7 +98,18 @@
   }
 
   .main-nav a {
+    @apply relative;
     @apply whitespace-nowrap text-[clamp(12px,0.8vw,18px)] font-bold text-[#111] no-underline;
+  }
+
+  .main-nav a::after {
+    @apply absolute -bottom-1 left-0 h-0.5 w-full origin-left scale-x-0 bg-[#1da3d8] transition-transform duration-200 content-[''];
+  }
+
+  .main-nav a:hover::after,
+  .main-nav a:focus-visible::after,
+  .main-nav a[aria-current="page"]::after {
+    @apply scale-x-100;
   }
 
   .header-actions {

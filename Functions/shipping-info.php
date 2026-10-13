@@ -53,7 +53,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
                 <a href="pre_order.php">Pre-Order</a>
                 <a href="featured-items.php">Flash Sales</a>
                 <a href="order-process.php">Collector Showcase</a>
-                <a href="shipping-info.php">Personalized</a>
+                <a href="shipping-info.php" aria-current="page">Personalized</a>
                 <a href="about-us.php">About Us</a>
             </nav>
 
