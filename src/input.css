@@ -41,11 +41,11 @@
   }
 
   .watermark {
-    @apply pointer-events-none absolute inset-0 z-[-1] overflow-hidden text-[#f4f4f4];
+    @apply pointer-events-none fixed inset-0 z-[-1] overflow-hidden text-[#f4f4f4];
   }
 
   .watermark svg {
-    @apply absolute left-1/2 top-1/2 h-[115%] w-[125%] -translate-x-1/2 -translate-y-1/2 rotate-[-12deg];
+    @apply absolute left-1/2 top-1/2 h-[105%] w-[115%] -translate-x-1/2 -translate-y-1/2 rotate-[-12deg];
   }
 
   .watermark text {
