@@ -8,7 +8,8 @@ include 'Database/dbconnect.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hololive production merchandise</title>
+    <title>Holoverse</title>
+    <link rel="icon" type="image/png" href="Assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -49,15 +50,15 @@ include 'Database/dbconnect.php';
             </a>
 
             <nav class="main-nav" aria-label="Main navigation">
-                <a href="#new-arrivals">New Arrivals</a>
-                <a href="../Functions/featured-items.php">Featured Items</a>
-                <a href="../Functions/order-process.php">Order Process</a>
-                <a href="../Functions/shipping-info.php">Shipping Info</a>
-                <a href="../Functions/about-us.php">About Us</a>
+                <a href="Functions/pre_order.php">Pre-Order</a>
+                <a href="Functions/flash_sale.php">Flash Sales</a>
+                <a href="Functions/collector_showcase.php">Collector Showcase</a>
+                <a href="Functions/personalized.php">Personalized</a>
+                <a href="Functions/about-us.php">About Us</a>
             </nav>
 
             <div class="header-actions">
-                <a class="entry-button" href="Functions/login.php">Log In<span aria-hidden="true">&#8594;</span></a>
+                <a class="entry-button" href="Functions/login.php" aria-label="Log In"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
 
             </div>
         </header>
@@ -235,20 +236,20 @@ include 'Database/dbconnect.php';
 
                 <nav class="footer-links" aria-label="Merchandise links">
                     <h3>Merchandise</h3>
-                    <a href="Functions/featured-items.php">Scale Figures (1/4, 1/7)</a>
-                    <a href="Functions/featured-items.php">Commemorative Box Sets</a>
-                    <a href="Functions/featured-items.php">Apparel &amp; Sukajan</a>
-                    <a href="Functions/featured-items.php">Acrylic Stands &amp; Keychains</a>
-                    <a href="Functions/featured-items.php">Official Plushies &amp; Mochiduru</a>
+                    <a href="Functions/flash_sale.php">Scale Figures (1/4, 1/7)</a>
+                    <a href="Functions/flash_sale.php">Commemorative Box Sets</a>
+                    <a href="Functions/flash_sale.php">Apparel &amp; Sukajan</a>
+                    <a href="Functions/flash_sale.php">Acrylic Stands &amp; Keychains</a>
+                    <a href="Functions/flash_sale.php">Official Plushies &amp; Mochiduru</a>
                 </nav>
 
                 <nav class="footer-links" aria-label="Customer care links">
                     <h3>Customer Care</h3>
                     <a href="Functions/pre_order.php">Pre-Order Batch ETA Tracker</a>
-                    <a href="Functions/shipping-info.php">Shipping Rates &amp; Customs Info</a>
-                    <a href="Functions/shipping-info.php">Mint Condition Box Guarantee</a>
-                    <a href="Functions/order-process.php">Anti-Scalper Verification</a>
-                    <a href="Functions/order-process.php">NFC Chip Mobile Tap Support</a>
+                    <a href="Functions/personalized.php">Shipping Rates &amp; Customs Info</a>
+                    <a href="Functions/personalized.php">Mint Condition Box Guarantee</a>
+                    <a href="Functions/collector_showcase.php">Anti-Scalper Verification</a>
+                    <a href="Functions/collector_showcase.php">NFC Chip Mobile Tap Support</a>
                 </nav>
 
                 <nav class="footer-links" aria-label="Corporate links">

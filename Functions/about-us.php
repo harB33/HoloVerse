@@ -11,6 +11,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us | hololive merchandise</title>
+    <link rel="icon" type="image/png" href="../Assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -52,14 +53,14 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
 
             <nav class="main-nav" aria-label="Main navigation">
                 <a href="pre_order.php">Pre-Order</a>
-                <a href="featured-items.php">Flash Sales</a>
-                <a href="order-process.php">Collector Showcase</a>
-                <a href="shipping-info.php">Personalized</a>
+                <a href="flash_sale.php">Flash Sales</a>
+                <a href="collector_showcase.php">Collector Showcase</a>
+                <a href="personalized.php">Personalized</a>
                 <a href="about-us.php" aria-current="page">About Us</a>
             </nav>
 
             <div class="header-actions">
-                <a class="entry-button" href="login.php">Log In<span aria-hidden="true">&#8594;</span></a>
+                <a class="entry-button" href="login.php" aria-label="Log In"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
             </div>
         </header>
 

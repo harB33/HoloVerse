@@ -145,11 +145,11 @@
   }
 
   .entry-button {
-    @apply flex items-center gap-[10px] rounded-full bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] py-3 pl-[18px] pr-3 text-sm font-extrabold text-white no-underline shadow-[0_0_0_2px_rgba(88,190,245,0.2)];
+    @apply flex size-14 items-center justify-center rounded-full border-2 border-white bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] text-white no-underline shadow-[0_0_0_2px_rgba(88,190,245,0.2)] transition;
   }
 
-  .entry-button span {
-    @apply flex size-[26px] items-center justify-center rounded-full bg-white text-lg text-[#1da3d8];
+  .entry-button svg {
+    @apply size-6 shrink-0;
   }
 
   .hero {
@@ -1019,10 +1019,6 @@
 
   .hero-symbol {
     @apply mt-[-10px] size-[340px] scale-[0.65];
-  }
-
-  .entry-button {
-    @apply pl-4;
   }
 
   .limited-drops {
