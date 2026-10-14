@@ -386,22 +386,27 @@
 
   .talent-grid {
     @apply grid grid-cols-6 gap-[14px];
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .talent-card {
     @apply flex min-h-[128px] min-w-0 flex-col items-center justify-center rounded-xl border border-[#e1e8f0] bg-white px-2 py-3 text-center transition-transform duration-200 hover:-translate-y-1;
+    flex: 0 1 calc((100% - 70px) / 6);
   }
 
   .talent-avatar {
-    @apply mb-3 flex size-[54px] items-center justify-center rounded-full border-2 text-[15px] font-semibold;
+    @apply relative mb-3 flex size-[72px] items-center justify-center overflow-hidden rounded-full border-2 border-[#46c4ff] bg-[#e4f6ff] text-[15px] font-semibold text-[#075985];
   }
 
-  .talent-gura .talent-avatar { @apply border-[#46c4ff] bg-[#e4f6ff] text-[#075985]; }
-  .talent-korone .talent-avatar { @apply border-[#ffbf24] bg-[#fff5d8] text-[#92400e]; }
-  .talent-suisei .talent-avatar { @apply border-[#85bbff] bg-[#e7f0ff] text-[#1d4ed8]; }
-  .talent-calliope .talent-avatar { @apply border-[#ff8bc4] bg-[#ffe9f3] text-[#be185d]; }
-  .talent-pekora .talent-avatar { @apply border-[#c8a0ff] bg-[#f2eaff] text-[#6b21a8]; }
-  .talent-fuwamoco .talent-avatar { @apply border-[#47dfae] bg-[#ddfbef] text-[#047857]; }
+  .talent-photo {
+    @apply absolute inset-0 size-full object-cover object-top;
+  }
+
+  .talent-initials {
+    @apply flex size-full items-center justify-center;
+  }
 
   .talent-card h3 {
     @apply mb-1 mt-0 text-[12px] font-semibold leading-tight text-[#101829];
@@ -1277,6 +1282,10 @@
     @apply grid-cols-4;
   }
 
+  .talent-card {
+    flex-basis: calc((100% - 42px) / 4);
+  }
+
   .footer-main {
     @apply grid-cols-2 gap-8;
   }
@@ -1466,6 +1475,10 @@
   .talent-grid {
     @apply grid-cols-3;
   }
+
+  .talent-card {
+    flex-basis: calc((100% - 28px) / 3);
+  }
 }
 
 @media (max-width: 640px) {
@@ -1494,6 +1507,10 @@
 
   .talent-grid {
     @apply grid-cols-2;
+  }
+
+  .talent-card {
+    flex-basis: calc((100% - 14px) / 2);
   }
 
   .radar-form {
