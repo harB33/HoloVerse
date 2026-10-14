@@ -255,15 +255,18 @@ require __DIR__ . '/app/views/layout/head.php';
                         if (isset($talentStatuses[$talent['name']])) {
                             $groupNames[] = $talentStatuses[$talent['name']];
                         }
+                        $talentLink = 'pages/pre_order.php?talent=' . rawurlencode($talent['name']);
                         ?>
-                        <article class="talent-card" data-generations="<?= htmlspecialchars(implode(' ', $talent['groups']), ENT_QUOTES, 'UTF-8') ?>">
-                            <span class="talent-avatar">
-                                <span class="talent-initials" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></span>
-                                <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async">
-                            </span>
-                            <h3><?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?></h3>
-                            <p><?= htmlspecialchars(implode(' · ', $groupNames), ENT_QUOTES, 'UTF-8') ?></p>
-                        </article>
+                        <a class="talent-card-link" href="<?= htmlspecialchars($talentLink, ENT_QUOTES, 'UTF-8') ?>" aria-label="View merchandise for <?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>">
+                            <article class="talent-card" data-generations="<?= htmlspecialchars(implode(' ', $talent['groups']), ENT_QUOTES, 'UTF-8') ?>">
+                                <span class="talent-avatar">
+                                    <span class="talent-initials" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></span>
+                                    <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async">
+                                </span>
+                                <h3><?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?></h3>
+                                <p><?= htmlspecialchars(implode(' · ', $groupNames), ENT_QUOTES, 'UTF-8') ?></p>
+                            </article>
+                        </a>
                     <?php endforeach; ?>
                 </div>
                 <p class="explore-empty hidden" role="status">No featured talents in this generation or group yet.</p>
@@ -341,7 +344,7 @@ require __DIR__ . '/app/views/layout/head.php';
     </main>
     <script>
         const exploreFilters = document.querySelectorAll("[data-explore-filter]");
-        const talentCards = document.querySelectorAll(".talent-card");
+        const talentCardLinks = document.querySelectorAll(".talent-card-link");
         const exploreEmpty = document.querySelector(".explore-empty");
 
         document.querySelectorAll(".talent-photo").forEach((photo) => {
@@ -357,9 +360,10 @@ require __DIR__ . '/app/views/layout/head.php';
                     button.setAttribute("aria-pressed", String(button === filter));
                 });
 
-                talentCards.forEach((card) => {
+                talentCardLinks.forEach((cardLink) => {
+                    const card = cardLink.querySelector(".talent-card");
                     const isVisible = selectedGeneration === "all" || card.dataset.generations.split(" ").includes(selectedGeneration);
-                    card.classList.toggle("hidden", !isVisible);
+                    cardLink.classList.toggle("hidden", !isVisible);
                     visibleTalents += Number(isVisible);
                 });
 

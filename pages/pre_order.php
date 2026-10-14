@@ -1,4 +1,24 @@
 <?php
+$selectedTalent = isset($_GET['talent']) ? trim($_GET['talent']) : '';
+
+$defaultTalentItems = [
+    ['badge' => 'Limited run', 'type' => 'Collector figure', 'title' => 'Deluxe anniversary figure', 'description' => 'Display-ready centerpiece with collector packaging and numbered authentication card.', 'price' => '$68', 'dispatch' => 'Estimated dispatch: Spring 2027'],
+    ['badge' => 'Pre-order', 'type' => 'Apparel', 'title' => 'Signature event tee', 'description' => 'A premium unisex shirt featuring tour-inspired artwork and a soft-touch finish.', 'price' => '$32', 'dispatch' => 'Estimated dispatch: Spring 2027'],
+    ['badge' => 'Fan favorite', 'type' => 'Plush collection', 'title' => 'Official plush set', 'description' => 'A cozy companion pair sized for desks, shelves, and display shelves.', 'price' => '$46', 'dispatch' => 'Estimated dispatch: Summer 2027'],
+];
+
+if ($selectedTalent !== '') {
+    $talentItems = [
+        ['badge' => 'Collector figure', 'type' => '1/4 scale statue', 'title' => $selectedTalent . ' deluxe figure', 'description' => 'A premium showcase piece inspired by the talent\'s signature look and stage presence.', 'price' => '$89', 'dispatch' => 'Estimated dispatch: Spring 2027'],
+        ['badge' => 'Pre-order', 'type' => 'Apparel', 'title' => $selectedTalent . ' event tee', 'description' => 'Official attire crafted with a relaxed fit and high-detail print celebrating the talent.', 'price' => '$34', 'dispatch' => 'Estimated dispatch: Spring 2027'],
+        ['badge' => 'Fan favorite', 'type' => 'Plush', 'title' => $selectedTalent . ' mini plush set', 'description' => 'A compact plush set designed for easy display and collector shelf styling.', 'price' => '$48', 'dispatch' => 'Estimated dispatch: Summer 2027'],
+    ];
+} else {
+    $talentItems = $defaultTalentItems;
+}
+
+$merchInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $selectedTalent !== '' ? $selectedTalent : 'HoloVerse'), 0, 1));
+
 $pageTitle = 'Pre-Order | hololive merchandise';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -16,61 +36,34 @@ require __DIR__ . '/../app/views/layout/head.php';
         <main class="preorder-main">
             <section class="preorder-intro">
                 <span class="preorder-eyebrow">Pre-order window open</span>
-                <h1>Get your next favorite before it arrives.</h1>
-                <p>Reserve limited-run collectibles and apparel while they're still in production. Browse the current preview, then check the order guide for what to expect.</p>
+                <?php if ($selectedTalent !== ''): ?>
+                    <h1><?= htmlspecialchars($selectedTalent, ENT_QUOTES, 'UTF-8') ?> merchandise</h1>
+                    <p>Browse the official merch collection for <?= htmlspecialchars($selectedTalent, ENT_QUOTES, 'UTF-8') ?> and reserve your favorite pieces before they sell out.</p>
+                <?php else: ?>
+                    <h1>Get your next favorite before it arrives.</h1>
+                    <p>Reserve limited-run collectibles and apparel while they're still in production. Browse the current preview, then check the order guide for what to expect.</p>
+                <?php endif; ?>
             </section>
 
             <section class="preorder-grid" aria-label="Pre-order items">
-                <article class="preorder-card">
-                    <div class="preorder-art">
-                        <span class="preorder-badge">Limited run</span>
-                        <span class="preorder-symbol" aria-hidden="true">H</span>
-                    </div>
-                    <div class="preorder-body">
-                        <div class="preorder-meta">Collector figure</div>
-                        <h2>Oceanlight Stage Figure</h2>
-                        <p>A display-ready centerpiece with a sparkling stage-inspired finish and collector packaging.</p>
-                        <div class="preorder-footer">
-                            <span class="preorder-price">$68</span>
-                            <a class="preorder-button" href="collector_showcase.php">Order guide</a>
+                <?php foreach ($talentItems as $item): ?>
+                    <article class="preorder-card">
+                        <div class="preorder-art">
+                            <span class="preorder-badge"><?= htmlspecialchars($item['badge'], ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="preorder-symbol" aria-hidden="true"><?= htmlspecialchars($merchInitial, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
-                        <div class="preorder-shipping">Estimated dispatch: Spring 2027</div>
-                    </div>
-                </article>
-
-                <article class="preorder-card">
-                    <div class="preorder-art preorder-art-sky">
-                        <span class="preorder-badge">Pre-order</span>
-                        <span class="preorder-symbol" aria-hidden="true">S</span>
-                    </div>
-                    <div class="preorder-body">
-                        <div class="preorder-meta">Apparel</div>
-                        <h2>Starlight Tour Tee</h2>
-                        <p>A soft, everyday tee with a tour-inspired graphic and a relaxed unisex fit.</p>
-                        <div class="preorder-footer">
-                            <span class="preorder-price">$32</span>
-                            <a class="preorder-button" href="collector_showcase.php">Order guide</a>
+                        <div class="preorder-body">
+                            <div class="preorder-meta"><?= htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8') ?></div>
+                            <h2><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+                            <p><?= htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <div class="preorder-footer">
+                                <span class="preorder-price"><?= htmlspecialchars($item['price'], ENT_QUOTES, 'UTF-8') ?></span>
+                                <a class="preorder-button" href="collector_showcase.php">Order guide</a>
+                            </div>
+                            <div class="preorder-shipping"><?= htmlspecialchars($item['dispatch'], ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
-                        <div class="preorder-shipping">Estimated dispatch: Spring 2027</div>
-                    </div>
-                </article>
-
-                <article class="preorder-card">
-                    <div class="preorder-art preorder-art-coral">
-                        <span class="preorder-badge">Fan favorite</span>
-                        <span class="preorder-symbol" aria-hidden="true">P</span>
-                    </div>
-                    <div class="preorder-body">
-                        <div class="preorder-meta">Plush collection</div>
-                        <h2>Holo Friends Plush Set</h2>
-                        <p>A cozy collectible duo sized for desks, shelves, and adventures on the go.</p>
-                        <div class="preorder-footer">
-                            <span class="preorder-price">$46</span>
-                            <a class="preorder-button" href="collector_showcase.php">Order guide</a>
-                        </div>
-                        <div class="preorder-shipping">Estimated dispatch: Summer 2027</div>
-                    </div>
-                </article>
+                    </article>
+                <?php endforeach; ?>
             </section>
 
             <aside class="preorder-guide">
