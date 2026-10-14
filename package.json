@@ -2,8 +2,8 @@
   "name": "holoverse",
   "private": true,
   "scripts": {
-    "build:css": "tailwindcss -i ./src/input.css -o ./Assets/tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./src/input.css -o ./Assets/tailwind.css --watch"
+    "build:css": "tailwindcss -i ./resources/css/input.css -o ./assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./resources/css/input.css -o ./assets/css/tailwind.css --watch"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.0",

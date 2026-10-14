@@ -6,8 +6,8 @@
   initial-value: 0deg;
 }
 
-@source "../index.php";
-@source "../Functions";
+@source "../../index.php";
+@source "../../pages";
 
 @theme {
   --font-site: "Kanit", "Noto Sans JP", sans-serif;

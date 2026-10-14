@@ -1,67 +1,17 @@
 <?php
-include 'Database/dbconnect.php';
+require_once __DIR__ . '/config/dbconnect.php';
+$pageTitle = 'Holoverse';
+$siteRoot = '';
+require __DIR__ . '/app/views/layout/head.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holoverse</title>
-    <link rel="icon" type="image/png" href="Assets/logo.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Assets/tailwind.css">
-</head>
 
 <body>
     <main class="page-shell">
-        <div class="watermark" aria-hidden="true">
-            <svg viewBox="0 0 900 700" role="presentation">
-                <defs>
-                    <path id="watermark-circle-outer" d="M 450,350 m -525,0 a 525,525 0 1,1 1050,0 a 525,525 0 1,1 -1050,0" />
-                    <path id="watermark-circle-middle" d="M 450,350 m -360,0 a 360,360 0 1,1 720,0 a 360,360 0 1,1 -720,0" />
-                    <path id="watermark-circle-inner" d="M 450,350 m -200,0 a 200,200 0 1,1 400,0 a 200,200 0 1,1 -400,0" />
-                </defs>
-                <g class="watermark-ring watermark-ring-outer">
-                    <text>
-                        <textPath href="#watermark-circle-outer">hololive production merchandise hololive production merchandise hololive production merchandise hololive production merchandise</textPath>
-                    </text>
-                </g>
-                <g class="watermark-ring watermark-ring-middle">
-                    <text>
-                        <textPath href="#watermark-circle-middle">hololive production merchandise hololive production merchandise hololive production merchandise</textPath>
-                    </text>
-                </g>
-                <g class="watermark-ring watermark-ring-inner">
-                    <text>
-                        <textPath href="#watermark-circle-inner">hololive production merchandise hololive production</textPath>
-                    </text>
-                </g>
-            </svg>
-        </div>
-
-        <header class="site-header">
-            <a class="brand" href="#top" aria-label="HoloVerse Store home">
-                <img class="brand-logo" src="Assets/logo.png" alt="">
-                <span class="brand-wordmark">holo<span>verse</span></span>
-            </a>
-
-            <nav class="main-nav" aria-label="Main navigation">
-                <a href="Functions/pre_order.php">Pre-Order</a>
-                <a href="Functions/flash_sale.php">Flash Sales</a>
-                <a href="Functions/collector_showcase.php">Collector Showcase</a>
-                <a href="Functions/personalized.php">Personalized</a>
-                <a href="Functions/about-us.php">About Us</a>
-            </nav>
-
-            <div class="header-actions">
-                <a class="entry-button" href="Functions/login.php" aria-label="Log In"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
-
-            </div>
-        </header>
+        <?php require __DIR__ . '/app/views/components/watermark.php'; ?>
+        <?php
+        $activePage = 'home';
+        require __DIR__ . '/app/views/components/site-header.php';
+        ?>
 
         <div id="top" class="hero">
             <section class="hero-copy" id="new-arrivals">
@@ -71,7 +21,7 @@ include 'Database/dbconnect.php';
             </section>
 
             <div class="hero-symbol">
-                <img src="Assets/logo.png" alt="hololive logo">
+                <img src="assets/images/logo.png" alt="hololive logo">
             </div>
         </div>
         <section class="limited-drops" id="featured" aria-labelledby="limited-drops-title">
@@ -80,7 +30,7 @@ include 'Database/dbconnect.php';
                     <span class="drops-eyebrow">Tier 1 priority pre-orders</span>
                     <h2 id="limited-drops-title">Active Limited Drops &amp; Statues</h2>
                 </div>
-                <a class="drops-view-all" href="Functions/pre_order.php">Explore pre-orders <span aria-hidden="true">&#8594;</span></a>
+                <a class="drops-view-all" href="pages/pre_order.php">Explore pre-orders <span aria-hidden="true">&#8594;</span></a>
             </div>
 
             <div class="drops-grid">
@@ -97,7 +47,7 @@ include 'Database/dbconnect.php';
                         <p class="drop-description">Batch ETA: November 2026. Includes signed cover card.</p>
                         <div class="drop-allocation"><span>Allocation claimed</span><strong>88% (440/500)</strong></div>
                         <div class="drop-progress" role="progressbar" aria-label="Korone allocation claimed" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100"><span style="width: 88%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$289.00</strong></div><a href="Functions/pre_order.php">Reserve slot</a></div>
+                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$289.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
                     </div>
                 </article>
 
@@ -114,7 +64,7 @@ include 'Database/dbconnect.php';
                         <p class="drop-description">Complete vinyl set, bespoke star pin, and replica beret.</p>
                         <div class="drop-allocation"><span>Allocation claimed</span><strong>64% (640/1000)</strong></div>
                         <div class="drop-progress" role="progressbar" aria-label="Suisei allocation claimed" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><span style="width: 64%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Total price</span><strong>$175.00</strong></div><a href="Functions/pre_order.php">Reserve slot</a></div>
+                        <div class="drop-purchase"><div><span class="drop-price-label">Total price</span><strong>$175.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
                     </div>
                 </article>
 
@@ -131,7 +81,7 @@ include 'Database/dbconnect.php';
                         <p class="drop-description">Sculpted by Design COCO. Removable hoodie feature.</p>
                         <div class="drop-allocation"><span>Allocation claimed</span><strong>94% (940/1000)</strong></div>
                         <div class="drop-progress" role="progressbar" aria-label="Gura allocation claimed" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100"><span style="width: 94%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$215.00</strong></div><a href="Functions/pre_order.php">Reserve slot</a></div>
+                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$215.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
                     </div>
                 </article>
 
@@ -148,7 +98,7 @@ include 'Database/dbconnect.php';
                         <p class="drop-description">Reversible high-thread embroidery. Limited run of 750.</p>
                         <div class="drop-allocation"><span>Allocation claimed</span><strong>45% (337/750)</strong></div>
                         <div class="drop-progress" role="progressbar" aria-label="Calliope allocation claimed" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"><span style="width: 45%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Retail price</span><strong>$190.00</strong></div><a href="Functions/pre_order.php">Buy now</a></div>
+                        <div class="drop-purchase"><div><span class="drop-price-label">Retail price</span><strong>$190.00</strong></div><a href="pages/pre_order.php">Buy now</a></div>
                     </div>
                 </article>
             </div>
@@ -226,7 +176,7 @@ include 'Database/dbconnect.php';
             <div class="footer-main">
                 <div class="footer-about">
                     <a class="footer-brand" href="#top" aria-label="HoloVerse Store home">
-                        <img src="Assets/logo.png" alt="">
+                        <img src="assets/images/logo.png" alt="">
                         <span>holo<span>verse</span></span>
                         <small>Store</small>
                     </a>
@@ -236,40 +186,40 @@ include 'Database/dbconnect.php';
 
                 <nav class="footer-links" aria-label="Merchandise links">
                     <h3>Merchandise</h3>
-                    <a href="Functions/flash_sale.php">Scale Figures (1/4, 1/7)</a>
-                    <a href="Functions/flash_sale.php">Commemorative Box Sets</a>
-                    <a href="Functions/flash_sale.php">Apparel &amp; Sukajan</a>
-                    <a href="Functions/flash_sale.php">Acrylic Stands &amp; Keychains</a>
-                    <a href="Functions/flash_sale.php">Official Plushies &amp; Mochiduru</a>
+                    <a href="pages/flash_sale.php">Scale Figures (1/4, 1/7)</a>
+                    <a href="pages/flash_sale.php">Commemorative Box Sets</a>
+                    <a href="pages/flash_sale.php">Apparel &amp; Sukajan</a>
+                    <a href="pages/flash_sale.php">Acrylic Stands &amp; Keychains</a>
+                    <a href="pages/flash_sale.php">Official Plushies &amp; Mochiduru</a>
                 </nav>
 
                 <nav class="footer-links" aria-label="Customer care links">
                     <h3>Customer Care</h3>
-                    <a href="Functions/pre_order.php">Pre-Order Batch ETA Tracker</a>
-                    <a href="Functions/personalized.php">Shipping Rates &amp; Customs Info</a>
-                    <a href="Functions/personalized.php">Mint Condition Box Guarantee</a>
-                    <a href="Functions/collector_showcase.php">Anti-Scalper Verification</a>
-                    <a href="Functions/collector_showcase.php">NFC Chip Mobile Tap Support</a>
+                    <a href="pages/pre_order.php">Pre-Order Batch ETA Tracker</a>
+                    <a href="pages/personalized.php">Shipping Rates &amp; Customs Info</a>
+                    <a href="pages/personalized.php">Mint Condition Box Guarantee</a>
+                    <a href="pages/collector_showcase.php">Anti-Scalper Verification</a>
+                    <a href="pages/collector_showcase.php">NFC Chip Mobile Tap Support</a>
                 </nav>
 
                 <nav class="footer-links" aria-label="Corporate links">
                     <h3>COVER Corp Portal</h3>
-                    <a href="Functions/about-us.php">Talent Licensing Guidelines</a>
-                    <a href="Functions/about-us.php">Authenticity Guarantee</a>
-                    <a href="Functions/about-us.php">ISO 27001 Security</a>
-                    <a href="Functions/about-us.php">Privacy Policy &amp; Terms</a>
-                    <a href="Functions/about-us.php">Wholesale Partner Inquiries</a>
+                    <a href="pages/about-us.php">Talent Licensing Guidelines</a>
+                    <a href="pages/about-us.php">Authenticity Guarantee</a>
+                    <a href="pages/about-us.php">ISO 27001 Security</a>
+                    <a href="pages/about-us.php">Privacy Policy &amp; Terms</a>
+                    <a href="pages/about-us.php">Wholesale Partner Inquiries</a>
                 </nav>
             </div>
 
             <div class="footer-bottom">
                 <p>&copy; 2016-2026 COVER Corp. / HoloVerse Store. All rights reserved.</p>
                 <nav aria-label="Legal links">
-                    <a href="Functions/about-us.php">Terms of Service</a>
+                    <a href="pages/about-us.php">Terms of Service</a>
                     <span aria-hidden="true">&bull;</span>
-                    <a href="Functions/about-us.php">Privacy Notice</a>
+                    <a href="pages/about-us.php">Privacy Notice</a>
                     <span aria-hidden="true">&bull;</span>
-                    <a href="Functions/about-us.php">Cookie Preferences</a>
+                    <a href="pages/about-us.php">Cookie Preferences</a>
                 </nav>
             </div>
         </footer>
@@ -304,8 +254,8 @@ include 'Database/dbconnect.php';
         });
     </script>
     <?php
-    $cartHref = 'Functions/cart.php';
-    include __DIR__ . '/Functions/cart-button.php';
+    $cartHref = 'pages/cart.php';
+    include __DIR__ . '/app/views/components/cart-button.php';
     ?>
 </body>
 
