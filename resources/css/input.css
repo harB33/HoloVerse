@@ -959,6 +959,14 @@
     @apply rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700;
   }
 
+  .cart-guest-notice {
+    @apply rounded-lg bg-sky-50 px-4 py-3 text-sm text-slate-700;
+  }
+
+  .cart-guest-notice a {
+    @apply font-semibold text-sky-700 underline hover:text-sky-900;
+  }
+
   .account-name {
     @apply max-w-32 truncate text-sm font-semibold text-slate-700;
   }
@@ -1256,6 +1264,10 @@
 
   .preorder-art::after {
     @apply absolute size-[172px] rounded-full border border-white/55 content-[''];
+  }
+
+  .talent-merch-image {
+    @apply relative z-10 h-full min-h-[220px] w-full object-cover;
   }
 
   .preorder-art-sky {

@@ -126,7 +126,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php
                         $initials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talent['name']), 0, 2));
                         $groupNames = $talent['group_names'];
-                        $talentLink = 'pages/pre_order.php?talent=' . rawurlencode($talent['name']);
+                        $talentLink = 'pages/talent-merch.php?talent=' . rawurlencode($talent['name']);
                         ?>
                         <a class="talent-card-link" href="<?= htmlspecialchars($talentLink, ENT_QUOTES, 'UTF-8') ?>" aria-label="View merchandise for <?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>">
                             <article class="talent-card" data-generations="<?= htmlspecialchars(implode(' ', $talent['groups']), ENT_QUOTES, 'UTF-8') ?>">

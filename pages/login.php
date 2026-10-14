@@ -130,10 +130,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             </aside>
         </div>
     </main>
-    <?php
-    $cartHref = 'cart.php';
-    include __DIR__ . '/../app/views/components/cart-button.php';
-    ?>
 </body>
 
 </html>

@@ -84,7 +84,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     <div class="page-shell cart-page">
         <?php
         $activePage = '';
-        $showLogin = false;
+        $showLogin = true;
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
@@ -101,6 +101,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </svg>
                 <span class="cart-eyebrow">HoloVerse checkout</span>
                 <h1 id="cart-title"><?= $cartItems ? 'Your cart' : 'Your cart is empty' ?></h1>
+                <?php if (!isset($_SESSION['user_id'])): ?>
+                    <p class="cart-guest-notice" role="status">
+                        Guest mode: your cart is associated with this browser session.
+                        <a href="login.php">Sign in or create an account</a> to link it to your account.
+                    </p>
+                <?php endif; ?>
                 <?php if ($message !== ''): ?>
                     <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
                 <?php endif; ?>
