@@ -36,6 +36,24 @@
 }
 
 @layer base {
+  * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  a,
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
+
   body {
     @apply m-0 bg-white text-[#090909] font-site;
   }

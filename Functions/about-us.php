@@ -68,7 +68,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
             <section class="page-intro">
                 <span class="eyebrow">Our story</span>
                 <h1>Built for fans who collect memories.</h1>
-                <p>hololive production merchandise is more than apparel and accessories — it is a celebration of the creators, communities, and moments that make each fan journey unforgettable. Every item is designed to bring a piece of the hololive energy into daily life, from limited-run apparel to display-ready collectibles.</p>
+                <p>holoverse is more than apparel and accessories — it is a celebration of the creators, communities, and moments that make each fan journey unforgettable. Every item is designed to bring a piece of the hololive energy into daily life, from limited-run apparel to display-ready collectibles.</p>
             </section>
 
             <section class="content-grid">
@@ -111,7 +111,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
                         <span>Fast order handling</span>
                     </div>
                     <div class="stat-box">
-                        <strong>4.9/5</strong>
+                        <strong>5/5</strong>
                         <span>Fan rating</span>
                     </div>
                 </div>
