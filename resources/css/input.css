@@ -129,7 +129,7 @@
   }
 
   .main-nav {
-    @apply flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-4 border-[rgba(99,210,252,0.9)] bg-white px-[26px] py-3 shadow-[0_0_14px_rgba(81,195,245,0.4),0_0_0_2px_rgba(141,226,255,0.22)];
+    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-4 border-[rgba(99,210,252,0.9)] bg-white px-[26px] py-3 shadow-[0_0_14px_rgba(81,195,245,0.4),0_0_0_2px_rgba(141,226,255,0.22)];
   }
 
   .main-nav a {
@@ -154,6 +154,43 @@
 
   .header-actions {
     @apply flex items-center justify-self-end gap-[9px];
+  }
+
+  .account-menu {
+    @apply relative;
+  }
+
+  .account-menu > summary {
+    @apply cursor-pointer list-none;
+  }
+
+  .account-menu > summary::-webkit-details-marker {
+    @apply hidden;
+  }
+
+  .account-dropdown {
+    @apply absolute right-0 top-full z-30 mt-3 flex min-w-52 flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-2 text-left shadow-xl;
+  }
+
+  .account-dropdown-name {
+    @apply truncate border-b border-slate-100 px-3 py-2 text-sm font-bold text-slate-800;
+  }
+
+  .account-dropdown a,
+  .account-dropdown button {
+    @apply block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 no-underline transition hover:bg-sky-50 hover:text-sky-800;
+  }
+
+  .account-dropdown form {
+    @apply m-0;
+  }
+
+  .account-dropdown button {
+    @apply cursor-pointer border-0 bg-transparent;
+  }
+
+  .account-name {
+    @apply max-w-32 truncate text-sm font-semibold text-slate-700;
   }
 
   .language-switcher {
@@ -965,14 +1002,6 @@
 
   .cart-guest-notice a {
     @apply font-semibold text-sky-700 underline hover:text-sky-900;
-  }
-
-  .account-name {
-    @apply max-w-32 truncate text-sm font-semibold text-slate-700;
-  }
-
-  .header-actions form .entry-button {
-    @apply h-auto w-auto cursor-pointer px-4 py-2 text-sm font-bold;
   }
 
   .info-main {
