@@ -1,5 +1,12 @@
 <?php
-require_once __DIR__ . '/../config/dbconnect.php';
+require_once __DIR__ . '/../app/store.php';
+$saleProducts = store_product_rows(
+    $conn,
+    'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price',
+    'p.product_id',
+    1
+);
+$saleProduct = $saleProducts[0] ?? null;
 $pageTitle = 'Flash Sale | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -37,68 +44,71 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </div>
             </section>
 
+            <?php if ($saleProduct): ?>
             <article class="flash-sale-card">
                 <section class="flash-gallery" aria-label="Product gallery">
                     <div class="flash-product-image">
-                        <img src="../assets/images/suisei2.jpg" alt="Hoshimachi Suisei in her blue and white anniversary outfit">
+                        <img src="<?= store_escape(store_asset_url($saleProduct['image_url'] ?? 'assets/images/logo.png', '../')) ?>" alt="<?= store_escape($saleProduct['alt_text'] ?? $saleProduct['product_name']) ?>">
                         <div class="flash-image-badges">
-                            <span>Limited 300 units worldwide</span>
+                            <span><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
                             <span><b aria-hidden="true">✓</b> Verified osh(i) asset</span>
                         </div>
                         <div class="flash-image-caption">
-                            <span>Scale: 1/4 deluxe resin</span>
-                            <span>Sculptor: Studio Apex</span>
-                            <span>Box cert: encrypted NFC</span>
+                            <span><?= store_escape($saleProduct['variant_name']) ?></span>
+                            <span><?= store_escape($saleProduct['category_name']) ?></span>
+                            <span>Official merchandise</span>
                         </div>
                     </div>
                     <div class="flash-thumbnails" aria-label="More product images">
-                        <button class="flash-thumbnail is-selected" type="button" data-gallery-src="../assets/images/suisei2.jpg" data-gallery-alt="Hoshimachi Suisei in her blue and white anniversary outfit" aria-label="Show anniversary outfit image" aria-pressed="true">
-                            <img src="../assets/images/suisei2.jpg" alt="">
-                        </button>
-                        <button class="flash-thumbnail" type="button" data-gallery-src="../assets/images/suisei.jpg" data-gallery-alt="Suisei artwork detail" aria-label="Show Suisei artwork detail" aria-pressed="false">
-                            <img src="../assets/images/suisei.jpg" alt="">
-                        </button>
-                        <button class="flash-thumbnail" type="button" data-gallery-src="../assets/images/hololive.png" data-gallery-alt="hololive production logo" aria-label="Show hololive production logo" aria-pressed="false">
-                            <img src="../assets/images/hololive.png" alt="">
-                        </button>
-                        <button class="flash-thumbnail" type="button" data-gallery-src="../assets/images/logo.png" data-gallery-alt="HoloVerse product mark" aria-label="Show HoloVerse product mark" aria-pressed="false">
-                            <img src="../assets/images/logo.png" alt="">
+                        <button class="flash-thumbnail is-selected" type="button" data-gallery-src="<?= store_escape(store_asset_url($saleProduct['image_url'] ?? 'assets/images/logo.png', '../')) ?>" data-gallery-alt="<?= store_escape($saleProduct['alt_text'] ?? $saleProduct['product_name']) ?>" aria-label="Show product image" aria-pressed="true">
+                            <img src="<?= store_escape(store_asset_url($saleProduct['image_url'] ?? 'assets/images/logo.png', '../')) ?>" alt="">
                         </button>
                     </div>
                 </section>
 
                 <section class="flash-product-details" aria-labelledby="flash-product-title">
-                    <div class="flash-breadcrumb">Hololive JP / Gamers Generation / Series Special Edition</div>
-                    <h2 id="flash-product-title">Hoshimachi Suisei 1/4 scale anniversary edition</h2>
-                    <p class="flash-product-description">A limited collector release inspired by Suisei’s signature stage look, with a detailed display base and individually numbered authenticity card.</p>
+                    <div class="flash-breadcrumb"><?= store_escape($saleProduct['category_name']) ?> / <?= store_escape($saleProduct['variant_name']) ?></div>
+                    <h2 id="flash-product-title"><?= store_escape($saleProduct['product_name']) ?></h2>
+                    <p class="flash-product-description"><?= store_escape($saleProduct['description'] ?? '') ?></p>
 
                     <div class="flash-price-panel">
                         <div class="flash-price-line">
-                            <strong>$224.00</strong>
-                            <del>$280.00</del>
-                            <span>20% flash discount</span>
+                            <strong><?= store_escape($saleProduct['currency']) ?> <?= number_format((float) $saleProduct['price'], 2) ?></strong>
+                            <del><?= store_escape($saleProduct['currency']) ?> <?= number_format((float) $saleProduct['compare_at_price'], 2) ?></del>
+                            <?php $discountPercent = (int) round((1 - ((float) $saleProduct['price'] / (float) $saleProduct['compare_at_price'])) * 100); ?>
+                            <span><?= $discountPercent ?>% off</span>
                         </div>
-                        <small>+1,200 holopoints earned</small>
+                        <small>While supplies last</small>
                     </div>
 
                     <div class="flash-stock-panel">
                         <div class="flash-stock-top">
-                            <span><b aria-hidden="true">♨</b> Critical stock: only 22 units left</span>
-                            <span>278 / 300 claimed (92.6%)</span>
+                            <span><b aria-hidden="true">♨</b> <?= (int) $saleProduct['stock_quantity'] ?> units available</span>
+                            <span><?= (int) $saleProduct['stock_quantity'] ?> in stock</span>
                         </div>
-                        <div class="flash-stock-track" role="progressbar" aria-label="Units claimed" aria-valuenow="93" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+                        <div class="flash-stock-track" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span></span></div>
                         <div class="flash-stock-bottom">
-                            <span>Reservation grace: 300 seconds</span>
-                            <span>Est. exhaustion: &lt; 8 minutes</span>
+                            <span>Stock is confirmed when added to your cart.</span>
+                            <span><?= (int) $saleProduct['stock_quantity'] > 0 ? 'Available now' : 'Currently sold out' ?></span>
                         </div>
                     </div>
 
-                    <a class="flash-reserve-button" href="pre_order.php">
-                        <span aria-hidden="true">♙</span> Enter instant allocation lock <span aria-hidden="true">→</span>
-                    </a>
-                    <p class="flash-checkout-note"><span aria-hidden="true">ϟ</span> 5-minute checkout hold initiates instantly upon lock. Prevents cart sniping.</p>
+                    <?php if ((int) $saleProduct['stock_quantity'] > 0): ?>
+                        <form action="cart.php" method="post">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>">
+                            <button class="flash-reserve-button" type="submit"><span aria-hidden="true">♙</span> Add to cart <span aria-hidden="true">→</span></button>
+                        </form>
+                    <?php else: ?>
+                        <p>Sorry, this product is sold out.</p>
+                    <?php endif; ?>
+                    <p class="flash-checkout-note"><span aria-hidden="true">ϟ</span> Your cart is saved to this browser and can be linked to your account.</p>
                 </section>
             </article>
+            <?php else: ?>
+                <p class="flash-empty" role="status">There are no discounted products available right now.</p>
+            <?php endif; ?>
 
             <section class="flash-telemetry" aria-labelledby="flash-telemetry-title">
                 <div class="flash-telemetry-heading">

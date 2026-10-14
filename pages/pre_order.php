@@ -1,23 +1,45 @@
 <?php
-$selectedTalent = isset($_GET['talent']) ? trim($_GET['talent']) : '';
+require_once __DIR__ . '/../app/store.php';
 
-$defaultTalentItems = [
-    ['badge' => 'Limited run', 'type' => 'Collector figure', 'title' => 'Deluxe anniversary figure', 'description' => 'Display-ready centerpiece with collector packaging and numbered authentication card.', 'price' => '$68', 'dispatch' => 'Estimated dispatch: Spring 2027'],
-    ['badge' => 'Pre-order', 'type' => 'Apparel', 'title' => 'Signature event tee', 'description' => 'A premium unisex shirt featuring tour-inspired artwork and a soft-touch finish.', 'price' => '$32', 'dispatch' => 'Estimated dispatch: Spring 2027'],
-    ['badge' => 'Fan favorite', 'type' => 'Plush collection', 'title' => 'Official plush set', 'description' => 'A cozy companion pair sized for desks, shelves, and display shelves.', 'price' => '$46', 'dispatch' => 'Estimated dispatch: Summer 2027'],
-];
-
+$talentParameter = $_GET['talent'] ?? '';
+$selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
+$talentName = '';
+$talentId = 0;
 if ($selectedTalent !== '') {
-    $talentItems = [
-        ['badge' => 'Collector figure', 'type' => '1/4 scale statue', 'title' => $selectedTalent . ' deluxe figure', 'description' => 'A premium showcase piece inspired by the talent\'s signature look and stage presence.', 'price' => '$89', 'dispatch' => 'Estimated dispatch: Spring 2027'],
-        ['badge' => 'Pre-order', 'type' => 'Apparel', 'title' => $selectedTalent . ' event tee', 'description' => 'Official attire crafted with a relaxed fit and high-detail print celebrating the talent.', 'price' => '$34', 'dispatch' => 'Estimated dispatch: Spring 2027'],
-        ['badge' => 'Fan favorite', 'type' => 'Plush', 'title' => $selectedTalent . ' mini plush set', 'description' => 'A compact plush set designed for easy display and collector shelf styling.', 'price' => '$48', 'dispatch' => 'Estimated dispatch: Summer 2027'],
-    ];
-} else {
-    $talentItems = $defaultTalentItems;
+    $statement = $conn->prepare('SELECT talent_id, talent_name FROM talent_tbl WHERE talent_name = ? OR talent_slug = ? LIMIT 1');
+    $statement->bind_param('ss', $selectedTalent, $selectedTalent);
+    $statement->execute();
+    $selectedTalentRow = $statement->get_result()->fetch_assoc();
+    $statement->close();
+    if ($selectedTalentRow) {
+        $talentId = (int) $selectedTalentRow['talent_id'];
+        $talentName = $selectedTalentRow['talent_name'];
+    }
 }
 
-$merchInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $selectedTalent !== '' ? $selectedTalent : 'HoloVerse'), 0, 1));
+$sql = "SELECT p.product_id, p.product_name, p.description, p.expected_ship_date, c.category_name,
+               v.variant_id, v.variant_name, v.price, v.currency, v.stock_quantity
+        FROM product_tbl p
+        INNER JOIN category_tbl c ON c.category_id = p.category_id
+        INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+        WHERE p.status = 'active' AND p.is_preorder = 1";
+if ($selectedTalent !== '') {
+    $sql .= ' AND EXISTS (
+        SELECT 1 FROM product_talents_tbl pt
+        WHERE pt.product_id = p.product_id AND pt.talent_id = ?
+    )';
+}
+$sql .= ' ORDER BY p.product_id';
+if ($selectedTalent !== '') {
+    $statement = $conn->prepare($sql);
+    $statement->bind_param('i', $talentId);
+    $statement->execute();
+    $products = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+    $statement->close();
+} else {
+    $products = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+}
+$merchInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talentName !== '' ? $talentName : 'HoloVerse'), 0, 1));
 
 $pageTitle = 'Pre-Order | hololive merchandise';
 $siteRoot = '../';
@@ -36,9 +58,9 @@ require __DIR__ . '/../app/views/layout/head.php';
         <main class="preorder-main">
             <section class="preorder-intro">
                 <span class="preorder-eyebrow">Pre-order window open</span>
-                <?php if ($selectedTalent !== ''): ?>
-                    <h1><?= htmlspecialchars($selectedTalent, ENT_QUOTES, 'UTF-8') ?> merchandise</h1>
-                    <p>Browse the official merch collection for <?= htmlspecialchars($selectedTalent, ENT_QUOTES, 'UTF-8') ?> and reserve your favorite pieces before they sell out.</p>
+                <?php if ($talentName !== ''): ?>
+                    <h1><?= store_escape($talentName) ?> merchandise</h1>
+                    <p>Browse the official merch collection for <?= store_escape($talentName) ?> and reserve your favorite pieces before they sell out.</p>
                 <?php else: ?>
                     <h1>Get your next favorite before it arrives.</h1>
                     <p>Reserve limited-run collectibles and apparel while they're still in production. Browse the current preview, then check the order guide for what to expect.</p>
@@ -46,24 +68,36 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <section class="preorder-grid" aria-label="Pre-order items">
-                <?php foreach ($talentItems as $item): ?>
+                <?php foreach ($products as $product): ?>
                     <article class="preorder-card">
                         <div class="preorder-art">
-                            <span class="preorder-badge"><?= htmlspecialchars($item['badge'], ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="preorder-badge"><?= store_escape($product['category_name']) ?></span>
                             <span class="preorder-symbol" aria-hidden="true"><?= htmlspecialchars($merchInitial, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                         <div class="preorder-body">
-                            <div class="preorder-meta"><?= htmlspecialchars($item['type'], ENT_QUOTES, 'UTF-8') ?></div>
-                            <h2><?= htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') ?></h2>
-                            <p><?= htmlspecialchars($item['description'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <div class="preorder-meta"><?= store_escape($product['variant_name']) ?></div>
+                            <h2><?= store_escape($product['product_name']) ?></h2>
+                            <p><?= store_escape($product['description'] ?? '') ?></p>
                             <div class="preorder-footer">
-                                <span class="preorder-price"><?= htmlspecialchars($item['price'], ENT_QUOTES, 'UTF-8') ?></span>
-                                <a class="preorder-button" href="collector_showcase.php">Order guide</a>
+                                <span class="preorder-price"><?= store_escape($product['currency']) ?> <?= number_format((float) $product['price'], 2) ?></span>
+                                <?php if ((int) $product['stock_quantity'] > 0): ?>
+                                    <form action="cart.php" method="post">
+                                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="add">
+                                        <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
+                                        <button class="preorder-button" type="submit">Add to cart</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="preorder-button">Sold out</span>
+                                <?php endif; ?>
                             </div>
-                            <div class="preorder-shipping"><?= htmlspecialchars($item['dispatch'], ENT_QUOTES, 'UTF-8') ?></div>
+                            <div class="preorder-shipping"><?= $product['expected_ship_date'] ? 'Estimated dispatch: ' . store_escape(date('F Y', strtotime($product['expected_ship_date']))) : 'Estimated dispatch date to be announced' ?></div>
                         </div>
                     </article>
                 <?php endforeach; ?>
+                <?php if (!$products): ?>
+                    <p role="status">There are no available pre-orders<?= $talentName !== '' ? ' for ' . store_escape($talentName) : '' ?> right now.</p>
+                <?php endif; ?>
             </section>
 
             <aside class="preorder-guide">

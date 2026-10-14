@@ -1,12 +1,11 @@
-<?php 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "holoverse";
-if (!isset($conn)) {
-    $conn = mysqli_connect($servername, $username, $password, $dbname);
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
-}
-?>
+<?php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+$servername = getenv('HOLOVERSE_DB_HOST') ?: 'localhost';
+$username = getenv('HOLOVERSE_DB_USER') ?: 'root';
+$password = getenv('HOLOVERSE_DB_PASSWORD') ?: '';
+$dbname = getenv('HOLOVERSE_DB_NAME') ?: 'holoverse';
+$port = (int) (getenv('HOLOVERSE_DB_PORT') ?: 3306);
+
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
+$conn->set_charset('utf8mb4');

@@ -240,9 +240,9 @@ CREATE TABLE `talent_tbl` (
 CREATE TABLE `user_tbl` (
   `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `password_hash` varchar(50) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `user_role` varchar(5) NOT NULL DEFAULT 'user',
+  `user_role` varchar(20) NOT NULL DEFAULT 'user',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -506,6 +506,7 @@ ALTER TABLE `product_variants_tbl`
 ALTER TABLE `talent_group_members_tbl`
   ADD CONSTRAINT `fk_tgm_group` FOREIGN KEY (`group_id`) REFERENCES `talent_group_tbl` (`group_id`),
   ADD CONSTRAINT `fk_tgm_talent` FOREIGN KEY (`talent_id`) REFERENCES `talent_tbl` (`talent_id`);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

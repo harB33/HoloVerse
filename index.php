@@ -1,134 +1,42 @@
 <?php
-$generationLabels = [
-    'gen-0' => 'Generation 0',
-    'gen-1' => 'Generation 1',
-    'gamers' => 'Gamers',
-    'gen-2' => 'Generation 2',
-    'gen-3' => 'Generation 3',
-    'gen-4' => 'Generation 4',
-    'gen-5' => 'Generation 5',
-    'holox' => 'HoloX',
-    'regloss' => 'ReGLOSS',
-    'flow-glow' => 'FLOW GLOW',
-    'myth' => 'Myth',
-    'promise' => 'Promise',
-    'advent' => 'Advent',
-    'justice' => 'Justice',
-    'id-gen-1' => 'Indonesia Gen 1',
-    'id-gen-2' => 'Indonesia Gen 2',
-    'id-gen-3' => 'Indonesia Gen 3',
-    'asobi-mawaritai' => 'Asobi Mawaritai',
-];
-$talentGroups = [
-    'gen-0' => ['Tokino Sora', 'Roboco-san', 'AZKi', 'Sakura Miko', 'Hoshimachi Suisei'],
-    'gen-1' => ['Aki Rosenthal', 'Akai Haato', 'Shirakami Fubuki', 'Natsuiro Matsuri'],
-    'gamers' => ['Shirakami Fubuki', 'Ookami Mio', 'Nekomata Okayu', 'Inugami Korone'],
-    'gen-2' => ['Nakiri Ayame', 'Yuzuki Choco', 'Oozora Subaru'],
-    'gen-3' => ['Usada Pekora', 'Shiranui Flare', 'Shirogane Noel', 'Houshou Marine'],
-    'gen-4' => ['Tsunomaki Watame', 'Tokoyami Towa', 'Himemori Luna'],
-    'gen-5' => ['Yukihana Lamy', 'Momosuzu Nene', 'Shishiro Botan', 'Omaru Polka'],
-    'holox' => ['La+ Darknesss', 'Takane Lui', 'Hakui Koyori', 'Kazama Iroha'],
-    'regloss' => ['Otonose Kanade', 'Ichijou Ririka', 'Juufuutei Raden', 'Todoroki Hajime'],
-    'flow-glow' => ['Isaki Riona', 'Koganei Niko', 'Mizumiya Su', 'Rindo Chihaya', 'Kikirara Vivi'],
-    'myth' => ['Mori Calliope', 'Takanashi Kiara', 'Ninomae Ina’nis', 'Watson Amelia'],
-    'promise' => ['IRyS', 'Ouro Kronii', 'Hakos Baelz'],
-    'advent' => ['Shiori Novella', 'Koseki Bijou', 'Nerissa Ravencroft', 'Fuwawa Abyssgard', 'Mococo Abyssgard'],
-    'justice' => ['Elizabeth Rose Bloodflame', 'Gigi Murin', 'Cecilia Immergreen', 'Raora Panthera'],
-    'id-gen-1' => ['Ayunda Risu', 'Moona Hoshinova', 'Airani Iofifteen'],
-    'id-gen-2' => ['Kureiji Ollie', 'Anya Melfissa', 'Pavolia Reine'],
-    'id-gen-3' => ['Vestia Zeta', 'Kaela Kovalskia', 'Kobo Kanaeru'],
-    'asobi-mawaritai' => ['Hyakuto Kyoko', 'Achichi Mela', 'Suzuna Tsuzuri', 'Sorashina Sopia'],
-];
-$talentStatuses = ['Watson Amelia' => 'Affiliate'];
-$portraitBaseUrl = 'https://hololive.hololivepro.com/wp-content/uploads/';
-$talentPortraits = [
-    'Tokino Sora' => '2020/06/Tokino-Sora_list_thumb.png',
-    'Roboco-san' => '2020/06/Robocosan_list_thumb.png',
-    'AZKi' => '2020/06/AZKi_list_thumb.png',
-    'Sakura Miko' => '2020/06/Sakura-Miko_list_thumb.png',
-    'Hoshimachi Suisei' => '2020/06/Hoshimachi-Suisei_list_thumb.png',
-    'Aki Rosenthal' => '2020/06/Aki-Rosenthal_list_thumb.png',
-    'Akai Haato' => '2020/06/Akai-Haato_list_thumb.png',
-    'Shirakami Fubuki' => '2020/06/Shirakami-Fubuki_list_thumb.png',
-    'Natsuiro Matsuri' => '2020/06/Natsuiro-Matsuri_list_thumb.png',
-    'Ookami Mio' => '2020/06/Ookami-Mio_thumb.png',
-    'Nekomata Okayu' => '2020/06/Nekomata-Okayu_list_thumb.png',
-    'Inugami Korone' => '2020/06/Inugami-Korone_list_thumb.png',
-    'Nakiri Ayame' => '2020/06/Nakiri-Ayame_list_thumb.png',
-    'Yuzuki Choco' => '2020/06/Yuzuki-Choco_list_thumb.png',
-    'Oozora Subaru' => '2020/06/Oozora-Subaru_list_thumb.png',
-    'Usada Pekora' => '2020/06/Usada-Pekora_list_thumb.png',
-    'Shiranui Flare' => '2020/06/Shiranui-Flare_list_thumb.png',
-    'Shirogane Noel' => '2020/06/Shirogane-Noel_list_thumb.png',
-    'Houshou Marine' => '2020/06/Houshou-Marine_list_thumb.png',
-    'Tsunomaki Watame' => '2020/06/Tsunomaki-Watame_list_thumb.png',
-    'Tokoyami Towa' => '2020/06/Tokoyami-Towa_list_thumb.png',
-    'Himemori Luna' => '2020/06/Himemori-Luna_list_thumb.png',
-    'Yukihana Lamy' => '2020/06/Yukihana-Lamy_list_thumb.png',
-    'Momosuzu Nene' => '2020/06/Momosuzu-Nene_list_thumb.png',
-    'Shishiro Botan' => '2020/07/Shishiro-Botan_list_thumb.png',
-    'Omaru Polka' => '2020/07/Omaru-Polka_list_thumb.png',
-    'La+ Darknesss' => '2020/07/La-Darknesss_list_thumb.png',
-    'Takane Lui' => '2020/07/Takane-Lui_list_thumb.png',
-    'Hakui Koyori' => '2020/07/Hakui-Koyori_list_thumb.png',
-    'Kazama Iroha' => '2020/07/Kazama-Iroha_list_thumb.png',
-    'Otonose Kanade' => '2023/09/Otonose-Kanade_list_thumb.png',
-    'Ichijou Ririka' => '2023/09/Ichijou-Ririka_list_thumb.png',
-    'Juufuutei Raden' => '2023/09/Juufuutei-Raden_list_thumb.png',
-    'Todoroki Hajime' => '2023/09/Todoroki-Hajime_list_thumb.png',
-    'Isaki Riona' => '2023/09/Isaki-Riona_list_thumb.png',
-    'Koganei Niko' => '2023/09/Koganei-Niko_list_thumb.png',
-    'Mizumiya Su' => '2023/09/Mizumiya-Su_list_thumb.png',
-    'Rindo Chihaya' => '2023/09/Rindo-Chihaya_list_thumb.png',
-    'Kikirara Vivi' => '2023/09/Kikirara-Vivi_list_thumb.png',
-    'Mori Calliope' => '2020/07/Mori-Calliope_list_thumb.png',
-    'Takanashi Kiara' => '2020/07/Takanashi-Kiara_list_thumb.png',
-    'Ninomae Ina’nis' => '2020/07/Ninomae-Inanis_list_thumb.png',
-    'Watson Amelia' => '2020/07/Watson-Amelia_list_thumb.png',
-    'IRyS' => '2020/07/IRyS_list_thumb.png',
-    'Ouro Kronii' => '2020/07/Ouro-Kronii_list_thumb.png',
-    'Hakos Baelz' => '2020/07/Hakos-Baelz_list_thumb.png',
-    'Shiori Novella' => '2021/07/Shiori-Novella_list_thumb.png',
-    'Koseki Bijou' => '2021/07/Koseki-Bijou_list_thumb.png',
-    'Nerissa Ravencroft' => '2021/07/Nerissa-Ravencroft_list_thumb.png',
-    'Fuwawa Abyssgard' => '2021/07/Fuwawa-Abyssgard_list_thumb.png',
-    'Mococo Abyssgard' => '2021/07/Mococo-Abyssgard_list_thumb.png',
-    'Elizabeth Rose Bloodflame' => '2023/07/Elizabeth-Rose-Bloodflame_list_thumb.png',
-    'Gigi Murin' => '2023/07/Gigi-Murin_list_thumb.png',
-    'Cecilia Immergreen' => '2023/07/Cecilia-Immergreen_list_thumb.png',
-    'Raora Panthera' => '2023/07/Raora-Panthera_list_thumb.png',
-    'Ayunda Risu' => '2020/07/Ayunda-Risu_list_thumb.png',
-    'Moona Hoshinova' => '2020/07/Moona-Hoshinova_list_thumb.png',
-    'Airani Iofifteen' => '2020/07/Airani-Iofifteen_list_thumb.png',
-    'Kureiji Ollie' => '2020/07/Kureiji-Ollie_list_thumb.png',
-    'Anya Melfissa' => '2020/07/Anya-Melfissa_list_thumb.png',
-    'Pavolia Reine' => '2020/07/Pavolia-Reine_list_thumb.png',
-    'Vestia Zeta' => '2020/07/Vestia-Zeta_list_thumb.png',
-    'Kaela Kovalskia' => '2020/07/Kaela-Kovalskia_list_thumb.png',
-    'Kobo Kanaeru' => '2020/07/Kobo-Kanaeru_list_thumb.png',
-    'Hyakuto Kyoko' => '2023/09/Hyakuto-Kyoko_list_thumb.png',
-    'Achichi Mela' => '2023/09/Achichi-Mela_list_thumb.png',
-    'Suzuna Tsuzuri' => '2023/09/Suzuna-Tsuzuri_list_thumb.png',
-    'Sorashina Sopia' => '2023/09/Sorashina-Sopia_list_thumb.png',
-];
-$talents = [];
-foreach ($talentGroups as $group => $members) {
-    foreach ($members as $name) {
-        if (!isset($talents[$name])) {
-            $talents[$name] = ['name' => $name, 'groups' => []];
-        }
-        $talents[$name]['groups'][] = $group;
-    }
+require_once __DIR__ . '/app/store.php';
+$generationLabels = [];
+$groupsResult = $conn->query(
+    "SELECT group_slug, group_name FROM talent_group_tbl
+     ORDER BY FIELD(group_slug, 'gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai')"
+);
+while ($group = $groupsResult->fetch_assoc()) {
+    $generationLabels[$group['group_slug']] = $group['group_name'];
 }
-foreach ($talents as $name => &$talent) {
-    if (!isset($talentPortraits[$name])) {
-        throw new LogicException('Missing portrait for talent: ' . $name);
-    }
-    $talent['portrait'] = $portraitBaseUrl . $talentPortraits[$name];
-}
-unset($talent);
 
-require_once __DIR__ . '/config/dbconnect.php';
+$talents = [];
+$talentStatuses = ['Watson Amelia' => 'Affiliate'];
+$talentResult = $conn->query(
+    'SELECT t.talent_name, t.talent_img,
+            GROUP_CONCAT(g.group_slug ORDER BY FIELD(g.group_slug, "gen-0", "gen-1", "gamers", "gen-2", "gen-3", "gen-4", "gen-5", "holox", "regloss", "flow-glow", "myth", "promise", "advent", "justice", "id-gen-1", "id-gen-2", "id-gen-3", "asobi-mawaritai") SEPARATOR " ") AS group_slugs
+     FROM talent_tbl t
+     LEFT JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
+     LEFT JOIN talent_group_tbl g ON g.group_id = gm.group_id
+     GROUP BY t.talent_id, t.talent_name, t.talent_img
+     ORDER BY t.talent_name'
+);
+while ($talent = $talentResult->fetch_assoc()) {
+    $groupSlugs = $talent['group_slugs'] ? explode(' ', $talent['group_slugs']) : [];
+    $groupNames = array_map(
+        static fn (string $groupSlug): string => $generationLabels[$groupSlug],
+        $groupSlugs
+    );
+    if (isset($talentStatuses[$talent['talent_name']])) {
+        $groupNames[] = $talentStatuses[$talent['talent_name']];
+    }
+    $talents[] = [
+        'name' => $talent['talent_name'],
+        'groups' => $groupSlugs,
+        'group_names' => implode(' ' . "\u{00B7}" . ' ', $groupNames),
+        'portrait' => $talent['talent_img'],
+    ];
+}
+$featuredProducts = store_product_rows($conn, '', 'p.product_id', 4);
 $pageTitle = 'Holoverse';
 $siteRoot = '';
 require __DIR__ . '/app/views/layout/head.php';
@@ -163,73 +71,39 @@ require __DIR__ . '/app/views/layout/head.php';
             </div>
 
             <div class="drops-grid">
-                <article class="drop-card drop-card-korone">
-                    <div class="drop-art">
-                        <div class="drop-art-labels"><span class="drop-status">Closes in 18h</span><span class="drop-edition">1/4 scale</span></div>
-                        <div class="drop-character">Korone</div>
-                        <p class="drop-art-caption">Bakuretsu God Box Ed.</p>
-                        <span class="drop-art-tag">With Acrylic Diorama</span>
-                    </div>
-                    <div class="drop-details">
-                        <span class="drop-category">Hololive Gamers</span>
-                        <h3>Inugami Korone 1/4 Scale “Doog Champion” Figure</h3>
-                        <p class="drop-description">Batch ETA: November 2026. Includes signed cover card.</p>
-                        <div class="drop-allocation"><span>Allocation claimed</span><strong>88% (440/500)</strong></div>
-                        <div class="drop-progress" role="progressbar" aria-label="Korone allocation claimed" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100"><span style="width: 88%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$289.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
-                    </div>
-                </article>
-
-                <article class="drop-card drop-card-suisei">
-                    <div class="drop-art">
-                        <div class="drop-art-labels"><span class="drop-status">New arrival</span><span class="drop-edition">Memorial box</span></div>
-                        <div class="drop-character">Suisei</div>
-                        <p class="drop-art-caption">Stellar into the Galaxy</p>
-                        <span class="drop-art-tag">Master 180g Vinyl + Beret</span>
-                    </div>
-                    <div class="drop-details">
-                        <span class="drop-category">Hololive 0th Gen</span>
-                        <h3>Hoshimachi Suisei 5th Anniversary Memorial Box</h3>
-                        <p class="drop-description">Complete vinyl set, bespoke star pin, and replica beret.</p>
-                        <div class="drop-allocation"><span>Allocation claimed</span><strong>64% (640/1000)</strong></div>
-                        <div class="drop-progress" role="progressbar" aria-label="Suisei allocation claimed" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><span style="width: 64%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Total price</span><strong>$175.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
-                    </div>
-                </article>
-
-                <article class="drop-card drop-card-gura">
-                    <div class="drop-art">
-                        <div class="drop-art-labels"><span class="drop-status">High demand</span><span class="drop-edition">1/7 scale</span></div>
-                        <div class="drop-character">Gura</div>
-                        <p class="drop-art-caption">Atlantis Hydro Trident Ed.</p>
-                        <span class="drop-art-tag">Bloop Mascot Companion</span>
-                    </div>
-                    <div class="drop-details">
-                        <span class="drop-category">Hololive English -Myth-</span>
-                        <h3>Gawr Gura 1/7 Scale “Apex Predator” Figure</h3>
-                        <p class="drop-description">Sculpted by Design COCO. Removable hoodie feature.</p>
-                        <div class="drop-allocation"><span>Allocation claimed</span><strong>94% (940/1000)</strong></div>
-                        <div class="drop-progress" role="progressbar" aria-label="Gura allocation claimed" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100"><span style="width: 94%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Factory deposit</span><strong>$215.00</strong></div><a href="pages/pre_order.php">Reserve slot</a></div>
-                    </div>
-                </article>
-
-                <article class="drop-card drop-card-calliope">
-                    <div class="drop-art">
-                        <div class="drop-art-labels"><span class="drop-status">Ready to ship</span><span class="drop-edition">Streetwear</span></div>
-                        <div class="drop-character">Calliope</div>
-                        <p class="drop-art-caption">Reaper Sukajan Bomber</p>
-                        <span class="drop-art-tag">Embroidered Satin</span>
-                    </div>
-                    <div class="drop-details">
-                        <span class="drop-category">Hololive English -Myth-</span>
-                        <h3>Mori Calliope “SINDERELLA” Tour Souvenir Sukajan</h3>
-                        <p class="drop-description">Reversible high-thread embroidery. Limited run of 750.</p>
-                        <div class="drop-allocation"><span>Allocation claimed</span><strong>45% (337/750)</strong></div>
-                        <div class="drop-progress" role="progressbar" aria-label="Calliope allocation claimed" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"><span style="width: 45%"></span></div>
-                        <div class="drop-purchase"><div><span class="drop-price-label">Retail price</span><strong>$190.00</strong></div><a href="pages/pre_order.php">Buy now</a></div>
-                    </div>
-                </article>
+                <?php foreach ($featuredProducts as $product): ?>
+                    <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
+                    <article class="drop-card">
+                        <div class="drop-art">
+                            <div class="drop-art-labels">
+                                <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Available now' : 'Sold out' ?></span>
+                                <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
+                            </div>
+                            <div class="drop-character"><?= store_escape($productInitial) ?></div>
+                            <p class="drop-art-caption"><?= store_escape($product['category_name']) ?></p>
+                            <span class="drop-art-tag"><?= (int) $product['stock_quantity'] ?> in stock</span>
+                        </div>
+                        <div class="drop-details">
+                            <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
+                            <h3><?= store_escape($product['product_name']) ?></h3>
+                            <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
+                            <div class="drop-allocation"><span>Available quantity</span><strong><?= (int) $product['stock_quantity'] ?></strong></div>
+                            <div class="drop-purchase">
+                                <div><span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span><strong><?= store_escape($product['currency']) ?> <?= number_format((float) $product['price'], 2) ?></strong></div>
+                                <?php if ((int) $product['stock_quantity'] > 0): ?>
+                                    <form action="pages/cart.php" method="post">
+                                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="add">
+                                        <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
+                                        <button type="submit">Add to cart</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span>Sold out</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
             </div>
         </section>
         <section class="explore" aria-labelledby="explore-title">
@@ -251,10 +125,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     <?php foreach ($talents as $talent): ?>
                         <?php
                         $initials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talent['name']), 0, 2));
-                        $groupNames = array_map(static fn (string $group): string => $generationLabels[$group], $talent['groups']);
-                        if (isset($talentStatuses[$talent['name']])) {
-                            $groupNames[] = $talentStatuses[$talent['name']];
-                        }
+                        $groupNames = $talent['group_names'];
                         $talentLink = 'pages/pre_order.php?talent=' . rawurlencode($talent['name']);
                         ?>
                         <a class="talent-card-link" href="<?= htmlspecialchars($talentLink, ENT_QUOTES, 'UTF-8') ?>" aria-label="View merchandise for <?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>">
@@ -264,7 +135,7 @@ require __DIR__ . '/app/views/layout/head.php';
                                     <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async">
                                 </span>
                                 <h3><?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?></h3>
-                                <p><?= htmlspecialchars(implode(' · ', $groupNames), ENT_QUOTES, 'UTF-8') ?></p>
+                                <p><?= htmlspecialchars($groupNames, ENT_QUOTES, 'UTF-8') ?></p>
                             </article>
                         </a>
                     <?php endforeach; ?>
