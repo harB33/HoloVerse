@@ -303,6 +303,10 @@ include 'Database/dbconnect.php';
             document.querySelector("#radar-feedback").textContent = "Alert signup is a preview; email notifications are not connected yet.";
         });
     </script>
+    <?php
+    $cartHref = 'Functions/cart.php';
+    include __DIR__ . '/Functions/cart-button.php';
+    ?>
 </body>
 
 </html>

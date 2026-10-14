@@ -124,6 +124,10 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
             </section>
         </main>
     </div>
+    <?php
+    $cartHref = 'cart.php';
+    include __DIR__ . '/cart-button.php';
+    ?>
 </body>
 
 </html>

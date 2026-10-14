@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@property --flash-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 @source "../index.php";
 @source "../Functions";
 
@@ -527,6 +533,269 @@
     @apply bg-[linear-gradient(180deg,#ffffff_0%,#f3fbff_100%)];
   }
 
+  .flash-sale-page {
+    @apply min-h-screen bg-[#f4f8fc];
+  }
+
+  .flash-sale-main {
+    @apply mx-auto max-w-[1280px] px-7 pb-12;
+  }
+
+  .flash-status-bar {
+    @apply flex min-h-7 items-center justify-between gap-4 border-b border-[#dce4ec] bg-[#e9edf2] px-3 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] text-[#557086];
+  }
+
+  .flash-status-bar > span:first-child {
+    @apply flex items-center gap-2;
+  }
+
+  .flash-status-bar i {
+    @apply size-1.5 rounded-full bg-[#f04461] shadow-[0_0_0_2px_rgba(240,68,97,0.16)];
+  }
+
+  .flash-status-right {
+    @apply flex items-center gap-5;
+  }
+
+  .flash-sale-heading {
+    @apply flex items-end justify-between gap-6 pb-4 pt-7;
+  }
+
+  .flash-heading-meta {
+    @apply mb-1.5 flex items-center gap-2 font-montserrat text-[8px] font-bold uppercase tracking-[0.08em] text-[#506578];
+  }
+
+  .flash-mode-pill {
+    @apply rounded-full bg-[#63d7f4] px-2 py-1 text-[#06465d];
+  }
+
+  .flash-sale-heading h1 {
+    @apply m-0 font-site text-[clamp(1.5rem,3vw,2.4rem)] font-semibold uppercase leading-none tracking-[-0.04em] text-[#111b2a];
+  }
+
+  .flash-countdown {
+    @apply shrink-0 rounded-2xl bg-white px-3 py-2 shadow-[0_4px_18px_rgba(29,68,104,0.06)];
+  }
+
+  .flash-countdown-label {
+    @apply mb-1 flex items-center justify-end gap-1 font-montserrat text-[8px] font-bold uppercase text-[#0d6bab];
+  }
+
+  .flash-countdown-clock {
+    @apply flex items-center gap-1 font-montserrat text-xl font-black leading-none text-[#132336];
+  }
+
+  .flash-countdown-clock span,
+  .flash-countdown-clock small {
+    @apply rounded-lg bg-[#f0f3f7] px-1.5 py-1;
+  }
+
+  .flash-countdown-clock b {
+    @apply text-[#00add4];
+  }
+
+  .flash-countdown-clock small {
+    @apply text-xs text-[#0d6bab];
+  }
+
+  .flash-sale-card {
+    @apply grid grid-cols-2 gap-5 rounded-[30px] border border-[#e5ebf1] bg-white p-4 shadow-[0_14px_34px_rgba(31,62,94,0.06)];
+  }
+
+  .flash-gallery {
+    @apply min-w-0;
+  }
+
+  .flash-product-image {
+    @apply relative h-[clamp(250px,32vw,360px)] overflow-hidden rounded-[22px] bg-[#dfe8ed];
+  }
+
+  .flash-product-image > img {
+    @apply h-full w-full object-contain object-center;
+  }
+
+  .flash-image-badges {
+    @apply absolute left-3 top-3 flex flex-wrap gap-2;
+  }
+
+  .flash-image-badges span {
+    @apply rounded-full bg-[#101b26] px-2.5 py-1 font-montserrat text-[8px] font-extrabold uppercase tracking-wide text-white;
+  }
+
+  .flash-image-badges span + span {
+    @apply bg-[#00b9dc] text-[#043e53];
+  }
+
+  .flash-image-caption {
+    @apply absolute inset-x-0 bottom-0 flex justify-between gap-2 bg-white/85 px-3 py-2 font-montserrat text-[7px] font-bold uppercase text-[#253747] backdrop-blur-sm;
+  }
+
+  .flash-thumbnails {
+    @apply mt-2 grid h-[68px] grid-cols-4 gap-2;
+  }
+
+  .flash-thumbnail {
+    @apply relative h-full min-w-0 cursor-pointer overflow-hidden rounded-xl bg-[#e7ebef] p-0;
+  }
+
+  .flash-thumbnail::after {
+    @apply pointer-events-none absolute inset-0 rounded-[10px] opacity-0 content-[''];
+    padding: 2px;
+    background: conic-gradient(from -90deg, #1da3d8 0deg var(--flash-border-angle), transparent var(--flash-border-angle) 360deg);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+
+  .flash-thumbnail:hover::after,
+  .flash-thumbnail:focus-visible::after {
+    @apply opacity-100;
+    animation: flash-thumbnail-border 240ms linear forwards;
+  }
+
+  .flash-thumbnail.is-selected::after {
+    --flash-border-angle: 360deg;
+    @apply opacity-100;
+  }
+
+  .flash-thumbnails:has(.flash-thumbnail:hover) .flash-thumbnail.is-selected:not(:hover)::after {
+    @apply opacity-0;
+  }
+
+  .flash-thumbnail:focus-visible {
+    @apply outline-none;
+  }
+
+  @keyframes flash-thumbnail-border {
+    to {
+      --flash-border-angle: 360deg;
+    }
+  }
+
+  .flash-thumbnail img {
+    @apply block h-full w-full object-contain;
+  }
+
+  .flash-product-details {
+    @apply flex min-w-0 flex-col justify-center;
+  }
+
+  .flash-breadcrumb {
+    @apply mb-2 font-montserrat text-[8px] font-extrabold uppercase tracking-wide text-[#0d6bab];
+  }
+
+  .flash-product-details h2 {
+    @apply mb-1.5 mt-0 font-site text-[clamp(1.25rem,2.2vw,1.8rem)] font-semibold uppercase leading-tight tracking-[-0.035em] text-[#111b2a];
+  }
+
+  .flash-product-description {
+    @apply mb-3 mt-0 text-[0.85rem] leading-[1.45] text-[#52667a];
+  }
+
+  .flash-price-panel {
+    @apply rounded-[22px] bg-[#edf0f3] px-3 py-2.5;
+  }
+
+  .flash-price-line {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .flash-price-line strong {
+    @apply font-montserrat text-[clamp(1.6rem,3vw,2.1rem)] font-black leading-none text-[#101820];
+  }
+
+  .flash-price-line del {
+    @apply text-xs text-[#87919c];
+  }
+
+  .flash-price-line span {
+    @apply rounded-full bg-[#d92332] px-2 py-1 font-montserrat text-[7px] font-extrabold uppercase text-white;
+  }
+
+  .flash-price-panel > small {
+    @apply mt-1 block text-right font-montserrat text-[7px] font-bold text-[#087fa8];
+  }
+
+  .flash-stock-panel {
+    @apply mt-2 rounded-[20px] bg-[#f0f3f6] px-3 py-2.5;
+  }
+
+  .flash-stock-top,
+  .flash-stock-bottom {
+    @apply flex items-center justify-between gap-3 font-montserrat text-[7px] font-bold uppercase;
+  }
+
+  .flash-stock-top {
+    @apply text-[#52667a];
+  }
+
+  .flash-stock-top span:first-child {
+    @apply text-[#d92332];
+  }
+
+  .flash-stock-track {
+    @apply my-2 h-1.5 overflow-hidden rounded-full bg-[#d8e0e7];
+  }
+
+  .flash-stock-track span {
+    @apply block h-full w-[92.6%] rounded-full bg-[linear-gradient(90deg,#00b9dc,#167fc1)];
+  }
+
+  .flash-stock-bottom {
+    @apply text-[#52667a];
+  }
+
+  .flash-stock-bottom span:last-child {
+    @apply text-[#087fa8];
+  }
+
+  .flash-reserve-button {
+    @apply mt-3 flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#00b9dc] px-4 py-2 text-center font-montserrat text-[9px] font-extrabold uppercase tracking-[0.08em] text-[#063b4b] no-underline shadow-[0_4px_10px_rgba(0,185,220,0.2)] transition hover:bg-[#12c8e8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .flash-checkout-note {
+    @apply mb-0 mt-1.5 text-center font-montserrat text-[7px] font-bold text-[#52667a];
+  }
+
+  .cart-fab {
+    @apply fixed bottom-6 right-6 z-50 flex size-16 items-center justify-center rounded-full border-2 border-white bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] text-white shadow-[0_8px_24px_rgba(14,110,157,0.3)] transition duration-200 ease-out hover:scale-105 hover:shadow-[0_12px_30px_rgba(14,110,157,0.4)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087fa8];
+  }
+
+  .cart-fab svg {
+    @apply size-7;
+  }
+
+  .cart-page {
+    @apply bg-[linear-gradient(180deg,#fbfdff_0%,#eefbff_100%)];
+  }
+
+  .cart-main {
+    @apply flex min-h-[calc(100vh-82px)] items-center justify-center px-6 py-12;
+  }
+
+  .cart-panel {
+    @apply flex w-full max-w-xl flex-col items-center rounded-[30px] border border-[rgba(49,180,207,0.2)] bg-white px-8 py-12 text-center shadow-[0_22px_40px_rgba(15,37,71,0.08)];
+  }
+
+  .cart-panel-icon {
+    @apply mb-5 text-[#1da3d8];
+  }
+
+  .cart-eyebrow {
+    @apply font-montserrat text-xs font-extrabold uppercase tracking-[0.12em] text-[#0d6bab];
+  }
+
+  .cart-panel h1 {
+    @apply mb-3 mt-3 text-[clamp(2rem,5vw,3rem)] leading-tight tracking-[-0.04em] text-[#101829];
+  }
+
+  .cart-panel p {
+    @apply mb-6 mt-0 max-w-md leading-relaxed text-[#52667a];
+  }
+
+  .cart-continue-button {
+    @apply inline-flex items-center gap-3 rounded-full bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] px-6 py-3 font-montserrat text-sm font-extrabold text-white no-underline transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087fa8];
+  }
+
   .info-main {
     @apply relative z-10 mx-auto max-w-[1200px] px-6 pb-20 pt-[34px];
   }
@@ -985,6 +1254,30 @@
 }
 
 @media (max-width: 760px) {
+  .flash-sale-main {
+    @apply px-4;
+  }
+
+  .flash-status-right {
+    @apply hidden;
+  }
+
+  .flash-sale-heading {
+    @apply items-start flex-col gap-3;
+  }
+
+  .flash-countdown {
+    @apply self-end;
+  }
+
+  .flash-sale-card {
+    @apply grid-cols-1;
+  }
+
+  .flash-product-image {
+    @apply h-[clamp(250px,68vw,420px)];
+  }
+
   .site-header {
     @apply flex flex-wrap px-5 py-[15px];
   }

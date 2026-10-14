@@ -10,7 +10,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Featured Items | hololive merchandise</title>
+    <title>Flash Sale | HoloVerse</title>
     <link rel="icon" type="image/png" href="../Assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
 </head>
 
 <body>
-    <div class="page-shell info-page featured-page">
+    <div class="page-shell info-page flash-sale-page">
         <div class="watermark" aria-hidden="true">
             <svg viewBox="0 0 900 700" role="presentation">
                 <defs>
@@ -64,64 +64,114 @@ if (file_exists(__DIR__ . '/../Database/dbconnect.php')) {
             </div>
         </header>
 
-        <main class="info-main">
-            <section class="page-intro">
-                <span class="eyebrow">Featured drops</span>
-                <h1>Collect the looks fans love most.</h1>
-                <p>Freshly curated pieces inspired by the energy of holo fans — from statement apparel and cozy essentials to limited-run accessories that make every collection feel memorable.</p>
+        <main class="flash-sale-main">
+            <div class="flash-status-bar" aria-label="Flash sale system status">
+                <span><i aria-hidden="true"></i> Vault state: live (stage 04)</span>
+                <span>Protocol v4.12: anti-bot hardware attestation active</span>
+                <span class="flash-status-right"><span>◎ CF-turnstile: validated</span><span>◷ Latency: 18ms (Tokyo-HQ)</span></span>
+            </div>
+
+            <section class="flash-sale-heading" aria-labelledby="flash-sale-title">
+                <div>
+                    <div class="flash-heading-meta">
+                        <span class="flash-mode-pill">Flash drop mode #7401</span>
+                        <span>[01 per-household enforced]</span>
+                    </div>
+                    <h1 id="flash-sale-title">Hyper-drop vault // Live flash sale</h1>
+                </div>
+                <div class="flash-countdown">
+                    <span class="flash-countdown-label"><span aria-hidden="true">◷</span> Allocation window closes in:</span>
+                    <div class="flash-countdown-clock" aria-label="2 days, 14 hours, 0 minutes, 19 seconds remaining">
+                        <span>02</span><b>:</b><span>14</span><b>:</b><span>00</span><b>:</b><small>19</small>
+                    </div>
+                </div>
             </section>
 
-            <section class="product-grid">
-                <article class="product-card">
-                    <div class="product-thumb">
-                        <span class="product-badge">New</span>
-                        <div class="product-symbol">H</div>
-                    </div>
-                    <div class="product-body">
-                        <div class="product-meta">Apparel</div>
-                        <h2>Holo Wave Hoodie</h2>
-                        <p>Soft fleece layering with a graphic front print and oversized fit for daily comfort.</p>
-                        <div class="product-footer">
-                            <span class="price">$42</span>
-                            <a class="shop-button" href="#">Add to cart</a>
+            <article class="flash-sale-card">
+                <section class="flash-gallery" aria-label="Product gallery">
+                    <div class="flash-product-image">
+                        <img src="../Assets/suisei2.jpg" alt="Hoshimachi Suisei in her blue and white anniversary outfit">
+                        <div class="flash-image-badges">
+                            <span>Limited 300 units worldwide</span>
+                            <span><b aria-hidden="true">✓</b> Verified osh(i) asset</span>
+                        </div>
+                        <div class="flash-image-caption">
+                            <span>Scale: 1/4 deluxe resin</span>
+                            <span>Sculptor: Studio Apex</span>
+                            <span>Box cert: encrypted NFC</span>
                         </div>
                     </div>
-                </article>
+                    <div class="flash-thumbnails" aria-label="More product images">
+                        <button class="flash-thumbnail is-selected" type="button" data-gallery-src="../Assets/suisei2.jpg" data-gallery-alt="Hoshimachi Suisei in her blue and white anniversary outfit" aria-label="Show anniversary outfit image" aria-pressed="true">
+                            <img src="../Assets/suisei2.jpg" alt="">
+                        </button>
+                        <button class="flash-thumbnail" type="button" data-gallery-src="../Assets/suisei.jpg" data-gallery-alt="Suisei artwork detail" aria-label="Show Suisei artwork detail" aria-pressed="false">
+                            <img src="../Assets/suisei.jpg" alt="">
+                        </button>
+                        <button class="flash-thumbnail" type="button" data-gallery-src="../Assets/hololive.png" data-gallery-alt="hololive production logo" aria-label="Show hololive production logo" aria-pressed="false">
+                            <img src="../Assets/hololive.png" alt="">
+                        </button>
+                        <button class="flash-thumbnail" type="button" data-gallery-src="../Assets/logo.png" data-gallery-alt="HoloVerse product mark" aria-label="Show HoloVerse product mark" aria-pressed="false">
+                            <img src="../Assets/logo.png" alt="">
+                        </button>
+                    </div>
+                </section>
 
-                <article class="product-card">
-                    <div class="product-thumb bg-[linear-gradient(135deg,#d3e4ff_0%,#b7d0ff_35%,#8ab0ff_100%)]">
-                        <span class="product-badge">Best Seller</span>
-                        <div class="product-symbol">A</div>
-                    </div>
-                    <div class="product-body">
-                        <div class="product-meta">Accessories</div>
-                        <h2>Dreamline Cap</h2>
-                        <p>Structured cap with breathable cotton panels and a clean fan-favorite emblem.</p>
-                        <div class="product-footer">
-                            <span class="price">$24</span>
-                            <a class="shop-button" href="#">Add to cart</a>
-                        </div>
-                    </div>
-                </article>
+                <section class="flash-product-details" aria-labelledby="flash-product-title">
+                    <div class="flash-breadcrumb">Hololive JP / Gamers Generation / Series Special Edition</div>
+                    <h2 id="flash-product-title">Hoshimachi Suisei 1/4 scale anniversary edition</h2>
+                    <p class="flash-product-description">A limited collector release inspired by Suisei’s signature stage look, with a detailed display base and individually numbered authenticity card.</p>
 
-                <article class="product-card">
-                    <div class="product-thumb bg-[linear-gradient(135deg,#ffe9d3_0%,#ffd7b0_35%,#f6b673_100%)]">
-                        <span class="product-badge">Limited</span>
-                        <div class="product-symbol">S</div>
+                    <div class="flash-price-panel">
+                        <div class="flash-price-line">
+                            <strong>$224.00</strong>
+                            <del>$280.00</del>
+                            <span>20% flash discount</span>
+                        </div>
+                        <small>+1,200 holopoints earned</small>
                     </div>
-                    <div class="product-body">
-                        <div class="product-meta">Collector</div>
-                        <h2>Starburst Stand</h2>
-                        <p>Decorative display piece crafted for shelves, desks, and fan collections.</p>
-                        <div class="product-footer">
-                            <span class="price">$36</span>
-                            <a class="shop-button" href="#">Add to cart</a>
+
+                    <div class="flash-stock-panel">
+                        <div class="flash-stock-top">
+                            <span><b aria-hidden="true">♨</b> Critical stock: only 22 units left</span>
+                            <span>278 / 300 claimed (92.6%)</span>
+                        </div>
+                        <div class="flash-stock-track" role="progressbar" aria-label="Units claimed" aria-valuenow="93" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+                        <div class="flash-stock-bottom">
+                            <span>Reservation grace: 300 seconds</span>
+                            <span>Est. exhaustion: &lt; 8 minutes</span>
                         </div>
                     </div>
-                </article>
-            </section>
+
+                    <a class="flash-reserve-button" href="pre_order.php">
+                        <span aria-hidden="true">♙</span> Enter instant allocation lock <span aria-hidden="true">→</span>
+                    </a>
+                    <p class="flash-checkout-note"><span aria-hidden="true">ϟ</span> 5-minute checkout hold initiates instantly upon lock. Prevents cart sniping.</p>
+                </section>
+            </article>
         </main>
     </div>
+    <script>
+        const galleryImage = document.querySelector(".flash-product-image > img");
+        const galleryThumbnails = document.querySelectorAll(".flash-thumbnail");
+
+        galleryThumbnails.forEach((thumbnail) => {
+            thumbnail.addEventListener("click", () => {
+                galleryImage.src = thumbnail.dataset.gallerySrc;
+                galleryImage.alt = thumbnail.dataset.galleryAlt;
+
+                galleryThumbnails.forEach((item) => {
+                    const isSelected = item === thumbnail;
+                    item.classList.toggle("is-selected", isSelected);
+                    item.setAttribute("aria-pressed", String(isSelected));
+                });
+            });
+        });
+    </script>
+    <?php
+    $cartHref = 'cart.php';
+    include __DIR__ . '/cart-button.php';
+    ?>
 </body>
 
 </html>

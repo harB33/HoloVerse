@@ -99,6 +99,10 @@
             </aside>
         </div>
     </main>
+    <?php
+    $cartHref = 'cart.php';
+    include __DIR__ . '/cart-button.php';
+    ?>
 </body>
 
 </html>
