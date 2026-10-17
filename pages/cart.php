@@ -16,8 +16,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             } elseif ($action === 'update') {
                 $itemId = (int) ($_POST['cart_item_id'] ?? 0);
                 $quantity = (int) ($_POST['quantity'] ?? 0);
+                $quantityAction = $_POST['quantity_action'] ?? '';
+                if ($quantityAction === 'decrease') {
+                    $quantity = max(1, $quantity - 1);
+                } elseif ($quantityAction === 'increase') {
+                    $quantity++;
+                } elseif ($quantityAction !== '') {
+                    throw new RuntimeException('That quantity action is not supported.');
+                }
+
                 $statement = $conn->prepare(
-                    'SELECT ci.variant_id, pv.stock_quantity
+                    'SELECT pv.stock_quantity
                      FROM cart_items_tbl ci
                      INNER JOIN product_variants_tbl pv ON pv.variant_id = ci.variant_id
                      WHERE ci.cart_item_id = ? AND ci.cart_id = ?'
@@ -70,9 +79,11 @@ $statement->execute();
 $cartItems = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
 $statement->close();
 $subtotals = [];
+$totalQuantity = 0;
 foreach ($cartItems as $item) {
     $currency = $item['currency'];
     $subtotals[$currency] = ($subtotals[$currency] ?? 0) + (float) $item['price'] * (int) $item['quantity'];
+    $totalQuantity += (int) $item['quantity'];
 }
 
 $pageTitle = 'Your Cart | HoloVerse';
@@ -89,87 +100,114 @@ require __DIR__ . '/../app/views/layout/head.php';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
         <main class="cart-main">
-            <section class="cart-panel" aria-labelledby="cart-title">
-                <header class="cart-heading">
-                    <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
-                        <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
-                        <circle cx="18" cy="20" r="2" />
-                        <circle cx="8" cy="20" r="2" />
-                    </svg>
-                    <h1 id="cart-title"><?= $cartItems ? 'Order Summary' : 'Your cart is empty' ?></h1>
-                </header>
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <p class="cart-guest-notice" role="status">
-                        Guest mode: your cart is associated with this browser session.
-                        <a href="login.php">Sign in or create an account</a> to link it to your account.
-                    </p>
-                <?php endif; ?>
-                <?php if ($message !== ''): ?>
-                    <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
-                <?php endif; ?>
-                <?php if ($cartItems): ?>
-                    <div class="cart-items">
-                        <?php foreach ($cartItems as $item): ?>
-                            <article class="cart-item">
-                                <div class="cart-item-image">
-                                    <?php if ($item['image_url']): ?>
-                                        <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="" loading="lazy">
-                                    <?php endif; ?>
-                                </div>
-                                <div class="cart-item-details">
-                                    <h2><?= (int) $item['quantity'] ?>x <?= store_escape($item['product_name']) ?></h2>
-                                    <p><span>Variant:</span> <?= store_escape($item['variant_name']) ?></p>
-                                    <div class="cart-item-actions">
-                                        <form action="cart.php" method="post" class="cart-item-controls">
-                                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                            <input type="hidden" name="action" value="update">
-                                            <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
-                                            <label>
-                                                <span class="sr-only">Quantity for <?= store_escape($item['product_name']) ?></span>
-                                                <input type="number" name="quantity" min="1" max="<?= (int) $item['stock_quantity'] ?>" value="<?= (int) $item['quantity'] ?>" required>
-                                            </label>
-                                            <button type="submit">Update</button>
-                                        </form>
-                                        <form action="cart.php" method="post" class="cart-remove-form">
-                                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                            <input type="hidden" name="action" value="remove">
-                                            <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
-                                            <button type="submit" class="cart-remove-button">Remove</button>
-                                        </form>
+            <?php if ($cartItems): ?>
+                <div class="cart-layout">
+                    <section class="cart-list-panel" aria-labelledby="cart-title">
+                        <header class="cart-heading">
+                            <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
+                                <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
+                                <circle cx="18" cy="20" r="2" />
+                                <circle cx="8" cy="20" r="2" />
+                            </svg>
+                            <h1 id="cart-title">Your Cart</h1>
+                        </header>
+                        <?php if (!isset($_SESSION['user_id'])): ?>
+                            <p class="cart-guest-notice" role="status">
+                                Guest mode: your cart is associated with this browser session.
+                                <a href="login.php">Sign in or create an account</a> to link it to your account.
+                            </p>
+                        <?php endif; ?>
+                        <?php if ($message !== ''): ?>
+                            <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
+                        <?php endif; ?>
+                        <div class="cart-items">
+                            <?php foreach ($cartItems as $item): ?>
+                                <article class="cart-item">
+                                    <div class="cart-item-image">
+                                        <?php if ($item['image_url']): ?>
+                                            <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="" loading="lazy">
+                                        <?php endif; ?>
                                     </div>
+                                    <div class="cart-item-details">
+                                        <div class="cart-item-row">
+                                            <h2><?= store_escape($item['product_name']) ?></h2>
+                                            <strong class="cart-item-price"><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
+                                        </div>
+                                        <p><span>Variant:</span> <?= store_escape($item['variant_name']) ?></p>
+                                        <div class="cart-item-bottom">
+                                            <div class="cart-item-controls">
+                                                <form action="cart.php" method="post" class="quantity-picker">
+                                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                                    <input type="hidden" name="action" value="update">
+                                                    <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
+                                                    <button type="submit" name="quantity_action" value="decrease" class="quantity-button" aria-label="Decrease quantity">−</button>
+                                                    <input type="number" name="quantity" min="1" max="<?= (int) $item['stock_quantity'] ?>" value="<?= (int) $item['quantity'] ?>" required aria-label="Quantity for <?= store_escape($item['product_name']) ?>">
+                                                    <button type="submit" name="quantity_action" value="increase" class="quantity-button" aria-label="Increase quantity">+</button>
+                                                </form>
+                                            </div>
+                                            <div class="cart-item-secondary-actions">
+                                                <form action="cart.php" method="post" class="cart-remove-form">
+                                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                                    <input type="hidden" name="action" value="remove">
+                                                    <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
+                                                    <button type="submit" class="cart-action cart-action--remove">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                                                        Remove
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+
+                    <aside class="cart-summary-panel" aria-label="Order summary">
+                        <h2>Order Summary</h2>
+                        <div class="cart-summary-list">
+                            <?php foreach ($subtotals as $currency => $subtotal): ?>
+                                <div class="cart-summary-row">
+                                    <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ') (3 items)' : 'Subtotal (' . $totalQuantity . ' items)' ?></span>
+                                    <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
                                 </div>
-                                <strong class="cart-item-price"><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                    <div class="cart-totals">
+                            <?php endforeach; ?>
+                            <div class="cart-summary-row">
+                                <span>Shipping Fee</span>
+                                <strong>Free</strong>
+                            </div>
+                        </div>
                         <?php foreach ($subtotals as $currency => $subtotal): ?>
-                            <p class="cart-total-row">
-                                <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ')' : 'Subtotal' ?></span>
+                            <div class="cart-summary-total">
+                                <span>Total</span>
                                 <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
-                            </p>
+                            </div>
                         <?php endforeach; ?>
-                        <p class="cart-total-row"><span>Shipping Fee:</span><strong>Free</strong></p>
-                        <?php foreach ($subtotals as $currency => $subtotal): ?>
-                            <p class="cart-total-row cart-total-final">
-                                <span><?= count($subtotals) > 1 ? 'Total (' . store_escape((string) $currency) . ')' : 'Total' ?></span>
-                                <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
-                            </p>
-                        <?php endforeach; ?>
-                    </div>
-                    <p class="cart-checkout-note">Checkout and payment processing are not enabled yet.</p>
-                <?php else: ?>
+                        <button type="button" class="cart-checkout-button">Proceed to Checkout</button>
+                    </aside>
+                </div>
+            <?php else: ?>
+                <section class="cart-panel" aria-labelledby="cart-title">
+                    <header class="cart-heading">
+                        <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
+                            <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
+                            <circle cx="18" cy="20" r="2" />
+                            <circle cx="8" cy="20" r="2" />
+                        </svg>
+                        <h1 id="cart-title">Your cart is empty</h1>
+                    </header>
                     <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
-                <?php endif; ?>
-                <a class="cart-continue-button" href="flash_sale.php">
-                    Browse flash sales
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M5 12h14" />
-                        <path d="m12 5 7 7-7 7" />
-                    </svg>
-                </a>
-            </section>
+                    <a class="cart-continue-button" href="flash_sale.php">
+                        Browse flash sales
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </a>
+                </section>
+            <?php endif; ?>
         </main>
     </div>
 </body>
