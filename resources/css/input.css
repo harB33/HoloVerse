@@ -2412,6 +2412,39 @@
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.auth-main {
+  min-height: calc(100svh - 2px);
+}
+
+.auth-register-content form.space-y-5 > :not(:first-child) {
+  margin-top: 0.75rem;
+}
+
+.auth-register-content form label {
+  margin-bottom: 0.25rem;
+}
+
+.auth-register-content form input {
+  padding-block: 0.625rem;
+}
+
+.auth-register-surface {
+  overflow: hidden;
+  padding-block: 20px;
+}
+
+.auth-register-content header {
+  margin-bottom: 1rem;
+}
+
+.auth-register-content header p {
+  margin-top: 0.5rem;
+}
+
+.auth-register-footer {
+  margin-top: 0.75rem;
+}
+
 .auth-layout.is-register .auth-artwork-panel {
   transform: translateX(-100%);
 }
@@ -2502,6 +2535,58 @@
 
   .auth-layout.is-register .auth-register-surface {
     display: flex;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-page {
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .auth-main {
+    height: 100%;
+    min-height: 0;
+    padding-block: 1rem;
+  }
+
+  .auth-layout {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .auth-artwork-panel {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 700px) {
+  .auth-register-surface {
+    padding-block: 12px;
+  }
+
+  .auth-register-content header {
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-register-content header h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .auth-register-content form.space-y-5 > :not(:first-child) {
+    margin-top: 0.5rem;
+  }
+
+  .auth-register-content form input {
+    padding-block: 0.375rem;
+  }
+
+  .auth-register-footer {
+    margin-top: 0.5rem;
   }
 }
 
