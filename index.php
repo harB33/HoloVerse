@@ -11,11 +11,6 @@ while ($group = $groupsResult->fetch_assoc()) {
 
 $talents = [];
 $talentStatuses = ['Watson Amelia' => 'Affiliate'];
-$talentPortraitOverrides = [
-    'Tsunomaki Watame' => 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Tsunomaki-Watame_talent_list_thumb.png',
-    'Momosuzu Nene' => 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_talent_list_thumb.png',
-    'Kazama Iroha' => 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Kazama-Iroha_talent_list_thumb.png',
-];
 $talentResult = $conn->query(
     'SELECT t.talent_name, t.talent_img,
             GROUP_CONCAT(g.group_slug ORDER BY FIELD(g.group_slug, "gen-0", "gen-1", "gamers", "gen-2", "gen-3", "gen-4", "gen-5", "holox", "regloss", "flow-glow", "myth", "promise", "advent", "justice", "id-gen-1", "id-gen-2", "id-gen-3", "asobi-mawaritai") SEPARATOR " ") AS group_slugs
@@ -38,7 +33,7 @@ while ($talent = $talentResult->fetch_assoc()) {
         'name' => $talent['talent_name'],
         'groups' => $groupSlugs,
         'group_names' => implode(' ' . "\u{00B7}" . ' ', $groupNames),
-        'portrait' => $talentPortraitOverrides[$talent['talent_name']] ?? $talent['talent_img'],
+        'portrait' => $talent['talent_img'],
     ];
 }
 $featuredProducts = store_product_rows($conn, '', 'p.product_id DESC', 4);
@@ -277,7 +272,19 @@ require __DIR__ . '/app/views/layout/head.php';
         };
 
         document.querySelectorAll(".talent-photo").forEach((photo) => {
-            photo.addEventListener("error", () => photo.classList.add("hidden"), { once: true });
+            const handlePortraitError = () => {
+                const fallbackSrc = photo.src.replace(/_list_thumb(?=\.png(?:[?#]|$))/, "_talent_list_thumb");
+                if (!photo.dataset.fallbackAttempted && fallbackSrc !== photo.src) {
+                    photo.dataset.fallbackAttempted = "true";
+                    photo.src = fallbackSrc;
+                    return;
+                }
+                photo.classList.add("hidden");
+            };
+            photo.addEventListener("error", handlePortraitError);
+            if (photo.complete && photo.naturalWidth === 0) {
+                handlePortraitError();
+            }
         });
 
         document.querySelectorAll(".drop-product-image").forEach((image) => {
