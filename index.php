@@ -156,6 +156,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 <span class="radar-eyebrow">Holographic restock radar</span>
                 <h2 id="radar-title">Never Miss a 15-Minute Sold-Out Drop</h2>
                 <p>Sign up to receive 15-minute SMS &amp; email alerts prior to secret drops, anniversary commemoration<br class="radar-desktop-break"> merchandise releases, and warehouse clearance extras.</p>
+                <p class="radar-summary" id="radar-summary">Alerts are ready when you save your email.</p>
                 <form class="radar-form" id="radar-form">
                     <label class="sr-only" for="radar-email">Collector email address</label>
                     <input id="radar-email" name="email" type="email" autocomplete="email" placeholder="Enter your collector email address..." required>
@@ -225,6 +226,55 @@ require __DIR__ . '/app/views/layout/head.php';
         const exploreFilters = document.querySelectorAll("[data-explore-filter]");
         const talentCardLinks = document.querySelectorAll(".talent-card-link");
         const exploreEmpty = document.querySelector(".explore-empty");
+        const radarForm = document.querySelector("#radar-form");
+        const radarEmailInput = document.querySelector("#radar-email");
+        const radarFeedback = document.querySelector("#radar-feedback");
+        const radarSummary = document.querySelector("#radar-summary");
+        const radarStorageKey = "holoverse-radar-signup";
+
+        const getSelectedBranches = () => [...document.querySelectorAll('input[name="branches[]"]:checked')].map((checkbox) => checkbox.value);
+
+        const formatBranchNames = (branches) => {
+            const labels = {
+                jp: "JP",
+                en: "EN",
+                "dev-is": "DEV_IS",
+            };
+
+            return branches.map((branch) => labels[branch] || branch.toUpperCase());
+        };
+
+        const updateRadarSummary = () => {
+            const email = radarEmailInput.value.trim();
+            const branches = getSelectedBranches();
+            const branchNames = formatBranchNames(branches);
+
+            if (!email) {
+                radarSummary.textContent = branchNames.length
+                    ? `Radar is ready for ${branchNames.join(", ")} alerts.`
+                    : "Choose a drop category to activate alerts.";
+                return;
+            }
+
+            radarSummary.textContent = branchNames.length
+                ? `Alerts active for ${branchNames.join(", ")} updates.`
+                : "Select at least one alert category.";
+        };
+
+        const saveRadarProfile = () => {
+            const email = radarEmailInput.value.trim();
+            const selectedBranches = getSelectedBranches();
+
+            if (!email || selectedBranches.length === 0) {
+                return;
+            }
+
+            try {
+                localStorage.setItem(radarStorageKey, JSON.stringify({ email, selectedBranches }));
+            } catch (error) {
+                console.warn("Could not save radar signup profile.", error);
+            }
+        };
 
         document.querySelectorAll(".talent-photo").forEach((photo) => {
             photo.addEventListener("error", () => photo.classList.add("hidden"), { once: true });
@@ -261,10 +311,59 @@ require __DIR__ . '/app/views/layout/head.php';
             });
         });
 
-        document.querySelector("#radar-form").addEventListener("submit", (event) => {
-            event.preventDefault();
-            document.querySelector("#radar-feedback").textContent = "Alert signup is a preview; email notifications are not connected yet.";
+        try {
+            const savedProfile = JSON.parse(localStorage.getItem(radarStorageKey) || "null");
+            if (savedProfile?.email) {
+                radarEmailInput.value = savedProfile.email;
+                document.querySelectorAll('input[name="branches[]"]').forEach((checkbox) => {
+                    checkbox.checked = Array.isArray(savedProfile.selectedBranches)
+                        ? savedProfile.selectedBranches.includes(checkbox.value)
+                        : checkbox.checked;
+                });
+                radarFeedback.textContent = `Welcome back! You are already on the radar for ${formatBranchNames(getSelectedBranches()).join(", ")} alerts.`;
+            }
+        } catch (error) {
+            console.warn("Could not load radar signup profile.", error);
+        }
+
+        document.querySelectorAll('input[name="branches[]"]').forEach((checkbox) => {
+            checkbox.addEventListener("change", () => {
+                updateRadarSummary();
+                if (radarEmailInput.value.trim()) {
+                    saveRadarProfile();
+                }
+            });
         });
+
+        radarEmailInput.addEventListener("input", () => {
+            updateRadarSummary();
+        });
+
+        radarForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const email = radarEmailInput.value.trim();
+            const branches = getSelectedBranches();
+
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                radarFeedback.textContent = "Enter a valid collector email address to join the restock radar.";
+                return;
+            }
+
+            if (branches.length === 0) {
+                radarFeedback.textContent = "Select at least one drop category to stay in the loop.";
+                return;
+            }
+
+            saveRadarProfile();
+            radarFeedback.textContent = `You're on the radar! We'll alert you about ${formatBranchNames(branches).join(", ")} drops and restocks.`;
+            radarForm.querySelector("button").textContent = "Saved";
+            setTimeout(() => {
+                radarForm.querySelector("button").textContent = "Join Radar Free";
+            }, 2000);
+            updateRadarSummary();
+        });
+
+        updateRadarSummary();
     </script>
     <?php
     $cartHref = 'pages/cart.php';

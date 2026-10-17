@@ -1008,6 +1008,10 @@
     @apply mb-5 mt-0 max-w-[700px] text-[13px] leading-relaxed text-[#e3edf6];
   }
 
+  .radar-summary {
+    @apply mb-3 mt-0 max-w-[700px] text-[11px] font-medium text-[#a7e9ff];
+  }
+
   .radar-desktop-break {
     @apply inline;
   }
