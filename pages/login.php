@@ -104,8 +104,12 @@ require __DIR__ . '/../app/views/layout/head.php';
     <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
     <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-6">
         <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
-            <section class="auth-login-panel flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="Sign in" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
+            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="Sign in" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
                 <div class="w-full max-w-md">
+                    <a href="../index.php" aria-label="HoloVerse home" class="mb-6 inline-flex items-center justify-center gap-2 rounded-lg text-slate-800 transition hover:opacity-80 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-200">
+                        <img src="../assets/images/logo.png" alt="" class="h-10 w-10 object-contain">
+                        <span class="text-lg font-bold">HoloVerse</span>
+                    </a>
                     <header class="mb-8">
                         <h1 class="text-3xl font-bold text-slate-800">Welcome back</h1>
                         <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">Sign in to manage your HoloVerse account and saved cart.</p>
