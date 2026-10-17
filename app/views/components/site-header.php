@@ -25,18 +25,33 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                 <details class="account-menu">
                     <summary class="entry-button" aria-label="Open account menu">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M18 20a6 6 0 0 0-12 0" />
-                            <circle cx="12" cy="10" r="4" />
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="10" r="3" />
+                            <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
                         </svg>
                     </summary>
                     <div class="account-dropdown">
-                        <span class="account-dropdown-name"><?= store_escape((string) ($_SESSION['username'] ?? 'Account')) ?></span>
+                        <div class="account-dropdown-identity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <div class="account-dropdown-user">
+                                <span class="account-dropdown-name"><?= store_escape((string) ($_SESSION['username'] ?? 'Account')) ?></span>
+                                <span class="account-dropdown-email"><?= store_escape((string) ($_SESSION['user_email'] ?? '')) ?></span>
+                            </div>
+                        </div>
                         <?php if (store_has_role('admin')): ?>
                             <span class="account-dropdown-section">Administrator tools</span>
                             <a href="<?= $pageUrlPrefix ?>admin-dashboard.php">Admin dashboard</a>
                         <?php endif; ?>
-                        <a href="<?= $pageUrlPrefix ?>cart.php">My cart</a>
-                        <button type="button" data-logout-dialog-open>Log out</button>
+                        <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>cart.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart preview-icon">
+                            <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/>
+                            <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/>
+                            <circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>Orders</a>
+                        <button class="account-dropdown-action" type="button" data-logout-dialog-open><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out preview-icon">
+                            <path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Log out</button>
                     </div>
                 </details>
                 <dialog class="logout-dialog" data-logout-dialog aria-labelledby="logout-dialog-title" aria-describedby="logout-dialog-description">
@@ -70,8 +85,9 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                 <details class="account-menu">
                     <summary class="entry-button" aria-label="Open guest menu">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M18 20a6 6 0 0 0-12 0" />
-                            <circle cx="12" cy="10" r="4" />
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="10" r="3" />
+                            <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
                         </svg>
                     </summary>
                     <div class="account-dropdown">

@@ -82,25 +82,23 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell cart-page">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
         $showLogin = true;
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
-
         <main class="cart-main">
             <section class="cart-panel" aria-labelledby="cart-title">
-                <svg class="cart-panel-icon lucide lucide-shopping-basket" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="m15 11-1 9" />
-                    <path d="m19 11-4-7" />
-                    <path d="M2 11h20" />
-                    <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
-                    <path d="M4.5 15.5h15" />
-                    <path d="m5 11 4-7" />
-                    <path d="m9 11 1 9" />
-                </svg>
-                <span class="cart-eyebrow">HoloVerse checkout</span>
-                <h1 id="cart-title"><?= $cartItems ? 'Your cart' : 'Your cart is empty' ?></h1>
+                <header class="cart-heading">
+                    <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
+                        <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
+                        <circle cx="18" cy="20" r="2" />
+                        <circle cx="8" cy="20" r="2" />
+                    </svg>
+                    <h1 id="cart-title"><?= $cartItems ? 'Order Summary' : 'Your cart is empty' ?></h1>
+                </header>
                 <?php if (!isset($_SESSION['user_id'])): ?>
                     <p class="cart-guest-notice" role="status">
                         Guest mode: your cart is associated with this browser session.
@@ -114,41 +112,55 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <div class="cart-items">
                         <?php foreach ($cartItems as $item): ?>
                             <article class="cart-item">
-                                <?php if ($item['image_url']): ?>
-                                    <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="" loading="lazy">
-                                <?php endif; ?>
-                                <div class="cart-item-details">
-                                    <h2><?= store_escape($item['product_name']) ?></h2>
-                                    <p><?= store_escape($item['variant_name']) ?> · <?= store_escape(store_format_price((float) $item['price'])) ?></p>
+                                <div class="cart-item-image">
+                                    <?php if ($item['image_url']): ?>
+                                        <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="" loading="lazy">
+                                    <?php endif; ?>
                                 </div>
-                                <form action="cart.php" method="post" class="cart-item-controls">
-                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                    <input type="hidden" name="action" value="update">
-                                    <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
-                                    <label>
-                                        <span class="sr-only">Quantity</span>
-                                        <input type="number" name="quantity" min="1" max="<?= (int) $item['stock_quantity'] ?>" value="<?= (int) $item['quantity'] ?>" required>
-                                    </label>
-                                    <button type="submit">Update</button>
-                                </form>
-                                <strong><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
-                                <form action="cart.php" method="post">
-                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                    <input type="hidden" name="action" value="remove">
-                                    <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
-                                    <button type="submit" class="cart-remove-button">Remove</button>
-                                </form>
+                                <div class="cart-item-details">
+                                    <h2><?= (int) $item['quantity'] ?>x <?= store_escape($item['product_name']) ?></h2>
+                                    <p><span>Variant:</span> <?= store_escape($item['variant_name']) ?></p>
+                                    <div class="cart-item-actions">
+                                        <form action="cart.php" method="post" class="cart-item-controls">
+                                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
+                                            <label>
+                                                <span class="sr-only">Quantity for <?= store_escape($item['product_name']) ?></span>
+                                                <input type="number" name="quantity" min="1" max="<?= (int) $item['stock_quantity'] ?>" value="<?= (int) $item['quantity'] ?>" required>
+                                            </label>
+                                            <button type="submit">Update</button>
+                                        </form>
+                                        <form action="cart.php" method="post" class="cart-remove-form">
+                                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="remove">
+                                            <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
+                                            <button type="submit" class="cart-remove-button">Remove</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <strong class="cart-item-price"><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
                             </article>
                         <?php endforeach; ?>
                     </div>
-                    <div class="cart-subtotals">
+                    <div class="cart-totals">
                         <?php foreach ($subtotals as $currency => $subtotal): ?>
-                            <p class="cart-subtotal">Subtotal (PHP) <strong><?= store_escape(store_format_price($subtotal)) ?></strong></p>
+                            <p class="cart-total-row">
+                                <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ')' : 'Subtotal' ?></span>
+                                <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
+                            </p>
+                        <?php endforeach; ?>
+                        <p class="cart-total-row"><span>Shipping Fee:</span><strong>Free</strong></p>
+                        <?php foreach ($subtotals as $currency => $subtotal): ?>
+                            <p class="cart-total-row cart-total-final">
+                                <span><?= count($subtotals) > 1 ? 'Total (' . store_escape((string) $currency) . ')' : 'Total' ?></span>
+                                <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
+                            </p>
                         <?php endforeach; ?>
                     </div>
-                    <p>Checkout and payment processing are not enabled yet.</p>
+                    <p class="cart-checkout-note">Checkout and payment processing are not enabled yet.</p>
                 <?php else: ?>
-                    <p>Browse the current drops to find your next favorite.</p>
+                    <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
                 <?php endif; ?>
                 <a class="cart-continue-button" href="flash_sale.php">
                     Browse flash sales
