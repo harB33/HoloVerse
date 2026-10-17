@@ -72,7 +72,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     <span class="drops-eyebrow">From the official hololive production shop</span>
                     <h2 id="limited-drops-title">Talent Merch Picks</h2>
                 </div>
-                <a class="drops-view-all" href="#explore">Explore talents <span aria-hidden="true">&#8594;</span></a>
+                <a class="drops-view-all" href="pages/products.php">View all products <span aria-hidden="true">&#8594;</span></a>
             </div>
 
             <div class="drops-grid">
