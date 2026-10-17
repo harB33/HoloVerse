@@ -91,8 +91,19 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                         </svg>
                     </summary>
                     <div class="account-dropdown">
-                        <span class="account-dropdown-name">Guest mode</span>
-                        <a href="<?= $pageUrlPrefix ?>login.php">Log in</a>
+                        <div class="account-dropdown-identity">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="10" r="3" />
+                                <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                            </svg>
+                            <span class="account-dropdown-name">Guest mode</span>
+                        </div>
+                        <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>login.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in preview-icon" aria-hidden="true">
+                            <path d="m10 17 5-5-5-5" />
+                            <path d="M15 12H3" />
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                        </svg>Log in</a>
                     </div>
                 </details>
             <?php endif; ?>
