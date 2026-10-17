@@ -69,7 +69,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $_SESSION['user_role'] = 'user';
                     session_regenerate_id(true);
                     store_merge_guest_cart($conn, $registeredUserId);
-                    header('Location: cart.php');
+                    header('Location: /index.php');
                     exit;
                 }
             }
@@ -88,7 +88,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_role'] = $user['user_role'];
                 store_merge_guest_cart($conn, (int) $user['user_id']);
-                header('Location: cart.php');
+                header('Location: /index.php');
                 exit;
             }
         }
