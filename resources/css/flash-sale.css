@@ -149,10 +149,14 @@
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.9);
     color: #353d46;
-    font-size: 1.25rem;
-    line-height: 1;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(15, 23, 32, 0.08);
+}
+
+.vault-favorite svg {
+    display: block;
+    width: 20px;
+    height: 20px;
 }
 
 .vault-stock-badge {
@@ -400,6 +404,10 @@
 
 .vault-favorite[aria-pressed="true"] {
     color: #d33b55;
+}
+
+.vault-favorite.is-favorite svg {
+    fill: currentColor;
 }
 
 .vault-empty-state {

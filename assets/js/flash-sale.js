@@ -99,7 +99,7 @@ const updateFavoriteButtons = () => {
         }
         const isFavorite = favoriteIds.includes(card.dataset.variantId);
         button.setAttribute("aria-pressed", String(isFavorite));
-        button.textContent = isFavorite ? "♥" : "♡";
+        button.classList.toggle("is-favorite", isFavorite);
         button.setAttribute("aria-label", `${isFavorite ? "Remove saved item" : "Save"} ${card.querySelector("h3")?.textContent || "product"}`);
     });
 };

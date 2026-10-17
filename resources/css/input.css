@@ -769,8 +769,8 @@
     @apply flex-none text-[13px] font-bold text-[#078bbd] no-underline;
   }
 
-  .drops-view-all span {
-    @apply ml-1 text-lg;
+  .drops-view-all svg {
+    @apply ml-1 inline size-4;
   }
 
   .drops-grid {
@@ -1346,6 +1346,14 @@
     @apply flex items-center gap-5;
   }
 
+  .flash-status-right > span {
+    @apply inline-flex items-center gap-1;
+  }
+
+  .flash-status-right svg {
+    @apply size-3 shrink-0;
+  }
+
   .flash-telemetry {
     @apply mt-7 overflow-hidden rounded-[22px] border border-[#e0e5ea] bg-[#e9edf2] p-4;
   }
@@ -1358,8 +1366,8 @@
     @apply m-0 flex items-center gap-2 text-inherit;
   }
 
-  .flash-telemetry-heading h2 span {
-    @apply size-1.5 rounded-full bg-[#19afd0];
+  .flash-telemetry-heading h2 svg {
+    @apply size-3.5 shrink-0 text-[#19afd0];
   }
 
   .flash-telemetry-grid {
@@ -1374,8 +1382,8 @@
     @apply mb-2 flex w-full items-center justify-between gap-2 font-montserrat text-[7px] font-bold uppercase text-[#748294];
   }
 
-  .flash-telemetry-label > span:last-child {
-    @apply text-[#0d91c7];
+  .flash-telemetry-label > svg:last-child {
+    @apply shrink-0 text-[#0d91c7];
   }
 
   .flash-telemetry-card > strong {
@@ -1477,7 +1485,7 @@
   }
 
   .flash-image-badges span {
-    @apply rounded-full bg-[#101b26] px-2.5 py-1 font-montserrat text-[8px] font-extrabold uppercase tracking-wide text-white;
+    @apply inline-flex items-center gap-1 rounded-full bg-[#101b26] px-2.5 py-1 font-montserrat text-[8px] font-extrabold uppercase tracking-wide text-white;
   }
 
   .flash-image-badges span + span {
@@ -1587,7 +1595,7 @@
   }
 
   .flash-stock-top span:first-child {
-    @apply text-[#d92332];
+    @apply inline-flex items-center gap-1 text-[#d92332];
   }
 
   .flash-stock-track {
@@ -1613,6 +1621,10 @@
 
   .flash-checkout-note {
     @apply mb-0 mt-1.5 text-center font-montserrat text-[7px] font-bold text-[#52667a];
+  }
+
+  .flash-checkout-note svg {
+    @apply mr-1 inline size-3 align-[-2px];
   }
 
   .cart-fab {
@@ -2199,7 +2211,11 @@
   }
 
   .preorder-guide a {
-    @apply whitespace-nowrap rounded-full bg-white px-[18px] py-3 text-[0.82rem] font-extrabold text-[#0d6bab] no-underline;
+    @apply inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-[18px] py-3 text-[0.82rem] font-extrabold text-[#0d6bab] no-underline;
+  }
+
+  .preorder-guide a svg {
+    @apply size-4 shrink-0;
   }
 
   .talent-directory-back-link {

@@ -25,8 +25,8 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                 <details class="account-menu">
                     <summary class="entry-button" aria-label="Open account menu">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
+                            <path d="M18 20a6 6 0 0 0-12 0" />
+                            <circle cx="12" cy="10" r="4" />
                         </svg>
                     </summary>
                     <div class="account-dropdown">
@@ -70,8 +70,8 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                 <details class="account-menu">
                     <summary class="entry-button" aria-label="Open guest menu">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
+                            <path d="M18 20a6 6 0 0 0-12 0" />
+                            <circle cx="12" cy="10" r="4" />
                         </svg>
                     </summary>
                     <div class="account-dropdown">

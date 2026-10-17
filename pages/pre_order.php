@@ -105,7 +105,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h2>New to pre-orders?</h2>
                     <p>See how reservations, payment, and delivery work before choosing your next collectible.</p>
                 </div>
-                <a href="collector_showcase.php">Explore the order process <span aria-hidden="true">&#8594;</span></a>
+                <a href="collector_showcase.php">
+                    Explore the order process
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
+                    </svg>
+                </a>
             </aside>
         </main>
     </div>

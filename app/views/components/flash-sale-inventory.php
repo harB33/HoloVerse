@@ -33,7 +33,11 @@ $flashSaleTabs = [
                     <div class="vault-product-visual">
                         <span class="vault-series-tag"><?= store_escape($product['category_name']) ?></span>
                         <span class="vault-product-meta"><?= store_escape($product['variant_name']) ?></span>
-                        <button class="vault-favorite" type="button" data-favorite-button aria-label="Save <?= store_escape($product['product_name']) ?>" aria-pressed="false">♡</button>
+                        <button class="vault-favorite" type="button" data-favorite-button aria-label="Save <?= store_escape($product['product_name']) ?>" aria-pressed="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+                            </svg>
+                        </button>
                         <img src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                         <div class="vault-stock-badge"><?= $stock === 1 ? 'ONLY 1 UNIT LEFT' : $stock . ' UNITS AVAILABLE' ?></div>
                     </div>
