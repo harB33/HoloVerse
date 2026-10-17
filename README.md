@@ -33,3 +33,15 @@ Import `Database/add_featured_talent_merch.sql` after the full talent directory 
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
+
+## Product entry
+
+Sign in with an administrator account and choose **Add a product** under **Administrator tools** in the account menu to create a catalog listing. The form saves the product and its PHP-priced variant in one database transaction, with optional image and talent links. New products can be saved as drafts or published immediately. The user's role is read from the database on each request, so role changes take effect without signing in again; the product entry page also checks the role server-side.
+
+To grant administrator access, first register an account, then update its role in MySQL:
+
+```sql
+UPDATE user_tbl SET user_role = 'admin' WHERE email = 'admin@example.com';
+```
+
+Standard customer accounts cannot access the product entry page.

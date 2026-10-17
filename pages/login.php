@@ -40,6 +40,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 if ($registeredUserId > 0) {
                     $_SESSION['user_id'] = $registeredUserId;
                     $_SESSION['username'] = $username;
+                    $_SESSION['user_role'] = 'user';
                     session_regenerate_id(true);
                     store_merge_guest_cart($conn, $registeredUserId);
                     header('Location: cart.php');
@@ -47,7 +48,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 }
             }
         } else {
-            $statement = $conn->prepare('SELECT user_id, username, password_hash FROM user_tbl WHERE email = ? LIMIT 1');
+            $statement = $conn->prepare('SELECT user_id, username, password_hash, user_role FROM user_tbl WHERE email = ? LIMIT 1');
             $statement->bind_param('s', $email);
             $statement->execute();
             $user = $statement->get_result()->fetch_assoc();
@@ -59,6 +60,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = (int) $user['user_id'];
                 $_SESSION['username'] = $user['username'];
+                $_SESSION['user_role'] = $user['user_role'];
                 store_merge_guest_cart($conn, (int) $user['user_id']);
                 header('Location: cart.php');
                 exit;

@@ -32,6 +32,10 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                     <div class="account-dropdown">
                         <span class="account-dropdown-name"><?= store_escape((string) ($_SESSION['username'] ?? 'Account')) ?></span>
                         <a href="<?= $pageUrlPrefix ?>cart.php">My cart</a>
+                        <?php if (store_has_role('admin')): ?>
+                            <span class="account-dropdown-section">Administrator tools</span>
+                            <a href="<?= $pageUrlPrefix ?>product-input.php">Add a product</a>
+                        <?php endif; ?>
                         <form action="<?= $pageUrlPrefix ?>logout.php" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <button type="submit">Log out</button>
