@@ -101,7 +101,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
 <body class="auth-page min-h-screen border-t-2 border-sky-500 bg-slate-100 font-['Kanit'] text-slate-800">
-    <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-12">
+    <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-6">
         <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
             <section class="auth-login-panel flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="Sign in" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
                 <div class="w-full max-w-md">
@@ -139,8 +139,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </div>
             </section>
 
-            <aside class="auth-artwork-panel relative min-h-[420px] overflow-hidden rounded-2xl shadow-sm sm:min-h-[560px] lg:min-h-full" aria-label="Create account">
-                <img src="../assets/images/suisei2.jpg" alt="" class="absolute inset-0 h-full w-full object-cover object-center">
+            <aside class="auth-artwork-panel relative min-h-[420px] overflow-hidden rounded-2xl shadow-sm lg:min-h-full" aria-label="Create account">
+                <img src="../assets/images/suisei2.jpg" alt="" class="absolute inset-0 h-full w-full object-cover object-[center_70%]">
             </aside>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
                     <div class="auth-register-content">

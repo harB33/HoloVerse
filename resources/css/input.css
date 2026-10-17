@@ -2553,7 +2553,7 @@
   }
 
   .auth-layout {
-    height: 100%;
+    height: min(96svh, 760px);
     min-height: 0;
   }
 
