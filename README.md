@@ -9,6 +9,7 @@
 - `app/views/components/` contains reusable interface components.
 - `config/` contains application configuration, including the database connection.
 - `Database/holoverse.sql` creates the schema and loads the starter catalog, talent directory, and sample merchandise.
+- `Database/migrations/` contains additive schema changes for existing installations.
 - `Assets/images/` and `Assets/css/` contain browser-delivered assets.
 - `resources/css/` contains the Tailwind CSS source.
 
@@ -25,6 +26,8 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 The consolidated SQL file is for setting up a fresh, empty database. Do not import it over an existing database; it is not a backup or an update script. To back up existing accounts, orders, and other live data, export the database with both its structure and data using phpMyAdmin or `mysqldump`.
 
+For an existing installation, apply each new SQL file in `Database/migrations/` once. Flash-sale scheduling requires `20261017_create_flash_sale_tbl.sql`; it adds scheduled campaign windows without changing catalog prices or existing orders.
+
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
@@ -34,6 +37,8 @@ The sign-in page supports account registration and login. Passwords are stored u
 Sign in with an administrator account and open **Admin dashboard** under **Administrator tools** in the account menu. The dashboard provides store overview metrics, recent product and order activity, and controls to grant or revoke administrator access for other accounts. The available privilege levels are **Customer** and **Administrator**. Administrators cannot change their own privilege, and the last administrator cannot be demoted.
 
 To create a catalog listing, use **Add Product** from the dashboard. The form saves the product and its PHP-priced variant in one database transaction, with optional image and talent links. New products can be saved as drafts or published immediately. The user's role is read from the database on each request, so role changes take effect without signing in again; administrator pages also check the role server-side.
+
+Use **Manage Flash Sales** from the admin dashboard to schedule an active, discounted, in-stock variant. Sale windows are interpreted in `HOLOVERSE_TIMEZONE` (defaults to `Asia/Manila`). Scheduled windows drive the flash-sale page's live, next-hour, tomorrow, and archive tabs. The catalog's configured price and compare-at price remain the source of product pricing; scheduling controls when a product is listed as a flash sale, not a price change.
 
 To grant administrator access, first register an account, then update its role in MySQL:
 

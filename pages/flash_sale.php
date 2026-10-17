@@ -1,12 +1,35 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
-$saleProducts = store_product_rows(
-    $conn,
-    'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price',
-    'p.product_id',
-    1
-);
-$saleProduct = $saleProducts[0] ?? null;
+$flashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+$flashSaleNow = new DateTimeImmutable('now', $flashSaleTimezone);
+$flashSaleSchedulingAvailable = store_flash_sale_table_exists($conn);
+$flashSaleProducts = $flashSaleSchedulingAvailable
+    ? [
+        'live' => store_flash_sale_rows($conn, 'live', $flashSaleNow),
+        'starting' => store_flash_sale_rows($conn, 'starting', $flashSaleNow),
+        'tomorrow' => store_flash_sale_rows($conn, 'tomorrow', $flashSaleNow),
+        'archive' => store_flash_sale_rows($conn, 'archive', $flashSaleNow),
+    ]
+    : [
+        'live' => store_product_rows(
+            $conn,
+            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND v.stock_quantity > 0',
+            'p.product_id DESC'
+        ),
+        'starting' => [],
+        'tomorrow' => [],
+        'archive' => [],
+    ];
+$saleProduct = $flashSaleProducts['live'][0] ?? null;
+$activeCartQuantity = 0;
+$activeCartId = store_current_cart_id($conn, false);
+if ($activeCartId > 0) {
+    $cartCountStatement = $conn->prepare('SELECT COALESCE(SUM(quantity), 0) AS item_count FROM cart_items_tbl WHERE cart_id = ?');
+    $cartCountStatement->bind_param('i', $activeCartId);
+    $cartCountStatement->execute();
+    $activeCartQuantity = (int) $cartCountStatement->get_result()->fetch_assoc()['item_count'];
+    $cartCountStatement->close();
+}
 $pageTitle = 'Flash Sale | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -23,10 +46,13 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         <main class="flash-sale-main">
             <div class="flash-status-bar" aria-label="Flash sale system status">
-                <span><i aria-hidden="true"></i> Vault state: live (stage 04)</span>
-                <span>Protocol v4.12: anti-bot hardware attestation active</span>
-                <span class="flash-status-right"><span>◎ CF-turnstile: validated</span><span>◷ Latency: 18ms (Tokyo-HQ)</span></span>
+                <span><i aria-hidden="true"></i> Vault inventory: <?= count($flashSaleProducts['live']) ?> live drops</span>
+                <span>Cart actions validate stock and CSRF tokens</span>
+                <span class="flash-status-right"><span>◎ Product availability is live</span><?php if (store_has_role('admin')): ?><a href="flash-sale-admin.php">Manage drops</a><?php endif; ?></span>
             </div>
+            <?php if (!$flashSaleSchedulingAvailable): ?>
+                <p class="flash-setup-notice" role="status">Scheduled drop filters are temporarily unavailable. Showing all discounted, in-stock products. An administrator can enable scheduling by applying the <code>Database/migrations/20261017_create_flash_sale_tbl.sql</code> migration to this database.</p>
+            <?php endif; ?>
 
             <section class="flash-sale-heading" aria-labelledby="flash-sale-title">
                 <div>
@@ -37,10 +63,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1 id="flash-sale-title">Hyper-drop vault // Live flash sale</h1>
                 </div>
                 <div class="flash-countdown">
-                    <span class="flash-countdown-label"><span aria-hidden="true">◷</span> Allocation window closes in:</span>
-                    <div class="flash-countdown-clock" aria-label="2 days, 14 hours, 0 minutes, 19 seconds remaining">
-                        <span>02</span><b>:</b><span>14</span><b>:</b><span>00</span><b>:</b><small>19</small>
-                    </div>
+                    <?php if ($saleProduct && !empty($saleProduct['ends_at'])): ?>
+                        <span class="flash-countdown-label"><span aria-hidden="true">◷</span> Drop ends in:</span>
+                        <div class="flash-countdown-clock" data-countdown="<?= store_escape((new DateTimeImmutable($saleProduct['ends_at'], $flashSaleTimezone))->format(DateTimeInterface::ATOM)) ?>">
+                            <span data-countdown-days>00</span><b>d</b><span data-countdown-hours>00</span><b>:</b><span data-countdown-minutes>00</span><b>:</b><small data-countdown-seconds>00</small>
+                        </div>
+                    <?php else: ?>
+                        <span class="flash-countdown-label">Discounts while supplies last</span>
+                    <?php endif; ?>
                 </div>
             </section>
 
@@ -51,7 +81,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <img src="<?= store_escape(store_asset_url($saleProduct['image_url'] ?? 'assets/images/logo.png', '../')) ?>" alt="<?= store_escape($saleProduct['alt_text'] ?? $saleProduct['product_name']) ?>">
                         <div class="flash-image-badges">
                             <span><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
-                            <span><b aria-hidden="true">✓</b> Verified osh(i) asset</span>
+                            <span><b aria-hidden="true">✓</b> <?= store_escape($saleProduct['category_name']) ?></span>
                         </div>
                         <div class="flash-image-caption">
                             <span><?= store_escape($saleProduct['variant_name']) ?></span>
@@ -86,7 +116,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <span><b aria-hidden="true">♨</b> <?= (int) $saleProduct['stock_quantity'] ?> units available</span>
                             <span><?= (int) $saleProduct['stock_quantity'] ?> in stock</span>
                         </div>
-                        <div class="flash-stock-track" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+                        <div class="flash-stock-track" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span style="width: <?= min(100, (int) $saleProduct['stock_quantity']) ?>%"></span></div>
                         <div class="flash-stock-bottom">
                             <span>Stock is confirmed when added to your cart.</span>
                             <span><?= (int) $saleProduct['stock_quantity'] > 0 ? 'Available now' : 'Currently sold out' ?></span>

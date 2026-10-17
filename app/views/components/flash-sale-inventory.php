@@ -1,112 +1,75 @@
+<?php
+$flashSaleTabs = [
+    'live' => ['label' => 'Live Right Now', 'products' => $flashSaleProducts['live']],
+    'starting' => ['label' => 'Starting in 1h', 'products' => $flashSaleProducts['starting']],
+    'tomorrow' => ['label' => 'Tomorrow', 'products' => $flashSaleProducts['tomorrow']],
+    'archive' => ['label' => 'Vault Archive', 'products' => $flashSaleProducts['archive']],
+];
+?>
 <section class="vault-inventory-ration" aria-labelledby="vault-inventory-title">
     <div class="vault-inventory-header">
         <div class="vault-inventory-title-wrap">
             <span class="vault-inventory-kicker">VAULT INVENTORY RATION</span>
             <h2 id="vault-inventory-title">CURATED ACTIVE DROPS</h2>
         </div>
-        <div class="vault-filters" role="tablist" aria-label="Flash sale filters">
-            <button class="vault-filter is-active" type="button" aria-pressed="true">Live Right Now <span>(6)</span></button>
-            <button class="vault-filter" type="button" aria-pressed="false">Starting in 1h <span>(4)</span></button>
-            <button class="vault-filter" type="button" aria-pressed="false">Tomorrow <span>(8)</span></button>
-            <button class="vault-filter" type="button" aria-pressed="false">Vault Archive <span>(12)</span></button>
+        <div class="vault-filters" role="tablist" aria-label="Flash sale categories">
+            <?php foreach ($flashSaleTabs as $key => $tab): ?>
+                <button class="vault-filter<?= $key === 'live' ? ' is-active' : '' ?>" id="flash-tab-<?= store_escape($key) ?>" type="button" role="tab" data-sale-filter="<?= store_escape($key) ?>" aria-controls="flash-sale-products" aria-selected="<?= $key === 'live' ? 'true' : 'false' ?>" tabindex="<?= $key === 'live' ? '0' : '-1' ?>">
+                    <?= store_escape($tab['label']) ?> <span>(<?= count($tab['products']) ?>)</span>
+                </button>
+            <?php endforeach; ?>
         </div>
     </div>
 
-    <div class="vault-product-grid">
-        <article class="vault-product-card">
-            <div class="vault-product-visual">
-                <span class="vault-series-tag">JP GEN 2</span>
-                <span class="vault-product-meta">DROPS</span>
-                <button class="vault-favorite" type="button" aria-label="Save item">♡</button>
-                <img src="../assets/images/suisei2.jpg" alt="Gold-plated pen and collector case">
-                <div class="vault-stock-badge">ONLY 7 UNITS LEFT</div>
-            </div>
-            <div class="vault-product-info">
-                <small>USADA PEKORA // OFFICIAL</small>
-                <h3>24K Gold-Plated Carrot Pen &amp; Collector Case</h3>
-                <div class="vault-price-row">
-                    <strong>$89.00</strong>
-                    <span>$120.00</span>
-                    <em>20% FLASH</em>
-                </div>
-                <div class="vault-stats-row">
-                    <span class="vault-stat red">90% Depleted</span>
-                    <span class="vault-stat blue">CRITICAL</span>
-                </div>
-                <button class="vault-action-button" type="button"><span aria-hidden="true">◔</span> HOLD FOR 5 MIN</button>
-            </div>
-        </article>
-
-        <article class="vault-product-card">
-            <div class="vault-product-visual">
-                <span class="vault-series-tag">JP GEN 1</span>
-                <span class="vault-product-meta">DROPS</span>
-                <button class="vault-favorite" type="button" aria-label="Save item">♡</button>
-                <img src="../assets/images/suisei.jpg" alt="Bunker bomber jacket">
-                <div class="vault-stock-badge">18 UNITS REMAINING</div>
-            </div>
-            <div class="vault-product-info">
-                <small>SHIRAKAMIFUBUKI // OFFICIAL</small>
-                <h3>Foxfire Cubic Bomber Jacket [Unisex L/XL]</h3>
-                <div class="vault-price-row">
-                    <strong>$128.00</strong>
-                    <span>$160.00</span>
-                    <em>20% FLASH</em>
-                </div>
-                <div class="vault-stats-row">
-                    <span class="vault-stat red">92% Depleted</span>
-                    <span class="vault-stat blue">FAST SELLING</span>
-                </div>
-                <button class="vault-action-button" type="button"><span aria-hidden="true">◔</span> HOLD FOR 5 MIN</button>
-            </div>
-        </article>
-
-        <article class="vault-product-card">
-            <div class="vault-product-visual">
-                <span class="vault-series-tag">JP GEN 2</span>
-                <span class="vault-product-meta">DROPS</span>
-                <button class="vault-favorite" type="button" aria-label="Save item">♡</button>
-                <img src="../assets/images/hololive.png" alt="Pirate soundboard and keypad">
-                <div class="vault-stock-badge">41 UNITS REMAINING</div>
-            </div>
-            <div class="vault-product-info">
-                <small>HOUSYOU MARINE // GEAR</small>
-                <h3>Ahoy Pirate Soundboard &amp; Macro Keypad</h3>
-                <div class="vault-price-row">
-                    <strong>$76.00</strong>
-                    <span>$95.00</span>
-                    <em>20% FLASH</em>
-                </div>
-                <div class="vault-stats-row">
-                    <span class="vault-stat red">65% Depleted</span>
-                    <span class="vault-stat blue">ACTIVE POOL</span>
-                </div>
-                <button class="vault-action-button" type="button"><span aria-hidden="true">◔</span> HOLD FOR 5 MIN</button>
-            </div>
-        </article>
-
-        <article class="vault-product-card">
-            <div class="vault-product-visual">
-                <span class="vault-series-tag">HOLO EN MYTH</span>
-                <span class="vault-product-meta">DROPS</span>
-                <button class="vault-favorite" type="button" aria-label="Save item">♡</button>
-                <img src="../assets/images/logo.png" alt="Commemorative vinyl record">
-                <div class="vault-stock-badge">ONLY 3 UNITS LEFT</div>
-            </div>
-            <div class="vault-product-info">
-                <small>MORI CALLIOPE // MUSIC</small>
-                <h3>Underworld Tour Commemorative Vinyl...</h3>
-                <div class="vault-price-row">
-                    <strong>$68.00</strong>
-                    <span>$85.00</span>
-                    <em>20% FLASH</em>
-                </div>
-                <div class="vault-stats-row">
-                    <span class="vault-stat red">98% Depleted</span>
-                    <span class="vault-stat blue">FINAL HOLD</span>
-                </div>
-                <button class="vault-action-button" type="button"><span aria-hidden="true">◔</span> HOLD FOR 5 MIN</button>
-            </div>
-        </article>
+    <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live">
+        <?php foreach ($flashSaleTabs as $state => $tab): ?>
+            <?php foreach ($tab['products'] as $product): ?>
+                <?php
+                $stock = (int) $product['stock_quantity'];
+                $discountPercent = (int) round((1 - ((float) $product['price'] / (float) $product['compare_at_price'])) * 100);
+                $imageUrl = store_asset_url($product['image_url'] ?? 'assets/images/logo.png', '../');
+                ?>
+                <article class="vault-product-card" data-sale-state="<?= store_escape($state) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>">
+                    <div class="vault-product-visual">
+                        <span class="vault-series-tag"><?= store_escape($product['category_name']) ?></span>
+                        <span class="vault-product-meta"><?= store_escape($product['variant_name']) ?></span>
+                        <button class="vault-favorite" type="button" data-favorite-button aria-label="Save <?= store_escape($product['product_name']) ?>" aria-pressed="false">♡</button>
+                        <img src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                        <div class="vault-stock-badge"><?= $stock === 1 ? 'ONLY 1 UNIT LEFT' : $stock . ' UNITS AVAILABLE' ?></div>
+                    </div>
+                    <div class="vault-product-info">
+                        <small><?= store_escape($product['category_name']) ?></small>
+                        <h3><?= store_escape($product['product_name']) ?></h3>
+                        <div class="vault-price-row">
+                            <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                            <span><?= store_escape(store_format_price((float) $product['compare_at_price'])) ?></span>
+                            <em><?= $discountPercent ?>% off</em>
+                        </div>
+                        <div class="vault-stats-row">
+                            <span class="vault-stat <?= $stock <= 5 ? 'red' : 'blue' ?>"><?= $stock ?> in stock</span>
+                            <?php if ($state === 'starting' || $state === 'tomorrow'): ?>
+                                <?php $startTime = new DateTimeImmutable($product['starts_at'], new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila')); ?>
+                                <span class="vault-stat blue">Starts <?= store_escape($startTime->format('M j, g:i a')) ?></span>
+                            <?php elseif ($state === 'archive'): ?>
+                                <span class="vault-stat red">Sale ended</span>
+                            <?php else: ?>
+                                <span class="vault-stat blue">Live now</span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($state === 'live' && $stock > 0): ?>
+                            <form action="cart.php" method="post">
+                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                <input type="hidden" name="action" value="add">
+                                <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
+                                <button class="vault-action-button" type="submit">ADD TO CART</button>
+                            </form>
+                        <?php else: ?>
+                            <button class="vault-action-button" type="button" disabled><?= $state === 'archive' ? 'SALE ENDED' : 'NOT LIVE YET' ?></button>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
     </div>
+    <p class="vault-empty-state" data-sale-empty hidden></p>
 </section>

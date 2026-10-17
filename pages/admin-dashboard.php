@@ -154,6 +154,7 @@ $recentUsers = $usersResult ? $usersResult->fetch_all(MYSQLI_ASSOC) : [];
 
 $quickLinks = [
     ['label' => 'Add Product', 'href' => 'product-input.php', 'accent' => 'primary'],
+    ['label' => 'Manage Flash Sales', 'href' => 'flash-sale-admin.php', 'accent' => 'secondary'],
     ['label' => 'Inventory List', 'href' => 'products.php', 'accent' => 'secondary'],
     ['label' => 'Order Queue', 'href' => '#orders', 'accent' => 'secondary'],
     ['label' => 'Customer Accounts', 'href' => '#accounts', 'accent' => 'secondary'],

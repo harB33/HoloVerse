@@ -65,6 +65,13 @@
     opacity: 0.8;
 }
 
+.vault-filter:focus-visible,
+.vault-favorite:focus-visible,
+.vault-action-button:focus-visible {
+    outline: 3px solid #087fa8;
+    outline-offset: 3px;
+}
+
 .vault-product-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -375,6 +382,54 @@
     font-size: 0.92rem;
     line-height: 1.7;
     color: #566573;
+}
+
+.vault-product-info form {
+    margin-top: auto;
+}
+
+.vault-product-info form .vault-action-button {
+    width: 100%;
+}
+
+.vault-action-button:disabled {
+    background: #8b98a4;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.vault-favorite[aria-pressed="true"] {
+    color: #d33b55;
+}
+
+.vault-empty-state {
+    margin: 20px 8px 0;
+    border: 1px solid rgba(28, 32, 39, 0.08);
+    border-radius: 16px;
+    background: rgba(245, 245, 244, 0.95);
+    padding: 20px;
+    color: #5d6b78;
+    text-align: center;
+}
+
+.vault-empty-state[hidden] {
+    display: none;
+}
+
+.flash-setup-notice {
+    margin: 12px 0 0;
+    border: 1px solid #f2d48a;
+    border-radius: 12px;
+    background: #fff8e6;
+    padding: 12px 16px;
+    color: #715319;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.flash-setup-notice code {
+    overflow-wrap: anywhere;
+    font-size: 0.78rem;
 }
 
 @media (max-width: 1200px) {
