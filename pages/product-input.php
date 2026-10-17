@@ -340,6 +340,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
         <?php endif; ?>
     </main>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
 </html>

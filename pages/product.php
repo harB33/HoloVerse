@@ -153,6 +153,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             });
         </script>
     <?php endif; ?>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
 </html>

@@ -39,6 +39,7 @@ if (!store_flash_sale_table_exists($conn)) {
                 </section>
             </main>
         </div>
+        <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
     </body>
     </html>
     <?php
@@ -294,5 +295,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
         </main>
     </div>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 </html>

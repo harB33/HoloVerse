@@ -334,6 +334,7 @@ $quickLinks = [
             </div>
         </section>
     </main>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
 </html>

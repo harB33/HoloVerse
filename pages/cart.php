@@ -210,6 +210,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             <?php endif; ?>
         </main>
     </div>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
 </html>

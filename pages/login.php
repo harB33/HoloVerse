@@ -282,6 +282,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         });
         window.addEventListener("popstate", () => setAuthMode(new URLSearchParams(window.location.search).get("mode") === "register"));
     </script>
+    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
 </html>
