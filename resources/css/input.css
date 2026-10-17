@@ -70,6 +70,7 @@
 
   .watermark svg {
     @apply absolute left-1/2 top-1/2 h-[105%] w-[115%] -translate-x-1/2 -translate-y-1/2 rotate-[-12deg];
+    overflow: visible;
   }
 
   .watermark text {
@@ -705,7 +706,7 @@
   }
 
   .limited-drops {
-    @apply relative z-[1] bg-white px-[clamp(20px,4vw,64px)] pb-16 pt-11;
+    @apply relative z-[1] bg-transparent px-[clamp(20px,4vw,64px)] pb-16 pt-11;
   }
 
   .drops-heading {
@@ -739,7 +740,7 @@
   }
 
   .all-products-main {
-    @apply relative z-[1] min-h-[calc(100vh-70px)] bg-white px-[clamp(20px,4vw,64px)] pb-16 pt-11;
+    @apply relative z-[1] min-h-[calc(100vh-70px)] bg-transparent px-[clamp(20px,4vw,64px)] pb-16 pt-11;
   }
 
   .all-products-intro {
@@ -773,7 +774,7 @@
   }
 
   .drop-card {
-    @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-[#f8fafc] p-3;
+    @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-transparent p-3;
     position: relative;
   }
 
@@ -901,7 +902,7 @@
   }
 
   .explore {
-    @apply bg-[#fbfdff] px-6 py-16 [background-image:radial-gradient(#dbeafe_1px,transparent_1px)] [background-size:24px_24px];
+    @apply bg-[transparent] px-6 py-16 [background-image:radial-gradient(#dbeafe_1px,transparent_1px)] [background-size:24px_24px];
   }
 
   .explore-inner {
@@ -929,7 +930,7 @@
   }
 
   .explore-filter {
-    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-white px-4 py-[7px] text-[10px] font-semibold text-[#152238] transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
+    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-transparent px-4 py-[7px] text-[10px] font-semibold text-[#152238] transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
   }
 
   .explore-filter[aria-pressed="true"] {
@@ -954,7 +955,7 @@
   }
 
   .talent-card {
-    @apply flex min-h-[128px] min-w-0 flex-col items-center justify-center rounded-xl border border-[#e1e8f0] bg-white px-2 py-3 text-center transition-transform duration-200;
+    @apply flex min-h-[128px] min-w-0 flex-col items-center justify-center rounded-xl border border-[#e1e8f0] bg-transparent px-2 py-3 text-center transition-transform duration-200;
     width: 100%;
     height: 100%;
   }
@@ -988,7 +989,7 @@
   }
 
   .footer {
-    @apply border-t border-[#e5ebf2] bg-white px-6 pb-5 pt-12;
+    @apply bg-transparent px-6 pb-5 pt-12;
   }
 
   .radar-signup {
@@ -2019,11 +2020,11 @@
 
 @media (max-width: 1050px) {
   .site-header {
-    @apply gap-[15px];
+    @apply grid-cols-[minmax(0,1fr)_auto] gap-[15px];
   }
 
   .main-nav {
-    @apply gap-[15px] px-[18px] py-[14px];
+    @apply col-span-full row-start-2 mx-auto max-w-full gap-[15px] overflow-x-auto px-[18px] py-[14px];
   }
 
   .main-nav a {
