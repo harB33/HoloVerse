@@ -10,6 +10,11 @@ function store_escape(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function store_format_price(float $amount): string
+{
+    return '₱' . number_format($amount, 2);
+}
+
 function store_asset_url(string $path, string $siteRoot = ''): string
 {
     return preg_match('/^https?:\/\//i', $path) ? $path : $siteRoot . ltrim($path, '/');

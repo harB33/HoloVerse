@@ -119,7 +119,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endif; ?>
                                 <div class="cart-item-details">
                                     <h2><?= store_escape($item['product_name']) ?></h2>
-                                    <p><?= store_escape($item['variant_name']) ?> · <?= store_escape($item['currency']) ?> <?= number_format((float) $item['price'], 2) ?></p>
+                                    <p><?= store_escape($item['variant_name']) ?> · <?= store_escape(store_format_price((float) $item['price'])) ?></p>
                                 </div>
                                 <form action="cart.php" method="post" class="cart-item-controls">
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
@@ -131,7 +131,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </label>
                                     <button type="submit">Update</button>
                                 </form>
-                                <strong><?= store_escape($item['currency']) ?> <?= number_format((float) $item['price'] * (int) $item['quantity'], 2) ?></strong>
+                                <strong><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
                                 <form action="cart.php" method="post">
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                     <input type="hidden" name="action" value="remove">
@@ -143,7 +143,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                     <div class="cart-subtotals">
                         <?php foreach ($subtotals as $currency => $subtotal): ?>
-                            <p class="cart-subtotal">Subtotal (<?= store_escape($currency) ?>) <strong><?= store_escape($currency) ?> <?= number_format($subtotal, 2) ?></strong></p>
+                            <p class="cart-subtotal">Subtotal (PHP) <strong><?= store_escape(store_format_price($subtotal)) ?></strong></p>
                         <?php endforeach; ?>
                     </div>
                     <p>Checkout and payment processing are not enabled yet.</p>

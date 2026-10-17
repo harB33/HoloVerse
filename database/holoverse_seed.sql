@@ -34,11 +34,11 @@ INSERT INTO `product_tbl`
 
 INSERT INTO `product_variants_tbl`
   (`variant_id`, `product_id`, `variant_name`, `sku`, `price`, `compare_at_price`, `currency`, `stock_quantity`) VALUES
-(1, 1, '1/4 Scale', 'HV-SUISEI-ANNIV-14', 224.00, 280.00, 'USD', 22),
-(2, 2, '1/4 Scale', 'HV-KORONE-DOOG-14', 289.00, NULL, 'USD', 60),
-(3, 3, '1/7 Scale', 'HV-GURA-APEX-17', 215.00, NULL, 'USD', 60),
-(4, 4, 'Tour Edition', 'HV-CALLIOPE-SINDERELLA', 190.00, NULL, 'USD', 413),
-(5, 5, 'Memorial Box', 'HV-SUISEI-MEMORIAL-05', 175.00, NULL, 'USD', 360);
+(1, 1, '1/4 Scale', 'HV-SUISEI-ANNIV-14', 14104.83, 17631.04, 'PHP', 22),
+(2, 2, '1/4 Scale', 'HV-KORONE-DOOG-14', 18197.75, NULL, 'PHP', 60),
+(3, 3, '1/7 Scale', 'HV-GURA-APEX-17', 13538.12, NULL, 'PHP', 60),
+(4, 4, 'Tour Edition', 'HV-CALLIOPE-SINDERELLA', 11963.92, NULL, 'PHP', 413),
+(5, 5, 'Memorial Box', 'HV-SUISEI-MEMORIAL-05', 11019.40, NULL, 'PHP', 360);
 
 INSERT INTO `product_image_tbl` (`image_id`, `product_id`, `image_url`, `alt_text`, `sort_order`) VALUES
 (1, 1, 'assets/images/suisei2.jpg', 'Hoshimachi Suisei anniversary figure', 0),

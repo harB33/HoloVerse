@@ -21,7 +21,7 @@ $products = [];
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
     $statement = $conn->prepare(
-        "SELECT p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+        "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                 c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
                 v.stock_quantity, i.image_url, i.alt_text
          FROM product_tbl p
@@ -64,9 +64,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <?php if ($talent && $products): ?>
-                <section class="preorder-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
+                <section class="preorder-grid talent-merch-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
                     <?php foreach ($products as $product): ?>
                         <article class="preorder-card">
+                            <a class="merch-product-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                             <div class="preorder-art">
                                 <span class="preorder-badge"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order' : store_escape($product['category_name']) ?></span>
                                 <img
@@ -80,7 +81,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <h2><?= store_escape($product['product_name']) ?></h2>
                                 <p><?= store_escape($product['description'] ?? '') ?></p>
                                 <div class="preorder-footer">
-                                    <span class="preorder-price"><?= store_escape($product['currency']) ?> <?= number_format((float) $product['price'], 2) ?></span>
+                                    <span class="preorder-price"><?= store_escape(store_format_price((float) $product['price'])) ?></span>
                                     <?php if ((int) $product['stock_quantity'] > 0): ?>
                                         <form action="cart.php" method="post">
                                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
@@ -104,7 +105,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             <?php elseif ($talent): ?>
                 <p role="status">There is no available merchandise for <?= store_escape($talent['talent_name']) ?> right now.</p>
             <?php endif; ?>
-            <a class="preorder-guide" href="../index.php#explore">Back to the talent directory</a>
+            <a class="talent-directory-back-link" href="../index.php#explore">Back to the talent directory</a>
         </main>
     </div>
     <?php

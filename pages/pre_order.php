@@ -79,7 +79,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <h2><?= store_escape($product['product_name']) ?></h2>
                             <p><?= store_escape($product['description'] ?? '') ?></p>
                             <div class="preorder-footer">
-                                <span class="preorder-price"><?= store_escape($product['currency']) ?> <?= number_format((float) $product['price'], 2) ?></span>
+                                <span class="preorder-price"><?= store_escape(store_format_price((float) $product['price'])) ?></span>
                                 <?php if ((int) $product['stock_quantity'] > 0): ?>
                                     <form action="cart.php" method="post">
                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">

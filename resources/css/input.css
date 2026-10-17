@@ -293,6 +293,29 @@
 
   .drop-card {
     @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-[#f8fafc] p-3;
+    position: relative;
+  }
+
+  .drop-card-link,
+  .merch-product-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  .drop-card-link:focus-visible,
+  .merch-product-link:focus-visible {
+    outline: 3px solid #0d6bab;
+    outline-offset: 3px;
+  }
+
+  .drop-purchase form,
+  .drop-purchase > span,
+  .preorder-footer form,
+  .preorder-footer > span {
+    position: relative;
+    z-index: 2;
   }
 
   .drop-art {
@@ -306,7 +329,11 @@
   .drop-card-calliope { @apply [--drop-accent:#f0449a] [--drop-ink:#9a164e] [--drop-art-bg:#fce6ed]; }
 
   .drop-art-labels {
-    @apply absolute left-2 right-2 top-2 flex items-center justify-between;
+    @apply absolute left-2 right-2 top-2 z-10 flex items-center justify-between;
+  }
+
+  .drop-product-image {
+    @apply absolute inset-0 size-full object-contain p-10;
   }
 
   .drop-status,
@@ -324,11 +351,11 @@
   }
 
   .drop-art-caption {
-    @apply mt-2 text-center text-[9px];
+    @apply relative z-10 mt-2 text-center text-[9px];
   }
 
   .drop-art-tag {
-    @apply absolute bottom-2 right-2 max-w-[90%] overflow-hidden rounded-[3px] bg-white/90 px-[6px] py-1 text-[9px] font-semibold text-ellipsis whitespace-nowrap;
+    @apply absolute bottom-2 right-2 z-10 max-w-[90%] overflow-hidden rounded-[3px] bg-white/90 px-[6px] py-1 text-[9px] font-semibold text-ellipsis whitespace-nowrap;
   }
 
   .drop-details {
@@ -1279,8 +1306,29 @@
     @apply grid grid-cols-1 gap-[26px];
   }
 
+  .talent-merch-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    grid-auto-rows: 480px;
+    align-items: stretch;
+  }
+
   .preorder-card {
     @apply overflow-hidden rounded-[26px] border border-[rgba(49,180,207,0.2)] bg-white/90 shadow-[0_24px_40px_rgba(17,41,73,0.06)];
+    position: relative;
+  }
+
+  .talent-merch-grid .preorder-card {
+    display: grid;
+    grid-template-rows: 190px minmax(0, 1fr);
+    height: 100%;
+    min-width: 0;
+  }
+
+  .talent-merch-grid .talent-merch-image {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: contain;
   }
 
   .preorder-art {
@@ -1296,7 +1344,7 @@
   }
 
   .talent-merch-image {
-    @apply relative z-10 h-full min-h-[220px] w-full object-cover;
+    @apply relative z-0 h-full min-h-[220px] w-full object-cover;
   }
 
   .preorder-art-sky {
@@ -1312,7 +1360,75 @@
   }
 
   .preorder-badge {
-    @apply absolute right-[18px] top-[18px] z-10 rounded-full bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-white;
+    @apply pointer-events-none absolute right-[18px] top-[18px] z-10 rounded-full bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] px-3 py-2 text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-white;
+  }
+
+  .product-detail {
+    @apply grid grid-cols-1 overflow-hidden rounded-[26px] border border-[rgba(49,180,207,0.2)] bg-white/90 shadow-[0_24px_40px_rgba(17,41,73,0.06)];
+  }
+
+  .product-detail-art {
+    @apply relative flex min-h-[280px] items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#d8f8ff_0%,#bae8ff_38%,#7fcff0_100%)] p-8;
+  }
+
+  .product-detail-image {
+    @apply relative z-0 max-h-[460px] w-full object-contain;
+  }
+
+  .product-detail-content {
+    @apply p-6;
+  }
+
+  .product-detail-content h1 {
+    @apply mb-4 mt-2 text-[clamp(2rem,4vw,3.5rem)] leading-tight;
+  }
+
+  .product-detail-description,
+  .product-detail-talents,
+  .product-detail-shipping {
+    @apply leading-[1.7] text-[#42566d];
+  }
+
+  .product-detail-talents a {
+    @apply font-bold text-[#0d6bab] underline;
+  }
+
+  .product-detail-form {
+    @apply mt-6 flex flex-wrap items-center gap-4 border-t border-[rgba(49,180,207,0.16)] pt-6;
+  }
+
+  .product-detail-form label {
+    @apply w-full text-sm font-bold text-[#42566d];
+  }
+
+  .product-detail-form select {
+    @apply min-w-[180px] rounded-xl border border-[#d4e2ec] bg-white px-4 py-3 text-[#101829];
+  }
+
+  .product-detail-variant {
+    @apply my-0 font-semibold text-[#101829];
+  }
+
+  .product-detail-price {
+    @apply text-2xl font-extrabold text-[#101829];
+  }
+
+  .product-detail-form .preorder-button {
+    @apply ml-auto;
+  }
+
+  .product-detail-shipping {
+    @apply mt-6 border-t border-[rgba(49,180,207,0.16)] pt-4 text-sm;
+  }
+
+  @media (min-width: 800px) {
+    .product-detail {
+      @apply grid-cols-[1fr_1fr];
+    }
+
+    .product-detail-content {
+      @apply p-9;
+    }
   }
 
   .preorder-symbol {
@@ -1321,6 +1437,45 @@
 
   .preorder-body {
     @apply px-5 pb-6 pt-[22px];
+  }
+
+  .talent-merch-grid .preorder-body {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .talent-merch-grid .preorder-card h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .talent-merch-grid .preorder-card p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .talent-merch-grid .preorder-footer {
+    margin-top: auto;
+  }
+
+  .talent-merch-grid .preorder-price {
+    font-size: 1.15rem;
+  }
+
+  .talent-merch-grid .preorder-shipping {
+    margin-top: 12px;
+    padding-top: 10px;
+    font-size: 0.75rem;
   }
 
   .preorder-card h2 {
@@ -1361,6 +1516,10 @@
 
   .preorder-guide a {
     @apply whitespace-nowrap rounded-full bg-white px-[18px] py-3 text-[0.82rem] font-extrabold text-[#0d6bab] no-underline;
+  }
+
+  .talent-directory-back-link {
+    @apply mx-auto mt-8 flex w-fit items-center justify-center rounded-full bg-[linear-gradient(120deg,#101d35_0%,#0d6bab_58%,#31b4cf_100%)] px-5 py-3 text-[0.82rem] font-extrabold text-white no-underline;
   }
 }
 

@@ -73,8 +73,8 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                     <div class="flash-price-panel">
                         <div class="flash-price-line">
-                            <strong><?= store_escape($saleProduct['currency']) ?> <?= number_format((float) $saleProduct['price'], 2) ?></strong>
-                            <del><?= store_escape($saleProduct['currency']) ?> <?= number_format((float) $saleProduct['compare_at_price'], 2) ?></del>
+                            <strong><?= store_escape(store_format_price((float) $saleProduct['price'])) ?></strong>
+                            <del><?= store_escape(store_format_price((float) $saleProduct['compare_at_price'])) ?></del>
                             <?php $discountPercent = (int) round((1 - ((float) $saleProduct['price'] / (float) $saleProduct['compare_at_price'])) * 100); ?>
                             <span><?= $discountPercent ?>% off</span>
                         </div>

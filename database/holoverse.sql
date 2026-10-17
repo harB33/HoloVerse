@@ -191,7 +191,7 @@ CREATE TABLE `product_variants_tbl` (
   `sku` varchar(50) NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `compare_at_price` decimal(10,2) DEFAULT NULL,
-  `currency` char(3) NOT NULL DEFAULT 'USD',
+  `currency` char(3) NOT NULL DEFAULT 'PHP',
   `stock_quantity` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

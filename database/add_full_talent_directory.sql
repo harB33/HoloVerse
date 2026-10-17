@@ -50,17 +50,17 @@ FROM (
     UNION ALL SELECT 'Shiranui Flare', 'shiranui-flare', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Shiranui-Flare_list_thumb.png'
     UNION ALL SELECT 'Shirogane Noel', 'shirogane-noel', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Shirogane-Noel_list_thumb.png'
     UNION ALL SELECT 'Houshou Marine', 'houshou-marine', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Houshou-Marine_list_thumb.png'
-    UNION ALL SELECT 'Tsunomaki Watame', 'tsunomaki-watame', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Tsunomaki-Watame_list_thumb.png'
+    UNION ALL SELECT 'Tsunomaki Watame', 'tsunomaki-watame', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Tsunomaki-Watame_talent_list_thumb.png'
     UNION ALL SELECT 'Tokoyami Towa', 'tokoyami-towa', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Tokoyami-Towa_list_thumb.png'
     UNION ALL SELECT 'Himemori Luna', 'himemori-luna', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Himemori-Luna_list_thumb.png'
     UNION ALL SELECT 'Yukihana Lamy', 'yukihana-lamy', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Yukihana-Lamy_list_thumb.png'
-    UNION ALL SELECT 'Momosuzu Nene', 'momosuzu-nene', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_list_thumb.png'
+    UNION ALL SELECT 'Momosuzu Nene', 'momosuzu-nene', 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_talent_list_thumb.png'
     UNION ALL SELECT 'Shishiro Botan', 'shishiro-botan', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Shishiro-Botan_list_thumb.png'
     UNION ALL SELECT 'Omaru Polka', 'omaru-polka', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Omaru-Polka_list_thumb.png'
     UNION ALL SELECT 'La+ Darknesss', 'la-darknesss', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/La-Darknesss_list_thumb.png'
     UNION ALL SELECT 'Takane Lui', 'takane-lui', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Takane-Lui_list_thumb.png'
     UNION ALL SELECT 'Hakui Koyori', 'hakui-koyori', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Hakui-Koyori_list_thumb.png'
-    UNION ALL SELECT 'Kazama Iroha', 'kazama-iroha', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Kazama-Iroha_list_thumb.png'
+    UNION ALL SELECT 'Kazama Iroha', 'kazama-iroha', 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Kazama-Iroha_talent_list_thumb.png'
     UNION ALL SELECT 'Otonose Kanade', 'otonose-kanade', 'https://hololive.hololivepro.com/wp-content/uploads/2023/09/Otonose-Kanade_list_thumb.png'
     UNION ALL SELECT 'Ichijou Ririka', 'ichijou-ririka', 'https://hololive.hololivepro.com/wp-content/uploads/2023/09/Ichijou-Ririka_list_thumb.png'
     UNION ALL SELECT 'Juufuutei Raden', 'juufuutei-raden', 'https://hololive.hololivepro.com/wp-content/uploads/2023/09/Juufuutei-Raden_list_thumb.png'
@@ -105,6 +105,18 @@ WHERE NOT EXISTS (
     WHERE existing.`talent_slug` = source.`talent_slug`
        OR existing.`talent_name` = source.`talent_name`
 );
+
+UPDATE `talent_tbl`
+SET `talent_img` = CASE
+    WHEN `talent_slug` = 'tsunomaki-watame' OR `talent_name` = 'Tsunomaki Watame'
+        THEN 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Tsunomaki-Watame_talent_list_thumb.png'
+    WHEN `talent_slug` = 'momosuzu-nene' OR `talent_name` = 'Momosuzu Nene'
+        THEN 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_talent_list_thumb.png'
+    WHEN `talent_slug` = 'kazama-iroha' OR `talent_name` = 'Kazama Iroha'
+        THEN 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Kazama-Iroha_talent_list_thumb.png'
+END
+WHERE `talent_slug` IN ('tsunomaki-watame', 'momosuzu-nene', 'kazama-iroha')
+   OR `talent_name` IN ('Tsunomaki Watame', 'Momosuzu Nene', 'Kazama Iroha');
 
 INSERT INTO `talent_group_members_tbl` (`talent_id`, `group_id`)
 SELECT talent.`talent_id`, talent_group.`group_id`
