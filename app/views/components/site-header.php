@@ -31,17 +31,41 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                     </summary>
                     <div class="account-dropdown">
                         <span class="account-dropdown-name"><?= store_escape((string) ($_SESSION['username'] ?? 'Account')) ?></span>
-                        <a href="<?= $pageUrlPrefix ?>cart.php">My cart</a>
                         <?php if (store_has_role('admin')): ?>
                             <span class="account-dropdown-section">Administrator tools</span>
-                            <a href="<?= $pageUrlPrefix ?>product-input.php">Add a product</a>
+                            <a href="<?= $pageUrlPrefix ?>admin-dashboard.php">Admin dashboard</a>
                         <?php endif; ?>
-                        <form action="<?= $pageUrlPrefix ?>logout.php" method="post">
-                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                            <button type="submit">Log out</button>
-                        </form>
+                        <a href="<?= $pageUrlPrefix ?>cart.php">My cart</a>
+                        <button type="button" data-logout-dialog-open>Log out</button>
                     </div>
                 </details>
+                <dialog class="logout-dialog" data-logout-dialog aria-labelledby="logout-dialog-title" aria-describedby="logout-dialog-description">
+                    <div class="logout-dialog-content">
+                        <h2 id="logout-dialog-title">Log out of HoloVerse?</h2>
+                        <p id="logout-dialog-description">You can sign back in anytime to continue shopping.</p>
+                        <form action="<?= $pageUrlPrefix ?>logout.php" method="post">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <div class="logout-dialog-actions">
+                                <button class="logout-dialog-cancel" type="button" data-logout-dialog-close>Stay signed in</button>
+                                <button class="logout-dialog-confirm" type="submit">Yes, log out</button>
+                            </div>
+                        </form>
+                    </div>
+                </dialog>
+                <script>
+                    (() => {
+                        const dialog = document.querySelector("[data-logout-dialog]");
+                        const openButton = document.querySelector("[data-logout-dialog-open]");
+                        const closeButton = document.querySelector("[data-logout-dialog-close]");
+
+                        if (!dialog || !openButton || !closeButton) {
+                            return;
+                        }
+
+                        openButton.addEventListener("click", () => dialog.showModal());
+                        closeButton.addEventListener("click", () => dialog.close());
+                    })();
+                </script>
             <?php else: ?>
                 <details class="account-menu">
                     <summary class="entry-button" aria-label="Open guest menu">

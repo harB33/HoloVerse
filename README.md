@@ -29,9 +29,11 @@ All catalog and order prices are stored and displayed in Philippine pesos (PHP/â
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
 
-## Product entry
+## Administrator tools
 
-Sign in with an administrator account and choose **Add a product** under **Administrator tools** in the account menu to create a catalog listing. The form saves the product and its PHP-priced variant in one database transaction, with optional image and talent links. New products can be saved as drafts or published immediately. The user's role is read from the database on each request, so role changes take effect without signing in again; the product entry page also checks the role server-side.
+Sign in with an administrator account and open **Admin dashboard** under **Administrator tools** in the account menu. The dashboard provides store overview metrics, recent product and order activity, and controls to grant or revoke administrator access for other accounts. The available privilege levels are **Customer** and **Administrator**. Administrators cannot change their own privilege, and the last administrator cannot be demoted.
+
+To create a catalog listing, use **Add Product** from the dashboard. The form saves the product and its PHP-priced variant in one database transaction, with optional image and talent links. New products can be saved as drafts or published immediately. The user's role is read from the database on each request, so role changes take effect without signing in again; administrator pages also check the role server-side.
 
 To grant administrator access, first register an account, then update its role in MySQL:
 
