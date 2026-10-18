@@ -57,14 +57,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </article>
                 <div class="about-team-grid" aria-label="Development team">
                     <?php foreach ([
-                        ['name' => 'Harvy Bautista', 'role' => 'Front-end Developer'],
-                        ['name' => 'Jhon Rick Parica', 'role' => 'Back-end Developer'],
-                        ['name' => 'John Rommel Patriarca', 'role' => 'Front-end Developer'],
+                        'Harvy Bautista',
+                        'Jhon Rick Parica',
+                        'John Rommel Patriarca',
                     ] as $teamMember): ?>
                         <article class="about-team-card">
                             <div class="about-team-photo">Photo coming soon</div>
-                            <h3><?= store_escape($teamMember['name']) ?></h3>
-                            <p><?= store_escape($teamMember['role']) ?></p>
+                            <h3><?= store_escape($teamMember) ?></h3>
+                            <p>Developer</p>
                         </article>
                     <?php endforeach; ?>
                 </div>
