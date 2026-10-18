@@ -31,7 +31,7 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
    - `SUPABASE_DB_PASSWORD`
 
    Keep the database password private and out of browser-delivered code. The PHP runtime must have the `pdo_pgsql` extension enabled. Because row-level security has no public policies, the server-side connection must use the Supabase database owner (or another appropriately privileged backend role); never use these credentials in client-side code.
-   PHP PostgreSQL connection attempts time out after five seconds so an unreachable database does not leave the local PHP server waiting indefinitely. A timeout means the database endpoint is unreachable or still waking up; check the Supabase project status and network access.
+   PHP reuses persistent PostgreSQL connections across requests within each server process, avoiding a new remote database connection on every page navigation. The first request after starting the server still has to establish the connection; if it is slow or fails, check the Supabase project status and network access.
 4. Serve the project through PHP.
 
 `Database/holoverse.sql` is a one-time baseline for a new, empty schema; do not run it over an existing database. It includes the flash-sale table and the checked-in catalog, talent, sample-cart, and account snapshot data. It is not a live migration or backup of accounts, carts, or orders created after that snapshot.
