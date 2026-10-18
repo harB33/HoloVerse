@@ -36,6 +36,8 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 `Database/holoverse.sql` is a one-time baseline for a new, empty schema; do not run it over an existing database. It includes the flash-sale table and the checked-in catalog, talent, sample-cart, and account snapshot data. It is not a live migration or backup of accounts, carts, or orders created after that snapshot.
 
+For an existing database, run `Database/migrations/20261018_add_order_payment_method.sql` once in the Supabase SQL Editor before using the checkout payment-method step. Checkout records the selected method on the pending order but does not process or collect payment.
+
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.

@@ -17,6 +17,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 if (($_POST['checkout_scope'] ?? '') !== 'cart' || $cartId < 1) {
                     throw new RuntimeException('Add an item to your cart before checkout.');
                 }
+                unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
                 $_SESSION['checkout_intent'] = ['scope' => 'cart'];
 
                 if (!isset($_SESSION['user_id'])) {

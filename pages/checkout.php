@@ -10,25 +10,29 @@ $userId = (int) $_SESSION['user_id'];
 $intent = $_SESSION['checkout_intent'] ?? [];
 $message = '';
 $orderNumber = '';
+$paymentMethod = '';
+$checkoutStep = $_SESSION['checkout_step'] ?? 'information';
+$savedShipping = $_SESSION['checkout_shipping'] ?? [];
 $shipping = [
-    'recipient_name' => (string) ($_POST['recipient_name'] ?? $_SESSION['username'] ?? ''),
-    'address_line1' => (string) ($_POST['address_line1'] ?? ''),
-    'address_line2' => (string) ($_POST['address_line2'] ?? ''),
-    'city' => (string) ($_POST['city'] ?? ''),
-    'region' => (string) ($_POST['region'] ?? ''),
-    'postal_code' => (string) ($_POST['postal_code'] ?? ''),
-    'country_code' => strtoupper((string) ($_POST['country_code'] ?? 'PH')),
+    'recipient_name' => (string) ($_POST['recipient_name'] ?? $savedShipping['recipient_name'] ?? $_SESSION['username'] ?? ''),
+    'address_line1' => (string) ($_POST['address_line1'] ?? $savedShipping['address_line1'] ?? ''),
+    'address_line2' => (string) ($_POST['address_line2'] ?? $savedShipping['address_line2'] ?? ''),
+    'city' => (string) ($_POST['city'] ?? $savedShipping['city'] ?? ''),
+    'region' => (string) ($_POST['region'] ?? $savedShipping['region'] ?? ''),
+    'postal_code' => (string) ($_POST['postal_code'] ?? $savedShipping['postal_code'] ?? ''),
+    'country_code' => strtoupper((string) ($_POST['country_code'] ?? $savedShipping['country_code'] ?? 'PH')),
 ];
 
 if (isset($_GET['order']) && is_string($_GET['order'])) {
     $requestedOrder = $_GET['order'];
-    $statement = $conn->prepare('SELECT order_number FROM order_tbl WHERE order_number = ? AND user_id = ? LIMIT 1');
+    $statement = $conn->prepare('SELECT order_number, payment_method FROM order_tbl WHERE order_number = ? AND user_id = ? LIMIT 1');
     $statement->bind_param('si', $requestedOrder, $userId);
     $statement->execute();
     $completedOrder = $statement->get_result()->fetch_assoc();
     $statement->close();
     if ($completedOrder) {
         $orderNumber = $completedOrder['order_number'];
+        $paymentMethod = (string) ($completedOrder['payment_method'] ?? '');
     }
 }
 
@@ -41,9 +45,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
     if (!store_verify_csrf()) {
         http_response_code(403);
         $message = 'Your session expired. Refresh the page and try again.';
-    } elseif (($_POST['action'] ?? '') !== 'place_order') {
+    } elseif (($_POST['action'] ?? '') === 'back_to_information') {
+        $checkoutStep = 'information';
+        $_SESSION['checkout_step'] = $checkoutStep;
+    } elseif (!in_array($_POST['action'] ?? '', ['continue_to_payment', 'place_order'], true)) {
         $message = 'That checkout action is not supported.';
     } else {
+        $action = (string) $_POST['action'];
         $limits = [
             'recipient_name' => 150,
             'address_line1' => 255,
@@ -69,7 +77,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
             $message = 'Complete the required shipping address fields.';
         }
 
-        if ($message === '') {
+        if ($message === '' && $action === 'continue_to_payment') {
+            $_SESSION['checkout_shipping'] = $shipping;
+            $checkoutStep = 'payment_method';
+            $_SESSION['checkout_step'] = $checkoutStep;
+        } elseif ($message === '' && $action === 'place_order') {
+            $paymentMethod = (string) ($_POST['payment_method'] ?? '');
+            if ($checkoutStep !== 'payment_method' || !in_array($paymentMethod, ['card', 'e_wallet', 'cash_on_delivery'], true)) {
+                $message = 'Choose a valid payment method before placing your order.';
+                $checkoutStep = 'payment_method';
+                $_SESSION['checkout_step'] = $checkoutStep;
+            }
+        }
+
+        if ($message === '' && $action === 'place_order') {
             $cartId = store_current_cart_id($conn, false);
             try {
                 $conn->begin_transaction();
@@ -111,10 +132,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
 
                 $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
                 $statement = $conn->prepare(
-                    "INSERT INTO order_tbl (user_id, order_number, status, currency, shipping_fee, tax)
-                     VALUES (?, ?, 'pending', ?, 0, 0) RETURNING order_id"
+                    "INSERT INTO order_tbl (user_id, order_number, status, currency, payment_method, shipping_fee, tax)
+                     VALUES (?, ?, 'pending', ?, ?, 0, 0) RETURNING order_id"
                 );
-                $statement->bind_param('iss', $userId, $orderNumber, $currency);
+                $statement->bind_param('isss', $userId, $orderNumber, $currency, $paymentMethod);
                 $statement->execute();
                 $createdOrder = $statement->get_result()->fetch_assoc();
                 $orderId = (int) ($createdOrder['order_id'] ?? 0);
@@ -179,6 +200,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
 
                 $conn->commit();
                 unset($_SESSION['checkout_intent']);
+                unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
                 header('Location: checkout.php?order=' . rawurlencode($orderNumber));
                 exit;
             } catch (Throwable $error) {
@@ -194,15 +216,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
     }
 }
 
+if (!in_array($checkoutStep, ['information', 'payment_method'], true)) {
+    $checkoutStep = 'information';
+}
+
 $items = [];
 if ($orderNumber === '') {
     $cartId = store_current_cart_id($conn, false);
     if ($cartId > 0) {
         $statement = $conn->prepare(
-            "SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity
+            "SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity,
+                    i.image_url, i.alt_text
              FROM cart_items_tbl ci
              INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
              INNER JOIN product_tbl p ON p.product_id = v.product_id
+             LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
              WHERE ci.cart_id = ? AND p.status = 'active'
              ORDER BY ci.added_at DESC"
         );
@@ -230,7 +258,20 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <section class="checkout-panel checkout-confirmation" aria-labelledby="checkout-title">
                     <span class="drops-eyebrow">Order placed</span>
                     <h1 id="checkout-title">Thank you for your order</h1>
+                    <nav class="checkout-progress" aria-label="Checkout progress">
+                        <span class="checkout-progress-step is-complete">Information</span>
+                        <span class="checkout-progress-step is-complete">Payment Method</span>
+                        <span class="checkout-progress-step is-current" aria-current="step">Confirmation</span>
+                    </nav>
                     <p>Your order is recorded as pending. Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
+                    <?php if ($paymentMethod !== ''): ?>
+                        <p>Selected payment method: <strong><?= store_escape(match ($paymentMethod) {
+                            'card' => 'Card',
+                            'e_wallet' => 'E-wallet',
+                            'cash_on_delivery' => 'Cash on delivery',
+                            default => 'Not specified',
+                        }) ?></strong>. No payment has been collected.</p>
+                    <?php endif; ?>
                     <a class="cart-continue-button" href="products.php">Continue shopping</a>
                 </section>
             <?php elseif (!$items): ?>
@@ -243,65 +284,114 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <div class="checkout-layout">
                     <section class="checkout-panel" aria-labelledby="checkout-title">
                         <span class="drops-eyebrow">Account checkout</span>
-                        <h1 id="checkout-title">Shipping details</h1>
+                        <h1 id="checkout-title"><?= $checkoutStep === 'information' ? 'Shipping details' : 'Payment method' ?></h1>
+                        <nav class="checkout-progress" aria-label="Checkout progress">
+                            <span class="checkout-progress-step<?= $checkoutStep === 'information' ? ' is-current' : ' is-complete' ?>"<?= $checkoutStep === 'information' ? ' aria-current="step"' : '' ?>>Information</span>
+                            <span class="checkout-progress-step<?= $checkoutStep === 'payment_method' ? ' is-current' : '' ?>"<?= $checkoutStep === 'payment_method' ? ' aria-current="step"' : '' ?>>Payment Method</span>
+                            <span class="checkout-progress-step">Confirmation</span>
+                        </nav>
                         <?php if ($message !== ''): ?>
                             <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
-                        <form class="checkout-address-form" action="checkout.php" method="post">
-                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="place_order">
-                            <label>
-                                Recipient name
-                                <input type="text" name="recipient_name" maxlength="150" required value="<?= store_escape($shipping['recipient_name']) ?>">
-                            </label>
-                            <label>
-                                Address
-                                <input type="text" name="address_line1" maxlength="255" required autocomplete="address-line1" value="<?= store_escape($shipping['address_line1']) ?>">
-                            </label>
-                            <label>
-                                Apartment, suite, etc. (optional)
-                                <input type="text" name="address_line2" maxlength="255" autocomplete="address-line2" value="<?= store_escape($shipping['address_line2']) ?>">
-                            </label>
-                            <div class="checkout-address-row">
+                        <?php if ($checkoutStep === 'information'): ?>
+                            <form class="checkout-address-form" action="checkout.php" method="post">
+                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                <input type="hidden" name="action" value="continue_to_payment">
                                 <label>
-                                    City
-                                    <input type="text" name="city" maxlength="100" required autocomplete="address-level2" value="<?= store_escape($shipping['city']) ?>">
+                                    Recipient name
+                                    <input type="text" name="recipient_name" maxlength="150" required value="<?= store_escape($shipping['recipient_name']) ?>">
                                 </label>
                                 <label>
-                                    Region / province
-                                    <input type="text" name="region" maxlength="100" autocomplete="address-level1" value="<?= store_escape($shipping['region']) ?>">
-                                </label>
-                            </div>
-                            <div class="checkout-address-row">
-                                <label>
-                                    Postal code
-                                    <input type="text" name="postal_code" maxlength="20" required autocomplete="postal-code" value="<?= store_escape($shipping['postal_code']) ?>">
+                                    Address
+                                    <input type="text" name="address_line1" maxlength="255" required autocomplete="address-line1" value="<?= store_escape($shipping['address_line1']) ?>">
                                 </label>
                                 <label>
-                                    Country code
-                                    <input type="text" name="country_code" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" required autocomplete="country" value="<?= store_escape($shipping['country_code']) ?>">
+                                    Apartment, suite, etc. (optional)
+                                    <input type="text" name="address_line2" maxlength="255" autocomplete="address-line2" value="<?= store_escape($shipping['address_line2']) ?>">
                                 </label>
-                            </div>
-                            <button class="cart-checkout-button" type="submit">Place order</button>
-                        </form>
+                                <div class="checkout-address-row">
+                                    <label>
+                                        City
+                                        <input type="text" name="city" maxlength="100" required autocomplete="address-level2" value="<?= store_escape($shipping['city']) ?>">
+                                    </label>
+                                    <label>
+                                        Region / province
+                                        <input type="text" name="region" maxlength="100" autocomplete="address-level1" value="<?= store_escape($shipping['region']) ?>">
+                                    </label>
+                                </div>
+                                <div class="checkout-address-row">
+                                    <label>
+                                        Postal code
+                                        <input type="text" name="postal_code" maxlength="20" required autocomplete="postal-code" value="<?= store_escape($shipping['postal_code']) ?>">
+                                    </label>
+                                    <label>
+                                        Country code
+                                        <input type="text" name="country_code" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" required autocomplete="country" value="<?= store_escape($shipping['country_code']) ?>">
+                                    </label>
+                                </div>
+                                <button class="cart-checkout-button" type="submit">Proceed to payment method</button>
+                            </form>
+                        <?php else: ?>
+                            <form class="checkout-address-form checkout-payment-form" action="checkout.php" method="post">
+                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                <fieldset class="checkout-payment-options">
+                                    <legend>Choose a payment method</legend>
+                                    <label class="checkout-payment-option">
+                                        <input type="radio" name="payment_method" value="card" required>
+                                        <span>Card</span>
+                                    </label>
+                                    <label class="checkout-payment-option">
+                                        <input type="radio" name="payment_method" value="e_wallet" required>
+                                        <span>E-wallet</span>
+                                    </label>
+                                    <label class="checkout-payment-option">
+                                        <input type="radio" name="payment_method" value="cash_on_delivery" required>
+                                        <span>Cash on delivery</span>
+                                    </label>
+                                </fieldset>
+                                <p class="checkout-payment-notice">This checkout records your selection only. No payment will be collected online.</p>
+                                <div class="checkout-payment-actions">
+                                    <button class="checkout-back-button" type="submit" name="action" value="back_to_information">Previous</button>
+                                    <button class="cart-checkout-button" type="submit" name="action" value="place_order">Place order</button>
+                                </div>
+                            </form>
+                        <?php endif; ?>
                     </section>
 
                     <aside class="checkout-panel checkout-order-summary" aria-label="Order summary">
-                        <h2>Order summary</h2>
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
+                                <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
+                                <circle cx="18" cy="20" r="2" />
+                                <circle cx="8" cy="20" r="2" />
+                            </svg>
+                            Order summary
+                        </h2>
                         <?php $checkoutTotal = 0.0; ?>
-                        <?php foreach ($items as $item): ?>
-                            <?php $lineTotal = (float) $item['price'] * (int) $item['quantity']; $checkoutTotal += $lineTotal; ?>
-                            <div class="checkout-item">
-                                <div>
-                                    <strong><?= store_escape($item['product_name']) ?></strong>
-                                    <span><?= store_escape($item['variant_name']) ?> · Qty <?= (int) $item['quantity'] ?></span>
-                                </div>
-                                <strong><?= store_escape(store_format_price($lineTotal)) ?></strong>
-                            </div>
-                        <?php endforeach; ?>
-                        <div class="cart-summary-total">
-                            <span>Total</span>
-                            <strong><?= store_escape(store_format_price($checkoutTotal)) ?></strong>
+                        <div class="checkout-items">
+                            <?php foreach ($items as $item): ?>
+                                <?php $lineTotal = (float) $item['price'] * (int) $item['quantity']; $checkoutTotal += $lineTotal; ?>
+                                <article class="checkout-item">
+                                    <div class="checkout-item-image">
+                                        <?php if (!empty($item['image_url'])): ?>
+                                            <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="<?= store_escape($item['alt_text'] ?? $item['product_name']) ?>" loading="lazy" decoding="async">
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="checkout-item-details">
+                                        <div class="checkout-item-heading">
+                                            <strong><?= (int) $item['quantity'] ?>x <?= store_escape($item['product_name']) ?></strong>
+                                            <strong><?= store_escape(store_format_price($lineTotal)) ?></strong>
+                                        </div>
+                                        <span><?= store_escape($item['variant_name']) ?></span>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="checkout-totals">
+                            <div><span>Subtotal</span><span><?= store_escape(store_format_price($checkoutTotal)) ?></span></div>
+                            <div><span>Shipping fee</span><span>Free</span></div>
+                            <div class="checkout-total"><strong>Total</strong><strong><?= store_escape(store_format_price($checkoutTotal)) ?></strong></div>
                         </div>
                         <p>Shipping is free. Payment is not collected by this checkout.</p>
                     </aside>

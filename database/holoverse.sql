@@ -69,6 +69,7 @@ CREATE TABLE order_tbl (
     user_id INTEGER DEFAULT NULL,
     order_number varchar(30) NOT NULL,
     status varchar(30) NOT NULL DEFAULT 'pending',
+    payment_method varchar(30) DEFAULT NULL CHECK (payment_method IS NULL OR payment_method IN ('card', 'e_wallet', 'cash_on_delivery')),
     currency char(3) NOT NULL DEFAULT 'PHP',
     shipping_fee NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     tax NUMERIC(10,2) NOT NULL DEFAULT 0.00,
