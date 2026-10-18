@@ -155,9 +155,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php if ((int) $saleProduct['stock_quantity'] > 0): ?>
                         <form action="cart.php" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="add">
                             <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>">
-                            <button class="flash-reserve-button" type="submit">
+                            <button class="flash-reserve-button" type="submit" name="action" value="add">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-basket" aria-hidden="true">
                                     <path d="m15 11-1 9" />
                                     <path d="m19 11-4-7" />

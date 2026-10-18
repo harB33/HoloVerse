@@ -102,9 +102,8 @@ require __DIR__ . '/app/views/layout/head.php';
                                 <?php if ((int) $product['stock_quantity'] > 0): ?>
                                     <form action="pages/cart.php" method="post">
                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                        <input type="hidden" name="action" value="add">
                                         <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                        <button type="submit">Add to cart</button>
+                                        <button type="submit" name="action" value="add">Add to cart</button>
                                     </form>
                                 <?php else: ?>
                                     <span>Sold out</span>

@@ -96,7 +96,6 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                         <form class="product-detail-form" action="cart.php" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                            <input type="hidden" name="action" value="add">
                             <label for="product-variant">Edition</label>
                             <?php if (count($variants) === 1): ?>
                                 <?php $variant = $variants[0]; ?>
@@ -117,7 +116,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php endif; ?>
                             <strong class="product-detail-price"><?= store_escape(store_format_price((float) $defaultVariant['price'])) ?></strong>
                             <?php if ((int) $defaultVariant['stock_quantity'] > 0): ?>
-                                <button class="preorder-button" type="submit">Add to cart</button>
+                                <button class="preorder-button" type="submit" name="action" value="add">Add to cart</button>
                             <?php else: ?>
                                 <span class="preorder-button">Sold out</span>
                             <?php endif; ?>

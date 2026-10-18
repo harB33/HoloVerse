@@ -13,6 +13,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         try {
             if ($action === 'add') {
                 store_add_to_cart($conn, (int) ($_POST['variant_id'] ?? 0), (int) ($_POST['quantity'] ?? 1));
+            } elseif ($action === 'checkout') {
+                if (($_POST['checkout_scope'] ?? '') !== 'cart' || $cartId < 1) {
+                    throw new RuntimeException('Add an item to your cart before checkout.');
+                }
+                $_SESSION['checkout_intent'] = ['scope' => 'cart'];
+
+                if (!isset($_SESSION['user_id'])) {
+                    header('Location: login.php?mode=register&return_to=checkout');
+                } else {
+                    header('Location: checkout.php');
+                }
+                exit;
             } elseif ($action === 'update') {
                 $itemId = (int) ($_POST['cart_item_id'] ?? 0);
                 $quantity = (int) ($_POST['quantity'] ?? 0);
@@ -184,7 +196,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
                             </div>
                         <?php endforeach; ?>
-                        <button type="button" class="cart-checkout-button">Proceed to Checkout</button>
+                        <form action="cart.php" method="post">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="action" value="checkout">
+                            <input type="hidden" name="checkout_scope" value="cart">
+                            <button type="submit" class="cart-checkout-button">Proceed to Checkout</button>
+                        </form>
                     </aside>
                 </div>
             <?php else: ?>

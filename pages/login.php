@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 $isRegistration = ($_GET['mode'] ?? '') === 'register' || ($_POST['mode'] ?? '') === 'register';
+$returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
 $message = '';
 $registrationName = '';
 $registrationEmail = '';
@@ -69,7 +70,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $_SESSION['user_role'] = 'user';
                     session_regenerate_id(true);
                     store_merge_guest_cart($conn, $registeredUserId);
-                    header('Location: /index.php');
+                    header('Location: ' . ($returnTo === 'checkout' ? '/pages/checkout.php' : '/index.php'));
                     exit;
                 }
             }
@@ -88,7 +89,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_role'] = $user['user_role'];
                 store_merge_guest_cart($conn, (int) $user['user_id']);
-                header('Location: /index.php');
+                header('Location: ' . ($returnTo === 'checkout' ? '/pages/checkout.php' : '/index.php'));
                 exit;
             }
         }
@@ -122,6 +123,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <form action="login.php" method="post" class="space-y-5">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                         <input type="hidden" name="mode" value="login">
+                        <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
                         <div>
                             <label for="login-email" class="mb-2 block text-sm font-medium text-slate-700">Email</label>
                             <input id="login-email" type="email" name="email" autocomplete="email" placeholder="Example@email.com" required
@@ -161,6 +163,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <form action="login.php?mode=register" method="post" class="space-y-5">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="register">
+                            <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
                             <div>
                                 <label for="register-username" class="mb-2 block text-sm font-medium text-slate-700">Name</label>
                                 <input id="register-username" type="text" name="username" autocomplete="name" minlength="2" maxlength="50" required value="<?= store_escape($registrationName) ?>"
@@ -270,13 +273,18 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         document.querySelectorAll("[data-show-register]").forEach((button) => {
             button.addEventListener("click", () => {
-                window.history.pushState({ authMode: "register" }, "", "?mode=register");
+                const params = new URLSearchParams(window.location.search);
+                params.set("mode", "register");
+                window.history.pushState({ authMode: "register" }, "", `?${params.toString()}`);
                 setAuthMode(true);
             });
         });
         document.querySelectorAll("[data-show-login]").forEach((button) => {
             button.addEventListener("click", () => {
-                window.history.pushState({ authMode: "login" }, "", window.location.pathname);
+                const params = new URLSearchParams(window.location.search);
+                params.delete("mode");
+                const query = params.toString();
+                window.history.pushState({ authMode: "login" }, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
                 setAuthMode(false);
             });
         });
