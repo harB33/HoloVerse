@@ -148,7 +148,7 @@ $recentOrders = $ordersResult ? $ordersResult->fetch_all(MYSQLI_ASSOC) : [];
 $usersResult = $conn->query(
     'SELECT user_id, username, email, user_role, created_at
      FROM user_tbl
-     ORDER BY created_at DESC'
+     ORDER BY (user_id = ' . (int) $_SESSION['user_id'] . ') DESC, created_at DESC'
 );
 $recentUsers = $usersResult ? $usersResult->fetch_all(MYSQLI_ASSOC) : [];
 
