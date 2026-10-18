@@ -3,7 +3,10 @@ require_once __DIR__ . '/app/store.php';
 $generationLabels = [];
 $groupsResult = $conn->query(
     "SELECT group_slug, group_name FROM talent_group_tbl
-     ORDER BY FIELD(group_slug, 'gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai')"
+     ORDER BY array_position(
+         ARRAY['gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai']::text[],
+         group_slug
+     )"
 );
 while ($group = $groupsResult->fetch_assoc()) {
     $generationLabels[$group['group_slug']] = $group['group_name'];
@@ -12,13 +15,19 @@ while ($group = $groupsResult->fetch_assoc()) {
 $talents = [];
 $talentStatuses = ['Watson Amelia' => 'Affiliate'];
 $talentResult = $conn->query(
-    'SELECT t.talent_name, t.talent_img,
-            GROUP_CONCAT(g.group_slug ORDER BY FIELD(g.group_slug, "gen-0", "gen-1", "gamers", "gen-2", "gen-3", "gen-4", "gen-5", "holox", "regloss", "flow-glow", "myth", "promise", "advent", "justice", "id-gen-1", "id-gen-2", "id-gen-3", "asobi-mawaritai") SEPARATOR " ") AS group_slugs
+    "SELECT t.talent_name, t.talent_img,
+            STRING_AGG(
+                g.group_slug,
+                ' ' ORDER BY array_position(
+                    ARRAY['gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai']::text[],
+                    g.group_slug
+                )
+            ) AS group_slugs
      FROM talent_tbl t
      LEFT JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
      LEFT JOIN talent_group_tbl g ON g.group_id = gm.group_id
      GROUP BY t.talent_id, t.talent_name, t.talent_img
-     ORDER BY t.talent_name'
+     ORDER BY t.talent_name"
 );
 while ($talent = $talentResult->fetch_assoc()) {
     $groupSlugs = $talent['group_slugs'] ? explode(' ', $talent['group_slugs']) : [];

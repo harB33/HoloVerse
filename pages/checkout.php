@@ -89,7 +89,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 }
 
                 $statement->execute();
-                $items = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+                $items = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
                 $statement->close();
 
                 if (!$items) {
@@ -112,11 +112,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
                 $statement = $conn->prepare(
                     "INSERT INTO order_tbl (user_id, order_number, status, currency, shipping_fee, tax)
-                     VALUES (?, ?, 'pending', ?, 0, 0)"
+                     VALUES (?, ?, 'pending', ?, 0, 0) RETURNING order_id"
                 );
                 $statement->bind_param('iss', $userId, $orderNumber, $currency);
                 $statement->execute();
-                $orderId = (int) $conn->insert_id;
+                $createdOrder = $statement->get_result()->fetch_assoc();
+                $orderId = (int) ($createdOrder['order_id'] ?? 0);
+                if ($orderId < 1) {
+                    throw new RuntimeException('PostgreSQL did not return the new order ID.');
+                }
                 $statement->close();
 
                 $addressType = 'shipping';
@@ -195,16 +199,16 @@ if ($orderNumber === '') {
     $cartId = store_current_cart_id($conn, false);
     if ($cartId > 0) {
         $statement = $conn->prepare(
-            'SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity
+            "SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity
              FROM cart_items_tbl ci
              INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
              INNER JOIN product_tbl p ON p.product_id = v.product_id
-             WHERE ci.cart_id = ? AND p.status = "active"
-             ORDER BY ci.added_at DESC'
+             WHERE ci.cart_id = ? AND p.status = 'active'
+             ORDER BY ci.added_at DESC"
         );
         $statement->bind_param('i', $cartId);
         $statement->execute();
-        $items = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+        $items = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
         $statement->close();
     }
 }

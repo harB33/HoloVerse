@@ -36,7 +36,7 @@ function store_verify_csrf(): bool
         && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']);
 }
 
-function store_refresh_authenticated_user(mysqli $conn): void
+function store_refresh_authenticated_user(DatabaseConnection $conn): void
 {
     if (!isset($_SESSION['user_id'])) {
         unset($_SESSION['user_role'], $_SESSION['user_email']);
@@ -67,7 +67,7 @@ function store_has_role(string $role): bool
         && hash_equals($role, (string) $_SESSION['user_role']);
 }
 
-function store_current_cart_id(mysqli $conn, bool $create = true): int
+function store_current_cart_id(DatabaseConnection $conn, bool $create = true): int
 {
     $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 
@@ -96,20 +96,24 @@ function store_current_cart_id(mysqli $conn, bool $create = true): int
     }
 
     if ($userId !== null) {
-        $statement = $conn->prepare("INSERT INTO cart_tbl (user_id, status) VALUES (?, 'active')");
+        $statement = $conn->prepare("INSERT INTO cart_tbl (user_id, status) VALUES (?, 'active') RETURNING cart_id");
         $statement->bind_param('i', $userId);
     } else {
-        $statement = $conn->prepare("INSERT INTO cart_tbl (session_token, status) VALUES (?, 'active')");
+        $statement = $conn->prepare("INSERT INTO cart_tbl (session_token, status) VALUES (?, 'active') RETURNING cart_id");
         $statement->bind_param('s', $token);
     }
     $statement->execute();
-    $cartId = (int) $conn->insert_id;
+    $createdCart = $statement->get_result()->fetch_assoc();
+    $cartId = (int) ($createdCart['cart_id'] ?? 0);
+    if ($cartId < 1) {
+        throw new RuntimeException('PostgreSQL did not return the new cart ID.');
+    }
     $statement->close();
 
     return $cartId;
 }
 
-function store_merge_guest_cart(mysqli $conn, int $userId): void
+function store_merge_guest_cart(DatabaseConnection $conn, int $userId): void
 {
     if (empty($_SESSION['cart_token'])) {
         return;
@@ -138,8 +142,8 @@ function store_merge_guest_cart(mysqli $conn, int $userId): void
                 $statement = $conn->prepare(
                     'INSERT INTO cart_items_tbl (cart_id, variant_id, quantity)
                      SELECT ?, ci.variant_id, ci.quantity FROM cart_items_tbl ci WHERE ci.cart_id = ?
-                     ON DUPLICATE KEY UPDATE quantity = LEAST(
-                         cart_items_tbl.quantity + VALUES(quantity),
+                     ON CONFLICT (cart_id, variant_id) DO UPDATE SET quantity = LEAST(
+                         cart_items_tbl.quantity + EXCLUDED.quantity,
                          (SELECT stock_quantity FROM product_variants_tbl WHERE variant_id = cart_items_tbl.variant_id)
                      )'
                 );
@@ -165,7 +169,7 @@ function store_merge_guest_cart(mysqli $conn, int $userId): void
     }
 }
 
-function store_add_to_cart(mysqli $conn, int $variantId, int $quantity): void
+function store_add_to_cart(DatabaseConnection $conn, int $variantId, int $quantity): void
 {
     if ($variantId < 1 || $quantity < 1 || $quantity > 99) {
         throw new InvalidArgumentException('Choose a valid item quantity.');
@@ -209,7 +213,7 @@ function store_add_to_cart(mysqli $conn, int $variantId, int $quantity): void
     $statement->close();
 }
 
-function store_product_rows(mysqli $conn, string $where = '', string $order = 'p.created_at DESC', int $limit = 0): array
+function store_product_rows(DatabaseConnection $conn, string $where = '', string $order = 'p.created_at DESC', int $limit = 0): array
 {
     $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
@@ -222,25 +226,27 @@ function store_product_rows(mysqli $conn, string $where = '', string $order = 'p
             ORDER BY " . $order . ($limit > 0 ? ' LIMIT ' . $limit : '');
     $result = $conn->query($sql);
 
-    return $result->fetch_all(MYSQLI_ASSOC);
+    return $result->fetch_all(PDO::FETCH_ASSOC);
 }
 
-function store_flash_sale_table_exists(mysqli $conn): bool
+function store_flash_sale_table_exists(DatabaseConnection $conn): bool
 {
     $statement = $conn->prepare(
-        "SELECT 1
+        "SELECT EXISTS (
+             SELECT 1
          FROM information_schema.tables
-         WHERE table_schema = DATABASE() AND table_name = 'flash_sale_tbl'
-         LIMIT 1"
+             WHERE table_schema = current_schema() AND table_name = 'flash_sale_tbl'
+         ) AS table_exists"
     );
     $statement->execute();
-    $exists = $statement->get_result()->num_rows === 1;
+    $tableExists = $statement->get_result()->fetch_assoc()['table_exists'];
+    $exists = in_array($tableExists, [true, 't', 1, '1'], true);
     $statement->close();
 
     return $exists;
 }
 
-function store_flash_sale_rows(mysqli $conn, string $state, DateTimeImmutable $now): array
+function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTimeImmutable $now): array
 {
     $nowValue = $now->format('Y-m-d H:i:s');
 
@@ -291,7 +297,7 @@ function store_flash_sale_rows(mysqli $conn, string $state, DateTimeImmutable $n
     }
 
     $statement->execute();
-    $rows = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+    $rows = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
 
     return $rows;

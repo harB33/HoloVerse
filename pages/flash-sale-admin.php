@@ -29,11 +29,10 @@ if (!store_flash_sale_table_exists($conn)) {
                 <section class="rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:p-8" aria-labelledby="flash-sale-setup-title">
                     <p class="m-0 text-xs font-bold uppercase tracking-[0.15em] text-amber-800">Database setup required</p>
                     <h1 id="flash-sale-setup-title" class="mb-3 mt-2 text-2xl font-bold text-slate-900">Enable scheduled flash sales</h1>
-                    <p class="text-sm leading-relaxed text-slate-700">The current database does not have the <code>flash_sale_tbl</code> table. Live discounted products remain available, but upcoming drops cannot be scheduled until the migration is applied.</p>
+                    <p class="text-sm leading-relaxed text-slate-700">The current Supabase database does not have the <code>flash_sale_tbl</code> table. Live discounted products remain available, but upcoming drops cannot be scheduled until the table is restored.</p>
                     <ol class="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
-                        <li>Open phpMyAdmin and select the database configured by <code>HOLOVERSE_DB_NAME</code>.</li>
-                        <li>Import and run <code>Database/migrations/20261017_create_flash_sale_tbl.sql</code>.</li>
-                        <li>Refresh this page to manage scheduled drops.</li>
+                        <li>Ask the database administrator to restore the table using the schema in <code>Database/holoverse.sql</code>.</li>
+                        <li>Refresh this page after the table has been restored.</li>
                     </ol>
                     <a class="mt-5 inline-flex rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-slate-900" href="flash_sale.php">Return to flash sales</a>
                 </section>
@@ -159,7 +158,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                         exit;
                     }
                 }
-            } catch (mysqli_sql_exception $databaseError) {
+            } catch (PDOException $databaseError) {
                 $conn->rollback();
                 error_log('Flash sale scheduling failed: ' . $databaseError->getMessage());
                 $error = 'The drop could not be scheduled. Please try again.';
@@ -178,7 +177,7 @@ $eligibleProducts = $conn->query(
      WHERE p.status = 'active' AND v.stock_quantity > 0
        AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price
      ORDER BY p.product_name, v.variant_name"
-)->fetch_all(MYSQLI_ASSOC);
+)->fetch_all(PDO::FETCH_ASSOC);
 
 $scheduleStatement = $conn->prepare(
     'SELECT fs.flash_sale_id, fs.starts_at, fs.ends_at, fs.status, fs.created_at,
@@ -189,7 +188,7 @@ $scheduleStatement = $conn->prepare(
      ORDER BY fs.starts_at DESC, fs.flash_sale_id DESC'
 );
 $scheduleStatement->execute();
-$scheduledDrops = $scheduleStatement->get_result()->fetch_all(MYSQLI_ASSOC);
+$scheduledDrops = $scheduleStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
 $scheduleStatement->close();
 
 $pageTitle = 'Manage Flash Sales | HoloVerse';

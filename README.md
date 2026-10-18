@@ -8,8 +8,7 @@
 - `app/views/layout/` contains shared page layouts.
 - `app/views/components/` contains reusable interface components.
 - `config/` contains application configuration, including the database connection.
-- `Database/holoverse.sql` creates the schema and loads the starter catalog, talent directory, and sample merchandise.
-- `Database/migrations/` contains additive schema changes for existing installations.
+- `Database/holoverse.sql` creates the Supabase PostgreSQL schema and imports the initial catalog and talent data.
 - `Assets/images/` and `Assets/css/` contain browser-delivered assets.
 - `resources/css/` contains the Tailwind CSS source.
 
@@ -19,14 +18,22 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 ## Database setup
 
-1. Create an empty MySQL or MariaDB database named `holoverse`.
-2. Import `Database/holoverse.sql` once. It creates the tables and loads the initial catalog, full talent directory, and sample merchandise.
-3. Configure the connection with `HOLOVERSE_DB_HOST`, `HOLOVERSE_DB_PORT`, `HOLOVERSE_DB_USER`, `HOLOVERSE_DB_PASSWORD`, and `HOLOVERSE_DB_NAME`. The defaults are `localhost:3306`, user `root`, an empty password, and database `holoverse`.
-4. Serve the project through PHP with the `mysqli` extension enabled.
+1. Create a Supabase project with an empty `public` schema.
+2. Open the Supabase SQL Editor and run `Database/holoverse.sql` once. It creates the PostgreSQL tables, indexes, foreign keys, timestamp triggers, identity sequences, and enables row-level security without public policies, then imports the initial catalog and talent data.
+3. Configure the PHP runtime with either the Supabase PostgreSQL connection URL:
 
-The consolidated SQL file is for setting up a fresh, empty database. Do not import it over an existing database; it is not a backup or an update script. To back up existing accounts, orders, and other live data, export the database with both its structure and data using phpMyAdmin or `mysqldump`.
+   - `SUPABASE_DB_URL`, for example `postgresql://postgres:<database-password>@db.<project-ref>.supabase.co:5432/postgres?sslmode=require`
 
-For an existing installation, apply each new SQL file in `Database/migrations/` once. Flash-sale scheduling requires `20261017_create_flash_sale_tbl.sql`; it adds scheduled campaign windows without changing catalog prices or existing orders.
+   Or configure the connection details separately:
+
+   - `SUPABASE_DB_DSN`, for example `pgsql:host=db.<project-ref>.supabase.co;port=5432;dbname=postgres;sslmode=require`
+   - `SUPABASE_DB_USER`
+   - `SUPABASE_DB_PASSWORD`
+
+   Keep the database password private and out of browser-delivered code. The PHP runtime must have the `pdo_pgsql` extension enabled. Because row-level security has no public policies, the server-side connection must use the Supabase database owner (or another appropriately privileged backend role); never use these credentials in client-side code.
+4. Serve the project through PHP.
+
+`Database/holoverse.sql` is a one-time baseline for a new, empty schema; do not run it over an existing database. It includes the flash-sale table and the checked-in catalog, talent, sample-cart, and account snapshot data. It is not a live migration or backup of accounts, carts, or orders created after that snapshot.
 
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
@@ -42,10 +49,11 @@ To create a catalog listing, use **Add Product** from the dashboard. The form sa
 
 Use **Manage Flash Sales** from the admin dashboard to schedule an active, discounted, in-stock variant. Sale windows are interpreted in `HOLOVERSE_TIMEZONE` (defaults to `Asia/Manila`). Scheduled windows drive the flash-sale page's live, next-hour, tomorrow, and archive tabs. The catalog's configured price and compare-at price remain the source of product pricing; scheduling controls when a product is listed as a flash sale, not a price change.
 
-To grant administrator access, first register an account, then update its role in MySQL:
+To grant administrator access, first register an account, then update its role in the Supabase SQL Editor:
 
 ```sql
-UPDATE user_tbl SET user_role = 'admin' WHERE email = 'admin@example.com';
+UPDATE public.user_tbl SET user_role = 'admin', updated_at = CURRENT_TIMESTAMP
+WHERE LOWER(email) = LOWER('admin@example.com');
 ```
 
 Standard customer accounts cannot access the product entry page.

@@ -56,7 +56,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             } else {
                 if ($targetUser['user_role'] === 'admin' && $role === 'user') {
                     $adminRows = $conn->query("SELECT user_id FROM user_tbl WHERE user_role = 'admin' FOR UPDATE");
-                    if ($adminRows->num_rows <= 1) {
+                    if (count($adminRows->fetch_all(PDO::FETCH_ASSOC)) <= 1) {
                         $conn->rollback();
                         $dashboardNotice = 'The last administrator cannot be changed to a customer account.';
                         $dashboardNoticeIsError = true;
@@ -74,7 +74,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     exit;
                 }
             }
-        } catch (mysqli_sql_exception $error) {
+        } catch (PDOException $error) {
             $conn->rollback();
             error_log('Admin dashboard privilege update failed: ' . $error->getMessage());
             $dashboardNotice = 'The user privilege could not be updated. Please try again.';
@@ -132,7 +132,7 @@ $productsResult = $conn->query(
      ORDER BY p.created_at DESC
      LIMIT 5'
 );
-$recentProducts = $productsResult ? $productsResult->fetch_all(MYSQLI_ASSOC) : [];
+$recentProducts = $productsResult ? $productsResult->fetch_all(PDO::FETCH_ASSOC) : [];
 
 $ordersResult = $conn->query(
     'SELECT o.order_id, o.order_number, o.status, o.created_at, u.username, COALESCE(SUM(oi.quantity), 0) AS item_count
@@ -143,14 +143,14 @@ $ordersResult = $conn->query(
      ORDER BY o.created_at DESC
      LIMIT 5'
 );
-$recentOrders = $ordersResult ? $ordersResult->fetch_all(MYSQLI_ASSOC) : [];
+$recentOrders = $ordersResult ? $ordersResult->fetch_all(PDO::FETCH_ASSOC) : [];
 
 $usersResult = $conn->query(
     'SELECT user_id, username, email, user_role, created_at
      FROM user_tbl
      ORDER BY (user_id = ' . (int) $_SESSION['user_id'] . ') DESC, created_at DESC'
 );
-$recentUsers = $usersResult ? $usersResult->fetch_all(MYSQLI_ASSOC) : [];
+$recentUsers = $usersResult ? $usersResult->fetch_all(PDO::FETCH_ASSOC) : [];
 
 $quickLinks = [
     ['label' => 'Add Product', 'href' => 'product-input.php', 'accent' => 'primary'],

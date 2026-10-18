@@ -34,7 +34,7 @@ if ($talent) {
     );
     $statement->bind_param('i', $talentId);
     $statement->execute();
-    $products = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+    $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
 }
 

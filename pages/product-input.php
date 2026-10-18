@@ -39,9 +39,9 @@ $form = [
 
 if (!$accessDenied) {
     $categories = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name')
-        ->fetch_all(MYSQLI_ASSOC);
+        ->fetch_all(PDO::FETCH_ASSOC);
     $talents = $conn->query('SELECT talent_id, talent_name FROM talent_tbl ORDER BY talent_name')
-        ->fetch_all(MYSQLI_ASSOC);
+        ->fetch_all(PDO::FETCH_ASSOC);
 
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         foreach ($form as $key => $default) {
@@ -129,12 +129,16 @@ if (!$accessDenied) {
 
                     $statement = $conn->prepare(
                         'INSERT INTO product_tbl (category_id, product_name, description, status, is_preorder, expected_ship_date)
-                         VALUES (?, ?, ?, ?, ?, ?)'
+                         VALUES (?, ?, ?, ?, ?, ?) RETURNING product_id'
                     );
                     $categoryId = (int) $categoryId;
                     $statement->bind_param('isssis', $categoryId, $productName, $description, $status, $isPreorder, $expectedShipDate);
                     $statement->execute();
-                    $createdProductId = (int) $conn->insert_id;
+                    $createdProduct = $statement->get_result()->fetch_assoc();
+                    $createdProductId = (int) ($createdProduct['product_id'] ?? 0);
+                    if ($createdProductId < 1) {
+                        throw new RuntimeException('PostgreSQL did not return the new product ID.');
+                    }
                     $statement->close();
 
                     $currency = 'PHP';
@@ -169,9 +173,9 @@ if (!$accessDenied) {
                     $_SESSION['product_created_status'] = $status;
                     header('Location: product-input.php?created=' . $createdProductId);
                     exit;
-                } catch (mysqli_sql_exception $error) {
+                } catch (PDOException $error) {
                     $conn->rollback();
-                    if ($error->getCode() !== 1062) {
+                    if ($error->getCode() !== '23505') {
                         throw $error;
                     }
                     $message = 'That SKU is already in use. Enter a unique SKU and try again.';

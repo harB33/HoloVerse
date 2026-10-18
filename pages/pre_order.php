@@ -34,10 +34,10 @@ if ($selectedTalent !== '') {
     $statement = $conn->prepare($sql);
     $statement->bind_param('i', $talentId);
     $statement->execute();
-    $products = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+    $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
 } else {
-    $products = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+    $products = $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 $merchInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talentName !== '' ? $talentName : 'HoloVerse'), 0, 1));
 

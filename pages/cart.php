@@ -88,7 +88,7 @@ $statement = $conn->prepare(
 );
 $statement->bind_param('i', $cartId);
 $statement->execute();
-$cartItems = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+$cartItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
 $statement->close();
 $subtotals = [];
 $totalQuantity = 0;

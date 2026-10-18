@@ -30,7 +30,7 @@ if ($productId !== false && $productId !== null && $productId > 0) {
         );
         $statement->bind_param('i', $productId);
         $statement->execute();
-        $variants = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+        $variants = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
         $statement->close();
 
         $statement = $conn->prepare(
@@ -42,7 +42,7 @@ if ($productId !== false && $productId !== null && $productId > 0) {
         );
         $statement->bind_param('i', $productId);
         $statement->execute();
-        $talents = $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+        $talents = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
         $statement->close();
     }
 }

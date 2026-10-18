@@ -60,7 +60,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </span>
             </div>
             <?php if (!$flashSaleSchedulingAvailable): ?>
-                <p class="flash-setup-notice" role="status">Scheduled drop filters are temporarily unavailable. Showing all discounted, in-stock products. An administrator can enable scheduling by applying the <code>Database/migrations/20261017_create_flash_sale_tbl.sql</code> migration to this database.</p>
+                <p class="flash-setup-notice" role="status">Scheduled drop filters are temporarily unavailable. Showing all discounted, in-stock products. The Supabase database must include the <code>flash_sale_tbl</code> table from <code>Database/holoverse.sql</code>.</p>
             <?php endif; ?>
 
             <section class="flash-sale-heading" aria-labelledby="flash-sale-title">

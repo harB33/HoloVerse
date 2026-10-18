@@ -50,14 +50,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $message = 'The password confirmation does not match.';
             } else {
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-                $statement = $conn->prepare('INSERT INTO user_tbl (username, password_hash, email) VALUES (?, ?, ?)');
+                $statement = $conn->prepare('INSERT INTO user_tbl (username, password_hash, email) VALUES (?, ?, ?) RETURNING user_id');
                 $statement->bind_param('sss', $username, $passwordHash, $email);
                 $registeredUserId = 0;
                 try {
                     $statement->execute();
-                    $registeredUserId = (int) $conn->insert_id;
-                } catch (mysqli_sql_exception $error) {
-                    if ($error->getCode() !== 1062) {
+                    $registeredUser = $statement->get_result()->fetch_assoc();
+                    $registeredUserId = (int) ($registeredUser['user_id'] ?? 0);
+                    if ($registeredUserId < 1) {
+                        throw new RuntimeException('PostgreSQL did not return the new user ID.');
+                    }
+                } catch (PDOException $error) {
+                    if ($error->getCode() !== '23505') {
                         throw $error;
                     }
                     $message = 'An account with this email already exists.';
@@ -75,7 +79,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 }
             }
         } else {
-            $statement = $conn->prepare('SELECT user_id, username, password_hash, user_role FROM user_tbl WHERE email = ? LIMIT 1');
+            $statement = $conn->prepare('SELECT user_id, username, password_hash, user_role FROM user_tbl WHERE LOWER(email) = LOWER(?) LIMIT 1');
             $statement->bind_param('s', $email);
             $statement->execute();
             $user = $statement->get_result()->fetch_assoc();
