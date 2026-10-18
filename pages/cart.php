@@ -4,6 +4,10 @@ require_once __DIR__ . '/../app/store.php';
 $message = '';
 $cartId = store_current_cart_id($conn, false);
 
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    store_clear_expired_cart_items($conn, $cartId);
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     if (!store_verify_csrf()) {
         http_response_code(403);
@@ -14,7 +18,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             if ($action === 'add') {
                 store_add_to_cart($conn, (int) ($_POST['variant_id'] ?? 0), (int) ($_POST['quantity'] ?? 1));
             } elseif ($action === 'checkout') {
+                store_clear_expired_cart_items($conn, $cartId);
                 if (($_POST['checkout_scope'] ?? '') !== 'cart' || $cartId < 1) {
+                    throw new RuntimeException('Add an item to your cart before checkout.');
+                }
+                $statement = $conn->prepare(
+                    'SELECT EXISTS (
+                         SELECT 1 FROM cart_items_tbl
+                         WHERE cart_id = ?
+                     ) AS has_items'
+                );
+                $statement->bind_param('i', $cartId);
+                $statement->execute();
+                $hasItems = $statement->get_result()->fetch_assoc()['has_items'];
+                $statement->close();
+                if (!in_array($hasItems, [true, 't', 1, '1'], true)) {
                     throw new RuntimeException('Add an item to your cart before checkout.');
                 }
                 unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
@@ -38,25 +56,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     throw new RuntimeException('That quantity action is not supported.');
                 }
 
-                $statement = $conn->prepare(
-                    'SELECT pv.stock_quantity
-                     FROM cart_items_tbl ci
-                     INNER JOIN product_variants_tbl pv ON pv.variant_id = ci.variant_id
-                     WHERE ci.cart_item_id = ? AND ci.cart_id = ?'
-                );
-                $statement->bind_param('ii', $itemId, $cartId);
-                $statement->execute();
-                $item = $statement->get_result()->fetch_assoc();
-                $statement->close();
-
-                if (!$item || $quantity < 1 || $quantity > 99 || $quantity > (int) $item['stock_quantity']) {
-                    throw new RuntimeException('Choose a quantity within the available stock.');
-                }
-
-                $statement = $conn->prepare('UPDATE cart_items_tbl SET quantity = ? WHERE cart_item_id = ? AND cart_id = ?');
-                $statement->bind_param('iii', $quantity, $itemId, $cartId);
-                $statement->execute();
-                $statement->close();
+                store_update_cart_item($conn, $cartId, $itemId, $quantity);
             } elseif ($action === 'remove') {
                 $itemId = (int) ($_POST['cart_item_id'] ?? 0);
                 $statement = $conn->prepare('DELETE FROM cart_items_tbl WHERE cart_item_id = ? AND cart_id = ?');
@@ -79,7 +79,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
 $statement = $conn->prepare(
     'SELECT ci.cart_item_id, ci.quantity, p.product_name, v.variant_name, v.price, v.currency,
-            v.stock_quantity, v.variant_id, i.image_url
+            GREATEST(v.stock_quantity - COALESCE((
+                SELECT SUM(other.quantity)
+                FROM cart_items_tbl other
+                WHERE other.variant_id = v.variant_id
+                  AND other.cart_id <> ci.cart_id
+                  AND other.hold_expires_at > statement_timestamp()
+            ), 0), 0) AS stock_quantity,
+            EXTRACT(EPOCH FROM ci.hold_expires_at)::bigint AS hold_expires_at_epoch,
+            v.variant_id, i.image_url
      FROM cart_items_tbl ci
      INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
      INNER JOIN product_tbl p ON p.product_id = v.product_id
@@ -148,6 +156,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             <strong class="cart-item-price"><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
                                         </div>
                                         <p><span>Variant:</span> <?= store_escape($item['variant_name']) ?></p>
+                                        <?php if ($item['hold_expires_at_epoch'] !== null): ?>
+                                            <p class="cart-hold-timer" data-hold-expiry="<?= (int) $item['hold_expires_at_epoch'] ?>">
+                                                Flash-sale item reserved for <time><?= gmdate('i:s', STORE_CART_HOLD_SECONDS) ?></time>
+                                            </p>
+                                        <?php endif; ?>
                                         <div class="cart-item-bottom">
                                             <div class="cart-item-controls">
                                                 <form action="cart.php" method="post" class="quantity-picker">
@@ -216,6 +229,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </svg>
                         <h1 id="cart-title">Your cart is empty</h1>
                     </header>
+                    <?php if ($message !== ''): ?>
+                        <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
+                    <?php endif; ?>
                     <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
                     <a class="cart-continue-button" href="flash_sale.php">
                         Browse flash sales
@@ -229,6 +245,29 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <?php if ($cartItems): ?>
+        <script>
+            const updateCartHoldTimers = () => {
+                let expired = false;
+                document.querySelectorAll("[data-hold-expiry]").forEach((timer) => {
+                    const secondsLeft = Number(timer.dataset.holdExpiry) - Math.floor(Date.now() / 1000);
+                    if (secondsLeft <= 0) {
+                        timer.querySelector("time").textContent = "Expired";
+                        expired = true;
+                        return;
+                    }
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = secondsLeft % 60;
+                    timer.querySelector("time").textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                });
+                if (expired) {
+                    window.location.reload();
+                }
+            };
+            updateCartHoldTimers();
+            setInterval(updateCartHoldTimers, 1000);
+        </script>
+    <?php endif; ?>
 </body>
 
 </html>

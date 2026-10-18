@@ -36,13 +36,13 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 `Database/holoverse.sql` is a one-time baseline for a new, empty schema; do not run it over an existing database. It includes the flash-sale table and the checked-in catalog, talent, sample-cart, and account snapshot data. It is not a live migration or backup of accounts, carts, or orders created after that snapshot.
 
-For an existing database, run `Database/migrations/20261018_add_order_payment_method.sql` once in the Supabase SQL Editor before using the checkout payment-method step. Checkout records the selected method on the pending order but does not process or collect payment.
+For an existing database, run `Database/migrations/20261018_add_flash_sale_cart_holds.sql` once in the Supabase SQL Editor to enable five-minute reservations for live flash-sale items. The migration releases any reservations from the earlier general cart-hold behavior; it keeps cart lines and regular items are not reserved.
 
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
 
-Checkout is available only from the cart and to signed-in accounts. Products must be added to the cart before checkout; guests are sent to account registration or sign-in, and their cart is preserved. Checkout records a pending order with a shipping address and reserves stock; payment is not collected by the current checkout flow.
+Checkout is available only from the cart and to signed-in accounts. Products must be added to the cart before checkout; guests are sent to account registration or sign-in, and their cart is preserved. Adding a live flash-sale item reserves its available inventory for five minutes; the cart and checkout show a countdown, and the reservation expires even if the browser remains open. Changing a quantity does not extend the timer. Expired reservations are released and the item must be added again. Regular items are not reserved until checkout. Checkout records a pending order with a shipping address and confirms available stock; payment is not collected by the current checkout flow.
 
 ## Administrator tools
 

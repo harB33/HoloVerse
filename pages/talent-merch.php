@@ -20,10 +20,11 @@ if (!$talent) {
 $products = [];
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
+    $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                 c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
-                v.stock_quantity, i.image_url, i.alt_text
+                {$availableStock} AS stock_quantity, i.image_url, i.alt_text
          FROM product_tbl p
          INNER JOIN category_tbl c ON c.category_id = p.category_id
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id

@@ -1872,6 +1872,14 @@
     @apply mt-1.5 max-w-full text-left text-[13px] leading-snug text-[#4e5965];
   }
 
+  .cart-hold-timer {
+    @apply font-semibold text-[#087fa8];
+  }
+
+  .cart-item-details p.cart-hold-timer {
+    @apply font-semibold text-[#087fa8];
+  }
+
   .cart-item-details p span {
     @apply font-medium text-[#1c2229];
   }
@@ -2143,6 +2151,10 @@
 
   .checkout-item-details > span {
     @apply text-xs text-[#687078];
+  }
+
+  .checkout-item-details > span.cart-hold-timer {
+    @apply font-semibold text-[#087fa8];
   }
 
   .checkout-items {

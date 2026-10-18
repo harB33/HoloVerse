@@ -96,13 +96,50 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $conn->begin_transaction();
                 if ($cartId > 0) {
                     $statement = $conn->prepare(
+                        'SELECT DISTINCT variant_id
+                         FROM cart_items_tbl
+                         WHERE cart_id = ?
+                         ORDER BY variant_id'
+                    );
+                    $statement->bind_param('i', $cartId);
+                    $statement->execute();
+                    $reservedVariants = $statement->get_result()->fetch_all(PDO::FETCH_COLUMN);
+                    $statement->close();
+                    foreach ($reservedVariants as $reservedVariantId) {
+                        $reservedVariantId = (int) $reservedVariantId;
+                        $statement = $conn->prepare('SELECT variant_id FROM product_variants_tbl WHERE variant_id = ? FOR UPDATE');
+                        $statement->bind_param('i', $reservedVariantId);
+                        $statement->execute();
+                        $statement->close();
+                    }
+
+                    $statement = $conn->prepare(
+                        'DELETE FROM cart_items_tbl
+                         WHERE cart_id = ? AND hold_expires_at IS NOT NULL
+                           AND hold_expires_at <= statement_timestamp()'
+                    );
+                    $statement->bind_param('i', $cartId);
+                    $statement->execute();
+                    $statement->close();
+
+                    $statement = $conn->prepare(
                         'SELECT p.product_name, p.status, v.variant_id, v.variant_name, v.sku,
-                                v.price, v.currency, v.stock_quantity, ci.quantity
+                                v.price, v.currency,
+                                GREATEST(v.stock_quantity - COALESCE((
+                                    SELECT SUM(other.quantity)
+                                    FROM cart_items_tbl other
+                                    WHERE other.variant_id = v.variant_id
+                                      AND other.cart_id <> ci.cart_id
+                                      AND other.hold_expires_at > statement_timestamp()
+                                ), 0), 0) AS stock_quantity,
+                                ci.quantity,
+                                ci.hold_expires_at
                          FROM cart_items_tbl ci
                          INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
                          INNER JOIN product_tbl p ON p.product_id = v.product_id
                          WHERE ci.cart_id = ?
-                         FOR UPDATE'
+                         ORDER BY v.variant_id
+                         FOR UPDATE OF ci'
                     );
                     $statement->bind_param('i', $cartId);
                 } else {
@@ -198,6 +235,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $statement->execute();
                 $statement->close();
 
+                $statement = $conn->prepare('DELETE FROM cart_items_tbl WHERE cart_id = ?');
+                $statement->bind_param('i', $cartId);
+                $statement->execute();
+                $statement->close();
+
                 $conn->commit();
                 unset($_SESSION['checkout_intent']);
                 unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
@@ -223,9 +265,11 @@ if (!in_array($checkoutStep, ['information', 'payment_method'], true)) {
 $items = [];
 if ($orderNumber === '') {
     $cartId = store_current_cart_id($conn, false);
+    store_clear_expired_cart_items($conn, $cartId);
     if ($cartId > 0) {
         $statement = $conn->prepare(
             "SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity,
+                    EXTRACT(EPOCH FROM ci.hold_expires_at)::bigint AS hold_expires_at_epoch,
                     i.image_url, i.alt_text
              FROM cart_items_tbl ci
              INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
@@ -384,6 +428,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             <strong><?= store_escape(store_format_price($lineTotal)) ?></strong>
                                         </div>
                                         <span><?= store_escape($item['variant_name']) ?></span>
+                                        <?php if ($item['hold_expires_at_epoch'] !== null): ?>
+                                            <span class="cart-hold-timer" data-hold-expiry="<?= (int) $item['hold_expires_at_epoch'] ?>">
+                                                Flash-sale reservation expires in <time><?= gmdate('i:s', STORE_CART_HOLD_SECONDS) ?></time>
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                 </article>
                             <?php endforeach; ?>
@@ -400,6 +449,29 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <?php if ($orderNumber === '' && $items): ?>
+        <script>
+            const updateCheckoutHoldTimers = () => {
+                let expired = false;
+                document.querySelectorAll("[data-hold-expiry]").forEach((timer) => {
+                    const secondsLeft = Number(timer.dataset.holdExpiry) - Math.floor(Date.now() / 1000);
+                    if (secondsLeft <= 0) {
+                        timer.querySelector("time").textContent = "Expired";
+                        expired = true;
+                        return;
+                    }
+                    const minutes = Math.floor(secondsLeft / 60);
+                    const seconds = secondsLeft % 60;
+                    timer.querySelector("time").textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                });
+                if (expired) {
+                    window.location.reload();
+                }
+            };
+            updateCheckoutHoldTimers();
+            setInterval(updateCheckoutHoldTimers, 1000);
+        </script>
+    <?php endif; ?>
 </body>
 
 </html>

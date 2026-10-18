@@ -17,8 +17,9 @@ if ($selectedTalent !== '') {
     }
 }
 
+$availableStock = store_available_stock_sql();
 $sql = "SELECT p.product_id, p.product_name, p.description, p.expected_ship_date, c.category_name,
-               v.variant_id, v.variant_name, v.price, v.currency, v.stock_quantity
+               v.variant_id, v.variant_name, v.price, v.currency, {$availableStock} AS stock_quantity
         FROM product_tbl p
         INNER JOIN category_tbl c ON c.category_id = p.category_id
         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id

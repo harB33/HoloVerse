@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/dbconnect.php';
 
+const STORE_CART_HOLD_SECONDS = 300;
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -113,6 +115,70 @@ function store_current_cart_id(DatabaseConnection $conn, bool $create = true): i
     return $cartId;
 }
 
+function store_clear_expired_cart_items(DatabaseConnection $conn, int $cartId): void
+{
+    if ($cartId < 1) {
+        return;
+    }
+
+    $statement = $conn->prepare('DELETE FROM cart_items_tbl WHERE cart_id = ? AND hold_expires_at IS NOT NULL AND hold_expires_at <= statement_timestamp()');
+    $statement->bind_param('i', $cartId);
+    $statement->execute();
+    $statement->close();
+}
+
+function store_available_stock_sql(): string
+{
+    return 'GREATEST(v.stock_quantity - COALESCE((
+        SELECT SUM(ci.quantity)
+        FROM cart_items_tbl ci
+        WHERE ci.variant_id = v.variant_id
+          AND ci.hold_expires_at > statement_timestamp()
+    ), 0), 0)';
+}
+
+function store_variant_is_live_flash_sale(DatabaseConnection $conn, int $variantId): bool
+{
+    $statement = $conn->prepare(
+        "SELECT v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AS is_discounted
+         FROM product_variants_tbl v
+         INNER JOIN product_tbl p ON p.product_id = v.product_id
+         WHERE v.variant_id = ? AND p.status = 'active'"
+    );
+    $statement->bind_param('i', $variantId);
+    $statement->execute();
+    $variant = $statement->get_result()->fetch_assoc();
+    $statement->close();
+
+    if (!$variant || !in_array($variant['is_discounted'], [true, 't', 1, '1'], true)) {
+        return false;
+    }
+    if (!store_flash_sale_table_exists($conn)) {
+        return true;
+    }
+
+    $timezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+    $now = (new DateTimeImmutable('now', $timezone))->format('Y-m-d H:i:s');
+    $statement = $conn->prepare(
+        "SELECT
+             NOT EXISTS (
+                 SELECT 1 FROM flash_sale_tbl
+                 WHERE variant_id = ? AND status = 'scheduled'
+             )
+             OR EXISTS (
+                 SELECT 1 FROM flash_sale_tbl
+                 WHERE variant_id = ? AND status = 'scheduled'
+                   AND starts_at <= ? AND ends_at > ?
+             ) AS is_live"
+    );
+    $statement->bind_param('iiss', $variantId, $variantId, $now, $now);
+    $statement->execute();
+    $isLive = $statement->get_result()->fetch_assoc()['is_live'];
+    $statement->close();
+
+    return in_array($isLive, [true, 't', 1, '1'], true);
+}
+
 function store_merge_guest_cart(DatabaseConnection $conn, int $userId): void
 {
     if (empty($_SESSION['cart_token'])) {
@@ -140,12 +206,29 @@ function store_merge_guest_cart(DatabaseConnection $conn, int $userId): void
             if ($userCart) {
                 $userCartId = (int) $userCart['cart_id'];
                 $statement = $conn->prepare(
-                    'INSERT INTO cart_items_tbl (cart_id, variant_id, quantity)
-                     SELECT ?, ci.variant_id, ci.quantity FROM cart_items_tbl ci WHERE ci.cart_id = ?
-                     ON CONFLICT (cart_id, variant_id) DO UPDATE SET quantity = LEAST(
-                         cart_items_tbl.quantity + EXCLUDED.quantity,
-                         (SELECT stock_quantity FROM product_variants_tbl WHERE variant_id = cart_items_tbl.variant_id)
-                     )'
+                    'INSERT INTO cart_items_tbl (cart_id, variant_id, quantity, hold_expires_at)
+                     SELECT ?, ci.variant_id, ci.quantity, ci.hold_expires_at
+                     FROM cart_items_tbl ci
+                     WHERE ci.cart_id = ?
+                       AND (ci.hold_expires_at IS NULL OR ci.hold_expires_at > statement_timestamp())
+                     ON CONFLICT (cart_id, variant_id) DO UPDATE SET
+                         quantity = LEAST(
+                             CASE
+                                 WHEN cart_items_tbl.hold_expires_at IS NOT NULL
+                                      AND cart_items_tbl.hold_expires_at <= statement_timestamp()
+                                 THEN EXCLUDED.quantity
+                                 ELSE cart_items_tbl.quantity + EXCLUDED.quantity
+                             END,
+                             (SELECT stock_quantity FROM product_variants_tbl WHERE variant_id = cart_items_tbl.variant_id)
+                         ),
+                         hold_expires_at = CASE
+                             WHEN cart_items_tbl.hold_expires_at IS NOT NULL
+                                  AND cart_items_tbl.hold_expires_at <= statement_timestamp()
+                             THEN EXCLUDED.hold_expires_at
+                             WHEN cart_items_tbl.hold_expires_at IS NULL THEN EXCLUDED.hold_expires_at
+                             WHEN EXCLUDED.hold_expires_at IS NULL THEN cart_items_tbl.hold_expires_at
+                             ELSE GREATEST(cart_items_tbl.hold_expires_at, EXCLUDED.hold_expires_at)
+                         END'
                 );
                 $statement->bind_param('ii', $userCartId, $guestCartId);
                 $statement->execute();
@@ -175,49 +258,163 @@ function store_add_to_cart(DatabaseConnection $conn, int $variantId, int $quanti
         throw new InvalidArgumentException('Choose a valid item quantity.');
     }
 
-    $statement = $conn->prepare(
-        "SELECT v.stock_quantity
-         FROM product_variants_tbl v
-         INNER JOIN product_tbl p ON p.product_id = v.product_id
-         WHERE v.variant_id = ? AND p.status = 'active'"
-    );
-    $statement->bind_param('i', $variantId);
-    $statement->execute();
-    $variant = $statement->get_result()->fetch_assoc();
-    $statement->close();
-
-    if (!$variant || (int) $variant['stock_quantity'] < 1) {
-        throw new RuntimeException('This item is no longer available or is out of stock.');
-    }
-
     $cartId = store_current_cart_id($conn);
-    $statement = $conn->prepare('SELECT quantity FROM cart_items_tbl WHERE cart_id = ? AND variant_id = ?');
-    $statement->bind_param('ii', $cartId, $variantId);
-    $statement->execute();
-    $existing = $statement->get_result()->fetch_assoc();
-    $statement->close();
-    $newQuantity = $quantity + ($existing ? (int) $existing['quantity'] : 0);
+    $conn->begin_transaction();
 
-    if ($newQuantity > (int) $variant['stock_quantity']) {
-        throw new RuntimeException('The requested quantity exceeds the available stock.');
+    try {
+        $statement = $conn->prepare(
+            "SELECT v.stock_quantity
+             FROM product_variants_tbl v
+             INNER JOIN product_tbl p ON p.product_id = v.product_id
+             WHERE v.variant_id = ? AND p.status = 'active'
+             FOR UPDATE OF v"
+        );
+        $statement->bind_param('i', $variantId);
+        $statement->execute();
+        $variant = $statement->get_result()->fetch_assoc();
+        $statement->close();
+
+        if (!$variant || (int) $variant['stock_quantity'] < 1) {
+            throw new RuntimeException('This item is no longer available or is out of stock.');
+        }
+
+        $statement = $conn->prepare(
+            'SELECT quantity, CASE
+                 WHEN hold_expires_at IS NULL THEN 2
+                 WHEN hold_expires_at > statement_timestamp() THEN 1
+                 ELSE 0
+             END AS hold_state
+             FROM cart_items_tbl WHERE cart_id = ? AND variant_id = ? FOR UPDATE'
+        );
+        $statement->bind_param('ii', $cartId, $variantId);
+        $statement->execute();
+        $existing = $statement->get_result()->fetch_assoc();
+        $statement->close();
+        if ($existing && (int) $existing['hold_state'] === 0) {
+            $statement = $conn->prepare('DELETE FROM cart_items_tbl WHERE cart_id = ? AND variant_id = ?');
+            $statement->bind_param('ii', $cartId, $variantId);
+            $statement->execute();
+            $statement->close();
+            $existing = null;
+        }
+        $isFlashSale = store_variant_is_live_flash_sale($conn, $variantId);
+
+        $statement = $conn->prepare(
+            'SELECT COALESCE(SUM(quantity), 0) AS reserved_quantity
+             FROM cart_items_tbl
+             WHERE variant_id = ? AND cart_id <> ? AND hold_expires_at > statement_timestamp()'
+        );
+        $statement->bind_param('ii', $variantId, $cartId);
+        $statement->execute();
+        $otherReservations = (int) $statement->get_result()->fetch_assoc()['reserved_quantity'];
+        $statement->close();
+        $newQuantity = $quantity + ($existing ? (int) $existing['quantity'] : 0);
+        $availableToCart = (int) $variant['stock_quantity'] - $otherReservations;
+
+        if ($newQuantity > $availableToCart) {
+            throw new RuntimeException('The requested quantity exceeds the stock available to reserve.');
+        }
+
+        if ($existing) {
+            if ($isFlashSale && (int) $existing['hold_state'] === 2) {
+                $holdDuration = STORE_CART_HOLD_SECONDS;
+                $statement = $conn->prepare(
+                    "UPDATE cart_items_tbl
+                     SET quantity = ?, hold_expires_at = statement_timestamp() + (? * INTERVAL '1 second')
+                     WHERE cart_id = ? AND variant_id = ?"
+                );
+                $statement->bind_param('iiii', $newQuantity, $holdDuration, $cartId, $variantId);
+            } else {
+                $statement = $conn->prepare('UPDATE cart_items_tbl SET quantity = ? WHERE cart_id = ? AND variant_id = ?');
+                $statement->bind_param('iii', $newQuantity, $cartId, $variantId);
+            }
+        } else {
+            $holdDuration = $isFlashSale ? STORE_CART_HOLD_SECONDS : null;
+            $statement = $conn->prepare(
+                "INSERT INTO cart_items_tbl (cart_id, variant_id, quantity, hold_expires_at)
+                 VALUES (?, ?, ?, statement_timestamp() + (? * INTERVAL '1 second'))"
+            );
+            $statement->bind_param('iiii', $cartId, $variantId, $quantity, $holdDuration);
+        }
+        $statement->execute();
+        $statement->close();
+        $conn->commit();
+    } catch (Throwable $error) {
+        $conn->rollback();
+        throw $error;
+    }
+}
+
+function store_update_cart_item(DatabaseConnection $conn, int $cartId, int $itemId, int $quantity): void
+{
+    if ($cartId < 1 || $itemId < 1 || $quantity < 1 || $quantity > 99) {
+        throw new InvalidArgumentException('Choose a valid item quantity.');
     }
 
-    if ($existing) {
-        $statement = $conn->prepare('UPDATE cart_items_tbl SET quantity = ? WHERE cart_id = ? AND variant_id = ?');
-        $statement->bind_param('iii', $newQuantity, $cartId, $variantId);
-    } else {
-        $statement = $conn->prepare('INSERT INTO cart_items_tbl (cart_id, variant_id, quantity) VALUES (?, ?, ?)');
-        $statement->bind_param('iii', $cartId, $variantId, $quantity);
-    }
+    $statement = $conn->prepare('SELECT variant_id FROM cart_items_tbl WHERE cart_item_id = ? AND cart_id = ?');
+    $statement->bind_param('ii', $itemId, $cartId);
     $statement->execute();
+    $item = $statement->get_result()->fetch_assoc();
     $statement->close();
+    if (!$item) {
+        throw new RuntimeException('That cart item is no longer available.');
+    }
+    $variantId = (int) $item['variant_id'];
+
+    $conn->begin_transaction();
+    try {
+        $statement = $conn->prepare('SELECT stock_quantity FROM product_variants_tbl WHERE variant_id = ? FOR UPDATE');
+        $statement->bind_param('i', $variantId);
+        $statement->execute();
+        $variant = $statement->get_result()->fetch_assoc();
+        $statement->close();
+
+        $statement = $conn->prepare(
+            'SELECT quantity, CASE
+                 WHEN hold_expires_at IS NULL THEN 1
+                 WHEN hold_expires_at > statement_timestamp() THEN 1
+                 ELSE 0
+             END AS hold_active
+             FROM cart_items_tbl WHERE cart_item_id = ? AND cart_id = ? AND variant_id = ? FOR UPDATE'
+        );
+        $statement->bind_param('iii', $itemId, $cartId, $variantId);
+        $statement->execute();
+        $item = $statement->get_result()->fetch_assoc();
+        $statement->close();
+        if (!$item || (int) $item['hold_active'] === 0) {
+            throw new RuntimeException('Your 5-minute item reservation expired. Add the item to your cart again.');
+        }
+
+        $statement = $conn->prepare(
+            'SELECT COALESCE(SUM(quantity), 0) AS reserved_quantity
+             FROM cart_items_tbl
+             WHERE variant_id = ? AND cart_id <> ? AND hold_expires_at > statement_timestamp()'
+        );
+        $statement->bind_param('ii', $variantId, $cartId);
+        $statement->execute();
+        $otherReservations = (int) $statement->get_result()->fetch_assoc()['reserved_quantity'];
+        $statement->close();
+        if (!$variant || $quantity > (int) $variant['stock_quantity'] - $otherReservations) {
+            throw new RuntimeException('Choose a quantity within the stock available to reserve.');
+        }
+
+        $statement = $conn->prepare('UPDATE cart_items_tbl SET quantity = ? WHERE cart_item_id = ? AND cart_id = ?');
+        $statement->bind_param('iii', $quantity, $itemId, $cartId);
+        $statement->execute();
+        $statement->close();
+        $conn->commit();
+    } catch (Throwable $error) {
+        $conn->rollback();
+        throw $error;
+    }
 }
 
 function store_product_rows(DatabaseConnection $conn, string $where = '', string $order = 'p.created_at DESC', int $limit = 0): array
 {
+    $availableStock = store_available_stock_sql();
     $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                   v.currency, v.stock_quantity, i.image_url, i.alt_text
+                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
             FROM product_tbl p
             INNER JOIN category_tbl c ON c.category_id = p.category_id
             INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
@@ -249,10 +446,11 @@ function store_flash_sale_table_exists(DatabaseConnection $conn): bool
 function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTimeImmutable $now): array
 {
     $nowValue = $now->format('Y-m-d H:i:s');
+    $availableStock = store_available_stock_sql();
 
     $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                   v.currency, v.stock_quantity, i.image_url, i.alt_text,
+                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
                    fs.flash_sale_id, fs.starts_at, fs.ends_at
             FROM product_tbl p
             INNER JOIN category_tbl c ON c.category_id = p.category_id
@@ -264,7 +462,7 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
               AND v.compare_at_price > v.price";
 
     if ($state === 'live') {
-        $sql .= " AND v.stock_quantity > 0
+        $sql .= " AND {$availableStock} > 0
                   AND (
                       (fs.flash_sale_id IS NULL AND NOT EXISTS (
                           SELECT 1 FROM flash_sale_tbl scheduled
@@ -277,15 +475,15 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
         $statement->bind_param('ss', $nowValue, $nowValue);
     } elseif ($state === 'starting') {
         $endOfWindow = $now->modify('+1 hour')->format('Y-m-d H:i:s');
-        $sql .= ' AND v.stock_quantity > 0 AND fs.starts_at > ? AND fs.starts_at <= ?
-                  ORDER BY fs.starts_at ASC, p.product_id DESC';
+        $sql .= " AND {$availableStock} > 0 AND fs.starts_at > ? AND fs.starts_at <= ?
+                  ORDER BY fs.starts_at ASC, p.product_id DESC";
         $statement = $conn->prepare($sql);
         $statement->bind_param('ss', $nowValue, $endOfWindow);
     } elseif ($state === 'tomorrow') {
         $tomorrow = $now->modify('tomorrow')->setTime(0, 0)->format('Y-m-d H:i:s');
         $dayAfter = $now->modify('+2 days')->setTime(0, 0)->format('Y-m-d H:i:s');
-        $sql .= ' AND v.stock_quantity > 0 AND fs.starts_at >= ? AND fs.starts_at < ?
-                  ORDER BY fs.starts_at ASC, p.product_id DESC';
+        $sql .= " AND {$availableStock} > 0 AND fs.starts_at >= ? AND fs.starts_at < ?
+                  ORDER BY fs.starts_at ASC, p.product_id DESC";
         $statement = $conn->prepare($sql);
         $statement->bind_param('ss', $tomorrow, $dayAfter);
     } elseif ($state === 'archive') {

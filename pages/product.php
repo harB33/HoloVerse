@@ -22,11 +22,12 @@ if ($productId !== false && $productId !== null && $productId > 0) {
     $statement->close();
 
     if ($product) {
+        $availableStock = store_available_stock_sql();
         $statement = $conn->prepare(
-            'SELECT variant_id, variant_name, price, currency, stock_quantity
-             FROM product_variants_tbl
-             WHERE product_id = ?
-             ORDER BY variant_id'
+            "SELECT variant_id, variant_name, price, currency, {$availableStock} AS stock_quantity
+             FROM product_variants_tbl v
+             WHERE v.product_id = ?
+             ORDER BY variant_id"
         );
         $statement->bind_param('i', $productId);
         $statement->execute();

@@ -13,7 +13,7 @@ $flashSaleProducts = $flashSaleSchedulingAvailable
     : [
         'live' => store_product_rows(
             $conn,
-            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND v.stock_quantity > 0',
+            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND ' . store_available_stock_sql() . ' > 0',
             'p.product_id DESC'
         ),
         'starting' => [],
@@ -47,7 +47,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         <main class="flash-sale-main">
             <div class="flash-status-bar" aria-label="Flash sale system status">
                 <span><i aria-hidden="true"></i> Vault inventory: <?= count($flashSaleProducts['live']) ?> live drops</span>
-                <span>Cart actions validate stock and CSRF tokens</span>
+                <span>5-minute holds on live flash-sale items; stock and CSRF checked</span>
                 <span class="flash-status-right">
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -147,7 +147,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </div>
                         <div class="flash-stock-track" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span style="width: <?= min(100, (int) $saleProduct['stock_quantity']) ?>%"></span></div>
                         <div class="flash-stock-bottom">
-                            <span>Stock is confirmed when added to your cart.</span>
+                            <span>Adding a live flash-sale item reserves stock for five minutes.</span>
                             <span><?= (int) $saleProduct['stock_quantity'] > 0 ? 'Available now' : 'Currently sold out' ?></span>
                         </div>
                     </div>
@@ -182,7 +182,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <path d="M3 6h18" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                         </svg>
-                        Your cart is saved to this browser and can be linked to your account.
+                        Your cart is saved to this browser and can be linked to your account. Live flash-sale items are held for five minutes after being added.
                     </p>
                 </section>
             </article>
