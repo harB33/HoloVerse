@@ -83,9 +83,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p>Server-rendered pages and store workflows.</p>
                     </article>
                     <article class="about-tech-card">
-                        <img src="../assets/images/tech-mysql.svg" alt="" loading="lazy" decoding="async">
-                        <h3>MySQL</h3>
-                        <p>Catalog, account, cart, and order data.</p>
+                        <img src="../assets/images/tech-postgresql.svg" alt="" loading="lazy" decoding="async">
+                        <h3>PostgreSQL</h3>
+                        <p>Supabase-hosted data for the catalog, accounts, carts, and orders.</p>
                     </article>
                     <article class="about-tech-card">
                         <img src="../assets/images/tech-tailwindcss.svg" alt="" loading="lazy" decoding="async">
