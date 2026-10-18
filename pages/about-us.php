@@ -44,27 +44,72 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </article>
             </section>
 
-            <section class="feature-banner">
-                <div>
-                    <span class="eyebrow banner-eyebrow">Why fans choose us</span>
-                    <h2>Premium pieces, unforgettable energy.</h2>
-                    <p>From casual staples to event-exclusive collectibles, our store is built around identity, design, and fandom pride. We aim to keep every release exciting, accessible, and worthy of display.</p>
-                </div>
-                <div class="stats">
-                    <div class="stat-box">
-                        <strong>120+</strong>
-                        <span>Curated drops</span>
-                    </div>
-                    <div class="stat-box">
-                        <strong>24h</strong>
-                        <span>Fast order handling</span>
-                    </div>
-                    <div class="stat-box">
-                        <strong>5/5</strong>
-                        <span>Fan rating</span>
-                    </div>
+            <section class="about-team" aria-labelledby="about-team-title">
+                <header class="about-team-header">
+                    <span class="eyebrow">The people behind HoloVerse</span>
+                    <h2 id="about-team-title">Meet the Team</h2>
+                    <p>A team working together to bring the HoloVerse store to life.</p>
+                </header>
+                <article class="about-team-card about-team-lead">
+                    <img class="about-team-photo" src="../assets/images/Wamil.png" alt="Jomari Wamil" loading="lazy" decoding="async">
+                    <h3>Jomari Wamil</h3>
+                    <p>Team Leader</p>
+                </article>
+                <div class="about-team-grid" aria-label="Development team">
+                    <?php foreach ([
+                        ['name' => 'Harvy Bautista', 'role' => 'Front-end Developer'],
+                        ['name' => 'Jhon Rick Parica', 'role' => 'Back-end Developer'],
+                        ['name' => 'John Rommel Patriarca', 'role' => 'Front-end Developer'],
+                    ] as $teamMember): ?>
+                        <article class="about-team-card">
+                            <div class="about-team-photo">Photo coming soon</div>
+                            <h3><?= store_escape($teamMember['name']) ?></h3>
+                            <p><?= store_escape($teamMember['role']) ?></p>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             </section>
+
+            <section class="about-tech-stack" aria-labelledby="about-tech-stack-title">
+                <header class="about-tech-stack-header">
+                    <span class="eyebrow">Behind the store</span>
+                    <h2 id="about-tech-stack-title">The technology behind HoloVerse</h2>
+                    <p>We use a practical, modern web stack to power the catalog, account experience, and responsive storefront.</p>
+                </header>
+                <div class="about-tech-grid">
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-php.svg" alt="" loading="lazy" decoding="async">
+                        <h3>PHP</h3>
+                        <p>Server-rendered pages and store workflows.</p>
+                    </article>
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-mysql.svg" alt="" loading="lazy" decoding="async">
+                        <h3>MySQL</h3>
+                        <p>Catalog, account, cart, and order data.</p>
+                    </article>
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-tailwindcss.svg" alt="" loading="lazy" decoding="async">
+                        <h3>Tailwind CSS</h3>
+                        <p>Responsive styling and shared design utilities.</p>
+                    </article>
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-javascript.svg" alt="" loading="lazy" decoding="async">
+                        <h3>JavaScript</h3>
+                        <p>Interactive features in the browser.</p>
+                    </article>
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-html5.svg" alt="" loading="lazy" decoding="async">
+                        <h3>HTML5</h3>
+                        <p>Accessible structure for every page.</p>
+                    </article>
+                    <article class="about-tech-card">
+                        <img src="../assets/images/tech-css3.svg" alt="" loading="lazy" decoding="async">
+                        <h3>CSS3</h3>
+                        <p>Layouts, visual details, and responsive polish.</p>
+                    </article>
+                </div>
+            </section>
+
         </main>
     </div>
     <?php

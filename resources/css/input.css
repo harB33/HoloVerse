@@ -1348,11 +1348,114 @@
   }
 
   .about-page {
-    @apply bg-transparent;
+    @apply bg-[linear-gradient(180deg,#f8fcff_0%,#eef7fb_100%)];
   }
 
   .about-page .info-card {
-    @apply bg-transparent;
+    @apply border-[#dce9f2] bg-white shadow-[0_14px_32px_rgba(16,40,68,0.05)];
+  }
+
+  .about-page .info-card h2 {
+    @apply text-[#102747];
+  }
+
+  .about-page .info-card .badge {
+    @apply bg-[#e2f6fb] text-[#087fa8];
+  }
+
+  .about-team {
+    @apply mb-8 rounded-[28px] border border-[#d5e7f1] bg-[linear-gradient(145deg,#eaf7fc_0%,#f5fbfe_58%,#e8f6fa_100%)] px-5 py-8 text-[#102747] shadow-[0_18px_38px_rgba(17,41,73,0.07)] sm:px-8 sm:py-10;
+  }
+
+  .about-team-header {
+    @apply mb-8 text-center;
+  }
+
+  .about-team-header .eyebrow {
+    @apply mb-4 border-[#b8e1ed] bg-white text-[#087fa8];
+  }
+
+  .about-team-header h2 {
+    @apply mb-2 mt-0 text-[clamp(2rem,4vw,2.75rem)] font-bold text-[#102747];
+  }
+
+  .about-team-header p {
+    @apply m-0 text-sm text-[#526b80];
+  }
+
+  .about-team-card {
+    @apply flex min-w-0 flex-col items-center rounded-2xl border border-transparent bg-white px-4 py-5 text-center shadow-[0_8px_20px_rgba(16,40,68,0.05)] transition hover:-translate-y-1 hover:border-[#9bd7e6] hover:shadow-[0_14px_28px_rgba(17,41,73,0.08)];
+  }
+
+  .about-team-lead {
+    @apply mx-auto mb-7;
+    width: calc((100% - 0.75rem) / 2);
+  }
+
+  @media (min-width: 640px) {
+    .about-team-lead {
+      width: calc((100% - 2rem) / 3);
+    }
+  }
+
+  .about-team-photo {
+    @apply mb-4 flex aspect-square w-24 items-center justify-center rounded-2xl border border-[#b8e1ed] bg-[#eaf7fb] px-2 text-xs font-medium text-[#648096] sm:w-28;
+  }
+
+  img.about-team-photo {
+    @apply object-cover p-0;
+  }
+
+  .about-team-card h3 {
+    @apply mb-1 mt-0 text-sm font-bold text-[#102747];
+  }
+
+  .about-team-card p {
+    @apply m-0 text-xs font-semibold text-[#087fa8];
+  }
+
+  .about-team-grid {
+    @apply grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3;
+  }
+
+  .about-tech-stack {
+    @apply mb-8 rounded-[28px] border border-[#dce9f2] bg-white p-6 shadow-[0_14px_32px_rgba(16,40,68,0.05)] sm:p-8;
+  }
+
+  .about-tech-stack-header {
+    @apply mb-6 max-w-[760px];
+  }
+
+  .about-tech-stack-header .eyebrow {
+    @apply mb-4;
+  }
+
+  .about-tech-stack-header h2 {
+    @apply mb-3 mt-0 text-[clamp(1.7rem,3vw,2.4rem)] leading-tight text-[#101829];
+  }
+
+  .about-tech-stack-header p {
+    @apply m-0 leading-relaxed text-[#42566d];
+  }
+
+  .about-tech-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .about-tech-card {
+    @apply grid min-h-[190px] justify-items-center rounded-2xl border border-[#dce9f2] bg-[#f6fbfe] px-5 py-6 text-center transition hover:-translate-y-1 hover:border-[#9bd7e6] hover:shadow-[0_14px_28px_rgba(17,41,73,0.08)];
+  }
+
+  .about-tech-card img {
+    @apply mb-3 h-14 w-14 object-contain;
+  }
+
+  .about-tech-card h3 {
+    @apply mb-2 mt-0 text-base font-bold text-[#17263a];
+  }
+
+  .about-tech-card p {
+    @apply m-0 max-w-[240px] text-sm leading-relaxed text-[#5a7188];
   }
 
   .flash-sale-page {
