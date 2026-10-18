@@ -67,7 +67,7 @@ require __DIR__ . '/app/views/layout/head.php';
             </section>
 
             <div class="hero-symbol">
-                <img src="assets/images/logo.png" alt="hololive logo">
+                <img src="assets/images/logo.png" alt="hololive logo" fetchpriority="high">
             </div>
         </div>
         <section class="limited-drops" id="featured" aria-labelledby="limited-drops-title">
@@ -149,7 +149,7 @@ require __DIR__ . '/app/views/layout/head.php';
                             <article class="talent-card" data-generations="<?= htmlspecialchars(implode(' ', $talent['groups']), ENT_QUOTES, 'UTF-8') ?>">
                                 <span class="talent-avatar">
                                     <span class="talent-initials" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></span>
-                                    <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async">
+                                    <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async" fetchpriority="low">
                                 </span>
                                 <h3><?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?></h3>
                                 <p><?= htmlspecialchars($groupNames, ENT_QUOTES, 'UTF-8') ?></p>
