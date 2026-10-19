@@ -1,7 +1,13 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$products = store_product_rows($conn, '', 'p.product_id DESC');
+$pageSize = 48;
+$totalProductCount = (int) $conn->query("SELECT COUNT(*) AS product_count FROM product_tbl WHERE status = 'active'")
+    ->fetch_assoc()['product_count'];
+$pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
+$currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
+$currentPage = min(max(1, $currentPage), $pageCount);
+$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize);
 $pageTitle = 'All Products | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -20,7 +26,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <span class="drops-eyebrow">Official hololive production merchandise</span>
                 <h1 id="all-products-title">Shop all products</h1>
                 <p>Browse the full collection of available talent merchandise.</p>
-                <span class="all-products-count"><?= count($products) ?> products</span>
+                <span class="all-products-count"><?= $totalProductCount ?> products</span>
             </section>
 
             <?php if ($products): ?>
@@ -67,6 +73,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </article>
                     <?php endforeach; ?>
                 </section>
+                <?php if ($pageCount > 1): ?>
+                    <nav class="all-products-pagination" aria-label="Product pages">
+                        <?php if ($currentPage > 1): ?>
+                            <a href="?page=<?= $currentPage - 1 ?>" aria-label="Previous page">Previous</a>
+                        <?php endif; ?>
+                        <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
+                        <?php if ($currentPage < $pageCount): ?>
+                            <a href="?page=<?= $currentPage + 1 ?>" aria-label="Next page">Next</a>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
             <?php else: ?>
                 <p class="all-products-empty" role="status">There are no products available right now.</p>
             <?php endif; ?>

@@ -19,7 +19,7 @@ function store_format_price(float $amount): string
 
 function store_asset_url(string $path, string $siteRoot = ''): string
 {
-    return preg_match('/^https?:\/\//i', $path) ? $path : $siteRoot . ltrim($path, '/');
+    return preg_match('/^(?:https?:)?\/\//i', $path) ? $path : $siteRoot . ltrim($path, '/');
 }
 
 function store_csrf_token(): string
@@ -439,6 +439,26 @@ function store_product_rows(DatabaseConnection $conn, string $where = '', string
     $result = $conn->query($sql);
 
     return $result->fetch_all(PDO::FETCH_ASSOC);
+}
+
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0): array
+{
+    $availableStock = store_available_stock_sql();
+    $sql = "SELECT DISTINCT ON (p.product_id)
+                   p.product_id, p.product_name, p.description, p.is_preorder,
+                   c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
+                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
+            FROM product_tbl p
+            INNER JOIN category_tbl c ON c.category_id = p.category_id
+            INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+            LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
+            WHERE p.status = 'active'
+            ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC";
+    if ($limit > 0) {
+        $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . max(0, (int) $offset);
+    }
+
+    return $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 
 function store_flash_sale_table_exists(DatabaseConnection $conn): bool

@@ -1544,6 +1544,14 @@
     @apply mx-auto max-w-[1440px] rounded-xl border border-[#e1e8f0] bg-[#f8fafc] p-8 text-center text-sm text-[#718096];
   }
 
+  .all-products-pagination {
+    @apply mx-auto mt-8 flex max-w-[1440px] items-center justify-center gap-5 text-[12px] text-[#617184];
+  }
+
+  .all-products-pagination a {
+    @apply rounded-md border border-[#d6e1ea] bg-white px-3 py-2 font-semibold text-[#087fa8] no-underline transition hover:border-[#1da3d8] hover:bg-[#f0faff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
   .drop-card {
     @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-white/55 p-3 backdrop-blur-xs;
     position: relative;

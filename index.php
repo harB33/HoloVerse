@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app/store.php';
 
-$featuredProducts = store_product_rows($conn, '', 'p.product_id DESC', 4);
+$featuredProducts = store_catalog_product_rows($conn, 4);
 $groupOrder = ['gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai'];
 $groupArraySql = "ARRAY['" . implode("','", $groupOrder) . "']::text[]";
 $groupsResult = $conn->query(
