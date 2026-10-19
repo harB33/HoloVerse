@@ -1498,6 +1498,10 @@
     @apply m-0 text-[clamp(22px,3vw,32px)] font-bold leading-[1.15] text-[#101829];
   }
 
+  .drops-heading-actions {
+    @apply flex flex-none items-center gap-5;
+  }
+
   .drops-view-all {
     @apply flex-none text-[13px] font-bold text-[#078bbd] no-underline;
   }
@@ -1506,8 +1510,39 @@
     @apply ml-1 inline size-4;
   }
 
+  .drops-carousel-controls {
+    @apply flex items-center gap-2;
+  }
+
+  .drops-carousel-controls button {
+    @apply grid size-9 cursor-pointer place-items-center rounded-full border border-[#d6e1ea] bg-white text-[#172033] transition hover:border-[#1da3d8] hover:text-[#087fa8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .drops-carousel-controls svg {
+    @apply size-4 fill-none stroke-current stroke-2;
+  }
+
   .drops-grid {
     @apply mx-auto grid max-w-[1440px] grid-cols-4 gap-[18px];
+  }
+
+  .drops-carousel {
+    @apply mx-auto max-w-[1440px];
+  }
+
+  .drops-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: #aab8c4 transparent;
+  }
+
+  .drops-carousel-track > .drop-card {
+    flex: 0 0 calc((100% - 54px) / 4);
+    scroll-snap-align: start;
   }
 
   .all-products-main {
@@ -3800,6 +3835,10 @@
     @apply grid-cols-2;
   }
 
+  .drops-carousel-track > .drop-card {
+    flex-basis: calc((100% - 36px) / 3);
+  }
+
   .drop-character {
     @apply text-[22px];
   }
@@ -4056,12 +4095,32 @@
     @apply items-start flex-col gap-[10px];
   }
 
+  .drops-heading-actions {
+    @apply w-full justify-between;
+  }
+
+  .drops-carousel-track > .drop-card {
+    flex-basis: calc((100% - 12px) / 2);
+  }
+
   .drops-grid {
     @apply gap-3;
   }
 
   .language {
     @apply size-[38px];
+  }
+
+  @media (max-width: 420px) {
+    .drops-carousel-track > .drop-card {
+      flex-basis: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drops-carousel-track {
+      scroll-behavior: auto;
+    }
   }
 
   .explore {

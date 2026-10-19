@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/app/store.php';
 
-$featuredProducts = store_catalog_product_rows($conn, 4);
+$featuredProducts = store_catalog_product_rows($conn, 10);
 $groupOrder = ['gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai'];
 $groupArraySql = "ARRAY['" . implode("','", $groupOrder) . "']::text[]";
 $groupsResult = $conn->query(
@@ -68,9 +68,20 @@ require __DIR__ . '/app/views/layout/head.php';
                     <span class="drops-eyebrow">From the official hololive production shop</span>
                     <h2 id="limited-drops-title">Talent Merch Picks</h2>
                 </div>
-                <a class="drops-view-all" href="pages/products.php">View all products</a>
+                <div class="drops-heading-actions">
+                    <div class="drops-carousel-controls" aria-label="Featured product carousel controls">
+                        <button type="button" data-featured-previous aria-label="Show previous featured products" disabled>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                        </button>
+                        <button type="button" data-featured-next aria-label="Show next featured products">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                        </button>
+                    </div>
+                    <a class="drops-view-all" href="pages/products.php">View all products</a>
+                </div>
             </div>
-            <div class="drops-grid">
+            <div class="drops-carousel" data-featured-carousel>
+              <div class="drops-grid drops-carousel-track" data-featured-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Featured products">
                 <?php foreach ($featuredProducts as $product): ?>
                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                     <article class="drop-card">
@@ -112,6 +123,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         </div>
                     </article>
                 <?php endforeach; ?>
+              </div>
             </div>
         </section>
 
@@ -176,6 +188,104 @@ require __DIR__ . '/app/views/layout/head.php';
             image.classList.add('hidden');
             image.nextElementSibling?.classList.remove('hidden');
         }, { once: true }));
+
+        const featuredTrack = document.querySelector('[data-featured-track]');
+        const featuredPrevious = document.querySelector('[data-featured-previous]');
+        const featuredNext = document.querySelector('[data-featured-next]');
+        if (featuredTrack && featuredPrevious && featuredNext) {
+            const updateFeaturedControls = () => {
+                const maxScroll = featuredTrack.scrollWidth - featuredTrack.clientWidth;
+                featuredPrevious.disabled = featuredTrack.scrollLeft <= 1;
+                featuredNext.disabled = featuredTrack.scrollLeft >= maxScroll - 1;
+            };
+            let featuredAnimationFrame = null;
+            const animateFeaturedTo = (target) => {
+                if (featuredAnimationFrame !== null) {
+                    window.cancelAnimationFrame(featuredAnimationFrame);
+                    featuredAnimationFrame = null;
+                }
+                if (reducedMotion.matches) {
+                    featuredTrack.scrollLeft = target;
+                    return;
+                }
+
+                const start = featuredTrack.scrollLeft;
+                const distance = target - start;
+                const duration = 80;
+                let startTime = null;
+                const animate = (time) => {
+                    startTime ??= time;
+                    const progress = Math.min((time - startTime) / duration, 1);
+                    const easedProgress = -(Math.cos(Math.PI * progress) - 1) / 2;
+                    featuredTrack.scrollLeft = start + distance * easedProgress;
+                    if (progress < 1) {
+                        featuredAnimationFrame = window.requestAnimationFrame(animate);
+                    } else {
+                        featuredAnimationFrame = null;
+                    }
+                };
+                featuredAnimationFrame = window.requestAnimationFrame(animate);
+            };
+            const scrollFeatured = (direction) => {
+                const card = featuredTrack.querySelector('.drop-card');
+                if (!card) {
+                    return;
+                }
+                const gap = Number.parseFloat(getComputedStyle(featuredTrack).columnGap) || 0;
+                const maxScroll = featuredTrack.scrollWidth - featuredTrack.clientWidth;
+                const target = Math.max(0, Math.min(
+                    maxScroll,
+                    featuredTrack.scrollLeft + direction * (card.getBoundingClientRect().width + gap),
+                ));
+                animateFeaturedTo(target);
+            };
+
+            featuredPrevious.addEventListener('click', () => scrollFeatured(-1));
+            featuredNext.addEventListener('click', () => scrollFeatured(1));
+            featuredTrack.addEventListener('scroll', updateFeaturedControls, { passive: true });
+            window.addEventListener('resize', updateFeaturedControls);
+            const featuredCarousel = featuredTrack.closest('[data-featured-carousel]');
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let carouselPaused = false;
+            const pauseCarousel = () => {
+                carouselPaused = true;
+            };
+            const resumeCarousel = () => {
+                carouselPaused = false;
+            };
+
+            featuredCarousel?.addEventListener('mouseenter', pauseCarousel);
+            featuredCarousel?.addEventListener('mouseleave', resumeCarousel);
+            featuredCarousel?.addEventListener('focusin', pauseCarousel);
+            featuredCarousel?.addEventListener('focusout', (event) => {
+                if (!featuredCarousel.contains(event.relatedTarget)) {
+                    resumeCarousel();
+                }
+            });
+            featuredCarousel?.addEventListener('pointerdown', pauseCarousel);
+            featuredCarousel?.addEventListener('pointerup', (event) => {
+                if (
+                    (event.pointerType === 'touch' || !featuredCarousel.matches(':hover')) &&
+                    !featuredCarousel.contains(document.activeElement)
+                ) {
+                    resumeCarousel();
+                }
+            });
+            document.addEventListener('visibilitychange', updateFeaturedControls);
+
+            window.setInterval(() => {
+                const maxScroll = featuredTrack.scrollWidth - featuredTrack.clientWidth;
+                if (carouselPaused || document.hidden || reducedMotion.matches || maxScroll <= 1) {
+                    return;
+                }
+                if (featuredTrack.scrollLeft >= maxScroll - 1) {
+                    animateFeaturedTo(0);
+                } else {
+                    scrollFeatured(1);
+                }
+            }, 4500);
+            updateFeaturedControls();
+        }
     </script>
     <?php
     $cartHref = 'pages/cart.php';
