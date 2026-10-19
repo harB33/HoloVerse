@@ -1614,6 +1614,179 @@
     @apply mb-3 mt-0 max-w-[700px] text-[11px] font-medium text-[#a7e9ff];
   }
 
+  .product-input-page {
+    @apply min-h-screen bg-[#f4f7fb] text-[#172033];
+  }
+
+  .product-input-main {
+    @apply mx-auto w-full max-w-[1120px] px-4 pb-14 pt-8 sm:px-6 lg:px-8;
+  }
+
+  .product-input-heading {
+    @apply mb-6 flex items-end justify-between gap-5;
+  }
+
+  .product-input-heading span {
+    @apply font-montserrat text-[10px] font-bold uppercase tracking-[0.12em] text-[#078bbd];
+  }
+
+  .product-input-heading h1 {
+    @apply mb-1 mt-1 text-[30px] font-bold leading-tight text-[#101829];
+  }
+
+  .product-input-heading p {
+    @apply m-0 text-[13px] text-[#617184];
+  }
+
+  .product-input-heading > a {
+    @apply mb-1 text-[12px] font-semibold text-[#087fa8] underline-offset-4 hover:underline;
+  }
+
+  .product-input-panel {
+    @apply overflow-hidden rounded-xl border border-[#dce5ed] bg-white shadow-[0_8px_24px_rgba(16,40,68,0.05)];
+  }
+
+  .product-input-panel-heading {
+    @apply flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[#e5edf4] px-5 py-4 sm:px-8;
+  }
+
+  .product-input-panel-heading h2 {
+    @apply m-0 text-[15px] font-bold text-[#101829];
+  }
+
+  .product-input-panel-heading > span {
+    @apply text-[11px] text-[#718096];
+  }
+
+  .product-input-message,
+  .product-input-warning {
+    @apply mx-5 my-4 rounded-md border border-[#b8e1ed] bg-[#f0faff] px-4 py-3 text-[12px] text-[#075879] sm:mx-8;
+  }
+
+  .product-input-message.is-error {
+    @apply border-[#f2c6c6] bg-[#fff6f5] text-[#9b302b];
+  }
+
+  .product-input-message a {
+    @apply ml-2 font-semibold underline underline-offset-2;
+  }
+
+  .product-input-form {
+    @apply divide-y divide-[#e5edf4];
+  }
+
+  .product-input-section {
+    @apply m-0 min-w-0 border-0 px-5 py-6 sm:px-8 sm:py-7;
+  }
+
+  .product-input-section legend {
+    @apply col-span-full mb-0 w-full pb-1 font-montserrat text-[13px] font-bold text-[#101829];
+  }
+
+  .product-input-form label {
+    @apply block text-[12px] font-semibold text-[#34465a];
+  }
+
+  .product-input-form label span {
+    @apply font-normal text-[#8290a0];
+  }
+
+  .product-input-form input:not([type="checkbox"]),
+  .product-input-form select,
+  .product-input-form textarea {
+    @apply mt-1.5 block min-h-10 w-full rounded-md border border-[#d6e1ea] bg-[#fbfdff] px-3 py-2 text-[13px] text-[#172033] outline-none transition focus:border-[#168fba] focus:ring-2 focus:ring-[#31b4cf]/20;
+  }
+
+  .product-input-form textarea {
+    @apply min-h-24 resize-y;
+  }
+
+  .product-input-form input[type="file"] {
+    @apply cursor-pointer p-1.5 text-[11px] text-[#617184];
+  }
+
+  .product-input-form input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    border: 0;
+    border-radius: 4px;
+    background: #e7f7fc;
+    padding: 7px 10px;
+    color: #087fa8;
+    font:
+      600 11px "Montserrat",
+      sans-serif;
+    cursor: pointer;
+  }
+
+  .product-input-toggle {
+    @apply flex min-h-10 items-center gap-2 self-end pb-2;
+  }
+
+  .product-input-form .product-input-toggle input[type="checkbox"] {
+    @apply size-4 accent-[#1da3d8];
+  }
+
+  .product-input-images {
+    @apply grid gap-4;
+  }
+
+  .product-input-section-description {
+    @apply m-0 text-[11px] text-[#718096];
+  }
+
+  .product-input-file-row {
+    @apply grid min-w-0 gap-3 rounded-lg border border-dashed border-[#cbdbe6] bg-[#f8fbfd] p-4 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-3;
+    transition:
+      border-color 150ms ease,
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .product-input-file-row.is-dragover {
+    @apply border-[#078bbd] bg-[#effaff] shadow-[0_0_0_3px_rgba(8,139,189,0.12)];
+  }
+
+  .product-input-drop-hint,
+  .product-input-drop-status {
+    @apply m-0 text-[11px] text-[#718096] sm:col-span-2;
+  }
+
+  .product-input-drop-status:empty {
+    display: none;
+  }
+
+  .product-input-drop-status.is-error {
+    @apply font-semibold text-[#a93232];
+  }
+
+  .product-input-additional-images {
+    @apply grid gap-3;
+  }
+
+  .product-input-file-row > button {
+    @apply w-fit border-0 bg-transparent p-0 text-[11px] font-semibold text-[#637488] underline underline-offset-2 hover:text-[#087fa8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  #add-product-image {
+    @apply w-fit rounded-md border border-[#b8dce8] bg-[#f0faff] px-3 py-2 text-[11px] font-bold text-[#087fa8] transition hover:bg-[#e2f6fb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .product-input-actions {
+    @apply flex flex-wrap items-center justify-end gap-4 border-t border-[#e5edf4] bg-[#fbfdff] px-5 py-4 sm:px-8;
+  }
+
+  .product-input-actions > a {
+    @apply text-[12px] font-semibold text-[#617184] underline-offset-4 hover:text-[#087fa8] hover:underline;
+  }
+
+  .product-input-submit {
+    @apply rounded-md border-0 bg-[#101829] px-5 py-2.5 text-[12px] font-bold text-white transition hover:bg-[#243b59] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168fba];
+  }
+
+  .product-input-denied {
+    @apply mx-auto mt-12 max-w-xl rounded-xl border border-[#dce5ed] bg-white p-8 shadow-sm;
+  }
+
   .admin-dashboard-shell {
     @apply min-h-screen bg-[#f4f7fb] px-4 pb-12 pt-0;
   }
@@ -3115,12 +3288,32 @@
     @apply grid grid-cols-1 overflow-hidden rounded-[26px] border border-[rgba(49,180,207,0.2)] bg-white/90 shadow-[0_24px_40px_rgba(17,41,73,0.06)];
   }
 
+  .product-detail-gallery {
+    @apply flex min-w-0 flex-col gap-3;
+  }
+
   .product-detail-art {
     @apply relative flex min-h-[280px] items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#d8f8ff_0%,#bae8ff_38%,#7fcff0_100%)] p-8;
   }
 
   .product-detail-image {
     @apply relative z-0 max-h-[460px] w-full object-contain;
+  }
+
+  .product-detail-thumbnails {
+    @apply flex gap-3 overflow-x-auto px-1 pb-1;
+  }
+
+  .product-detail-thumbnail {
+    @apply size-[72px] flex-none cursor-pointer overflow-hidden rounded-lg border-2 border-transparent bg-white p-1 transition-colors hover:border-[#7ccfe9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] sm:size-24;
+  }
+
+  .product-detail-thumbnail img {
+    @apply size-full rounded-md object-cover;
+  }
+
+  .product-detail-thumbnail.is-active {
+    @apply border-[#1da3d8];
   }
 
   .product-detail-content {

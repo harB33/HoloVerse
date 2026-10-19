@@ -20,6 +20,7 @@ $messageIsError = false;
 $createdProductId = 0;
 $createdProductStatus = null;
 $invalidPostData = false;
+$additionalImageAltTexts = [''];
 $form = [
     'product_name' => '',
     'description' => '',
@@ -49,9 +50,71 @@ if (!$accessDenied) {
                 $invalidPostData = true;
                 continue;
             }
-            $value = $_POST[$key] ?? $default;
-            $form[$key] = trim($value);
+            $form[$key] = trim($_POST[$key] ?? $default);
         }
+
+        $readImageInputs = static function (mixed $input) use (&$invalidPostData): array {
+            if (!is_array($input) || count($input) > 9) {
+                $invalidPostData = true;
+                return [];
+            }
+
+            $values = [];
+            foreach ($input as $value) {
+                if (!is_string($value)) {
+                    $invalidPostData = true;
+                    $values[] = '';
+                    continue;
+                }
+                $values[] = trim($value);
+            }
+
+            return $values;
+        };
+        $additionalImageAltTexts = $readImageInputs($_POST['additional_image_alt_texts'] ?? []);
+        $normalizeUploads = static function (mixed $fileBag, bool $multiple) use (&$invalidPostData): array {
+            $fields = ['name', 'tmp_name', 'error', 'size'];
+            if (!is_array($fileBag)) {
+                $invalidPostData = true;
+                return [];
+            }
+
+            if (!$multiple) {
+                foreach ($fields as $field) {
+                    if (!array_key_exists($field, $fileBag) || is_array($fileBag[$field])) {
+                        $invalidPostData = true;
+                        return [];
+                    }
+                }
+                return [$fileBag];
+            }
+
+            if (!isset($fileBag['name']) || !is_array($fileBag['name']) || count($fileBag['name']) > 9) {
+                $invalidPostData = true;
+                return [];
+            }
+
+            $entries = [];
+            foreach ($fileBag['name'] as $index => $name) {
+                $entry = [];
+                foreach ($fields as $field) {
+                    if (!isset($fileBag[$field]) || !is_array($fileBag[$field]) || !array_key_exists($index, $fileBag[$field])) {
+                        $invalidPostData = true;
+                        continue 2;
+                    }
+                    $entry[$field] = $fileBag[$field][$index];
+                }
+                $entries[] = $entry;
+            }
+
+            return $entries;
+        };
+        $emptyUpload = ['name' => '', 'tmp_name' => '', 'error' => UPLOAD_ERR_NO_FILE, 'size' => 0];
+        $mainImageUploads = $normalizeUploads($_FILES['main_image'] ?? $emptyUpload, false);
+        $additionalImageUploads = $normalizeUploads(
+            $_FILES['additional_images'] ?? ['name' => [], 'tmp_name' => [], 'error' => [], 'size' => []],
+            true
+        );
 
         if (!store_verify_csrf()) {
             http_response_code(403);
@@ -78,13 +141,58 @@ if (!$accessDenied) {
                 $shipDate = DateTimeImmutable::createFromFormat('!Y-m-d', $form['expected_ship_date']);
                 $validShipDate = $shipDate !== false && $shipDate->format('Y-m-d') === $form['expected_ship_date'];
             }
-            $imageUrl = $form['image_url'];
-            $imageUrlIsValid = $imageUrl === ''
-                || (
-                    filter_var($imageUrl, FILTER_VALIDATE_URL)
-                    && in_array(strtolower((string) parse_url($imageUrl, PHP_URL_SCHEME)), ['http', 'https'], true)
-                )
-                || preg_match('~^(?!/)(?!.*(?:^|/)\.\.(?:/|$))[A-Za-z0-9][A-Za-z0-9._/-]{0,254}$~D', $imageUrl) === 1;
+            $imageUploads = [];
+            $imageUploadsAreValid = true;
+            $allowedImageMimeTypes = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/gif' => 'gif',
+                'image/webp' => 'webp',
+            ];
+            $imageEntries = [];
+            foreach ($mainImageUploads as $upload) {
+                $imageEntries[] = ['upload' => $upload, 'alt_text' => $form['alt_text']];
+            }
+            foreach ($additionalImageUploads as $index => $upload) {
+                $imageEntries[] = ['upload' => $upload, 'alt_text' => $additionalImageAltTexts[$index] ?? ''];
+            }
+            $imageInfo = new finfo(FILEINFO_MIME_TYPE);
+            foreach ($imageEntries as $imageEntry) {
+                $upload = $imageEntry['upload'];
+                $imageAltText = $imageEntry['alt_text'];
+                $uploadError = (int) ($upload['error'] ?? UPLOAD_ERR_NO_FILE);
+                if ($uploadError === UPLOAD_ERR_NO_FILE) {
+                    $imageUploadsAreValid = $imageUploadsAreValid && $imageAltText === '';
+                    continue;
+                }
+
+                $temporaryPath = $upload['tmp_name'] ?? '';
+                $uploadSize = (int) ($upload['size'] ?? 0);
+                if (
+                    $uploadError !== UPLOAD_ERR_OK
+                    || !is_string($temporaryPath)
+                    || !is_uploaded_file($temporaryPath)
+                    || $uploadSize < 1
+                    || $uploadSize > 8 * 1024 * 1024
+                    || strlen($imageAltText) > 255
+                ) {
+                    $imageUploadsAreValid = false;
+                    continue;
+                }
+
+                $mimeType = $imageInfo->file($temporaryPath);
+                $imageDimensions = getimagesize($temporaryPath);
+                if (!isset($allowedImageMimeTypes[$mimeType]) || $imageDimensions === false) {
+                    $imageUploadsAreValid = false;
+                    continue;
+                }
+
+                $imageUploads[] = [
+                    'tmp_path' => $temporaryPath,
+                    'extension' => $allowedImageMimeTypes[$mimeType],
+                    'alt_text' => $imageAltText,
+                ];
+            }
 
             if (
                 $form['product_name'] === ''
@@ -103,11 +211,11 @@ if (!$accessDenied) {
                 || $stockQuantity === false
                 || $stockQuantity < 0
                 || ($talentId !== null && ($talentId === false || !in_array((int) $talentId, $talentIds, true)))
-                || strlen($imageUrl) > 255
-                || !$imageUrlIsValid
-                || strlen($form['alt_text']) > 255
+                || !$imageUploadsAreValid
             ) {
-                $message = 'Check the required fields and make sure each value is valid.';
+                $message = !$imageUploadsAreValid
+                    ? 'Images must be JPG, PNG, GIF, or WebP files no larger than 8 MB each.'
+                    : 'Check the required fields and make sure each value is valid.';
                 $messageIsError = true;
             } else {
                 $productName = $form['product_name'];
@@ -122,7 +230,7 @@ if (!$accessDenied) {
                 $price = $form['price'];
                 $compareAtPrice = $form['compare_at_price'] === '' ? null : $form['compare_at_price'];
                 $stockQuantity = (int) $stockQuantity;
-                $altText = $form['alt_text'] !== '' ? $form['alt_text'] : $productName;
+                $storedImagePaths = [];
 
                 try {
                     $conn->begin_transaction();
@@ -150,12 +258,32 @@ if (!$accessDenied) {
                     $statement->execute();
                     $statement->close();
 
-                    if ($imageUrl !== '') {
+                    if ($imageUploads) {
+                        $uploadDirectory = dirname(__DIR__) . '/Assets/images/products';
+                        if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
+                            throw new RuntimeException('The product image upload folder could not be created.');
+                        }
+                        if (!is_writable($uploadDirectory)) {
+                            throw new RuntimeException('The product image upload folder is not writable.');
+                        }
+                    }
+
+                    foreach ($imageUploads as $sortOrder => $image) {
+                        $imageFilename = bin2hex(random_bytes(16)) . '.' . $image['extension'];
+                        $destinationPath = $uploadDirectory . '/' . $imageFilename;
+                        if (!move_uploaded_file($image['tmp_path'], $destinationPath)) {
+                            throw new RuntimeException('An image could not be saved. Check the upload folder permissions and try again.');
+                        }
+                        $storedImagePaths[] = $destinationPath;
+                        $imageUrl = 'Assets/images/products/' . $imageFilename;
+                        $altText = $image['alt_text'] !== ''
+                            ? $image['alt_text']
+                            : $productName . ($sortOrder === 0 ? '' : ' image ' . ($sortOrder + 1));
                         $statement = $conn->prepare(
                             'INSERT INTO product_image_tbl (product_id, image_url, alt_text, sort_order)
-                             VALUES (?, ?, ?, 0)'
+                             VALUES (?, ?, ?, ?)'
                         );
-                        $statement->bind_param('iss', $createdProductId, $imageUrl, $altText);
+                        $statement->bind_param('issi', $createdProductId, $imageUrl, $altText, $sortOrder);
                         $statement->execute();
                         $statement->close();
                     }
@@ -175,6 +303,11 @@ if (!$accessDenied) {
                     exit;
                 } catch (PDOException $error) {
                     $conn->rollback();
+                    foreach ($storedImagePaths as $storedImagePath) {
+                        if (is_file($storedImagePath)) {
+                            unlink($storedImagePath);
+                        }
+                    }
                     if ($error->getCode() !== '23505') {
                         throw $error;
                     }
@@ -182,6 +315,11 @@ if (!$accessDenied) {
                     $messageIsError = true;
                 } catch (Throwable $error) {
                     $conn->rollback();
+                    foreach ($storedImagePaths as $storedImagePath) {
+                        if (is_file($storedImagePath)) {
+                            unlink($storedImagePath);
+                        }
+                    }
                     throw $error;
                 }
             }
@@ -202,57 +340,63 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body class="min-h-screen border-t-2 border-sky-500 bg-slate-100 font-['Kanit'] text-slate-800">
+<body class="product-input-page">
     <?php
     $activePage = '';
     require __DIR__ . '/../app/views/components/site-header.php';
     ?>
 
-    <main class="mx-auto w-full max-w-5xl px-4 pb-8 pt-8 sm:px-8 lg:px-12">
+    <main class="product-input-main">
         <?php if ($accessDenied): ?>
-            <section class="mx-auto mt-12 max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <section class="product-input-denied">
                 <h1 class="text-2xl font-bold">Administrator access required</h1>
                 <p class="mt-3 text-slate-600">Your account is not allowed to add catalog products.</p>
                 <a class="mt-6 inline-flex rounded-lg bg-slate-800 px-5 py-3 font-medium text-white" href="../index.php">Return to the shop</a>
             </section>
         <?php else: ?>
-            <section class="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-300/30 sm:p-9">
-                <header class="mb-8">
-                    <span class="text-sm font-semibold uppercase tracking-wider text-sky-700">Catalog management</span>
-                    <h1 class="mt-2 text-3xl font-bold">Add a product</h1>
-                    <p class="mt-3 text-slate-600">Product details and inventory are saved directly to the HoloVerse catalog.</p>
-                </header>
+            <header class="product-input-heading">
+                <div>
+                    <span>Catalog management</span>
+                    <h1>Add a product</h1>
+                    <p>Enter product details, inventory, and images.</p>
+                </div>
+                <a href="admin-dashboard.php">Back to dashboard</a>
+            </header>
+
+            <section class="product-input-panel">
+                <div class="product-input-panel-heading">
+                    <h2>Product information</h2>
+                    <span>All fields marked optional can be left blank.</span>
+                </div>
 
                 <?php if ($message !== ''): ?>
-                    <p class="mb-6 rounded-lg px-4 py-3 text-sm <?= $messageIsError ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700' ?>" role="<?= $messageIsError ? 'alert' : 'status' ?>">
+                    <p class="product-input-message<?= $messageIsError ? ' is-error' : '' ?>" role="<?= $messageIsError ? 'alert' : 'status' ?>">
                         <?= store_escape($message) ?>
                         <?php if (!$messageIsError && $createdProductId > 0 && $createdProductStatus === 'active'): ?>
-                            <a class="ml-2 font-semibold underline" href="product.php?id=<?= $createdProductId ?>">View product</a>
+                            <a href="product.php?id=<?= $createdProductId ?>">View product</a>
                         <?php endif; ?>
                     </p>
                 <?php endif; ?>
 
                 <?php if (!$categories): ?>
-                    <p class="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">No product categories are set up. Add categories to the database before creating a product.</p>
+                    <p class="product-input-warning" role="alert">No product categories are set up. Add categories to the database before creating a product.</p>
                 <?php else: ?>
-                    <form method="post" action="product-input.php" class="space-y-7">
+                    <form method="post" action="product-input.php" enctype="multipart/form-data" class="product-input-form">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
 
-                        <fieldset class="grid gap-5 sm:grid-cols-2">
-                            <legend class="mb-4 text-lg font-semibold">Product details</legend>
+                        <fieldset class="product-input-section product-input-section--details grid gap-5 sm:grid-cols-2">
+                            <legend>Product details</legend>
                             <div class="sm:col-span-2">
-                                <label for="product-name" class="mb-2 block text-sm font-medium">Product name</label>
-                                <input id="product-name" name="product_name" type="text" maxlength="255" required value="<?= store_escape($form['product_name']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                <label for="product-name">Product name</label>
+                                <input id="product-name" name="product_name" type="text" maxlength="255" required value="<?= store_escape($form['product_name']) ?>">
                             </div>
                             <div class="sm:col-span-2">
-                                <label for="description" class="mb-2 block text-sm font-medium">Description <span class="font-normal text-slate-500">(optional)</span></label>
-                                <textarea id="description" name="description" rows="4"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"><?= store_escape($form['description']) ?></textarea>
+                                <label for="description">Description <span>(optional)</span></label>
+                                <textarea id="description" name="description" rows="4"><?= store_escape($form['description']) ?></textarea>
                             </div>
                             <div>
-                                <label for="category-id" class="mb-2 block text-sm font-medium">Category</label>
-                                <select id="category-id" name="category_id" required class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="category-id">Category</label>
+                                <select id="category-id" name="category_id" required>
                                     <option value="">Choose a category</option>
                                     <?php foreach ($categories as $category): ?>
                                         <option value="<?= (int) $category['category_id'] ?>" <?= $form['category_id'] === (string) $category['category_id'] ? 'selected' : '' ?>>
@@ -262,15 +406,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </select>
                             </div>
                             <div>
-                                <label for="status" class="mb-2 block text-sm font-medium">Catalog status</label>
-                                <select id="status" name="status" class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="status">Catalog status</label>
+                                <select id="status" name="status">
                                     <option value="draft" <?= $form['status'] === 'draft' ? 'selected' : '' ?>>Draft (not visible in shop)</option>
                                     <option value="active" <?= $form['status'] === 'active' ? 'selected' : '' ?>>Active (publish now)</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="talent-id" class="mb-2 block text-sm font-medium">Associated talent <span class="font-normal text-slate-500">(optional)</span></label>
-                                <select id="talent-id" name="talent_id" class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="talent-id">Associated talent <span>(optional)</span></label>
+                                <select id="talent-id" name="talent_id">
                                     <option value="">No talent association</option>
                                     <?php foreach ($talents as $talent): ?>
                                         <option value="<?= (int) $talent['talent_id'] ?>" <?= $form['talent_id'] === (string) $talent['talent_id'] ? 'selected' : '' ?>>
@@ -279,65 +423,83 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="flex items-center gap-3 self-end pb-3">
-                                <input id="is-preorder" name="is_preorder" type="checkbox" value="1" <?= $form['is_preorder'] === '1' ? 'checked' : '' ?> class="size-4 accent-sky-600">
-                                <label for="is-preorder" class="text-sm font-medium">This product is a pre-order</label>
-                            </div>
+                            <label class="product-input-toggle" for="is-preorder">
+                                <input id="is-preorder" name="is_preorder" type="checkbox" value="1" <?= $form['is_preorder'] === '1' ? 'checked' : '' ?>>
+                                <span>This product is a pre-order</span>
+                            </label>
                             <div class="sm:col-span-2">
-                                <label for="expected-ship-date" class="mb-2 block text-sm font-medium">Expected ship date <span class="font-normal text-slate-500">(optional)</span></label>
-                                <input id="expected-ship-date" name="expected_ship_date" type="date" value="<?= store_escape($form['expected_ship_date']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 sm:max-w-xs">
+                                <label for="expected-ship-date">Expected ship date <span>(optional)</span></label>
+                                <input id="expected-ship-date" name="expected_ship_date" type="date" value="<?= store_escape($form['expected_ship_date']) ?>">
                             </div>
                         </fieldset>
 
-                        <fieldset class="grid gap-5 border-t border-slate-100 pt-6 sm:grid-cols-2">
-                            <legend class="text-lg font-semibold">Variant and inventory</legend>
+                        <fieldset class="product-input-section grid gap-5 sm:grid-cols-2">
+                            <legend>Variant and inventory</legend>
                             <div>
-                                <label for="variant-name" class="mb-2 block text-sm font-medium">Variant name</label>
-                                <input id="variant-name" name="variant_name" type="text" maxlength="100" required value="<?= store_escape($form['variant_name']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="variant-name">Variant name</label>
+                                <input id="variant-name" name="variant_name" type="text" maxlength="100" required value="<?= store_escape($form['variant_name']) ?>">
                             </div>
                             <div>
-                                <label for="sku" class="mb-2 block text-sm font-medium">SKU</label>
-                                <input id="sku" name="sku" type="text" maxlength="50" required value="<?= store_escape($form['sku']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="sku">SKU</label>
+                                <input id="sku" name="sku" type="text" maxlength="50" required value="<?= store_escape($form['sku']) ?>">
                             </div>
                             <div>
-                                <label for="price" class="mb-2 block text-sm font-medium">Price (PHP)</label>
-                                <input id="price" name="price" type="number" min="0.01" max="99999999.99" step="0.01" required value="<?= store_escape($form['price']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="price">Price (PHP)</label>
+                                <input id="price" name="price" type="number" min="0.01" max="99999999.99" step="0.01" required value="<?= store_escape($form['price']) ?>">
                             </div>
                             <div>
-                                <label for="compare-at-price" class="mb-2 block text-sm font-medium">Original price <span class="font-normal text-slate-500">(optional)</span></label>
-                                <input id="compare-at-price" name="compare_at_price" type="number" min="0.01" max="99999999.99" step="0.01" value="<?= store_escape($form['compare_at_price']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="compare-at-price">Original price <span>(optional)</span></label>
+                                <input id="compare-at-price" name="compare_at_price" type="number" min="0.01" max="99999999.99" step="0.01" value="<?= store_escape($form['compare_at_price']) ?>">
                             </div>
                             <div>
-                                <label for="stock-quantity" class="mb-2 block text-sm font-medium">Stock quantity</label>
-                                <input id="stock-quantity" name="stock_quantity" type="number" min="0" max="2147483647" step="1" required value="<?= store_escape($form['stock_quantity']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <label for="stock-quantity">Stock quantity</label>
+                                <input id="stock-quantity" name="stock_quantity" type="number" min="0" max="2147483647" step="1" required value="<?= store_escape($form['stock_quantity']) ?>">
                             </div>
                         </fieldset>
 
-                        <fieldset class="grid gap-5 border-t border-slate-100 pt-6">
-                            <legend class="text-lg font-semibold">Product image</legend>
-                            <div>
-                                <label for="image-url" class="mb-2 block text-sm font-medium">Image URL or local asset path <span class="font-normal text-slate-500">(optional)</span></label>
-                                <input id="image-url" name="image_url" type="text" maxlength="255" placeholder="assets/images/product.jpg" value="<?= store_escape($form['image_url']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                        <fieldset class="product-input-section product-input-images">
+                            <legend>Product images</legend>
+                            <p class="product-input-section-description">Upload up to 10 images. The first is used as the main product image.</p>
+                            <div class="product-input-file-row" data-image-drop-zone>
+                                <label for="main-image">Main image file <span>(optional)</span></label>
+                                <input id="main-image" name="main_image" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+                                <label for="alt-text">Image description <span>(optional)</span></label>
+                                <input id="alt-text" name="alt_text" type="text" maxlength="255" value="<?= store_escape($form['alt_text']) ?>">
+                                <p class="product-input-drop-hint" data-drop-hint>Drop image files here, or choose files above.</p>
+                                <p class="product-input-drop-status" data-drop-status role="status" aria-live="polite"></p>
                             </div>
-                            <div>
-                                <label for="alt-text" class="mb-2 block text-sm font-medium">Image description <span class="font-normal text-slate-500">(optional)</span></label>
-                                <input id="alt-text" name="alt_text" type="text" maxlength="255" value="<?= store_escape($form['alt_text']) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                            <div id="additional-product-images" class="product-input-additional-images">
+                                <?php foreach ($additionalImageAltTexts as $index => $imageAltText): ?>
+                                    <div class="product-input-file-row" data-product-image-row data-image-drop-zone>
+                                        <label for="additional-image-file-<?= $index ?>">Additional image file</label>
+                                        <input id="additional-image-file-<?= $index ?>" name="additional_images[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+                                        <label for="additional-image-alt-<?= $index ?>">Image description <span>(optional)</span></label>
+                                        <input id="additional-image-alt-<?= $index ?>" name="additional_image_alt_texts[]" type="text" maxlength="255" value="<?= store_escape($imageAltText) ?>">
+                                        <button type="button" data-remove-product-image>Remove image</button>
+                                        <p class="product-input-drop-hint" data-drop-hint>Drop one image here, or choose a file above.</p>
+                                        <p class="product-input-drop-status" data-drop-status role="status" aria-live="polite"></p>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
+                            <button type="button" id="add-product-image">Add another image</button>
+                            <template id="product-image-row-template">
+                                <div class="product-input-file-row" data-product-image-row data-image-drop-zone>
+                                    <label>Additional image file
+                                        <input name="additional_images[]" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+                                    </label>
+                                    <label>Image description <span>(optional)</span>
+                                        <input name="additional_image_alt_texts[]" type="text" maxlength="255">
+                                    </label>
+                                    <button type="button" data-remove-product-image>Remove image</button>
+                                    <p class="product-input-drop-hint" data-drop-hint>Drop one image here, or choose a file above.</p>
+                                    <p class="product-input-drop-status" data-drop-status role="status" aria-live="polite"></p>
+                                </div>
+                            </template>
                         </fieldset>
 
-                        <div class="flex flex-wrap items-center gap-4 border-t border-slate-100 pt-6">
-                            <button type="submit" class="rounded-lg bg-slate-800 px-6 py-3 font-semibold text-white transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
-                                Save product
-                            </button>
-                            <a href="../index.php" class="text-sm font-medium text-slate-600 underline">Cancel</a>
+                        <div class="product-input-actions">
+                            <button type="submit" class="product-input-submit">Save product</button>
+                            <a href="admin-dashboard.php">Cancel</a>
                         </div>
                     </form>
                 <?php endif; ?>
@@ -345,6 +507,121 @@ require __DIR__ . '/../app/views/layout/head.php';
         <?php endif; ?>
     </main>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script>
+        (() => {
+            const imageList = document.querySelector('#additional-product-images');
+            const addImageButton = document.querySelector('#add-product-image');
+            const imageRowTemplate = document.querySelector('#product-image-row-template');
+            const imageFieldset = document.querySelector('.product-input-images');
+            if (!imageList || !addImageButton || !imageRowTemplate || !imageFieldset) {
+                return;
+            }
+
+            const updateAddImageButton = () => {
+                addImageButton.disabled = imageList.querySelectorAll('[data-product-image-row]').length >= 9;
+            };
+
+            const setUploadFile = (input, file) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                input.files = transfer.files;
+            };
+
+            const updateDropStatus = (zone, message, isError = false) => {
+                const status = zone.querySelector('[data-drop-status]');
+                if (status) {
+                    status.textContent = message;
+                    status.classList.toggle('is-error', isError);
+                }
+            };
+
+            const appendImageRow = () => {
+                if (imageList.querySelectorAll('[data-product-image-row]').length >= 9) {
+                    return null;
+                }
+                imageList.append(imageRowTemplate.content.cloneNode(true));
+                updateAddImageButton();
+                return imageList.lastElementChild;
+            };
+
+            addImageButton.addEventListener('click', () => {
+                if (imageList.querySelectorAll('[data-product-image-row]').length >= 9) {
+                    return;
+                }
+                imageList.append(imageRowTemplate.content.cloneNode(true));
+                updateAddImageButton();
+            });
+            imageList.addEventListener('click', (event) => {
+                const removeButton = event.target.closest('[data-remove-product-image]');
+                removeButton?.closest('[data-product-image-row]')?.remove();
+                updateAddImageButton();
+            });
+            imageFieldset.addEventListener('change', (event) => {
+                const input = event.target.closest('input[type="file"]');
+                const zone = input?.closest('[data-image-drop-zone]');
+                if (input?.files.length && zone) {
+                    updateDropStatus(zone, input.files.length === 1 ? input.files[0].name : `${input.files.length} images selected`);
+                }
+            });
+            imageFieldset.addEventListener('dragover', (event) => {
+                const zone = event.target.closest('[data-image-drop-zone]');
+                if (!zone || !event.dataTransfer?.types.includes('Files')) {
+                    return;
+                }
+                event.preventDefault();
+                zone.classList.add('is-dragover');
+            });
+            imageFieldset.addEventListener('dragleave', (event) => {
+                const zone = event.target.closest('[data-image-drop-zone]');
+                if (zone && !zone.contains(event.relatedTarget)) {
+                    zone.classList.remove('is-dragover');
+                }
+            });
+            imageFieldset.addEventListener('drop', (event) => {
+                const zone = event.target.closest('[data-image-drop-zone]');
+                if (!zone || !event.dataTransfer?.files.length) {
+                    return;
+                }
+                event.preventDefault();
+                zone.classList.remove('is-dragover');
+
+                const droppedFiles = Array.from(event.dataTransfer.files);
+                const validFiles = droppedFiles.filter((file) =>
+                    ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
+                    && file.size > 0
+                    && file.size <= 8 * 1024 * 1024
+                );
+                if (validFiles.length === 0) {
+                    updateDropStatus(zone, 'Use JPG, PNG, GIF, or WebP files up to 8 MB.', true);
+                    return;
+                }
+
+                const targetInput = zone.querySelector('input[type="file"]');
+                setUploadFile(targetInput, validFiles[0]);
+                updateDropStatus(zone, validFiles[0].name);
+
+                let added = 1;
+                let lastZone = zone;
+                for (const file of validFiles.slice(1)) {
+                    const nextZone = appendImageRow();
+                    if (!nextZone) {
+                        break;
+                    }
+                    setUploadFile(nextZone.querySelector('input[type="file"]'), file);
+                    updateDropStatus(nextZone, file.name);
+                    lastZone = nextZone;
+                    added += 1;
+                }
+
+                const hasInvalidFiles = validFiles.length !== droppedFiles.length;
+                const couldNotAddAll = added !== validFiles.length;
+                if (hasInvalidFiles || couldNotAddAll) {
+                    updateDropStatus(lastZone, `${added} image${added === 1 ? '' : 's'} added. Some files were skipped.`, true);
+                }
+            });
+            updateAddImageButton();
+        })();
+    </script>
 </body>
 
 </html>
