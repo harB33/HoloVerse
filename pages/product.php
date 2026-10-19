@@ -118,27 +118,43 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-gallery-stage {
             position: relative;
-            display: grid;
-            min-height: 490px;
-            aspect-ratio: 1.2 / 1;
-            place-items: center;
+            display: flex;
+            height: clamp(340px, 42vw, 480px);
+            align-items: center;
+            justify-content: center;
+            isolation: isolate;
             overflow: hidden;
             border: 1px solid #d9dce1;
-            background: #fff;
+            background: #e6e3ec;
+        }
+
+        .product-gallery-backdrop {
+            position: absolute;
+            z-index: -1;
+            inset: -24px;
+            width: calc(100% + 48px);
+            height: calc(100% + 48px);
+            padding: 0;
+            object-fit: cover;
+            filter: blur(24px) saturate(.8);
+            opacity: .42;
+            transform: scale(1.04);
         }
 
         .product-gallery-main {
+            position: relative;
+            z-index: 0;
             display: block;
             width: 100%;
             height: 100%;
-            max-height: 620px;
-            padding: 28px;
+            flex: 0 1 auto;
+            padding: 22px;
             object-fit: contain;
         }
 
         .product-category-tag {
             position: absolute;
-            z-index: 1;
+            z-index: 10 !important;
             top: 16px;
             left: 16px;
             border: 1px solid #e6e9ed;
@@ -153,12 +169,40 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-gallery-thumbnails {
             display: flex;
+            flex: 1 1 auto;
             gap: 10px;
-            margin-top: 18px;
+            min-width: 0;
             overflow-x: auto;
-            padding: 2px 1px 6px;
-            scrollbar-width: thin;
+            padding: 2px 2px 6px;
+            scrollbar-width: none;
         }
+
+        .product-gallery-thumbnails::-webkit-scrollbar { display: none; }
+
+        .product-gallery-carousel {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .product-gallery-arrow {
+            display: grid;
+            flex: 0 0 28px;
+            width: 28px;
+            height: 42px;
+            cursor: pointer;
+            place-items: center;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: #14191f;
+            font: 400 30px/1 Arial, sans-serif;
+            transition: background-color .18s, color .18s;
+        }
+
+        .product-gallery-arrow:hover { background: #f0f5f7; color: #087fa8; }
+        .product-gallery-arrow:focus-visible { outline: 2px solid #0ba9d0; outline-offset: 2px; }
 
         .product-gallery-thumbnail {
             flex: 0 0 120px;
@@ -286,7 +330,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         @media (max-width: 900px) {
             .product-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
-            .product-gallery-stage { min-height: 380px; }
+            .product-gallery-stage { height: clamp(320px, 42vw, 400px); }
             .product-gallery-thumbnail { flex-basis: 88px; height: 88px; }
             .product-purchase-actions { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
         }
@@ -294,7 +338,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         @media (max-width: 680px) {
             .product-page-main { width: min(100% - 32px, 560px); padding-top: 16px; }
             .product-layout { grid-template-columns: minmax(0, 1fr); gap: 26px; padding: 16px; }
-            .product-gallery-stage { min-height: 0; aspect-ratio: 1 / .88; }
+            .product-gallery-stage { height: clamp(280px, 88vw, 380px); }
             .product-gallery-main { padding: 18px; }
             .product-info { padding-top: 0; }
             .product-info-heading h1 { font-size: 27px; }
@@ -316,7 +360,20 @@ require __DIR__ . '/../app/views/layout/head.php';
                     'image_url' => 'assets/images/logo.png',
                     'alt_text' => $product['product_name'],
                 ]];
-                $defaultImageUrl = store_asset_url($galleryImages[0]['image_url'], '../');
+                if (count($galleryImages) === 1) {
+                    // Temporary carousel slides: real additional product images in product_image_tbl replace these automatically.
+                    for ($temporaryView = 2; $temporaryView <= 4; $temporaryView++) {
+                        $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480"><rect width="640" height="480" fill="#f3f6f8"/><rect x="185" y="90" width="270" height="250" rx="18" fill="#e6edf1" stroke="#cbd5dc" stroke-width="3"/><path d="M225 145h190M225 205h190M225 265h190" stroke="#b6c4cc" stroke-width="12" stroke-linecap="round"/><circle cx="320" cy="190" r="78" fill="#fff" fill-opacity=".82"/><path d="M300 160v60l48-30z" fill="#0ba9d0"/><text x="320" y="390" text-anchor="middle" fill="#526476" font-family="Arial,sans-serif" font-size="22" font-weight="700">Temporary product view ' . $temporaryView . '</text></svg>';
+                        $galleryImages[] = [
+                            'image_url' => 'data:image/svg+xml,' . rawurlencode($placeholderSvg),
+                            'alt_text' => $product['product_name'] . ' — temporary gallery view ' . $temporaryView,
+                            'is_temporary' => true,
+                        ];
+                    }
+                }
+                $defaultImageUrl = str_starts_with($galleryImages[0]['image_url'], 'data:')
+                    ? $galleryImages[0]['image_url']
+                    : store_asset_url($galleryImages[0]['image_url'], '../');
                 ?>
                 <nav class="product-breadcrumb" aria-label="Breadcrumb">
                     <a href="../index.php">Home</a><span aria-hidden="true">›</span>
@@ -327,6 +384,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <section class="product-layout" aria-labelledby="product-title">
                     <div class="product-gallery">
                         <div class="product-gallery-stage">
+                            <img
+                                class="product-gallery-backdrop"
+                                src="<?= store_escape($defaultImageUrl) ?>"
+                                alt=""
+                                aria-hidden="true">
                             <span class="product-category-tag"><?= store_escape($product['category_name']) ?></span>
                             <img
                                 class="product-gallery-main"
@@ -335,13 +397,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 fetchpriority="high">
                         </div>
                         <?php if (count($galleryImages) > 1): ?>
-                            <div class="product-gallery-thumbnails" aria-label="Product images">
+                            <div class="product-gallery-carousel" data-gallery-carousel>
+                                <button class="product-gallery-arrow" type="button" data-gallery-previous aria-label="Show previous product image">‹</button>
+                                <div class="product-gallery-thumbnails" aria-label="Product images" role="group">
                                 <?php foreach ($galleryImages as $imageIndex => $image): ?>
-                                    <?php $thumbnailUrl = store_asset_url($image['image_url'], '../'); ?>
-                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($image['alt_text'] ?? $product['product_name']) ?>" aria-label="Show product image <?= $imageIndex + 1 ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
+                                    <?php $thumbnailUrl = str_starts_with($image['image_url'], 'data:') ? $image['image_url'] : store_asset_url($image['image_url'], '../'); ?>
+                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-gallery-image data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($image['alt_text'] ?? $product['product_name']) ?>" aria-label="Show product image <?= $imageIndex + 1 ?><?= !empty($image['is_temporary']) ? ' (temporary placeholder)' : '' ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
                                         <img src="<?= store_escape($thumbnailUrl) ?>" alt="" loading="lazy">
                                     </button>
                                 <?php endforeach; ?>
+                                </div>
+                                <button class="product-gallery-arrow" type="button" data-gallery-next aria-label="Show next product image">›</button>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -455,16 +521,49 @@ require __DIR__ . '/../app/views/layout/head.php';
         <script>
             (() => {
                 const galleryMain = document.querySelector('.product-gallery-main');
-                document.querySelectorAll('[data-image-src]').forEach((thumbnail) => {
-                    thumbnail.addEventListener('click', () => {
-                        galleryMain.src = thumbnail.dataset.imageSrc;
-                        galleryMain.alt = thumbnail.dataset.imageAlt || '';
-                        document.querySelectorAll('[data-image-src]').forEach((item) => {
-                            const selected = item === thumbnail;
-                            item.classList.toggle('is-active', selected);
-                            item.setAttribute('aria-pressed', String(selected));
-                        });
+                const galleryBackdrop = document.querySelector('.product-gallery-backdrop');
+                const galleryThumbnails = [...document.querySelectorAll('[data-gallery-image]')];
+                let activeGalleryIndex = 0;
+
+                const showGalleryImage = (index, scrollThumbnail = false) => {
+                    if (!galleryThumbnails.length) {
+                        return;
+                    }
+
+                    activeGalleryIndex = (index + galleryThumbnails.length) % galleryThumbnails.length;
+                    const activeThumbnail = galleryThumbnails[activeGalleryIndex];
+                    galleryMain.src = activeThumbnail.dataset.imageSrc;
+                    galleryBackdrop.src = activeThumbnail.dataset.imageSrc;
+                    galleryMain.alt = activeThumbnail.dataset.imageAlt || '';
+                    galleryThumbnails.forEach((thumbnail, thumbnailIndex) => {
+                        const selected = thumbnailIndex === activeGalleryIndex;
+                        thumbnail.classList.toggle('is-active', selected);
+                        thumbnail.setAttribute('aria-pressed', String(selected));
                     });
+
+                    if (scrollThumbnail) {
+                        activeThumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                    }
+                };
+
+                galleryThumbnails.forEach((thumbnail, index) => {
+                    thumbnail.addEventListener('click', () => {
+                        showGalleryImage(index);
+                    });
+                });
+
+                document.querySelector('[data-gallery-previous]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex - 1, true);
+                });
+                document.querySelector('[data-gallery-next]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex + 1, true);
+                });
+                galleryMain?.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowLeft') {
+                        showGalleryImage(activeGalleryIndex - 1, true);
+                    } else if (event.key === 'ArrowRight') {
+                        showGalleryImage(activeGalleryIndex + 1, true);
+                    }
                 });
 
                 const form = document.querySelector('[data-product-form]');
