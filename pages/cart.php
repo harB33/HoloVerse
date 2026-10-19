@@ -3,9 +3,19 @@ require_once __DIR__ . '/../app/store.php';
 
 $message = '';
 $cartId = store_current_cart_id($conn, false);
+$isAjaxRequest = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== '' && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (($_GET['mode'] ?? '') === 'count');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     store_clear_expired_cart_items($conn, $cartId);
+}
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && ($_GET['mode'] ?? '') === 'count') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => true,
+        'count' => store_cart_item_count($conn, store_current_cart_id($conn, false)),
+    ]);
+    exit;
 }
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
@@ -71,7 +81,25 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         }
 
         if ($message === '') {
+            if ($isAjaxRequest) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'success' => true,
+                    'count' => store_cart_item_count($conn, store_current_cart_id($conn, false)),
+                ]);
+                exit;
+            }
             header('Location: cart.php');
+            exit;
+        }
+
+        if ($isAjaxRequest) {
+            http_response_code(400);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => false,
+                'message' => $message,
+            ]);
             exit;
         }
     }
