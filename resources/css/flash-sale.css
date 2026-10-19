@@ -781,6 +781,11 @@
     text-align: center;
 }
 
+.vault-empty-state {
+    background: #f8fbfd;
+    font-size: 14px;
+}
+
 .vault-inventory-ration {
     margin-top: 48px;
     padding-top: 0;

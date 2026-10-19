@@ -6,7 +6,7 @@
             </svg>
             Flash sale status &amp; cart information
         </h2>
-        <span>System clock: <?= store_escape($flashSaleNow->format(DateTimeInterface::ATOM)) ?></span>
+        <time data-system-clock data-timezone="<?= store_escape($flashSaleTimezone->getName()) ?>" datetime="<?= store_escape($flashSaleNow->format(DateTimeInterface::ATOM)) ?>">System clock: <?= store_escape($flashSaleNow->format('Y-m-d H:i:s')) ?></time>
     </div>
     <div class="flash-telemetry-grid">
         <article class="flash-telemetry-card">
@@ -56,7 +56,7 @@
                     <path d="M16 18h.01" />
                 </svg>
             </div>
-            <strong><?= count($flashSaleProducts['starting']) + count($flashSaleProducts['tomorrow']) ?> <small>upcoming</small></strong>
+            <strong><?= count($flashSaleProducts['starting'] ?? []) + count($flashSaleProducts['tomorrow'] ?? []) ?> <small>upcoming</small></strong>
             <p>Upcoming sale windows are loaded from the admin schedule.</p>
             <span class="flash-telemetry-footnote"><i aria-hidden="true"></i> No queue simulation</span>
         </article>
