@@ -48,7 +48,7 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                             </svg>Admin dashboard</a>
                         <?php endif; ?>
                         <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>collector_showcase.php"<?= $activePage === 'collector_showcase' ? ' aria-current="page"' : '' ?>><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-playing-cards-fan preview-icon"><path d="M12.65 7.65a2 2 0 012.629-1.046l5.51 2.374a2 2 0 011.046 2.628l-3.957 9.184a2 2 0 01-2.628 1.046l-5.51-2.374a2 2 0 01-1.046-2.628z"/><path d="M18 7.777V4a2 2 0 00-2-2h-6a2 2 0 00-2 2v10a2 2 0 001.137 1.805"/><path d="m8 4.389-4.364.809a2 2 0 00-1.602 2.33l1.822 9.833a2 2 0 002.331 1.602l2.542-.47"/></svg> Collector Showcase</a>
-                        <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>personalized.php"<?= $activePage === 'personalized' ? ' aria-current="page"' : '' ?>><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette preview-icon"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg> Accessibility</a>
+                        <button class="account-dropdown-action" type="button" data-accessibility-dialog-open><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-accessibility preview-icon" aria-hidden="true"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>Accessibility</button>
                         <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>cart.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart preview-icon">
                             <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/>
                             <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/>
@@ -110,9 +110,136 @@ $pageUrlPrefix = $siteRoot . 'pages/';
                         </svg>Log in</a>
                         <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>collector_showcase.php"<?= $activePage === 'collector_showcase' ? ' aria-current="page"' : '' ?>>Collector Showcase</a>
                         <a class="account-dropdown-action" href="<?= $pageUrlPrefix ?>personalized.php"<?= $activePage === 'personalized' ? ' aria-current="page"' : '' ?>>Personalized</a>
+                        <button class="account-dropdown-action" type="button" data-accessibility-dialog-open><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>Accessibility</button>
                     </div>
                 </details>
             <?php endif; ?>
         <?php endif; ?>
+        <dialog class="accessibility-dialog" data-accessibility-dialog aria-labelledby="accessibility-dialog-title" aria-describedby="accessibility-dialog-description">
+            <div class="accessibility-dialog-content">
+                <header class="accessibility-dialog-header">
+                    <div>
+                        <h2 id="accessibility-dialog-title">Accessibility Options</h2>
+                        <p id="accessibility-dialog-description">Customize your experience to make the application easier to see and use.</p>
+                    </div>
+                    <button class="accessibility-dialog-close" type="button" data-accessibility-dialog-close aria-label="Close accessibility options">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>
+                    </button>
+                </header>
+
+                <section class="accessibility-section" aria-labelledby="accessibility-theme-title">
+                    <h3 id="accessibility-theme-title">Theme Preference</h3>
+                    <div class="accessibility-theme-options" role="group" aria-label="Theme preference">
+                        <button class="accessibility-theme-option" type="button" data-accessibility-theme="light" aria-pressed="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+                            <span>Light Mode</span>
+                        </button>
+                        <button class="accessibility-theme-option" type="button" data-accessibility-theme="dark" aria-pressed="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+                            <span>Dark Mode</span>
+                        </button>
+                        <button class="accessibility-theme-option" type="button" data-accessibility-theme="system" aria-pressed="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                            <span>System Default</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="accessibility-section" aria-labelledby="accessibility-display-title">
+                    <h3 id="accessibility-display-title">Display &amp; Text</h3>
+                    <div class="accessibility-setting-heading">
+                        <div>
+                            <label for="accessibility-scale">Interface Scaling</label>
+                            <p>Adjust the size of text and UI elements globally.</p>
+                        </div>
+                        <output class="accessibility-scale-value" for="accessibility-scale" data-accessibility-scale-value>90%</output>
+                    </div>
+                    <div class="accessibility-scale-control">
+                        <span aria-hidden="true">A</span>
+                        <input id="accessibility-scale" type="range" min="80" max="120" step="5" value="90" data-accessibility-scale>
+                        <span class="accessibility-large-a" aria-hidden="true">A</span>
+                    </div>
+                </section>
+
+                <section class="accessibility-section accessibility-motion-section" aria-labelledby="accessibility-motion-title">
+                    <h3 id="accessibility-motion-title">Motion</h3>
+                    <label class="accessibility-motion-setting" for="accessibility-reduce-motion">
+                        <span>
+                            <strong>Reduce Motion</strong>
+                            <span>Disable background animations and page transitions.</span>
+                        </span>
+                        <input id="accessibility-reduce-motion" type="checkbox" data-accessibility-reduce-motion>
+                        <span class="accessibility-toggle" aria-hidden="true"></span>
+                    </label>
+                </section>
+            </div>
+        </dialog>
+        <script>
+            (() => {
+                const dialog = document.querySelector("[data-accessibility-dialog]");
+                const openButtons = document.querySelectorAll("[data-accessibility-dialog-open]");
+                const closeButton = document.querySelector("[data-accessibility-dialog-close]");
+                const themeButtons = document.querySelectorAll("[data-accessibility-theme]");
+                const scaleInput = document.querySelector("[data-accessibility-scale]");
+                const scaleValue = document.querySelector("[data-accessibility-scale-value]");
+                const reduceMotionInput = document.querySelector("[data-accessibility-reduce-motion]");
+                const storageKey = "holoverse-accessibility-settings";
+
+                if (!dialog || !closeButton || !scaleInput || !scaleValue || !reduceMotionInput) {
+                    return;
+                }
+
+                let settings = { theme: "light", scale: 90, reduceMotion: false };
+                try {
+                    settings = { ...settings, ...JSON.parse(localStorage.getItem(storageKey) || "{}") };
+                } catch (error) {
+                    console.warn("Could not load accessibility settings.", error);
+                }
+
+                const applySettings = () => {
+                    const scale = Math.min(120, Math.max(80, Number(settings.scale) || 90));
+                    const theme = ["light", "dark", "system"].includes(settings.theme) ? settings.theme : "light";
+                    settings = { ...settings, scale, theme, reduceMotion: Boolean(settings.reduceMotion) };
+                    document.documentElement.dataset.theme = theme;
+                    document.documentElement.style.fontSize = `${scale}%`;
+                    document.documentElement.dataset.reduceMotion = String(settings.reduceMotion);
+                    scaleInput.value = String(scale);
+                    scaleValue.value = `${scale}%`;
+                    scaleValue.textContent = `${scale}%`;
+                    reduceMotionInput.checked = settings.reduceMotion;
+                    themeButtons.forEach((button) => {
+                        button.setAttribute("aria-pressed", String(button.dataset.accessibilityTheme === theme));
+                    });
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(settings));
+                    } catch (error) {
+                        console.warn("Could not save accessibility settings.", error);
+                    }
+                };
+
+                openButtons.forEach((button) => button.addEventListener("click", () => {
+                    document.querySelector(".account-menu")?.removeAttribute("open");
+                    dialog.showModal();
+                }));
+                closeButton.addEventListener("click", () => dialog.close());
+                dialog.addEventListener("click", (event) => {
+                    if (event.target === dialog) dialog.close();
+                });
+                themeButtons.forEach((button) => button.addEventListener("click", () => {
+                    settings.theme = button.dataset.accessibilityTheme;
+                    applySettings();
+                }));
+                scaleInput.addEventListener("input", () => {
+                    settings.scale = scaleInput.value;
+                    applySettings();
+                });
+                reduceMotionInput.addEventListener("change", () => {
+                    settings.reduceMotion = reduceMotionInput.checked;
+                    applySettings();
+                });
+
+                applySettings();
+            })();
+        </script>
     </div>
 </header>
