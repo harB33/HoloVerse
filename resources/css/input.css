@@ -96,12 +96,13 @@
   }
 
   .site-header-wrap {
-    @apply sticky top-0 z-30;
+    @apply sticky top-0 z-30 bg-white;
+    isolation: isolate;
   }
 
   .site-header {
     @apply grid grid-cols-[minmax(0,1fr)_auto_minmax(240px,0.8fr)_auto] items-center gap-5;
-    padding: 20px;
+    padding: 10px 20px 0;
   }
 
   .site-flash-notice {
@@ -180,6 +181,10 @@
   .site-header-search {
     @apply my-0 w-full max-w-none;
     justify-self: end;
+  }
+
+  .catalog-search.site-header-search {
+    margin-block: 0;
   }
 
   .account-menu {
