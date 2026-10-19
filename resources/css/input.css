@@ -1054,33 +1054,137 @@
   }
 
   html[data-theme="dark"] body {
-    background: #17171c;
-    color: #f2eff7;
+    background: #202126;
+    color: #dedee3;
   }
 
-  html[data-theme="dark"] .main-nav,
+  html[data-theme="dark"] .watermark {
+    opacity: 0.55;
+  }
+
+  html[data-theme="dark"] .watermark text {
+    fill: #34353b;
+  }
+
+  html[data-theme="dark"] .hero-copy h1 {
+    background-image: linear-gradient(180deg, #68c9d5, #55a9c3);
+  }
+
+  html[data-theme="dark"] .hero-copy p {
+    background: #303136;
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .explore {
+    background-image: radial-gradient(#303136 1px, transparent 1px);
+  }
+
+  html[data-theme="dark"] .explore-filter {
+    border-color: #3a3b42;
+    background-color: #292a30;
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .explore-filter:hover,
+  html[data-theme="dark"] .explore-filter:focus-visible {
+    border-color: #0ea5d6;
+    background-color: #34363d;
+  }
+
+  html[data-theme="dark"] .explore-filter[aria-pressed="true"] {
+    border-color: #0ea5d6;
+    background-color: #0ea5d6;
+    color: #063b4b;
+  }
+
+  html[data-theme="dark"] .drop-card {
+    border-color: #3a3b42;
+    background-color: #292a30;
+  }
+
+  html[data-theme="dark"] .drop-details h3 {
+    color: #dedee3;
+  }
+
   html[data-theme="dark"] .account-dropdown {
-    border-color: #383342;
-    background-color: #22212a;
+    border-color: #3a3b42;
+    background-color: #222328;
+  }
+
+  html[data-theme="dark"] .account-dropdown-identity {
+    border-color: #3a3b42;
+  }
+
+  html[data-theme="dark"] .account-dropdown-email {
+    color: #a0a1a8;
+  }
+
+  html[data-theme="dark"] .main-nav {
+    border-color: #3a3b42;
+    background-color: #222328;
+  }
+
+  html[data-theme="dark"] .main-nav a {
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .brand-wordmark,
+  html[data-theme="dark"] .drops-heading h2,
+  html[data-theme="dark"] .all-products-intro h1,
+  html[data-theme="dark"] .drop-purchase > div .drop-price-row > strong,
+  html[data-theme="dark"] .explore-header h1,
+  html[data-theme="dark"] .explore-header h2,
+  html[data-theme="dark"] .talent-card h3,
+  html[data-theme="dark"] .admin-dashboard-header h1,
+  html[data-theme="dark"] .footer-brand > span,
+  html[data-theme="dark"] .footer-links h3,
+  html[data-theme="dark"] .about-tech-stack-header h2,
+  html[data-theme="dark"] .product-detail-variant,
+  html[data-theme="dark"] .product-detail-price,
+  html[data-theme="dark"] .vault-inventory-title-wrap h2 {
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .footer-brand > span span {
+    color: #05a9cf;
+  }
+
+  html[data-theme="dark"] .product-detail-form select {
+    border-color: #3a3b42;
+    background-color: #292a30;
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .talent-card {
+    border-color: #3a3b42;
   }
 
   html[data-theme="dark"] .account-dropdown a,
   html[data-theme="dark"] .account-dropdown button,
   html[data-theme="dark"] .account-dropdown-name {
-    color: #eee8f8;
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .account-dropdown a:hover,
+  html[data-theme="dark"] .account-dropdown button:hover,
+  html[data-theme="dark"] .account-dropdown a:focus-visible,
+  html[data-theme="dark"] .account-dropdown button:focus-visible,
+  html[data-theme="dark"] .account-dropdown a[aria-current="page"] {
+    background-color: #303136;
+    color: #dedee3;
   }
 
   html[data-theme="dark"] .accessibility-dialog {
-    border-color: #40374e;
-    background: #201e27;
-    color: #f2eff7;
+    border-color: #3a3b42;
+    background: #222328;
+    color: #dedee3;
   }
 
   html[data-theme="dark"] .accessibility-dialog-header h2,
   html[data-theme="dark"] .accessibility-section > h3,
   html[data-theme="dark"] .accessibility-setting-heading label,
   html[data-theme="dark"] .accessibility-motion-setting strong {
-    color: #f2eff7;
+    color: #dedee3;
   }
 
   html[data-theme="dark"] .accessibility-section > h3,
@@ -1088,12 +1192,12 @@
   html[data-theme="dark"] .accessibility-theme-option svg,
   html[data-theme="dark"] .accessibility-scale-control,
   html[data-theme="dark"] .accessibility-dialog-close {
-    border-color: #40374e;
+    border-color: #3a3b42;
   }
 
   html[data-theme="dark"] .accessibility-theme-option,
   html[data-theme="dark"] .accessibility-dialog-close {
-    background: #282530;
+    background: #292a30;
   }
 
   html[data-theme="dark"] .accessibility-theme-option[aria-pressed="true"] {
@@ -1113,33 +1217,137 @@
 
   @media (prefers-color-scheme: dark) {
     html[data-theme="system"] body {
-      background: #17171c;
-      color: #f2eff7;
+      background: #202126;
+      color: #dedee3;
     }
 
-    html[data-theme="system"] .main-nav,
+    html[data-theme="system"] .watermark {
+      opacity: 0.55;
+    }
+
+    html[data-theme="system"] .watermark text {
+      fill: #34353b;
+    }
+
+    html[data-theme="system"] .hero-copy h1 {
+      background-image: linear-gradient(180deg, #68c9d5, #55a9c3);
+    }
+
+    html[data-theme="system"] .hero-copy p {
+      background: #303136;
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .explore {
+      background-image: radial-gradient(#303136 1px, transparent 1px);
+    }
+
+    html[data-theme="system"] .explore-filter {
+      border-color: #3a3b42;
+      background-color: #292a30;
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .explore-filter:hover,
+    html[data-theme="system"] .explore-filter:focus-visible {
+      border-color: #0ea5d6;
+      background-color: #34363d;
+    }
+
+    html[data-theme="system"] .explore-filter[aria-pressed="true"] {
+      border-color: #0ea5d6;
+      background-color: #0ea5d6;
+      color: #063b4b;
+    }
+
+    html[data-theme="system"] .drop-card {
+      border-color: #3a3b42;
+      background-color: #292a30;
+    }
+
+    html[data-theme="system"] .drop-details h3 {
+      color: #dedee3;
+    }
+
     html[data-theme="system"] .account-dropdown {
-      border-color: #383342;
-      background-color: #22212a;
+      border-color: #3a3b42;
+      background-color: #222328;
+    }
+
+    html[data-theme="system"] .account-dropdown-identity {
+      border-color: #3a3b42;
+    }
+
+    html[data-theme="system"] .account-dropdown-email {
+      color: #a0a1a8;
+    }
+
+    html[data-theme="system"] .main-nav {
+      border-color: #3a3b42;
+      background-color: #222328;
+    }
+
+    html[data-theme="system"] .main-nav a {
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .brand-wordmark,
+    html[data-theme="system"] .drops-heading h2,
+    html[data-theme="system"] .all-products-intro h1,
+    html[data-theme="system"] .drop-purchase > div .drop-price-row > strong,
+    html[data-theme="system"] .explore-header h1,
+    html[data-theme="system"] .explore-header h2,
+    html[data-theme="system"] .talent-card h3,
+    html[data-theme="system"] .admin-dashboard-header h1,
+    html[data-theme="system"] .footer-brand > span,
+    html[data-theme="system"] .footer-links h3,
+    html[data-theme="system"] .about-tech-stack-header h2,
+    html[data-theme="system"] .product-detail-variant,
+    html[data-theme="system"] .product-detail-price,
+    html[data-theme="system"] .vault-inventory-title-wrap h2 {
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .footer-brand > span span {
+      color: #05a9cf;
+    }
+
+    html[data-theme="system"] .product-detail-form select {
+      border-color: #3a3b42;
+      background-color: #292a30;
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .talent-card {
+      border-color: #3a3b42;
     }
 
     html[data-theme="system"] .account-dropdown a,
     html[data-theme="system"] .account-dropdown button,
     html[data-theme="system"] .account-dropdown-name {
-      color: #eee8f8;
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .account-dropdown a:hover,
+    html[data-theme="system"] .account-dropdown button:hover,
+    html[data-theme="system"] .account-dropdown a:focus-visible,
+    html[data-theme="system"] .account-dropdown button:focus-visible,
+    html[data-theme="system"] .account-dropdown a[aria-current="page"] {
+      background-color: #303136;
+      color: #dedee3;
     }
 
     html[data-theme="system"] .accessibility-dialog {
-      border-color: #40374e;
-      background: #201e27;
-      color: #f2eff7;
+      border-color: #3a3b42;
+      background: #222328;
+      color: #dedee3;
     }
 
     html[data-theme="system"] .accessibility-dialog-header h2,
     html[data-theme="system"] .accessibility-section > h3,
     html[data-theme="system"] .accessibility-setting-heading label,
     html[data-theme="system"] .accessibility-motion-setting strong {
-      color: #f2eff7;
+      color: #dedee3;
     }
 
     html[data-theme="system"] .accessibility-section > h3,
@@ -1147,12 +1355,12 @@
     html[data-theme="system"] .accessibility-theme-option svg,
     html[data-theme="system"] .accessibility-scale-control,
     html[data-theme="system"] .accessibility-dialog-close {
-      border-color: #40374e;
+      border-color: #3a3b42;
     }
 
     html[data-theme="system"] .accessibility-theme-option,
     html[data-theme="system"] .accessibility-dialog-close {
-      background: #282530;
+      background: #292a30;
     }
 
     html[data-theme="system"] .accessibility-theme-option[aria-pressed="true"] {
