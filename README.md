@@ -40,6 +40,8 @@ For an existing database, run `Database/migrations/20261018_add_flash_sale_cart_
 
 Run `Database/migrations/20261019_fix_talent_portrait_urls.sql` in the Supabase SQL Editor to fix outdated portrait URLs for Inugami Korone, Sakura Miko, Momosuzu Nene, Kazama Iroha, and Tsunomaki Watame.
 
+Run `Database/migrations/20261019_product_type_categories.sql` in the Supabase SQL Editor to replace generic sale labels with merchandise-type categories such as Acrylic, Figure, Album/CD, and Plush. Pre-order and flash-sale status remain separate from the product type.
+
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.

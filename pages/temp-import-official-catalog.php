@@ -97,6 +97,39 @@ function catalog_import_description(string $html): string
     return trim($text);
 }
 
+function catalog_import_product_type(string $classificationText, bool $isDigital): string
+{
+    if ($isDigital) {
+        return 'Digital Content';
+    }
+
+    $productTypes = [
+        'Box Set' => '/memorial box|collector(?:\'s)? box|box set|complete set/iu',
+        'Acrylic' => '/acrylic|アクリル/iu',
+        'Figure' => '/figure|フィギュア|nendoroid|ねんどろいど/iu',
+        'Plush' => '/plush|ぬいぐるみ/iu',
+        'Album/CD' => '/\b(?:album|cd|ep|vinyl|record|single)\b|アルバム|シングル/iu',
+        'Blu-ray/DVD' => '/blu[\s-]?ray|\bdvd\b|ブルーレイ/iu',
+        'Apparel' => '/apparel|clothing|t-?shirt|hoodie|sweatshirt|jacket|sukajan|shirt|cap|hat|wear|パーカー|シャツ|衣装/iu',
+        'Blanket' => '/blanket|ブランケット/iu',
+        'Curtain' => '/curtain|カーテン/iu',
+        'Mug' => '/\bmug\b|マグカップ/iu',
+        'Keychain' => '/key ?chain|キー?ホルダー/iu',
+        'Badge' => '/badge|button badge|缶バッジ/iu',
+        'Coaster' => '/coaster|コースター/iu',
+        'Book/Pamphlet' => '/book|pamphlet|photobook|artbook|冊子|写真集/iu',
+        'Poster/Print' => '/poster|print|ポスター/iu',
+    ];
+
+    foreach ($productTypes as $productType => $pattern) {
+        if (preg_match($pattern, $classificationText) === 1) {
+            return $productType;
+        }
+    }
+
+    return 'Other';
+}
+
 function catalog_import_build_rows(array $products, array $talents, string $localImageDirectory): array
 {
     $productRows = [];
@@ -143,7 +176,7 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
         $isDigital = count($shippingVariants) === 0
             || preg_match('/digital|デジタル|電子/u', $classificationText) === 1;
         $isPreorder = preg_match('/made[\s-]*to[\s-]*order|pre[\s-]*order|advanced shipping|secondary order|受注/u', $classificationText) === 1;
-        $categoryName = $isDigital ? 'Digital Content' : ($isPreorder ? 'Pre-Order' : 'Limited Drops');
+        $categoryName = catalog_import_product_type($classificationText, $isDigital);
         $description = catalog_import_description((string) ($product['body_html'] ?? ''));
         $productRows[] = [
             $productId,
@@ -267,10 +300,6 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
 $products = catalog_import_load($stageDirectory);
 $talents = $conn->query('SELECT talent_id, talent_name FROM talent_tbl ORDER BY talent_name')->fetch_all(PDO::FETCH_ASSOC);
 $catalog = catalog_import_build_rows($products, $talents, __DIR__ . '/../Assets/images/products');
-$categoryNames = [];
-foreach ($conn->query('SELECT category_name FROM category_tbl')->fetch_all(PDO::FETCH_ASSOC) as $category) {
-    $categoryNames[] = $category['category_name'];
-}
 $existingCounts = [
     'products' => (int) $conn->query("SELECT COUNT(*) AS row_count FROM product_tbl")->fetch_assoc()['row_count'],
     'variants' => (int) $conn->query('SELECT COUNT(*) AS row_count FROM product_variants_tbl')->fetch_assoc()['row_count'],
@@ -311,13 +340,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             foreach ($conn->query('SELECT category_id, category_name FROM category_tbl')->fetch_all(PDO::FETCH_ASSOC) as $category) {
                 $categoryIds[$category['category_name']] = (int) $category['category_id'];
             }
-            if (!isset($categoryIds['Digital Content'])) {
-                $categoryName = 'Digital Content';
-                $categoryStatement = $conn->prepare('INSERT INTO category_tbl (category_name) VALUES (?) RETURNING category_id');
-                $categoryStatement->bind_param('s', $categoryName);
-                $categoryStatement->execute();
-                $categoryIds['Digital Content'] = (int) $categoryStatement->get_result()->fetch_assoc()['category_id'];
-                $categoryStatement->close();
+
+            foreach (array_unique(array_column($catalog['products'], 1)) as $categoryName) {
+                if (!isset($categoryIds[$categoryName])) {
+                    $categoryStatement = $conn->prepare('INSERT INTO category_tbl (category_name) VALUES (?) RETURNING category_id');
+                    $categoryStatement->bind_param('s', $categoryName);
+                    $categoryStatement->execute();
+                    $categoryIds[$categoryName] = (int) $categoryStatement->get_result()->fetch_assoc()['category_id'];
+                    $categoryStatement->close();
+                }
             }
 
             foreach ($catalog['products'] as &$productRow) {
