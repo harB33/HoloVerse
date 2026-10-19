@@ -38,6 +38,8 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 For an existing database, run `Database/migrations/20261018_add_flash_sale_cart_holds.sql` once in the Supabase SQL Editor to enable five-minute reservations for live flash-sale items. The migration releases any reservations from the earlier general cart-hold behavior; it keeps cart lines and regular items are not reserved.
 
+Run `Database/migrations/20261019_fix_talent_portrait_urls.sql` in the Supabase SQL Editor to fix outdated portrait URLs for Inugami Korone, Sakura Miko, Momosuzu Nene, Kazama Iroha, and Tsunomaki Watame.
+
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
