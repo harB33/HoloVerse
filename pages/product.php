@@ -252,34 +252,44 @@ require __DIR__ . '/../app/views/layout/head.php';
             letter-spacing: -.035em;
         }
 
+        .product-description-preview {
+            display: -webkit-box;
+            margin: 16px 0 10px;
+            overflow: hidden;
+            color: #4e5965;
+            font-size: 14px;
+            line-height: 1.55;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+
         .product-description {
-            margin-top: 20px;
+            margin: 0 0 0;
             border-bottom: 1px solid #d7d7d7;
-            padding-bottom: 15px;
+            padding-bottom: 13px;
         }
 
         .product-description summary {
-            position: relative;
             cursor: pointer;
             list-style: none;
             color: #303943;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .product-description summary::-webkit-details-marker { display: none; }
         .product-description summary::after {
             content: "";
             display: inline-block;
-            width: 8px;
-            height: 8px;
-            margin: 0 0 3px 10px;
+            width: 7px;
+            height: 7px;
+            margin: 0 0 2px 8px;
             transform: rotate(45deg);
             border-right: 1.5px solid currentColor;
             border-bottom: 1.5px solid currentColor;
             transition: transform .18s ease;
         }
-        .product-description[open] summary::after { transform: translateY(4px) rotate(225deg); }
-        .product-description p { margin: 12px 0 0; color: #66717d; font-size: 14px; line-height: 1.7; }
+        .product-description[open] summary::after { transform: translateY(3px) rotate(225deg); }
+        .product-description-full { margin: 10px 0 0; color: #66717d; font-size: 14px; line-height: 1.7; }
 
         .product-price-block {
             display: flex;
@@ -440,9 +450,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </div>
 
                         <?php if (!empty($product['description'])): ?>
+                            <p class="product-description-preview"><?= nl2br(store_escape($product['description'])) ?></p>
                             <details class="product-description">
                                 <summary>View full product description</summary>
-                                <p><?= nl2br(store_escape($product['description'])) ?></p>
+                                <p class="product-description-full"><?= nl2br(store_escape($product['description'])) ?></p>
                             </details>
                         <?php endif; ?>
 
@@ -490,7 +501,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
                                     <path d="m9 12 2 2 4-4" />
                                 </svg>
-                                <p>Shop with confidence. Your order is protected and ships securely to your door.</p>
+                                <p>Shop with confidence. Your order is protected and ships securely to your door. We handle every item with care and keep you informed as your order makes its way to you. Thanks for supporting your favorite talents!</p>
                             </aside>
 
                             <div class="product-purchase-actions">
@@ -522,6 +533,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endforeach; ?>
                             </p>
                         <?php endif; ?>
+
                     </div>
                 </section>
             <?php else: ?>
