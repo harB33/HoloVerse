@@ -454,10 +454,14 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = ''): array
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0): array
 {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+    $groupWhere = in_array($groupSlug, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+        ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
+        : '';
+    $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
     $searchWhere = '';
     if ($search !== '') {
         $searchWhere = " AND (
@@ -489,8 +493,8 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                       FROM product_talents_tbl pt
                       INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                       INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-                      WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
-                  ){$searchWhere}
+                      WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
+                  ){$categoryWhere}{$searchWhere}
                 ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
             ) AS catalog_products
             ORDER BY (catalog_products.stock_quantity > 0) DESC, catalog_products.product_id DESC";
@@ -513,9 +517,13 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
     return $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 
-function store_catalog_product_count(DatabaseConnection $conn, string $search = ''): int
+function store_catalog_product_count(DatabaseConnection $conn, string $search = '', string $groupSlug = '', int $categoryId = 0): int
 {
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+    $groupWhere = in_array($groupSlug, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+        ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
+        : '';
+    $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
     $searchWhere = '';
     if ($search !== '') {
         $searchWhere = " AND (
@@ -541,8 +549,8 @@ function store_catalog_product_count(DatabaseConnection $conn, string $search = 
                   FROM product_talents_tbl pt
                   INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                   INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-                  WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
-              ){$searchWhere}";
+                  WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
+              ){$categoryWhere}{$searchWhere}";
     if ($search !== '') {
         $pattern = '%' . $search . '%';
         $statement = $conn->prepare($sql);

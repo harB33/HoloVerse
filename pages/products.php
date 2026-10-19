@@ -4,11 +4,45 @@ require_once __DIR__ . '/../app/store.php';
 $pageSize = 48;
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
-$totalProductCount = store_catalog_product_count($conn, $productSearch);
+$generationParameter = $_GET['generation'] ?? '';
+$selectedGeneration = is_string($generationParameter)
+    && in_array($generationParameter, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+        ? $generationParameter
+        : '';
+$categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
+$categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
+$categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+$categoryParameter = $_GET['category'] ?? '';
+$selectedCategory = is_string($categoryParameter)
+    ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : false;
+$selectedCategory = $selectedCategory !== false && in_array($selectedCategory, $categoryIds, true)
+    ? $selectedCategory
+    : 0;
+$groupOrderSql = "ARRAY[" . implode(
+    ', ',
+    array_map(static fn (string $slug): string => "'" . str_replace("'", "''", $slug) . "'", STORE_TALENT_FILTER_GROUP_SLUGS)
+) . "]::text[]";
+$generationResult = $conn->query(
+    "SELECT group_slug, group_name
+     FROM talent_group_tbl
+     WHERE group_slug IN (" . store_talent_filter_group_slugs_sql() . ")
+     ORDER BY array_position({$groupOrderSql}, group_slug)"
+);
+$generations = $generationResult->fetch_all(PDO::FETCH_ASSOC);
+$totalProductCount = store_catalog_product_count($conn, $productSearch, $selectedGeneration, $selectedCategory);
 $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $currentPage = min(max(1, $currentPage), $pageCount);
-$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize, $productSearch);
+$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize, $productSearch, $selectedGeneration, $selectedCategory);
+$catalogSearchHiddenFields = array_filter([
+    'generation' => $selectedGeneration,
+    'category' => $selectedCategory,
+], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+$catalogFilterQuery = array_filter([
+    'search' => $productSearch,
+    'category' => $selectedCategory,
+], static fn (string|int $value): bool => $value !== '' && $value !== 0);
 $pageTitle = 'All Products | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -30,6 +64,38 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
             </section>
 
+            <div class="products-catalog-layout">
+                <aside class="generation-filter" aria-labelledby="generation-filter-title">
+                    <form class="category-filter" method="get" action="products.php">
+                        <label for="catalog-category">Filter by category</label>
+                        <?php if ($productSearch !== ''): ?>
+                            <input type="hidden" name="search" value="<?= store_escape($productSearch) ?>">
+                        <?php endif; ?>
+                        <?php if ($selectedGeneration !== ''): ?>
+                            <input type="hidden" name="generation" value="<?= store_escape($selectedGeneration) ?>">
+                        <?php endif; ?>
+                        <select id="catalog-category" name="category">
+                            <option value="">All Categories</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= (int) $category['category_id'] ?>"<?= $selectedCategory === (int) $category['category_id'] ? ' selected' : '' ?>><?= store_escape($category['category_name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </form>
+                    <h2 id="generation-filter-title">Filter by generation</h2>
+                    <nav aria-label="Product generations">
+                        <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="products.php<?= $catalogFilterQuery ? '?' . store_escape(http_build_query($catalogFilterQuery)) : '' ?>"<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
+                        <?php foreach ($generations as $generation): ?>
+                            <?php
+                            $generationHref = 'products.php?' . http_build_query($catalogFilterQuery + [
+                                'generation' => $generation['group_slug'],
+                            ]);
+                            ?>
+                            <a class="generation-filter-option<?= $selectedGeneration === $generation['group_slug'] ? ' is-active' : '' ?>" href="<?= store_escape($generationHref) ?>"<?= $selectedGeneration === $generation['group_slug'] ? ' aria-current="true"' : '' ?>><?= store_escape($generation['group_name']) ?></a>
+                        <?php endforeach; ?>
+                    </nav>
+                </aside>
+
+                <div class="products-catalog-results">
             <?php if ($products): ?>
                 <section class="drops-grid all-products-grid" aria-label="All available products">
                     <?php foreach ($products as $product): ?>
@@ -77,21 +143,28 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if ($pageCount > 1): ?>
                     <nav class="all-products-pagination" aria-label="Product pages">
                         <?php if ($currentPage > 1): ?>
-                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1, 'search' => $productSearch])) ?>" aria-label="Previous page">Previous</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1, 'search' => $productSearch, 'generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Previous page">Previous</a>
                         <?php endif; ?>
                         <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
                         <?php if ($currentPage < $pageCount): ?>
-                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1, 'search' => $productSearch])) ?>" aria-label="Next page">Next</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1, 'search' => $productSearch, 'generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Next page">Next</a>
                         <?php endif; ?>
                     </nav>
                 <?php endif; ?>
             <?php else: ?>
-                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No products match your search.' : 'There are no products available right now.' ?></p>
+                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No products match your selected filters and search.' : (($selectedGeneration !== '' || $selectedCategory !== 0) ? 'There are no products available for the selected filters.' : 'There are no products available right now.') ?></p>
             <?php endif; ?>
+                </div>
+            </div>
         </main>
     </div>
 
     <script>
+        const categoryFilter = document.querySelector(".category-filter");
+        categoryFilter?.querySelector("select")?.addEventListener("change", () => {
+            categoryFilter.requestSubmit();
+        });
+
         document.querySelectorAll(".drop-product-image").forEach((image) => {
             const showInitialFallback = () => {
                 image.classList.add("hidden");
