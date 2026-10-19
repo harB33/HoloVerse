@@ -2203,7 +2203,8 @@
   }
 
   .cart-fab .cart-badge {
-    @apply absolute right-0 top-0 flex h-6 min-w-6 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full bg-[#e43d58] px-1.5 text-[12px] font-bold leading-none text-white;
+    @apply absolute right-0 top-0 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#e43d58] px-1.5 text-[12px] font-bold leading-none text-white;
+    transform: translate(15%, -15%);
   }
 
   .cart-fab .cart-badge[hidden] {

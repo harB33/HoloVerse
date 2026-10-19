@@ -35,15 +35,15 @@
 
     .cart-fab .cart-badge {
         position: absolute;
-        top: -1px;
-        right: -1px;
+        top: 0;
+        right: 0;
         display: flex;
         min-width: 24px;
         height: 24px;
         align-items: center;
         justify-content: center;
         padding: 0 6px;
-        transform: translate(10%, -10%);
+        transform: translate(15%, -15%);
         border-radius: 999px;
         background: #e43d58;
         color: #fff;
