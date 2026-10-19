@@ -50,52 +50,66 @@ require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
 <body>
-    <div class="page-shell preorder-page">
+    <div class="page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="preorder-main">
-            <section class="preorder-intro">
-                <span class="preorder-eyebrow">Talent collection</span>
+        <main class="all-products-main" aria-labelledby="talent-merch-title">
+            <section class="all-products-intro">
+                <span class="drops-eyebrow">Talent collection</span>
                 <?php if ($talent): ?>
-                    <h1><?= store_escape($talent['talent_name']) ?> merchandise</h1>
+                    <h1 id="talent-merch-title"><?= store_escape($talent['talent_name']) ?> merchandise</h1>
                     <p>Browse all available merchandise associated with <?= store_escape($talent['talent_name']) ?>.</p>
                 <?php else: ?>
-                    <h1>Talent not found</h1>
+                    <h1 id="talent-merch-title">Talent not found</h1>
                     <p>This talent collection could not be found. Return to the directory to choose a talent.</p>
+                <?php endif; ?>
+                <?php if ($talent && $products): ?>
+                    <span class="all-products-count"><?= count($products) ?> products</span>
                 <?php endif; ?>
             </section>
 
             <?php if ($talent && $products): ?>
-                <section class="preorder-grid talent-merch-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
+                <section class="drops-grid all-products-grid talent-merch-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
                     <?php foreach ($products as $product): ?>
-                        <article class="preorder-card">
-                            <a class="merch-product-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
-                            <div class="preorder-art">
-                                <span class="preorder-badge"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order' : store_escape($product['category_name']) ?></span>
-                                <img
-                                    class="talent-merch-image"
-                                    src="<?= store_escape(store_asset_url($product['image_url'] ?? 'assets/images/logo.png', '../')) ?>"
-                                    alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>"
-                                    loading="lazy">
+                        <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
+                        <article class="drop-card">
+                            <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                            <div class="drop-art">
+                                <div class="drop-art-labels">
+                                    <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? ((int) $product['is_preorder'] === 1 ? 'Pre-order' : 'Available now') : 'Sold out' ?></span>
+                                    <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
+                                </div>
+                                <?php if (!empty($product['image_url'])): ?>
+                                    <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                    <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                <?php endif; ?>
+                                <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                             </div>
-                            <div class="preorder-body">
-                                <div class="preorder-meta"><?= store_escape($product['variant_name']) ?></div>
+                            <div class="drop-details">
+                                <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
                                 <h2><?= store_escape($product['product_name']) ?></h2>
-                                <p><?= store_escape($product['description'] ?? '') ?></p>
-                                <div class="preorder-footer">
-                                    <span class="preorder-price"><?= store_escape(store_format_price((float) $product['price'])) ?></span>
+                                <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
+                                <hr class="drop-allocation-divider">
+                                <div class="drop-purchase">
+                                    <div>
+                                        <span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span>
+                                        <div class="drop-price-row">
+                                            <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                            <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Left</span></div>
+                                        </div>
+                                    </div>
                                     <?php if ((int) $product['stock_quantity'] > 0): ?>
                                         <form action="cart.php" method="post">
                                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                             <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                            <button class="preorder-button" type="submit" name="action" value="add">Add to cart</button>
+                                            <button type="submit" name="action" value="add">Add to cart</button>
                                         </form>
                                     <?php else: ?>
-                                        <span class="preorder-button">Sold out</span>
+                                        <span>Sold out</span>
                                     <?php endif; ?>
                                 </div>
                                 <?php if ((int) $product['is_preorder'] === 1): ?>
@@ -108,11 +122,24 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php endforeach; ?>
                 </section>
             <?php elseif ($talent): ?>
-                <p role="status">There is no available merchandise for <?= store_escape($talent['talent_name']) ?> right now.</p>
+                <p class="all-products-empty" role="status">There is no available merchandise for <?= store_escape($talent['talent_name']) ?> right now.</p>
             <?php endif; ?>
             <a class="talent-directory-back-link" href="../index.php#explore">Back to the talent directory</a>
         </main>
     </div>
+
+    <script>
+        document.querySelectorAll(".drop-product-image").forEach((image) => {
+            const showInitialFallback = () => {
+                image.classList.add("hidden");
+                image.nextElementSibling?.classList.remove("hidden");
+            };
+            image.addEventListener("error", showInitialFallback, { once: true });
+            if (image.complete && image.naturalWidth === 0) {
+                showInitialFallback();
+            }
+        });
+    </script>
     <?php
     $cartHref = 'cart.php';
     include __DIR__ . '/../app/views/components/cart-button.php';
