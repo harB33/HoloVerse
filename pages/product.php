@@ -87,11 +87,20 @@ require __DIR__ . '/../app/views/layout/head.php';
             display: flex;
             align-items: center;
             gap: 9px;
-            margin: 0 0 14px;
+            min-width: 0;
+            margin: 0;
             overflow: hidden;
             color: #758091;
             font-size: 13px;
             white-space: nowrap;
+        }
+
+        .product-page-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 14px;
         }
 
         .product-breadcrumb a {
@@ -101,6 +110,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-breadcrumb a:hover { color: #087fa8; }
         .product-breadcrumb span:last-child { overflow: hidden; text-overflow: ellipsis; }
+        .product-breadcrumb-separator { width: 14px; height: 14px; flex: 0 0 14px; color: #758091; }
 
         .product-layout {
             display: grid;
@@ -118,27 +128,43 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-gallery-stage {
             position: relative;
-            display: grid;
-            min-height: 490px;
-            aspect-ratio: 1.2 / 1;
-            place-items: center;
+            display: flex;
+            height: clamp(340px, 42vw, 480px);
+            align-items: center;
+            justify-content: center;
+            isolation: isolate;
             overflow: hidden;
             border: 1px solid #d9dce1;
-            background: #fff;
+            background: #e6e3ec;
+        }
+
+        .product-gallery-backdrop {
+            position: absolute;
+            z-index: -1;
+            inset: -24px;
+            width: calc(100% + 48px);
+            height: calc(100% + 48px);
+            padding: 0;
+            object-fit: cover;
+            filter: blur(24px) saturate(.8);
+            opacity: .42;
+            transform: scale(1.04);
         }
 
         .product-gallery-main {
+            position: relative;
+            z-index: 0;
             display: block;
             width: 100%;
             height: 100%;
-            max-height: 620px;
-            padding: 28px;
+            flex: 0 1 auto;
+            padding: 22px;
             object-fit: contain;
         }
 
         .product-category-tag {
             position: absolute;
-            z-index: 1;
+            z-index: 10 !important;
             top: 16px;
             left: 16px;
             border: 1px solid #e6e9ed;
@@ -153,12 +179,40 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-gallery-thumbnails {
             display: flex;
+            flex: 1 1 auto;
             gap: 10px;
-            margin-top: 18px;
+            min-width: 0;
             overflow-x: auto;
-            padding: 2px 1px 6px;
-            scrollbar-width: thin;
+            padding: 2px 2px 6px;
+            scrollbar-width: none;
         }
+
+        .product-gallery-thumbnails::-webkit-scrollbar { display: none; }
+
+        .product-gallery-carousel {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .product-gallery-arrow {
+            display: grid;
+            flex: 0 0 28px;
+            width: 28px;
+            height: 42px;
+            cursor: pointer;
+            place-items: center;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: #14191f;
+            font: 400 30px/1 Arial, sans-serif;
+            transition: background-color .18s, color .18s;
+        }
+
+        .product-gallery-arrow:hover { background: #f0f5f7; color: #087fa8; }
+        .product-gallery-arrow:focus-visible { outline: 2px solid #0ba9d0; outline-offset: 2px; }
 
         .product-gallery-thumbnail {
             flex: 0 0 120px;
@@ -263,7 +317,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-stock-status.is-sold-out { color: #b23a48; }
         .product-stock-status.is-sold-out span { background: #d74a58; }
 
-        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: 0; color: #d8792d; }
+        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: 0; color: #12a9ce; }
         .product-trust-note svg { flex: 0 0 38px; width: 38px; height: 38px; }
         .product-trust-note p { margin: 0; color: #425064; font-size: 14px; line-height: 1.45; }
 
@@ -278,7 +332,8 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-add-button:disabled { cursor: not-allowed; background: #aab5bd; }
         .product-shipping-note, .product-talent-links { margin: 16px 0 0; color: #647386; font-size: 13px; line-height: 1.6; }
         .product-talent-links a { color: #087fa8; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-        .product-back-link { display: inline-flex; margin-top: 26px; color: #526476; font-size: 13px; text-decoration: none; }
+        .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin: 0; color: #526476; font-size: 13px; line-height: 1.5; text-decoration: none; }
+        .product-back-link svg { display: block; width: 14px; height: 14px; flex: 0 0 14px; }
         .product-back-link:hover { color: #087fa8; }
         .product-not-found { max-width: 760px; margin: 80px auto 28px; text-align: center; }
         .product-not-found h1 { color: #172333; font-size: 32px; }
@@ -286,15 +341,18 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         @media (max-width: 900px) {
             .product-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
-            .product-gallery-stage { min-height: 380px; }
+            .product-gallery-stage { height: clamp(320px, 42vw, 400px); }
             .product-gallery-thumbnail { flex-basis: 88px; height: 88px; }
             .product-purchase-actions { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
         }
 
         @media (max-width: 680px) {
             .product-page-main { width: min(100% - 32px, 560px); padding-top: 16px; }
+            .product-page-topbar { align-items: flex-start; gap: 12px; }
+            .product-page-topbar .product-breadcrumb { font-size: 11px; }
+            .product-page-topbar .product-back-link { font-size: 11px; }
             .product-layout { grid-template-columns: minmax(0, 1fr); gap: 26px; padding: 16px; }
-            .product-gallery-stage { min-height: 0; aspect-ratio: 1 / .88; }
+            .product-gallery-stage { height: clamp(280px, 88vw, 380px); }
             .product-gallery-main { padding: 18px; }
             .product-info { padding-top: 0; }
             .product-info-heading h1 { font-size: 27px; }
@@ -316,32 +374,61 @@ require __DIR__ . '/../app/views/layout/head.php';
                     'image_url' => 'assets/images/logo.png',
                     'alt_text' => $product['product_name'],
                 ]];
-                $defaultImageUrl = store_asset_url($galleryImages[0]['image_url'], '../');
+                if (count($galleryImages) === 1) {
+                    for ($temporaryView = 2; $temporaryView <= 4; $temporaryView++) {
+                        $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480"><rect width="640" height="480" fill="#f3f6f8"/><rect x="185" y="90" width="270" height="250" rx="18" fill="#e6edf1" stroke="#cbd5dc" stroke-width="3"/><path d="M225 145h190M225 205h190M225 265h190" stroke="#b6c4cc" stroke-width="12" stroke-linecap="round"/><circle cx="320" cy="190" r="78" fill="#fff" fill-opacity=".82"/><path d="M300 160v60l48-30z" fill="#0ba9d0"/><text x="320" y="390" text-anchor="middle" fill="#526476" font-family="Arial,sans-serif" font-size="22" font-weight="700">Temporary product view ' . $temporaryView . '</text></svg>';
+                        $galleryImages[] = [
+                            'image_url' => 'data:image/svg+xml,' . rawurlencode($placeholderSvg),
+                            'alt_text' => $product['product_name'] . ' — temporary gallery view ' . $temporaryView,
+                            'is_temporary' => true,
+                        ];
+                    }
+                }
+                $galleryImageUrl = static fn (string $imageUrl): string => str_starts_with($imageUrl, 'data:')
+                    ? $imageUrl
+                    : store_asset_url($imageUrl, '../');
+                $defaultImageUrl = $galleryImageUrl($galleryImages[0]['image_url']);
                 ?>
-                <nav class="product-breadcrumb" aria-label="Breadcrumb">
-                    <a href="../index.php">Home</a><span aria-hidden="true">›</span>
-                    <a href="products.php">Products</a><span aria-hidden="true">›</span>
-                    <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
-                </nav>
+                <div class="product-page-topbar">
+                    <nav class="product-breadcrumb" aria-label="Breadcrumb">
+                        <a href="../index.php">Home</a>
+                        <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                        <a href="products.php">Products</a>
+                        <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                        <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
+                    </nav>
+                    <a class="product-back-link" href="products.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
+                </div>
 
                 <section class="product-layout" aria-labelledby="product-title">
                     <div class="product-gallery">
                         <div class="product-gallery-stage">
+                            <img
+                                class="product-gallery-backdrop"
+                                src="<?= store_escape($defaultImageUrl) ?>"
+                                alt=""
+                                aria-hidden="true">
                             <span class="product-category-tag"><?= store_escape($product['category_name']) ?></span>
                             <img
                                 class="product-gallery-main"
                                 src="<?= store_escape($defaultImageUrl) ?>"
                                 alt="<?= store_escape($galleryImages[0]['alt_text'] ?? $product['product_name']) ?>"
+                                tabindex="0"
                                 fetchpriority="high">
                         </div>
                         <?php if (count($galleryImages) > 1): ?>
-                            <div class="product-gallery-thumbnails" aria-label="Product images">
+                            <div class="product-gallery-carousel" data-gallery-carousel>
+                                <button class="product-gallery-arrow" type="button" data-gallery-previous aria-label="Show previous product image">‹</button>
+                                <div class="product-gallery-thumbnails" aria-label="Product images" role="group">
                                 <?php foreach ($galleryImages as $imageIndex => $image): ?>
-                                    <?php $thumbnailUrl = store_asset_url($image['image_url'], '../'); ?>
-                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($image['alt_text'] ?? $product['product_name']) ?>" aria-label="Show product image <?= $imageIndex + 1 ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
-                                        <img src="<?= store_escape($thumbnailUrl) ?>" alt="" loading="lazy">
+                                    <?php $thumbnailUrl = $galleryImageUrl($image['image_url']); ?>
+                                    <?php $thumbnailAlt = (string) ($image['alt_text'] ?? '') !== '' ? $image['alt_text'] : $product['product_name'] . ' image ' . ($imageIndex + 1); ?>
+                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-gallery-image data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($thumbnailAlt) ?>" aria-label="Show product image <?= $imageIndex + 1 ?><?= !empty($image['is_temporary']) ? ' (temporary placeholder)' : '' ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
+                                        <img src="<?= store_escape($thumbnailUrl) ?>" alt="" loading="lazy" decoding="async">
                                     </button>
                                 <?php endforeach; ?>
+                                </div>
+                                <button class="product-gallery-arrow" type="button" data-gallery-next aria-label="Show next product image">›</button>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -437,7 +524,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                     </div>
                 </section>
-                <a class="product-back-link" href="<?= $talents ? 'talent-merch.php?talent=' . rawurlencode($talents[0]['talent_slug']) : '../index.php#featured' ?>">← Back to merchandise</a>
             <?php else: ?>
                 <section class="product-not-found">
                     <h1>Product not found</h1>
@@ -455,16 +541,49 @@ require __DIR__ . '/../app/views/layout/head.php';
         <script>
             (() => {
                 const galleryMain = document.querySelector('.product-gallery-main');
-                document.querySelectorAll('[data-image-src]').forEach((thumbnail) => {
-                    thumbnail.addEventListener('click', () => {
-                        galleryMain.src = thumbnail.dataset.imageSrc;
-                        galleryMain.alt = thumbnail.dataset.imageAlt || '';
-                        document.querySelectorAll('[data-image-src]').forEach((item) => {
-                            const selected = item === thumbnail;
-                            item.classList.toggle('is-active', selected);
-                            item.setAttribute('aria-pressed', String(selected));
-                        });
+                const galleryBackdrop = document.querySelector('.product-gallery-backdrop');
+                const galleryThumbnails = [...document.querySelectorAll('[data-gallery-image]')];
+                let activeGalleryIndex = 0;
+
+                const showGalleryImage = (index, scrollThumbnail = false) => {
+                    if (!galleryThumbnails.length) {
+                        return;
+                    }
+
+                    activeGalleryIndex = (index + galleryThumbnails.length) % galleryThumbnails.length;
+                    const activeThumbnail = galleryThumbnails[activeGalleryIndex];
+                    galleryMain.src = activeThumbnail.dataset.imageSrc;
+                    galleryBackdrop.src = activeThumbnail.dataset.imageSrc;
+                    galleryMain.alt = activeThumbnail.dataset.imageAlt || '';
+                    galleryThumbnails.forEach((thumbnail, thumbnailIndex) => {
+                        const selected = thumbnailIndex === activeGalleryIndex;
+                        thumbnail.classList.toggle('is-active', selected);
+                        thumbnail.setAttribute('aria-pressed', String(selected));
                     });
+
+                    if (scrollThumbnail) {
+                        activeThumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                    }
+                };
+
+                galleryThumbnails.forEach((thumbnail, index) => {
+                    thumbnail.addEventListener('click', () => {
+                        showGalleryImage(index);
+                    });
+                });
+
+                document.querySelector('[data-gallery-previous]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex - 1, true);
+                });
+                document.querySelector('[data-gallery-next]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex + 1, true);
+                });
+                galleryMain?.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowLeft') {
+                        showGalleryImage(activeGalleryIndex - 1, true);
+                    } else if (event.key === 'ArrowRight') {
+                        showGalleryImage(activeGalleryIndex + 1, true);
+                    }
                 });
 
                 const form = document.querySelector('[data-product-form]');
