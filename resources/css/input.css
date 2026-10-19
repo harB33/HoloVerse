@@ -623,6 +623,10 @@
     @apply flex min-w-0 items-center gap-3 border-b border-[#edf1f6] px-3.5 py-2.5;
   }
 
+  .account-dropdown > :nth-child(2) {
+    margin-top: 10px;
+  }
+
   .account-dropdown-identity > svg {
     @apply size-7 shrink-0;
   }
@@ -3629,6 +3633,196 @@
     margin-right: -12px;
     margin-left: -12px;
     padding: 10px 12px;
+  }
+}
+
+.auth-artwork-panel {
+  z-index: 2;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-main {
+  min-height: calc(100svh - 2px);
+}
+
+.auth-register-content form.space-y-5 > :not(:first-child) {
+  margin-top: 0.75rem;
+}
+
+.auth-register-content form label {
+  margin-bottom: 0.25rem;
+}
+
+.auth-register-content form input {
+  padding-block: 0.625rem;
+}
+
+.auth-register-surface {
+  overflow: hidden;
+  padding-block: 20px;
+}
+
+.auth-register-content header {
+  margin-bottom: 1rem;
+}
+
+.auth-register-content header p {
+  margin-top: 0.5rem;
+}
+
+.auth-register-footer {
+  margin-top: 0.75rem;
+}
+
+.auth-layout.is-register .auth-artwork-panel {
+  transform: translateX(-100%);
+}
+
+.auth-register-surface {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  background: #fff;
+  padding: clamp(24px, 4vw, 56px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(32px);
+  transition: opacity 450ms ease, transform 600ms ease, visibility 450ms ease;
+}
+
+.auth-register-content {
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-register-surface[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+.auth-layout.is-register .auth-login-panel {
+  visibility: hidden;
+}
+
+.auth-layout.is-register .auth-register-surface {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.auth-mode-button {
+  margin-left: 4px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #2563eb;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+}
+
+.auth-mode-button:hover,
+.auth-mode-button:focus-visible {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1023px) {
+  .auth-layout {
+    display: block;
+    min-height: min(82vh, 760px);
+  }
+
+  .auth-login-panel {
+    min-height: min(82vh, 760px);
+    padding: 24px 16px;
+  }
+
+  .auth-artwork-panel {
+    display: none;
+  }
+
+  .auth-register-surface {
+    position: relative;
+    display: none;
+    width: 100%;
+    min-height: min(82vh, 760px);
+    padding: 24px 16px;
+    transform: none;
+  }
+
+  .auth-layout.is-register .auth-login-panel {
+    display: none;
+  }
+
+  .auth-layout.is-register .auth-register-surface {
+    display: flex;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-page {
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .auth-main {
+    height: 100%;
+    min-height: 0;
+    padding-block: 1rem;
+  }
+
+  .auth-layout {
+    height: min(96svh, 760px);
+    min-height: 0;
+  }
+
+  .auth-artwork-panel {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 700px) {
+  .auth-register-surface {
+    padding-block: 12px;
+  }
+
+  .auth-register-content header {
+    margin-bottom: 0.75rem;
+  }
+
+  .auth-register-content header h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .auth-register-content form.space-y-5 > :not(:first-child) {
+    margin-top: 0.5rem;
+  }
+
+  .auth-register-content form input {
+    padding-block: 0.375rem;
+  }
+
+  .auth-register-footer {
+    margin-top: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-artwork-panel,
+  .auth-register-surface {
+    transition-duration: 0.01ms;
   }
 }
 
