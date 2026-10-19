@@ -1521,7 +1521,7 @@
   }
 
   .explore-filter {
-    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-transparent px-4 py-[7px] text-[12px] font-semibold text-[#152238] transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
+    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-white/10 px-4 py-[7px] text-[12px] font-semibold text-[#152238] backdrop-blur-xs transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
   }
 
   .explore-filter[aria-pressed="true"] {
