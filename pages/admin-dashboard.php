@@ -268,7 +268,7 @@ $quickLinks = [
                                         <tr>
                                             <td><?= store_escape($order['order_number']) ?></td>
                                             <td><?= store_escape($order['username'] ?? 'Guest') ?></td>
-                                            <td><span class="admin-status admin-status--<?= store_escape(in_array($order['status'], ['paid', 'shipped'], true) ? 'active' : 'draft') ?>"><?= store_escape($order['status']) ?></span></td>
+                                            <td><span class="admin-status admin-status--<?= store_escape(in_array($order['status'], ['confirmed', 'paid', 'shipped'], true) ? 'active' : 'draft') ?>"><?= store_escape($order['status']) ?></span></td>
                                             <td><?= (int) $order['item_count'] ?></td>
                                         </tr>
                                     <?php endforeach; ?>

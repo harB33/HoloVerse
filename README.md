@@ -42,7 +42,7 @@ All catalog and order prices are stored and displayed in Philippine pesos (PHP/â
 
 The sign-in page supports account registration and login. Passwords are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login.
 
-Checkout is available only from the cart and to signed-in accounts. Products must be added to the cart before checkout; guests are sent to account registration or sign-in, and their cart is preserved. Adding a live flash-sale item reserves its available inventory for five minutes; the cart and checkout show a countdown, and the reservation expires even if the browser remains open. Changing a quantity does not extend the timer. Expired reservations are released and the item must be added again. Regular items are not reserved until checkout. Checkout records a pending order with a shipping address and confirms available stock; payment is not collected by the current checkout flow.
+Checkout is available only from the cart and to signed-in accounts. Products must be added to the cart before checkout; guests are sent to account registration or sign-in, and their cart is preserved. Adding a live flash-sale item reserves its available inventory for five minutes; the cart and checkout show a countdown, and the reservation expires even if the browser remains open. Changing a quantity does not extend the timer. Expired reservations are released and the item must be added again. Regular items are not reserved until checkout. Checkout records a confirmed order with a shipping address and confirms available stock; once payment is collected, the order is marked as confirmed immediately.
 
 ## Administrator tools
 
