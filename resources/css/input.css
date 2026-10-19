@@ -1137,7 +1137,19 @@
   }
 
   .talent-merch-filter-search {
-    @apply mb-0 mt-0 max-w-none;
+    @apply mb-0 mt-0 max-w-none gap-1.5;
+  }
+
+  .catalog-search.talent-merch-filter-search input[type="search"] {
+    @apply h-9 px-3 py-1.5 text-xs;
+  }
+
+  .catalog-search.talent-merch-filter-search button {
+    @apply size-9 p-1.5;
+  }
+
+  .catalog-search.talent-merch-filter-search button svg {
+    @apply size-3.5;
   }
 
   .flash-sale-search-wrap {
@@ -1179,7 +1191,7 @@
   }
 
   .catalog-search.filter-panel-search {
-    @apply mb-5 mt-0 max-w-none gap-1.5 border-b border-[#e1e8f0] pb-4;
+    @apply mb-3 mt-0 max-w-none gap-1.5 border-b border-[#e1e8f0] pb-4;
   }
 
   .catalog-search.filter-panel-search input[type="search"] {
