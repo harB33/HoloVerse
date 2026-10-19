@@ -2158,11 +2158,19 @@
   }
 
   .cart-fab {
-    @apply fixed bottom-6 right-6 z-50 flex size-16 items-center justify-center rounded-full border-2 border-white bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] text-white shadow-[0_8px_24px_rgba(14,110,157,0.3)] transition duration-200 ease-out hover:scale-105 hover:shadow-[0_12px_30px_rgba(14,110,157,0.4)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087fa8];
+    @apply fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-full border-2 border-white bg-[linear-gradient(135deg,#67d8f1,#1da3d8)] text-white no-underline shadow-[0_0_0_2px_rgba(88,190,245,0.2)] transition duration-200 ease-out hover:shadow-[0_0_0_4px_rgba(88,190,245,0.24)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087fa8];
+  }
+
+  .cart-fab .cart-badge {
+    @apply absolute right-0 top-0 flex h-6 min-w-6 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full bg-[#e43d58] px-1.5 text-[12px] font-bold leading-none text-white;
+  }
+
+  .cart-fab .cart-badge[hidden] {
+    display: none;
   }
 
   .cart-fab svg {
-    @apply size-7;
+    @apply size-6;
   }
 
   .cart-page {
