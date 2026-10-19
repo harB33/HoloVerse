@@ -326,7 +326,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-variant-picker legend { margin-bottom: 10px; color: #344253; font-size: 14px; font-weight: 500; }
         .product-variant-options {
             display: flex;
-            max-height: min(230px, 40vh);
+            max-height: min(176px, 40vh);
             flex-wrap: wrap;
             align-content: flex-start;
             gap: 8px;
@@ -534,7 +534,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
                                     <path d="m9 12 2 2 4-4" />
                                 </svg>
-                                <p>Shop with confidence. Your order is protected and ships securely to your door.</p>
+                                <p>Shop with confidence. Your order is protected throughout checkout and fulfillment, carefully packed, and shipped securely to your door. We take care to handle every order with attention from checkout to delivery. Keep your order confirmation handy for reference, and reach out if you need help.</p>
                             </aside>
 
                             <div class="product-purchase-actions">
