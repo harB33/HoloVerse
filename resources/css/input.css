@@ -109,7 +109,7 @@
 
   .site-header {
     @apply sticky top-0 z-20 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-7;
-    padding: calc(var(--spacing) * 5);
+    padding: 20px;
   }
 
   .brand {
@@ -2203,8 +2203,7 @@
   }
 
   .cart-fab .cart-badge {
-    @apply absolute [right:-1px] [top:-1px] flex h-6 min-w-6 items-center justify-center rounded-full bg-[#e43d58] px-1.5 text-[12px] font-bold leading-none text-white;
-    transform: translate(10%, -10%);
+    @apply absolute right-0 top-0 flex h-6 min-w-6 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full bg-[#e43d58] px-1.5 text-[12px] font-bold leading-none text-white;
   }
 
   .cart-fab .cart-badge[hidden] {
