@@ -454,10 +454,25 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0): array
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = ''): array
 {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+    $searchWhere = '';
+    if ($search !== '') {
+        $searchWhere = " AND (
+            p.product_name ILIKE ?
+            OR p.description ILIKE ?
+            OR c.category_name ILIKE ?
+            OR v.variant_name ILIKE ?
+            OR EXISTS (
+                SELECT 1
+                FROM product_talents_tbl search_pt
+                INNER JOIN talent_tbl search_t ON search_t.talent_id = search_pt.talent_id
+                WHERE search_pt.product_id = p.product_id AND search_t.talent_name ILIKE ?
+            )
+        )";
+    }
     $sql = "SELECT DISTINCT ON (p.product_id)
                    p.product_id, p.product_name, p.description, p.is_preorder,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
@@ -473,33 +488,70 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                   INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                   INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                   WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
-              )
+              ){$searchWhere}
             ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC";
+    if ($search !== '') {
+        $pattern = '%' . $search . '%';
+    }
     if ($limit > 0) {
         $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . max(0, (int) $offset);
+    }
+    if ($search !== '') {
+        $statement = $conn->prepare($sql);
+        $statement->bind_param('sssss', $pattern, $pattern, $pattern, $pattern, $pattern);
+        $statement->execute();
+        $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+        $statement->close();
+
+        return $products;
     }
 
     return $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 
-function store_catalog_product_count(DatabaseConnection $conn): int
+function store_catalog_product_count(DatabaseConnection $conn, string $search = ''): int
 {
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
-    $result = $conn->query(
-        "SELECT COUNT(DISTINCT p.product_id) AS product_count
-         FROM product_tbl p
-         INNER JOIN category_tbl c ON c.category_id = p.category_id
-         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-         WHERE p.status = 'active'
-           AND EXISTS (
-               SELECT 1
-               FROM product_talents_tbl pt
-               INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
-               INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-               WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
-           )"
-    );
+    $searchWhere = '';
+    if ($search !== '') {
+        $searchWhere = " AND (
+            p.product_name ILIKE ?
+            OR p.description ILIKE ?
+            OR c.category_name ILIKE ?
+            OR v.variant_name ILIKE ?
+            OR EXISTS (
+                SELECT 1
+                FROM product_talents_tbl search_pt
+                INNER JOIN talent_tbl search_t ON search_t.talent_id = search_pt.talent_id
+                WHERE search_pt.product_id = p.product_id AND search_t.talent_name ILIKE ?
+            )
+        )";
+    }
+    $sql = "SELECT COUNT(DISTINCT p.product_id) AS product_count
+            FROM product_tbl p
+            INNER JOIN category_tbl c ON c.category_id = p.category_id
+            INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+            WHERE p.status = 'active'
+              AND EXISTS (
+                  SELECT 1
+                  FROM product_talents_tbl pt
+                  INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
+                  INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+                  WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
+              ){$searchWhere}";
+    if ($search !== '') {
+        $pattern = '%' . $search . '%';
+        $statement = $conn->prepare($sql);
+        $statement->bind_param('sssss', $pattern, $pattern, $pattern, $pattern, $pattern);
+        $statement->execute();
+        $result = $statement->get_result();
+        $count = (int) ($result->fetch_assoc()['product_count'] ?? 0);
+        $statement->close();
 
+        return $count;
+    }
+
+    $result = $conn->query($sql);
     return (int) ($result->fetch_assoc()['product_count'] ?? 0);
 }
 

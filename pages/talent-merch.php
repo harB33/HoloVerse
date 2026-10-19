@@ -3,6 +3,8 @@ require_once __DIR__ . '/../app/store.php';
 
 $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
+$searchParameter = $_GET['search'] ?? '';
+$productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $talent = null;
 
 if ($selectedTalent !== '') {
@@ -31,6 +33,12 @@ if ($talent) {
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
          LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
          WHERE p.status = 'active'
+           AND (
+               p.product_name ILIKE ?
+               OR p.description ILIKE ?
+               OR c.category_name ILIKE ?
+               OR v.variant_name ILIKE ?
+           )
            AND EXISTS (
                SELECT 1
                FROM product_talents_tbl pt
@@ -38,7 +46,8 @@ if ($talent) {
            )
          ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC"
     );
-    $statement->bind_param('i', $talentId);
+    $searchPattern = '%' . $productSearch . '%';
+    $statement->bind_param('ssssi', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId);
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
@@ -67,8 +76,19 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1 id="talent-merch-title">Talent not found</h1>
                     <p>This talent collection could not be found. Return to the directory to choose a talent.</p>
                 <?php endif; ?>
-                <?php if ($talent && $products): ?>
-                    <span class="all-products-count"><?= count($products) ?> products</span>
+                <?php if ($talent): ?>
+                    <?php
+                    $catalogSearchAction = 'talent-merch.php';
+                    $catalogSearchId = 'talent-merch-search';
+                    $catalogSearchLabel = 'Search this talent collection';
+                    $catalogSearchPlaceholder = 'Search this collection';
+                    $catalogSearchValue = $productSearch;
+                    $catalogSearchHiddenFields = ['talent' => $selectedTalent];
+                    require __DIR__ . '/../app/views/components/catalog-search.php';
+                    ?>
+                    <?php if ($products): ?>
+                        <span class="all-products-count"><?= count($products) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
+                    <?php endif; ?>
                 <?php endif; ?>
             </section>
 
@@ -117,7 +137,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php endforeach; ?>
                 </section>
             <?php elseif ($talent): ?>
-                <p class="all-products-empty" role="status">There is no available merchandise for <?= store_escape($talent['talent_name']) ?> right now.</p>
+                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No merchandise matches your search for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
             <?php endif; ?>
             <a class="talent-directory-back-link" href="../index.php#explore">Back to the talent directory</a>
         </main>

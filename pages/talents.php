@@ -57,6 +57,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1 id="explore-title">Explore Merchandise by Oshi</h1>
                     <p>Filter official apparel, plushies, voice packs, and figures directly tied to your favorite talent.</p>
                 </header>
+                <div class="catalog-search talent-search-wrap">
+                    <label class="sr-only" for="talent-search">Search talents or groups</label>
+                    <input id="talent-search" type="search" placeholder="Search talents or groups" autocomplete="off">
+                </div>
                 <div class="explore-filters" role="group" aria-label="Filter talents by generation or group">
                     <button class="explore-filter" type="button" data-explore-filter="all" aria-pressed="true">All Generations (<?= count($talents) ?> Talents)</button>
                     <?php foreach ($generationLabels as $slug => $label): ?>
@@ -79,7 +83,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </a>
                     <?php endforeach; ?>
                 </div>
-                <p class="explore-empty hidden" role="status">No talents found in this generation or group.</p>
+                <p class="explore-empty hidden" role="status">No talents match your search and selected group.</p>
             </div>
         </section>
         <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
@@ -89,18 +93,28 @@ require __DIR__ . '/../app/views/layout/head.php';
         const exploreFilters = document.querySelectorAll('[data-explore-filter]');
         const talentCards = document.querySelectorAll('.talent-card-link');
         const exploreEmpty = document.querySelector('.explore-empty');
-        exploreFilters.forEach((filter) => filter.addEventListener('click', () => {
-            const selected = filter.dataset.exploreFilter;
+        const talentSearch = document.querySelector('#talent-search');
+        let selectedGeneration = 'all';
+        const updateTalentResults = () => {
+            const query = talentSearch.value.trim().toLocaleLowerCase();
             let visible = 0;
-            exploreFilters.forEach((button) => button.setAttribute('aria-pressed', String(button === filter)));
             talentCards.forEach((link) => {
-                const groups = link.querySelector('.talent-card').dataset.generations.split(' ');
-                const show = selected === 'all' || groups.includes(selected);
+                const card = link.querySelector('.talent-card');
+                const groups = card.dataset.generations.split(' ');
+                const matchesGeneration = selectedGeneration === 'all' || groups.includes(selectedGeneration);
+                const matchesSearch = card.textContent.toLocaleLowerCase().includes(query);
+                const show = matchesGeneration && matchesSearch;
                 link.classList.toggle('hidden', !show);
                 visible += Number(show);
             });
             exploreEmpty.classList.toggle('hidden', visible > 0);
+        };
+        exploreFilters.forEach((filter) => filter.addEventListener('click', () => {
+            selectedGeneration = filter.dataset.exploreFilter;
+            exploreFilters.forEach((button) => button.setAttribute('aria-pressed', String(button === filter)));
+            updateTalentResults();
         }));
+        talentSearch.addEventListener('input', updateTalentResults);
 
         document.querySelectorAll('.talent-photo').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');

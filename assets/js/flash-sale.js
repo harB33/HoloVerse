@@ -20,6 +20,8 @@ const saleTabs = [...document.querySelectorAll("[data-sale-filter]")];
 const saleCards = [...document.querySelectorAll(".vault-product-card[data-sale-state]")];
 const saleGrid = document.querySelector("#flash-sale-products");
 const saleEmptyState = document.querySelector("[data-sale-empty]");
+const saleSearch = document.querySelector("#flash-sale-search");
+let selectedSaleState = saleTabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.dataset.saleFilter || "live";
 const saleEmptyMessages = {
     live: "There are no discounted products available right now.",
     starting: "No flash sales are scheduled to start within the next hour.",
@@ -27,10 +29,28 @@ const saleEmptyMessages = {
     archive: "There are no completed flash sales in the archive yet.",
 };
 
-const selectSaleTab = (selectedTab, moveFocus = false) => {
-    const state = selectedTab.dataset.saleFilter;
+const updateSaleCards = () => {
+    const query = saleSearch?.value.trim().toLocaleLowerCase() || "";
     let visibleCards = 0;
 
+    saleCards.forEach((card) => {
+        const matchesState = card.dataset.saleState === selectedSaleState;
+        const matchesSearch = (card.dataset.search || "").toLocaleLowerCase().includes(query);
+        const isVisible = matchesState && matchesSearch;
+        card.hidden = !isVisible;
+        visibleCards += Number(isVisible);
+    });
+
+    if (saleEmptyState) {
+        saleEmptyState.textContent = query
+            ? `No products match "${saleSearch.value.trim()}" in this category.`
+            : saleEmptyMessages[selectedSaleState] || "No sale items are available in this category.";
+        saleEmptyState.hidden = visibleCards > 0;
+    }
+};
+
+const selectSaleTab = (selectedTab, moveFocus = false) => {
+    selectedSaleState = selectedTab.dataset.saleFilter;
     saleTabs.forEach((tab) => {
         const isSelected = tab === selectedTab;
         tab.classList.toggle("is-active", isSelected);
@@ -38,19 +58,10 @@ const selectSaleTab = (selectedTab, moveFocus = false) => {
         tab.tabIndex = isSelected ? 0 : -1;
     });
 
-    saleCards.forEach((card) => {
-        const isVisible = card.dataset.saleState === state;
-        card.hidden = !isVisible;
-        visibleCards += Number(isVisible);
-    });
-
     if (saleGrid) {
         saleGrid.setAttribute("aria-labelledby", selectedTab.id);
     }
-    if (saleEmptyState) {
-        saleEmptyState.textContent = saleEmptyMessages[state] || "No sale items are available in this category.";
-        saleEmptyState.hidden = visibleCards > 0;
-    }
+    updateSaleCards();
     if (moveFocus) {
         selectedTab.focus();
     }
@@ -79,6 +90,7 @@ saleTabs.forEach((tab, index) => {
 if (saleTabs.length) {
     selectSaleTab(saleTabs.find((tab) => tab.getAttribute("aria-selected") === "true") || saleTabs[0]);
 }
+saleSearch?.addEventListener("input", updateSaleCards);
 
 const favoriteStorageKey = "holoverse-flash-sale-favorites";
 let favoriteIds = [];

@@ -1561,6 +1561,45 @@
     @apply mb-3 mt-2 text-sm text-[#718096];
   }
 
+  .catalog-search {
+    @apply my-4 flex w-full max-w-[560px] items-center gap-2;
+  }
+
+  .catalog-search input[type="search"] {
+    @apply min-w-0 flex-1 rounded-lg border border-[#d6e1ea] bg-white px-3 py-2 text-sm text-[#152238] placeholder:text-[#718096] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .catalog-search button,
+  .catalog-search a {
+    @apply inline-flex shrink-0 items-center justify-center rounded-lg border border-[#087fa8] bg-[#087fa8] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#066989] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .catalog-search a {
+    @apply border-[#d6e1ea] bg-white text-[#087fa8] hover:bg-[#f0faff];
+  }
+
+  .talent-search-wrap {
+    @apply mx-auto my-6;
+  }
+
+  .flash-sale-search-wrap {
+    @apply my-5;
+  }
+
+  html[data-theme="dark"] .catalog-search input[type="search"] {
+    border-color: #3a3b42;
+    background-color: #292a30;
+    color: #dedee3;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html[data-theme="system"] .catalog-search input[type="search"] {
+      border-color: #3a3b42;
+      background-color: #292a30;
+      color: #dedee3;
+    }
+  }
+
   .all-products-count {
     @apply inline-flex rounded-full bg-[#e7f7fc] px-3 py-1 text-xs font-semibold text-[#087fa8];
   }

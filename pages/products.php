@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../app/store.php';
 
 $pageSize = 48;
-$totalProductCount = store_catalog_product_count($conn);
+$searchParameter = $_GET['search'] ?? '';
+$productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$totalProductCount = store_catalog_product_count($conn, $productSearch);
 $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $currentPage = min(max(1, $currentPage), $pageCount);
-$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize);
+$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize, $productSearch);
 $pageTitle = 'All Products | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
@@ -25,7 +27,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <span class="drops-eyebrow">Official hololive production merchandise</span>
                 <h1 id="all-products-title">Shop all products</h1>
                 <p>Browse the full collection of available talent merchandise.</p>
-                <span class="all-products-count"><?= $totalProductCount ?> products</span>
+                <?php
+                $catalogSearchAction = 'products.php';
+                $catalogSearchId = 'products-search';
+                $catalogSearchLabel = 'Search products, categories, or talents';
+                $catalogSearchPlaceholder = 'Search products, categories, or talents';
+                $catalogSearchValue = $productSearch;
+                require __DIR__ . '/../app/views/components/catalog-search.php';
+                ?>
+                <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
             </section>
 
             <?php if ($products): ?>
@@ -75,16 +85,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if ($pageCount > 1): ?>
                     <nav class="all-products-pagination" aria-label="Product pages">
                         <?php if ($currentPage > 1): ?>
-                            <a href="?page=<?= $currentPage - 1 ?>" aria-label="Previous page">Previous</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1, 'search' => $productSearch])) ?>" aria-label="Previous page">Previous</a>
                         <?php endif; ?>
                         <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
                         <?php if ($currentPage < $pageCount): ?>
-                            <a href="?page=<?= $currentPage + 1 ?>" aria-label="Next page">Next</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1, 'search' => $productSearch])) ?>" aria-label="Next page">Next</a>
                         <?php endif; ?>
                     </nav>
                 <?php endif; ?>
             <?php else: ?>
-                <p class="all-products-empty" role="status">There are no products available right now.</p>
+                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No products match your search.' : 'There are no products available right now.' ?></p>
             <?php endif; ?>
         </main>
     </div>

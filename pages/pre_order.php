@@ -3,6 +3,8 @@ require_once __DIR__ . '/../app/store.php';
 
 $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
+$searchParameter = $_GET['search'] ?? '';
+$productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $talentName = '';
 $talentId = 0;
 if ($selectedTalent !== '') {
@@ -24,6 +26,20 @@ $sql = "SELECT p.product_id, p.product_name, p.description, p.expected_ship_date
         INNER JOIN category_tbl c ON c.category_id = p.category_id
         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
         WHERE p.status = 'active' AND p.is_preorder = 1";
+if ($productSearch !== '') {
+    $sql .= ' AND (
+        p.product_name ILIKE ?
+        OR p.description ILIKE ?
+        OR c.category_name ILIKE ?
+        OR v.variant_name ILIKE ?
+        OR EXISTS (
+            SELECT 1
+            FROM product_talents_tbl search_pt
+            INNER JOIN talent_tbl search_t ON search_t.talent_id = search_pt.talent_id
+            WHERE search_pt.product_id = p.product_id AND search_t.talent_name ILIKE ?
+        )
+    )';
+}
 if ($selectedTalent !== '') {
     $sql .= ' AND EXISTS (
         SELECT 1 FROM product_talents_tbl pt
@@ -31,9 +47,17 @@ if ($selectedTalent !== '') {
     )';
 }
 $sql .= ' ORDER BY p.product_id';
-if ($selectedTalent !== '') {
+if ($productSearch !== '' || $selectedTalent !== '') {
     $statement = $conn->prepare($sql);
-    $statement->bind_param('i', $talentId);
+    if ($productSearch !== '' && $selectedTalent !== '') {
+        $searchPattern = '%' . $productSearch . '%';
+        $statement->bind_param('sssssi', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId);
+    } elseif ($productSearch !== '') {
+        $searchPattern = '%' . $productSearch . '%';
+        $statement->bind_param('sssss', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $searchPattern);
+    } else {
+        $statement->bind_param('i', $talentId);
+    }
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
@@ -68,6 +92,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php endif; ?>
             </section>
 
+            <?php
+            $catalogSearchAction = 'pre_order.php';
+            $catalogSearchId = 'preorder-search';
+            $catalogSearchLabel = 'Search pre-order products';
+            $catalogSearchPlaceholder = 'Search pre-orders';
+            $catalogSearchValue = $productSearch;
+            $catalogSearchHiddenFields = $selectedTalent !== '' ? ['talent' => $selectedTalent] : [];
+            require __DIR__ . '/../app/views/components/catalog-search.php';
+            ?>
             <section class="preorder-grid" aria-label="Pre-order items">
                 <?php foreach ($products as $product): ?>
                     <article class="preorder-card">
@@ -96,7 +129,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </article>
                 <?php endforeach; ?>
                 <?php if (!$products): ?>
-                    <p role="status">There are no available pre-orders<?= $talentName !== '' ? ' for ' . store_escape($talentName) : '' ?> right now.</p>
+                    <p role="status"><?= $productSearch !== '' ? 'No pre-orders match your search' : 'There are no available pre-orders' ?><?= $talentName !== '' ? ' for ' . store_escape($talentName) : '' ?> right now.</p>
                 <?php endif; ?>
             </section>
 

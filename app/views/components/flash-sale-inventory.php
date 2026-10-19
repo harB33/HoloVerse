@@ -20,6 +20,10 @@ $flashSaleTabs = [
             <?php endforeach; ?>
         </div>
     </div>
+    <div class="catalog-search flash-sale-search-wrap" role="search">
+        <label class="sr-only" for="flash-sale-search">Search flash sale products</label>
+        <input id="flash-sale-search" type="search" placeholder="Search products, categories, or variants" autocomplete="off">
+    </div>
 
     <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live">
         <?php foreach ($flashSaleTabs as $state => $tab): ?>
@@ -29,7 +33,7 @@ $flashSaleTabs = [
                 $discountPercent = (int) round((1 - ((float) $product['price'] / (float) $product['compare_at_price'])) * 100);
                 $imageUrl = store_asset_url($product['image_url'] ?? 'assets/images/logo.png', '../');
                 ?>
-                <article class="vault-product-card" data-sale-state="<?= store_escape($state) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>">
+                <article class="vault-product-card" data-sale-state="<?= store_escape($state) ?>" data-search="<?= store_escape($product['product_name'] . ' ' . $product['category_name'] . ' ' . $product['variant_name']) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>">
                     <div class="vault-product-visual">
                         <span class="vault-series-tag"><?= store_escape($product['category_name']) ?></span>
                         <span class="vault-product-meta"><?= store_escape($product['variant_name']) ?></span>
