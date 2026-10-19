@@ -56,7 +56,7 @@
                     <path d="M16 18h.01" />
                 </svg>
             </div>
-            <strong><?= count($flashSaleProducts['starting']) + count($flashSaleProducts['tomorrow']) ?> <small>upcoming</small></strong>
+            <strong><?= count($flashSaleProducts['starting'] ?? []) + count($flashSaleProducts['tomorrow'] ?? []) ?> <small>upcoming</small></strong>
             <p>Upcoming sale windows are loaded from the admin schedule.</p>
             <span class="flash-telemetry-footnote"><i aria-hidden="true"></i> No queue simulation</span>
         </article>
