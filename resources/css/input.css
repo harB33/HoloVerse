@@ -98,11 +98,12 @@
   .site-header-wrap {
     @apply sticky top-0 z-30 bg-white;
     isolation: isolate;
+    box-shadow: 0 5px 12px rgb(16 24 40 / 10%);
   }
 
   .site-header {
     @apply grid grid-cols-[minmax(0,1fr)_auto_minmax(240px,0.8fr)_auto] items-center gap-5;
-    padding: 10px 20px 0;
+    padding: 10px 20px 8px;
   }
 
   .site-flash-notice {
