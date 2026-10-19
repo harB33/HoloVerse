@@ -90,9 +90,15 @@ require __DIR__ . '/app/views/layout/head.php';
                             <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
                             <h3><?= store_escape($product['product_name']) ?></h3>
                             <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
-                            <div class="drop-allocation"><span>Available quantity</span><strong><?= (int) $product['stock_quantity'] ?></strong></div>
+                            <hr class="drop-allocation-divider">
                             <div class="drop-purchase">
-                                <div><span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span><strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong></div>
+                                <div>
+                                    <span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span>
+                                    <div class="drop-price-row">
+                                        <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                        <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Left</span></div>
+                                    </div>
+                                </div>
                                 <?php if ((int) $product['stock_quantity'] > 0): ?>
                                     <form action="pages/cart.php" method="post">
                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">

@@ -1345,6 +1345,14 @@
     z-index: 2;
   }
 
+  .drop-card-link {
+    z-index: 20;
+  }
+
+  .drop-purchase form {
+    z-index: 21;
+  }
+
   .drop-art {
     @apply relative flex aspect-[1/0.9] flex-col items-center justify-center overflow-hidden rounded-[10px] p-[10px];
     @apply bg-[var(--drop-art-bg)] text-[var(--drop-ink)];
@@ -1409,12 +1417,24 @@
     @apply mb-3 mt-[5px] line-clamp-3 min-h-[3lh] text-[13px] leading-[1.2] text-[#718096];
   }
 
+  .drop-allocation-divider {
+    @apply mb-2 border-t border-[#e4eaf0];
+  }
+
+  .drop-price-row {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .drop-purchase > div {
+    @apply w-full;
+  }
+
   .drop-allocation {
-    @apply flex justify-between border-t border-[#e4eaf0] pt-[10px] text-[11px] text-[#718096];
+    @apply inline-flex w-fit items-center gap-1.5 rounded-full bg-[#e9ecef] px-3 py-1 text-[11px] font-semibold text-[#545b62];
   }
 
   .drop-allocation strong {
-    @apply font-montserrat text-[11px] text-[var(--drop-ink)];
+    @apply font-montserrat text-[12px] text-[#374151];
   }
 
   .drop-progress {
@@ -1439,11 +1459,15 @@
   }
 
   .drop-price-label {
-    @apply mb-[2px] text-[10px] text-[#94a3b8];
+    @apply ml-0.5 text-[10px] leading-none text-[#94a3b8];
   }
 
   .drop-purchase strong {
-    @apply font-montserrat text-[19px] font-extrabold text-[#101829];
+    @apply font-montserrat text-[19px] leading-none font-extrabold text-[#101829];
+  }
+
+  .drop-purchase .drop-allocation strong {
+    @apply text-[12px] text-[#374151];
   }
 
   .drop-purchase a,
