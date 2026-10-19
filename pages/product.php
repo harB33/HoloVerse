@@ -324,7 +324,21 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-purchase-form { display: grid; gap: 17px; padding-top: 16px; }
         .product-variant-picker { min-width: 0; margin: 0; border: 0; padding: 0; }
         .product-variant-picker legend { margin-bottom: 10px; color: #344253; font-size: 14px; font-weight: 500; }
-        .product-variant-options { display: flex; flex-wrap: wrap; gap: 8px; }
+        .product-variant-options {
+            display: flex;
+            max-height: min(230px, 40vh);
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            padding: 2px 8px 2px 0;
+            scrollbar-color: #aab8c4 #f0f3f5;
+            scrollbar-width: thin;
+        }
+        .product-variant-options::-webkit-scrollbar { width: 8px; }
+        .product-variant-options::-webkit-scrollbar-track { border-radius: 8px; background: #f0f3f5; }
+        .product-variant-options::-webkit-scrollbar-thumb { border-radius: 8px; background: #aab8c4; }
         .product-variant-option {
             min-height: 38px;
             cursor: pointer;
