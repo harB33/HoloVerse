@@ -57,13 +57,26 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </article>
                 <div class="about-team-grid" aria-label="Development team">
                     <?php foreach ([
-                        'Harvy Bautista',
-                        'Jhon Rick Parica',
-                        'John Rommel Patriarca',
+                        [
+                            'name' => 'Harvy Bautista',
+                            'image' => null,
+                        ],
+                        [
+                            'name' => 'Jhon Rick Parica',
+                            'image' => '../assets/images/parica.jpg',
+                        ],
+                        [
+                            'name' => 'John Rommel Patriarca',
+                            'image' => null,
+                        ],
                     ] as $teamMember): ?>
                         <article class="about-team-card">
-                            <div class="about-team-photo">Photo coming soon</div>
-                            <h3><?= store_escape($teamMember) ?></h3>
+                            <?php if (!empty($teamMember['image'])): ?>
+                                <img class="about-team-photo" src="<?= store_escape($teamMember['image']) ?>" alt="<?= store_escape($teamMember['name']) ?>" loading="lazy" decoding="async">
+                            <?php else: ?>
+                                <div class="about-team-photo">Photo coming soon</div>
+                            <?php endif; ?>
+                            <h3><?= store_escape($teamMember['name']) ?></h3>
                             <p>Developer</p>
                         </article>
                     <?php endforeach; ?>
