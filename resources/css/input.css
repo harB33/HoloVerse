@@ -1570,11 +1570,11 @@
   }
 
   .talent-card h3 {
-    @apply mb-1 mt-0 text-[12px] font-semibold leading-tight text-[#101829];
+    @apply mb-0 mt-0 text-[14px] font-semibold leading-tight text-[#101829];
   }
 
   .talent-card p {
-    @apply m-0 font-montserrat text-[9px] text-[#8492a5];
+    @apply m-0 font-montserrat text-[11px] text-[#8492a5];
   }
 
   .explore-empty {
