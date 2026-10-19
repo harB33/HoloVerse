@@ -4,6 +4,14 @@ $siteRoot = $siteRoot ?? '';
 $activePage = $activePage ?? '';
 $showLogin = $showLogin ?? true;
 $pageUrlPrefix = $siteRoot . 'pages/';
+$catalogSearchAction = $pageUrlPrefix . 'products.php';
+$catalogSearchId = 'site-catalog-search';
+$catalogSearchClass = 'site-header-search';
+$catalogSearchLabel = 'Search products, categories, or talents';
+$catalogSearchPlaceholder = 'Search products, categories, or talents';
+$catalogSearchValue = $activePage === 'products' && isset($productSearch) && is_string($productSearch)
+    ? $productSearch
+    : '';
 $headerFlashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
 $headerFlashSaleNow = new DateTimeImmutable('now', $headerFlashSaleTimezone);
 $headerLiveFlashSaleProducts = isset($flashSaleProducts['live']) && is_array($flashSaleProducts['live'])
@@ -47,6 +55,8 @@ $headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
         <a href="<?= $pageUrlPrefix ?>flash_sale.php"<?= $activePage === 'flash_sale' ? ' aria-current="page"' : '' ?>>Flash Sales</a>
         <a href="<?= $pageUrlPrefix ?>about-us.php"<?= $activePage === 'about-us' ? ' aria-current="page"' : '' ?>>About Us</a>
     </nav>
+
+    <?php require __DIR__ . '/catalog-search.php'; ?>
 
     <div class="header-actions">
         <?php if ($showLogin): ?>

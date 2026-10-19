@@ -112,7 +112,7 @@
   }
 
   .site-header {
-    @apply grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-7;
+    @apply grid grid-cols-[minmax(0,1fr)_auto_minmax(240px,0.8fr)_auto] items-center gap-5;
     padding: 20px;
   }
 
@@ -191,6 +191,11 @@
 
   .header-actions {
     @apply flex items-center justify-self-end gap-[9px];
+  }
+
+  .site-header-search {
+    @apply my-0 w-full max-w-none;
+    justify-self: end;
   }
 
   .account-menu {
@@ -1566,12 +1571,20 @@
   }
 
   .catalog-search input[type="search"] {
-    @apply min-w-0 flex-1 rounded-lg border border-[#d6e1ea] bg-white px-3 py-2 text-sm text-[#152238] placeholder:text-[#718096] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+    @apply h-11 min-w-0 flex-1 rounded-full border border-[#d6e1ea] bg-white px-4 py-2 text-sm text-[#152238] placeholder:text-[#718096] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
   }
 
   .catalog-search button,
   .catalog-search a {
-    @apply inline-flex shrink-0 items-center justify-center rounded-lg border border-[#087fa8] bg-[#087fa8] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#066989] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+    @apply inline-flex shrink-0 items-center justify-center rounded-full border border-[#087fa8] bg-[#087fa8] px-4 py-2 text-sm font-semibold text-white no-underline transition hover:bg-[#066989] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .catalog-search button {
+    @apply size-11 p-2;
+  }
+
+  .catalog-search button svg {
+    @apply size-4;
   }
 
   .catalog-search a {
@@ -3863,7 +3876,11 @@
 
 @media (max-width: 1050px) {
   .site-header {
-    @apply grid-cols-[minmax(0,1fr)_auto] gap-[15px];
+    @apply grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-[15px];
+  }
+
+  .site-header-search {
+    @apply col-start-2 row-start-1 justify-self-end;
   }
 
   .main-nav {
@@ -4108,6 +4125,10 @@
 
   .site-header {
     @apply flex flex-wrap;
+  }
+
+  .site-header-search {
+    @apply order-4 flex-[1_1_100%] max-w-none;
   }
 
   .brand {

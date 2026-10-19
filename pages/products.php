@@ -18,7 +18,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     <div class="page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
-        $activePage = '';
+        $activePage = 'products';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
@@ -27,14 +27,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <span class="drops-eyebrow">Official hololive production merchandise</span>
                 <h1 id="all-products-title">Shop all products</h1>
                 <p>Browse the full collection of available talent merchandise.</p>
-                <?php
-                $catalogSearchAction = 'products.php';
-                $catalogSearchId = 'products-search';
-                $catalogSearchLabel = 'Search products, categories, or talents';
-                $catalogSearchPlaceholder = 'Search products, categories, or talents';
-                $catalogSearchValue = $productSearch;
-                require __DIR__ . '/../app/views/components/catalog-search.php';
-                ?>
                 <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
             </section>
 
