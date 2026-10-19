@@ -57,33 +57,46 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1 id="explore-title">Explore Merchandise by Oshi</h1>
                     <p>Filter official apparel, plushies, voice packs, and figures directly tied to your favorite talent.</p>
                 </header>
-                <div class="catalog-search talent-search-wrap">
-                    <label class="sr-only" for="talent-search">Search talents or groups</label>
-                    <input id="talent-search" type="search" placeholder="Search talents or groups" autocomplete="off">
+                <div class="talent-directory-layout">
+                    <aside class="generation-filter talent-directory-filter" aria-label="Filter talents">
+                        <form class="catalog-search talent-search-wrap talent-directory-search" role="search">
+                            <label class="sr-only" for="talent-search">Search talents or groups</label>
+                            <input class="talent-search-input" id="talent-search" type="search" placeholder="Search talents or groups" autocomplete="off">
+                            <button type="submit" aria-label="Search talents">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="m21 21-4.34-4.34" />
+                                    <circle cx="11" cy="11" r="8" />
+                                </svg>
+                            </button>
+                        </form>
+                        <h2>Filter by generation</h2>
+                        <div class="explore-filters" role="group" aria-label="Filter talents by generation or group">
+                            <button class="explore-filter" type="button" data-explore-filter="all" aria-pressed="true">All Generations</button>
+                            <?php foreach ($generationLabels as $slug => $label): ?>
+                                <button class="explore-filter" type="button" data-explore-filter="<?= store_escape($slug) ?>" aria-pressed="false"><?= store_escape($label) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                    </aside>
+                    <div class="talent-directory-results">
+                        <div class="talent-grid" aria-live="polite">
+                            <?php foreach ($talents as $talent): ?>
+                                <?php $talentLink = 'talent-merch.php?talent=' . rawurlencode($talent['name']); ?>
+                                <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
+                                    <article class="talent-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
+                                        <span class="talent-avatar">
+                                            <span class="talent-initials" aria-hidden="true"><?= store_escape(strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talent['name']), 0, 2))) ?></span>
+                                            <img class="talent-photo talent-photo-backdrop" src="<?= store_escape($talent['portrait']) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                            <img class="talent-photo talent-photo-foreground" src="<?= store_escape($talent['portrait']) ?>" alt="<?= store_escape($talent['name']) ?>" loading="lazy" decoding="async">
+                                        </span>
+                                        <h3><?= store_escape($talent['name']) ?></h3>
+                                        <p><?= store_escape($talent['group_names']) ?></p>
+                                    </article>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="explore-empty hidden" role="status">No talents match your search and selected group.</p>
+                    </div>
                 </div>
-                <div class="explore-filters" role="group" aria-label="Filter talents by generation or group">
-                    <button class="explore-filter" type="button" data-explore-filter="all" aria-pressed="true">All Generations (<?= count($talents) ?> Talents)</button>
-                    <?php foreach ($generationLabels as $slug => $label): ?>
-                        <button class="explore-filter" type="button" data-explore-filter="<?= store_escape($slug) ?>" aria-pressed="false"><?= store_escape($label) ?></button>
-                    <?php endforeach; ?>
-                </div>
-                <div class="talent-grid" aria-live="polite">
-                    <?php foreach ($talents as $talent): ?>
-                        <?php $talentLink = 'talent-merch.php?talent=' . rawurlencode($talent['name']); ?>
-                        <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
-                            <article class="talent-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
-                                <span class="talent-avatar">
-                                    <span class="talent-initials" aria-hidden="true"><?= store_escape(strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talent['name']), 0, 2))) ?></span>
-                                    <img class="talent-photo talent-photo-backdrop" src="<?= store_escape($talent['portrait']) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                    <img class="talent-photo talent-photo-foreground" src="<?= store_escape($talent['portrait']) ?>" alt="<?= store_escape($talent['name']) ?>" loading="lazy" decoding="async">
-                                </span>
-                                <h3><?= store_escape($talent['name']) ?></h3>
-                                <p><?= store_escape($talent['group_names']) ?></p>
-                            </article>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-                <p class="explore-empty hidden" role="status">No talents match your search and selected group.</p>
             </div>
         </section>
         <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
@@ -94,6 +107,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         const talentCards = document.querySelectorAll('.talent-card-link');
         const exploreEmpty = document.querySelector('.explore-empty');
         const talentSearch = document.querySelector('#talent-search');
+        const talentSearchForm = document.querySelector('.talent-directory-search');
         let selectedGeneration = 'all';
         const updateTalentResults = () => {
             const query = talentSearch.value.trim().toLocaleLowerCase();
@@ -115,6 +129,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             updateTalentResults();
         }));
         talentSearch.addEventListener('input', updateTalentResults);
+        talentSearchForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            updateTalentResults();
+        });
 
         document.querySelectorAll('.talent-photo').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');

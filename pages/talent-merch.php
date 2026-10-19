@@ -81,67 +81,78 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <p>This talent collection could not be found. Return to the directory to choose a talent.</p>
                 <?php endif; ?>
                 <?php if ($talent): ?>
-                    <?php
-                    $catalogSearchAction = 'talent-merch.php';
-                    $catalogSearchId = 'talent-merch-search';
-                    $catalogSearchLabel = 'Search this talent collection';
-                    $catalogSearchPlaceholder = 'Search this collection';
-                    $catalogSearchValue = $productSearch;
-                    $catalogSearchHiddenFields = ['talent' => $selectedTalent];
-                    require __DIR__ . '/../app/views/components/catalog-search.php';
-                    ?>
                     <?php if ($products): ?>
                         <span class="all-products-count"><?= count($products) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
                     <?php endif; ?>
                 <?php endif; ?>
             </section>
 
-            <?php if ($talent && $products): ?>
-                <section class="drops-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
-                    <?php foreach ($products as $product): ?>
-                        <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
-                        <article class="drop-card">
-                            <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
-                            <div class="drop-art">
-                                <div class="drop-art-labels">
-                                    <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Available now' : 'Sold out' ?></span>
-                                    <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
-                                </div>
-                                <?php if (!empty($product['image_url'])): ?>
-                                    <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                    <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
-                                <?php endif; ?>
-                                <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
-                            </div>
-                            <div class="drop-details">
-                                <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
-                                <h2><?= store_escape($product['product_name']) ?></h2>
-                                <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
-                                <hr class="drop-allocation-divider">
-                                <div class="drop-purchase">
-                                    <div>
-                                        <span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span>
-                                        <div class="drop-price-row">
-                                            <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
-                                            <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Left</span></div>
+            <?php if ($talent): ?>
+                <div class="products-catalog-layout talent-merch-layout">
+                    <aside class="generation-filter talent-merch-filter" aria-labelledby="talent-merch-search-title">
+                        <h2 id="talent-merch-search-title">Search this collection</h2>
+                        <?php
+                        $catalogSearchAction = 'talent-merch.php';
+                        $catalogSearchId = 'talent-merch-search';
+                        $catalogSearchClass = 'talent-merch-filter-search';
+                        $catalogSearchLabel = 'Search this talent collection';
+                        $catalogSearchPlaceholder = 'Search this collection';
+                        $catalogSearchValue = $productSearch;
+                        $catalogSearchHiddenFields = ['talent' => $selectedTalent];
+                        $catalogSearchShowClear = false;
+                        require __DIR__ . '/../app/views/components/catalog-search.php';
+                        ?>
+                    </aside>
+                    <div class="products-catalog-results">
+                        <?php if ($products): ?>
+                            <section class="drops-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
+                                <?php foreach ($products as $product): ?>
+                                    <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
+                                    <article class="drop-card">
+                                        <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                                        <div class="drop-art">
+                                            <div class="drop-art-labels">
+                                                <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Available now' : 'Sold out' ?></span>
+                                                <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
+                                            </div>
+                                            <?php if (!empty($product['image_url'])): ?>
+                                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                            <?php endif; ?>
+                                            <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                                         </div>
-                                    </div>
-                                    <?php if ((int) $product['stock_quantity'] > 0): ?>
-                                        <form action="cart.php" method="post">
-                                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                            <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                            <button type="submit" name="action" value="add">Add to cart</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span>Sold out</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </article>
-                    <?php endforeach; ?>
-                </section>
-            <?php elseif ($talent): ?>
-                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No merchandise matches your search for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
+                                        <div class="drop-details">
+                                            <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
+                                            <h2><?= store_escape($product['product_name']) ?></h2>
+                                            <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
+                                            <hr class="drop-allocation-divider">
+                                            <div class="drop-purchase">
+                                                <div>
+                                                    <span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span>
+                                                    <div class="drop-price-row">
+                                                        <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                                        <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Left</span></div>
+                                                    </div>
+                                                </div>
+                                                <?php if ((int) $product['stock_quantity'] > 0): ?>
+                                                    <form action="cart.php" method="post">
+                                                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                                        <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
+                                                        <button type="submit" name="action" value="add">Add to cart</button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <span>Sold out</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </article>
+                                <?php endforeach; ?>
+                            </section>
+                        <?php else: ?>
+                            <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No merchandise matches your search for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
             <?php endif; ?>
             <a class="talent-directory-back-link" href="../index.php#explore">Back to the talent directory</a>
         </main>

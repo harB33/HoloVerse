@@ -624,6 +624,12 @@
     background-image: radial-gradient(#303136 1px, transparent 1px);
   }
 
+  html[data-theme="dark"] .talent-directory-filter .talent-search-input {
+    border-color: #3a3b42;
+    background-color: #292a30;
+    color: #dedee3;
+  }
+
   html[data-theme="dark"] .explore-filter {
     border-color: #3a3b42;
     background-color: #292a30;
@@ -786,6 +792,12 @@
 
     html[data-theme="system"] .explore {
       background-image: radial-gradient(#303136 1px, transparent 1px);
+    }
+
+    html[data-theme="system"] .talent-directory-filter .talent-search-input {
+      border-color: #3a3b42;
+      background-color: #292a30;
+      color: #dedee3;
     }
 
     html[data-theme="system"] .explore-filter {
@@ -1081,6 +1093,51 @@
 
   .talent-search-wrap {
     @apply mx-auto my-6;
+  }
+
+  .talent-directory-layout {
+    @apply grid grid-cols-[220px_minmax(0,1fr)] items-start gap-6;
+  }
+
+  .catalog-search.talent-directory-search input[type="search"] {
+    @apply mb-0 h-9 w-full rounded-full border border-[#d6e1ea] bg-white px-3 text-xs text-[#152238] placeholder:text-[#718096] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .catalog-search.talent-directory-search {
+    @apply mb-3 mt-0 max-w-none gap-1.5 border-b border-[#e1e8f0] pb-4;
+  }
+
+  .catalog-search.talent-directory-search button {
+    @apply size-9 p-1.5;
+  }
+
+  .catalog-search.talent-directory-search button svg {
+    @apply size-3.5;
+  }
+
+  .talent-directory-filter .explore-filters {
+    @apply mb-0 grid justify-stretch gap-1;
+  }
+
+  .talent-directory-filter .explore-filter {
+    @apply whitespace-normal rounded-lg border-transparent bg-transparent px-3 py-2 text-left text-[13px] text-[#526276] backdrop-blur-none;
+  }
+
+  .talent-directory-filter .explore-filter[aria-pressed="true"] {
+    @apply border-transparent bg-[#e7f7fc] text-[#087fa8];
+  }
+
+  .talent-directory-results,
+  .talent-merch-layout .products-catalog-results {
+    @apply min-w-0;
+  }
+
+  .talent-directory-results .talent-grid {
+    @apply justify-start;
+  }
+
+  .talent-merch-filter-search {
+    @apply mb-0 mt-0 max-w-none;
   }
 
   .flash-sale-search-wrap {
@@ -3907,6 +3964,22 @@
 
 @media (max-width: 640px) {
   .generation-filter nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .talent-directory-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .talent-directory-filter .explore-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .talent-directory-filter .explore-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
