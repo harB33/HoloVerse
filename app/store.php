@@ -473,23 +473,27 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
             )
         )";
     }
-    $sql = "SELECT DISTINCT ON (p.product_id)
-                   p.product_id, p.product_name, p.description, p.is_preorder,
-                   c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
-            FROM product_tbl p
-            INNER JOIN category_tbl c ON c.category_id = p.category_id
-            INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-            LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
-            WHERE p.status = 'active'
-              AND EXISTS (
-                  SELECT 1
-                  FROM product_talents_tbl pt
-                  INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
-                  INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-                  WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
-              ){$searchWhere}
-            ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC";
+    $sql = "SELECT catalog_products.*
+            FROM (
+                SELECT DISTINCT ON (p.product_id)
+                       p.product_id, p.product_name, p.description, p.is_preorder,
+                       c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
+                       v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
+                FROM product_tbl p
+                INNER JOIN category_tbl c ON c.category_id = p.category_id
+                INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+                LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
+                WHERE p.status = 'active'
+                  AND EXISTS (
+                      SELECT 1
+                      FROM product_talents_tbl pt
+                      INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
+                      INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+                      WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
+                  ){$searchWhere}
+                ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
+            ) AS catalog_products
+            ORDER BY (catalog_products.stock_quantity > 0) DESC, catalog_products.product_id DESC";
     if ($search !== '') {
         $pattern = '%' . $search . '%';
     }

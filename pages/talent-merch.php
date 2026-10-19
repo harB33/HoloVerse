@@ -24,27 +24,31 @@ if ($talent) {
     $talentId = (int) $talent['talent_id'];
     $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
-        "SELECT DISTINCT ON (p.product_id)
-                p.product_id, p.product_name, p.description, p.is_preorder,
-                c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
-                {$availableStock} AS stock_quantity, i.image_url, i.alt_text
-         FROM product_tbl p
-         INNER JOIN category_tbl c ON c.category_id = p.category_id
-         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-         LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
-         WHERE p.status = 'active'
-           AND (
-               p.product_name ILIKE ?
-               OR p.description ILIKE ?
-               OR c.category_name ILIKE ?
-               OR v.variant_name ILIKE ?
-           )
-           AND EXISTS (
-               SELECT 1
-               FROM product_talents_tbl pt
-               WHERE pt.product_id = p.product_id AND pt.talent_id = ?
-           )
-         ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC"
+        "SELECT collection_products.*
+         FROM (
+             SELECT DISTINCT ON (p.product_id)
+                    p.product_id, p.product_name, p.description, p.is_preorder,
+                    c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
+                    {$availableStock} AS stock_quantity, i.image_url, i.alt_text
+             FROM product_tbl p
+             INNER JOIN category_tbl c ON c.category_id = p.category_id
+             INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+             LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
+             WHERE p.status = 'active'
+               AND (
+                   p.product_name ILIKE ?
+                   OR p.description ILIKE ?
+                   OR c.category_name ILIKE ?
+                   OR v.variant_name ILIKE ?
+               )
+               AND EXISTS (
+                   SELECT 1
+                   FROM product_talents_tbl pt
+                   WHERE pt.product_id = p.product_id AND pt.talent_id = ?
+               )
+             ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
+         ) AS collection_products
+         ORDER BY (collection_products.stock_quantity > 0) DESC, collection_products.product_id DESC"
     );
     $searchPattern = '%' . $productSearch . '%';
     $statement->bind_param('ssssi', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId);

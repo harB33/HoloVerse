@@ -46,7 +46,7 @@ if ($selectedTalent !== '') {
         WHERE pt.product_id = p.product_id AND pt.talent_id = ?
     )';
 }
-$sql .= ' ORDER BY p.product_id';
+$sql .= " ORDER BY ({$availableStock} > 0) DESC, p.product_id DESC";
 if ($productSearch !== '' || $selectedTalent !== '') {
     $statement = $conn->prepare($sql);
     if ($productSearch !== '' && $selectedTalent !== '') {
