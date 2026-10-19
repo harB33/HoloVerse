@@ -1499,16 +1499,21 @@
   }
 
   .explore-eyebrow {
-    @apply mb-3 inline-block rounded-[4px] bg-black px-4 py-2 font-montserrat text-[9px] font-bold uppercase text-white;
+    @apply mb-3 inline-block rounded-[4px] bg-black px-4 py-2 font-montserrat text-[11px] font-bold uppercase text-white;
   }
 
   .explore-header h1,
   .explore-header h2 {
-    @apply mb-2 mt-0 text-[clamp(26px,3vw,36px)] font-bold leading-tight text-[#101829];
+    @apply mb-2 mt-0 font-bold leading-tight text-[#101829];
+    font-size: clamp(28px, calc(3vw + 2px), 38px);
+  }
+
+  .explore-header #talents-title {
+    @apply mb-0;
   }
 
   .explore-header p {
-    @apply m-0 text-[13px] leading-relaxed text-[#52647a];
+    @apply m-0 text-[15px] leading-relaxed text-[#52647a];
   }
 
   .explore-filters {
@@ -1516,7 +1521,7 @@
   }
 
   .explore-filter {
-    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-transparent px-4 py-[7px] text-[10px] font-semibold text-[#152238] transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
+    @apply cursor-pointer whitespace-nowrap rounded-full border border-[#dce5ef] bg-white/10 px-4 py-[7px] text-[12px] font-semibold text-[#152238] backdrop-blur-xs transition-colors hover:border-[#101829] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#31b4cf];
   }
 
   .explore-filter[aria-pressed="true"] {
@@ -1570,11 +1575,11 @@
   }
 
   .talent-card h3 {
-    @apply mb-1 mt-0 text-[12px] font-semibold leading-tight text-[#101829];
+    @apply mb-0 mt-0 text-[14px] font-semibold leading-tight text-[#101829];
   }
 
   .talent-card p {
-    @apply m-0 font-montserrat text-[9px] text-[#8492a5];
+    @apply m-0 font-montserrat text-[11px] text-[#8492a5];
   }
 
   .explore-empty {
