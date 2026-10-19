@@ -2033,6 +2033,65 @@
     @apply mx-auto mt-6 max-w-[1280px] rounded-[28px] border border-[#dfe7f0] bg-white p-6 shadow-[0_10px_30px_rgba(17,24,39,0.06)];
   }
 
+  .admin-inventory-dashboard {
+    @apply mt-3 p-4;
+  }
+
+  .admin-inventory-dashboard .admin-dashboard-header {
+    @apply mb-3 pb-3;
+  }
+
+  .admin-inventory-dashboard .admin-panel-description {
+    @apply mb-2;
+  }
+
+  .admin-inventory-header-actions {
+    @apply flex flex-wrap items-center justify-end gap-3;
+  }
+
+  .admin-inventory-count {
+    @apply rounded-full border border-[#ccecf5] bg-[#effaff] px-3 py-1.5 text-[11px] font-bold text-[#087fa8];
+  }
+
+  .admin-inventory-dashboard .admin-inventory-table {
+    @apply table-fixed overflow-hidden rounded-xl border border-[#e6edf5];
+  }
+
+  .admin-inventory-table th {
+    @apply whitespace-nowrap;
+  }
+
+  .admin-inventory-table th:nth-child(1) { width: 32%; }
+  .admin-inventory-table th:nth-child(2) { width: 19%; }
+  .admin-inventory-table th:nth-child(3) { width: 17%; }
+  .admin-inventory-table th:nth-child(4) { width: 14%; }
+  .admin-inventory-table th:nth-child(5) { width: 18%; }
+
+  .admin-inventory-table tbody tr {
+    @apply transition-colors hover:bg-[#f7fbff];
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td {
+    @apply align-middle;
+  }
+
+  .admin-inventory-product {
+    @apply block overflow-hidden font-semibold text-ellipsis text-[#1b2735];
+  }
+
+  .admin-inventory-sku {
+    @apply font-mono text-[11px] text-[#65758a];
+  }
+
+  .admin-inventory-empty {
+    @apply py-8 text-center text-[#65758a];
+  }
+
+  .admin-inventory-dashboard.admin-dashboard th,
+  .admin-inventory-dashboard.admin-dashboard td {
+    @apply px-2 py-1.5;
+  }
+
   .admin-dashboard-header {
     @apply mb-6 flex items-center justify-between gap-4 border-b border-[#e6edf5] pb-5;
   }
@@ -2136,6 +2195,34 @@
 
   .admin-privilege-form button {
     @apply cursor-pointer rounded-lg bg-[#0ea5d6] px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-back {
+    @apply text-[12px] font-bold text-[#0ea5d6] no-underline hover:text-[#0c92bc];
+  }
+
+  .admin-restock-form {
+    @apply flex min-w-[190px] items-center gap-1.5;
+  }
+
+  .admin-restock-form input {
+    @apply w-16 rounded-lg border border-[#d7e1eb] bg-white px-2 py-1.5 text-[12px] text-[#1c2331] focus:border-[#0ea5d6] focus:outline-none focus:ring-2 focus:ring-[#0ea5d6]/20;
+  }
+
+  .admin-restock-form button {
+    @apply cursor-pointer rounded-lg bg-[#0ea5d6] px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-pagination {
+    @apply mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf3f9] pt-3 text-[12px] text-[#5a7188];
+  }
+
+  .admin-inventory-page-links {
+    @apply flex items-center gap-2;
+  }
+
+  .admin-inventory-page-links a {
+    @apply rounded-lg border border-[#dfe7f0] bg-white px-3 py-2 font-bold text-[#0ea5d6] no-underline transition duration-200 ease-out hover:-translate-y-0.5 hover:border-[#b8dce8] hover:bg-[#edf7ff] active:translate-y-0;
   }
 
   .admin-table-wrap {
@@ -3766,6 +3853,100 @@
 
   .footer-about {
     @apply col-span-2;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-inventory-dashboard {
+    @apply mx-auto mt-3 rounded-2xl p-3;
+  }
+
+  .admin-inventory-dashboard .admin-dashboard-header {
+    @apply items-start;
+  }
+
+  .admin-inventory-dashboard .admin-dashboard-header h1 {
+    @apply text-[28px];
+  }
+
+  .admin-inventory-header-actions {
+    @apply flex-col items-end gap-2;
+  }
+
+  .admin-inventory-dashboard .admin-table-wrap {
+    @apply overflow-visible;
+  }
+
+  .admin-inventory-dashboard .admin-inventory-table,
+  .admin-inventory-table tbody,
+  .admin-inventory-table tr,
+  .admin-inventory-table td {
+    @apply block w-full;
+  }
+
+  .admin-inventory-dashboard .admin-inventory-table {
+    @apply overflow-visible border-0;
+  }
+
+  .admin-inventory-table thead {
+    @apply sr-only;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table tbody tr {
+    @apply mb-3 overflow-hidden rounded-xl border border-[#e6edf5] bg-white shadow-sm;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table tbody tr:last-child {
+    @apply mb-0;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td {
+    @apply flex items-center justify-between gap-3 border-b border-[#edf3f9] px-3 py-2 text-right;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td::before {
+    content: attr(data-label);
+    @apply shrink-0 text-left text-[10px] font-bold uppercase tracking-[0.08em] text-[#718096];
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td:first-child {
+    @apply bg-[#f7fbff] py-2.5 text-left;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td:first-child::before {
+    @apply hidden;
+  }
+
+  .admin-inventory-product {
+    @apply whitespace-normal;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td:last-child {
+    @apply block border-b-0 text-left;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td:last-child::before {
+    @apply mb-1.5 block;
+  }
+
+  .admin-restock-form {
+    @apply w-full min-w-0;
+  }
+
+  .admin-restock-form input {
+    @apply w-20;
+  }
+
+  .admin-inventory-pagination {
+    @apply items-stretch;
+  }
+
+  .admin-inventory-page-summary {
+    @apply w-full;
+  }
+
+  .admin-inventory-page-links {
+    @apply w-full justify-between;
   }
 }
 
