@@ -1102,8 +1102,17 @@
     background-color: #292a30;
   }
 
+  html[data-theme="dark"] .drop-details h2,
   html[data-theme="dark"] .drop-details h3 {
     color: #dedee3;
+  }
+
+  html[data-theme="dark"] .drop-description {
+    color: #858891;
+  }
+
+  html[data-theme="dark"] .drop-price-label {
+    color: #858891;
   }
 
   html[data-theme="dark"] .account-dropdown {
@@ -1265,8 +1274,17 @@
       background-color: #292a30;
     }
 
+    html[data-theme="system"] .drop-details h2,
     html[data-theme="system"] .drop-details h3 {
       color: #dedee3;
+    }
+
+    html[data-theme="system"] .drop-description {
+      color: #858891;
+    }
+
+    html[data-theme="system"] .drop-price-label {
+      color: #858891;
     }
 
     html[data-theme="system"] .account-dropdown {
