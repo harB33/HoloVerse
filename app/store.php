@@ -115,6 +115,21 @@ function store_current_cart_id(DatabaseConnection $conn, bool $create = true): i
     return $cartId;
 }
 
+function store_cart_item_count(DatabaseConnection $conn, int $cartId): int
+{
+    if ($cartId < 1) {
+        return 0;
+    }
+
+    $statement = $conn->prepare('SELECT COALESCE(SUM(quantity), 0) AS item_count FROM cart_items_tbl WHERE cart_id = ?');
+    $statement->bind_param('i', $cartId);
+    $statement->execute();
+    $count = (int) $statement->get_result()->fetch_assoc()['item_count'];
+    $statement->close();
+
+    return $count;
+}
+
 function store_clear_expired_cart_items(DatabaseConnection $conn, int $cartId): void
 {
     if ($cartId < 1) {
