@@ -1345,6 +1345,14 @@
     z-index: 2;
   }
 
+  .drop-card-link {
+    z-index: 20;
+  }
+
+  .drop-purchase form {
+    z-index: 21;
+  }
+
   .drop-art {
     @apply relative flex aspect-[1/0.9] flex-col items-center justify-center overflow-hidden rounded-[10px] p-[10px];
     @apply bg-[var(--drop-art-bg)] text-[var(--drop-ink)];
