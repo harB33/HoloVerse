@@ -85,7 +85,6 @@ require __DIR__ . '/app/views/layout/head.php';
                                 <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'])) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                             <?php endif; ?>
                             <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
-                            <span class="drop-art-tag"><?= (int) $product['stock_quantity'] ?> in stock</span>
                         </div>
                         <div class="drop-details">
                             <span class="drop-category"><?= store_escape($product['category_name']) ?></span>

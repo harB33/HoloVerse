@@ -1393,10 +1393,6 @@
     @apply relative z-10 mt-2 text-center text-[11px];
   }
 
-  .drop-art-tag {
-    @apply absolute bottom-2 right-2 z-10 max-w-[90%] overflow-hidden rounded-[3px] bg-white/90 px-[6px] py-1 text-[11px] font-semibold text-ellipsis whitespace-nowrap;
-  }
-
   .drop-details {
     @apply px-[3px] pb-px pt-[15px];
   }
