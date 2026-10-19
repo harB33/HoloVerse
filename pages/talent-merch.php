@@ -22,16 +22,21 @@ if ($talent) {
     $talentId = (int) $talent['talent_id'];
     $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
-        "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+        "SELECT DISTINCT ON (p.product_id)
+                p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                 c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
                 {$availableStock} AS stock_quantity, i.image_url, i.alt_text
          FROM product_tbl p
          INNER JOIN category_tbl c ON c.category_id = p.category_id
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-         INNER JOIN product_talents_tbl pt ON pt.product_id = p.product_id
          LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
-         WHERE p.status = 'active' AND pt.talent_id = ?
-         ORDER BY p.product_id, v.variant_id"
+         WHERE p.status = 'active'
+           AND EXISTS (
+               SELECT 1
+               FROM product_talents_tbl pt
+               WHERE pt.product_id = p.product_id AND pt.talent_id = ?
+           )
+         ORDER BY p.product_id, {$availableStock} DESC, v.variant_id, i.image_id"
     );
     $statement->bind_param('i', $talentId);
     $statement->execute();
