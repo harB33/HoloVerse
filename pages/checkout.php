@@ -170,7 +170,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
                 $statement = $conn->prepare(
                     "INSERT INTO order_tbl (user_id, order_number, status, currency, payment_method, shipping_fee, tax)
-                     VALUES (?, ?, 'pending', ?, ?, 0, 0) RETURNING order_id"
+                     VALUES (?, ?, 'confirmed', ?, ?, 0, 0) RETURNING order_id"
                 );
                 $statement->bind_param('isss', $userId, $orderNumber, $currency, $paymentMethod);
                 $statement->execute();
@@ -307,14 +307,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <span class="checkout-progress-step is-complete">Payment Method</span>
                         <span class="checkout-progress-step is-current" aria-current="step">Confirmation</span>
                     </nav>
-                    <p>Your order is recorded as pending. Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
+                    <p>Your order has been confirmed and payment has been collected. Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
                     <?php if ($paymentMethod !== ''): ?>
-                        <p>Selected payment method: <strong><?= store_escape(match ($paymentMethod) {
+                        <p>Payment method: <strong><?= store_escape(match ($paymentMethod) {
                             'card' => 'Card',
                             'e_wallet' => 'E-wallet',
                             'cash_on_delivery' => 'Cash on delivery',
                             default => 'Not specified',
-                        }) ?></strong>. No payment has been collected.</p>
+                        }) ?></strong>. Your order is now confirmed and ready for processing.</p>
                     <?php endif; ?>
                     <a class="cart-continue-button" href="products.php">Continue shopping</a>
                 </section>
