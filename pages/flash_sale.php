@@ -46,7 +46,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         <main class="flash-sale-main">
             <div class="flash-status-bar" aria-label="Flash sale system status">
-                <span><i aria-hidden="true"></i> Vault inventory: <?= count($flashSaleProducts['live']) ?> live drops</span>
+                <span><i aria-hidden="true"></i> Flash sales: <?= count($flashSaleProducts['live']) ?> live drops</span>
                 <span>5-minute holds on live flash-sale items; stock and CSRF checked</span>
                 <span class="flash-status-right">
                     <span>
@@ -66,10 +66,11 @@ require __DIR__ . '/../app/views/layout/head.php';
             <section class="flash-sale-heading" aria-labelledby="flash-sale-title">
                 <div>
                     <div class="flash-heading-meta">
-                        <span class="flash-mode-pill">Flash drop mode #7401</span>
-                        <span>[01 per-household enforced]</span>
+                        <span class="flash-mode-pill">Limited-time offers</span>
+                        <span>Official merchandise · while supplies last</span>
                     </div>
-                    <h1 id="flash-sale-title">Hyper-drop vault // Live flash sale</h1>
+                    <h1 id="flash-sale-title">Flash Sales</h1>
+                    <p class="flash-sale-subtitle">Limited-time prices on official hololive merchandise.</p>
                 </div>
                 <div class="flash-countdown">
                     <?php if ($saleProduct && !empty($saleProduct['ends_at'])): ?>
