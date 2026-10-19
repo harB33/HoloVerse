@@ -1408,6 +1408,7 @@
     @apply mb-3 inline-block rounded-[4px] bg-black px-4 py-2 font-montserrat text-[9px] font-bold uppercase text-white;
   }
 
+  .explore-header h1,
   .explore-header h2 {
     @apply mb-2 mt-0 text-[clamp(26px,3vw,36px)] font-bold leading-tight text-[#101829];
   }
