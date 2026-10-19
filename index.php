@@ -96,6 +96,7 @@ require __DIR__ . '/app/views/layout/head.php';
                                 <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                             </div>
                             <?php if (!empty($product['image_url'])): ?>
+                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'])) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
                                 <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'])) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                             <?php endif; ?>
                             <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
@@ -149,7 +150,8 @@ require __DIR__ . '/app/views/layout/head.php';
                             <article class="talent-card" data-generations="<?= htmlspecialchars(implode(' ', $talent['groups']), ENT_QUOTES, 'UTF-8') ?>">
                                 <span class="talent-avatar">
                                     <span class="talent-initials" aria-hidden="true"><?= htmlspecialchars($initials, ENT_QUOTES, 'UTF-8') ?></span>
-                                    <img class="talent-photo" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async" fetchpriority="low">
+                                    <img class="talent-photo talent-photo-backdrop" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="" aria-hidden="true" loading="lazy" decoding="async" fetchpriority="low">
+                                    <img class="talent-photo talent-photo-foreground" src="<?= htmlspecialchars($talent['portrait'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy" decoding="async" fetchpriority="low">
                                 </span>
                                 <h3><?= htmlspecialchars($talent['name'], ENT_QUOTES, 'UTF-8') ?></h3>
                                 <p><?= htmlspecialchars($groupNames, ENT_QUOTES, 'UTF-8') ?></p>

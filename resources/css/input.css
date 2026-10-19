@@ -878,7 +878,11 @@
   }
 
   .drop-product-image {
-    @apply absolute inset-0 size-full object-contain p-10;
+    @apply absolute inset-0 z-[1] size-full object-contain p-10;
+  }
+
+  .drop-product-image-backdrop {
+    @apply absolute inset-0 size-full scale-110 object-cover opacity-40 blur-xl;
   }
 
   .drop-status,
@@ -1032,11 +1036,22 @@
   }
 
   .talent-avatar {
-    @apply relative mb-3 flex size-[72px] items-center justify-center overflow-hidden rounded-full border-2 border-[#46c4ff] bg-[#e4f6ff] text-[15px] font-semibold text-[#075985];
+    @apply relative mb-3 flex size-[72px] items-center justify-center overflow-hidden rounded-full bg-[#e4f6ff] text-[15px] font-semibold text-[#075985];
   }
 
   .talent-photo {
-    @apply absolute inset-0 size-full object-cover object-top;
+    @apply absolute inset-0 z-[1] size-full object-cover object-top;
+  }
+
+  .talent-photo-backdrop {
+    @apply z-0 scale-125 opacity-60 blur-lg;
+  }
+
+  .talent-photo-foreground {
+    inset: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    border-radius: 9999px;
   }
 
   .talent-initials {
