@@ -396,6 +396,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                             <div>
                                 <label for="category-id">Category</label>
+                                <p class="m-0 text-xs text-slate-500">Choose the product type, such as Acrylic, Album/CD, Figure, or Plush. Pre-order status is set separately.</p>
                                 <select id="category-id" name="category_id" required>
                                     <option value="">Choose a category</option>
                                     <?php foreach ($categories as $category): ?>

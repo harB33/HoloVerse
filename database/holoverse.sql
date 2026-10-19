@@ -141,9 +141,23 @@ INSERT INTO cart_tbl (cart_id, user_id, session_token, status, created_at, updat
 (6, NULL, '56ddf06829e2ba49ae77dd30b53cf4cd5d7b47658c9dcb3557238ad29a98cf8b', 'active', '2026-10-14 19:29:21', '2026-10-14 19:29:21'),
 (7, 2, NULL, 'active', '2026-10-14 19:41:32', '2026-10-14 19:41:32');
 INSERT INTO category_tbl (category_id, category_name) VALUES
-(1, 'Limited Drops'),
-(2, 'Flash Sale'),
-(3, 'Pre-Order');
+(1, 'Figure'),
+(2, 'Apparel'),
+(3, 'Box Set'),
+(4, 'Album/CD'),
+(5, 'Plush'),
+(6, 'Acrylic'),
+(7, 'Blanket'),
+(8, 'Curtain'),
+(9, 'Blu-ray/DVD'),
+(10, 'Digital Content'),
+(11, 'Other'),
+(12, 'Badge'),
+(13, 'Coaster'),
+(14, 'Book/Pamphlet'),
+(15, 'Keychain'),
+(16, 'Mug'),
+(17, 'Poster/Print');
 INSERT INTO product_image_tbl (image_id, product_id, image_url, alt_text, sort_order) VALUES
 (1, 1, 'assets/images/suisei2.jpg', 'Hoshimachi Suisei anniversary figure', 0),
 (2, 2, 'assets/images/hololive.png', 'Inugami Korone limited figure', 0),
@@ -173,19 +187,19 @@ INSERT INTO product_talents_tbl (product_id, talent_id) VALUES
 (12, 1),
 (13, 31);
 INSERT INTO product_tbl (product_id, category_id, product_name, description, status, is_preorder, preorder_closes_at, expected_ship_date, created_at, updated_at) VALUES
-(1, 2, 'Hoshimachi Suisei 1/4 Scale Anniversary Edition', 'A limited collector release inspired by Suisei???s signature stage look, with a detailed display base and individually numbered authenticity card.', 'active', 1, NULL, '2027-04-14', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
+(1, 1, 'Hoshimachi Suisei 1/4 Scale Anniversary Edition', 'A limited collector release inspired by Suisei???s signature stage look, with a detailed display base and individually numbered authenticity card.', 'active', 1, NULL, '2027-04-14', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
 (2, 1, 'Inugami Korone 1/4 Scale ???Doog Champion??? Figure', 'Batch ETA: November 2026. Includes signed cover card.', 'active', 1, NULL, '2026-11-01', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
-(3, 3, 'Gawr Gura 1/7 Scale ???Apex Predator??? Figure', 'Sculpted by Design COCO. Removable hoodie feature.', 'active', 1, NULL, '2027-04-14', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
-(4, 1, 'Mori Calliope ???SINDERELLA??? Tour Souvenir Sukajan', 'Reversible high-thread embroidery. Limited run of 750.', 'active', 0, NULL, NULL, '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
+(3, 1, 'Gawr Gura 1/7 Scale ???Apex Predator??? Figure', 'Sculpted by Design COCO. Removable hoodie feature.', 'active', 1, NULL, '2027-04-14', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
+(4, 2, 'Mori Calliope ???SINDERELLA??? Tour Souvenir Sukajan', 'Reversible high-thread embroidery. Limited run of 750.', 'active', 0, NULL, NULL, '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
 (5, 3, 'Hoshimachi Suisei 5th Anniversary Memorial Box', 'Complete vinyl set, bespoke star pin, and replica beret.', 'active', 1, NULL, '2027-03-14', '2026-10-14 18:21:54', '2026-10-14 18:21:54'),
-(6, 1, 'Momosuzu Nene 1st EP "nenene no ne!" Reissue Edition', 'Reissue edition of Momosuzu Nene first EP, featuring five tracks.', 'active', 0, NULL, NULL, '2026-10-17 11:56:35', '2026-10-17 11:59:07'),
-(7, 1, 'hololive friends with u Kazama Iroha Street Outfit', 'Plush merchandise featuring Kazama Iroha in her street outfit from the hololive friends with u collection.', 'active', 0, NULL, NULL, '2026-10-17 11:56:35', '2026-10-17 11:56:35'),
-(8, 3, 'Tsunomaki Watame "RESPAWN!!"', 'CD release featuring Tsunomaki Watame and the anime tie-in song "RESPAWN!!".', 'active', 1, NULL, '2026-12-01', '2026-10-17 11:56:35', '2026-10-17 11:59:07'),
-(9, 1, 'ReGLOSS AR LIVE "X-ReCHORD" Otonose Kanade Acrylic Stand', 'Otonose Kanade acrylic stand from the ReGLOSS AR LIVE "X-ReCHORD" merchandise collection.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
-(10, 1, 'Otonose Kanade "At-Home Concert" Blanket', 'Blanket merchandise from Otonose Kanade''s "At-Home Concert" collection.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
-(11, 1, 'Kureiji Ollie Birthday 2026 - Ollie''s Ramen Shop Entrance Curtain', 'Birthday 2026 merchandise for Kureiji Ollie, featuring the Ollie''s Ramen Shop entrance curtain.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
-(12, 1, 'Hoshimachi Suisei Live "SuperNova: REBOOT" Blu-ray', 'Blu-ray release of Hoshimachi Suisei Live "SuperNova: REBOOT".', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
-(13, 3, 'Hakui Koyori 1st Live "Dream Spark" Acrylic Light Stick Stand', 'Made-to-order acrylic light stick stand from Hakui Koyori''s 1st Live "Dream Spark" merchandise collection.', 'active', 1, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23');
+(6, 4, 'Momosuzu Nene 1st EP "nenene no ne!" Reissue Edition', 'Reissue edition of Momosuzu Nene first EP, featuring five tracks.', 'active', 0, NULL, NULL, '2026-10-17 11:56:35', '2026-10-17 11:59:07'),
+(7, 5, 'hololive friends with u Kazama Iroha Street Outfit', 'Plush merchandise featuring Kazama Iroha in her street outfit from the hololive friends with u collection.', 'active', 0, NULL, NULL, '2026-10-17 11:56:35', '2026-10-17 11:56:35'),
+(8, 4, 'Tsunomaki Watame "RESPAWN!!"', 'CD release featuring Tsunomaki Watame and the anime tie-in song "RESPAWN!!".', 'active', 1, NULL, '2026-12-01', '2026-10-17 11:56:35', '2026-10-17 11:59:07'),
+(9, 6, 'ReGLOSS AR LIVE "X-ReCHORD" Otonose Kanade Acrylic Stand', 'Otonose Kanade acrylic stand from the ReGLOSS AR LIVE "X-ReCHORD" merchandise collection.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
+(10, 7, 'Otonose Kanade "At-Home Concert" Blanket', 'Blanket merchandise from Otonose Kanade''s "At-Home Concert" collection.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
+(11, 8, 'Kureiji Ollie Birthday 2026 - Ollie''s Ramen Shop Entrance Curtain', 'Birthday 2026 merchandise for Kureiji Ollie, featuring the Ollie''s Ramen Shop entrance curtain.', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
+(12, 9, 'Hoshimachi Suisei Live "SuperNova: REBOOT" Blu-ray', 'Blu-ray release of Hoshimachi Suisei Live "SuperNova: REBOOT".', 'active', 0, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23'),
+(13, 6, 'Hakui Koyori 1st Live "Dream Spark" Acrylic Light Stick Stand', 'Made-to-order acrylic light stick stand from Hakui Koyori''s 1st Live "Dream Spark" merchandise collection.', 'active', 1, NULL, NULL, '2026-10-17 15:58:23', '2026-10-17 15:58:23');
 INSERT INTO product_variants_tbl (variant_id, product_id, variant_name, sku, price, compare_at_price, currency, stock_quantity) VALUES
 (1, 1, '1/4 Scale', 'HV-SUISEI-ANNIV-14', 14104.83, 17631.04, 'PHP', 22),
 (2, 2, '1/4 Scale', 'HV-KORONE-DOOG-14', 18197.75, NULL, 'PHP', 60),
