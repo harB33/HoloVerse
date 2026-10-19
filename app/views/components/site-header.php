@@ -4,7 +4,36 @@ $siteRoot = $siteRoot ?? '';
 $activePage = $activePage ?? '';
 $showLogin = $showLogin ?? true;
 $pageUrlPrefix = $siteRoot . 'pages/';
+$headerFlashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+$headerFlashSaleNow = new DateTimeImmutable('now', $headerFlashSaleTimezone);
+$headerLiveFlashSaleProducts = isset($flashSaleProducts['live']) && is_array($flashSaleProducts['live'])
+    ? $flashSaleProducts['live']
+    : (store_flash_sale_table_exists($conn)
+        ? store_flash_sale_rows($conn, 'live', $headerFlashSaleNow)
+        : store_product_rows(
+            $conn,
+            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND ' . store_available_stock_sql() . ' > 0',
+            'p.product_id DESC'
+        ));
+$headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
 ?>
+<div class="site-header-wrap">
+    <div class="site-flash-notice<?= $headerLiveFlashSaleCount > 0 ? '' : ' hidden' ?>" role="status" aria-hidden="<?= $headerLiveFlashSaleCount > 0 ? 'false' : 'true' ?>" data-live-flash-notice data-status-url="<?= store_escape($pageUrlPrefix . 'flash-sale-status.php') ?>">
+        <svg class="site-flash-notice-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m13 2-3 8h8L9 22l3-9H5l8-11Z" />
+        </svg>
+        <span class="site-flash-notice-copy">
+            <strong>Flash sale live</strong>
+            <span data-live-flash-count><?= $headerLiveFlashSaleCount ?> discounted <?= $headerLiveFlashSaleCount === 1 ? 'deal' : 'deals' ?> available now</span>
+        </span>
+        <a class="site-flash-notice-link" href="<?= $pageUrlPrefix ?>flash_sale.php">
+            Shop the sale
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+            </svg>
+        </a>
+    </div>
 <header class="site-header">
     <a class="brand" href="<?= $siteRoot ?>index.php" aria-label="HoloVerse Store home">
         <img class="brand-logo" src="<?= $siteRoot ?>assets/images/logo.png" alt="">
@@ -246,3 +275,5 @@ $pageUrlPrefix = $siteRoot . 'pages/';
         </script>
     </div>
 </header>
+</div>
+<script src="<?= $siteRoot ?>Assets/js/live-flash-notice.js" defer></script>
