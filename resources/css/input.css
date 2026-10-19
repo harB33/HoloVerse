@@ -2112,6 +2112,10 @@
     @apply rounded-full border border-[#ccecf5] bg-[#effaff] px-3 py-1.5 text-[11px] font-bold text-[#087fa8];
   }
 
+  .admin-inventory-cap-note {
+    @apply mb-3 mt-0 rounded-lg border border-[#d8eaf2] bg-[#f4fbfe] px-3 py-2 text-[11px] leading-relaxed text-[#526b7d];
+  }
+
   .admin-inventory-dashboard .admin-inventory-table {
     @apply table-fixed overflow-hidden rounded-xl border border-[#e6edf5];
   }
@@ -2257,7 +2261,11 @@
   }
 
   .admin-inventory-back {
-    @apply text-[12px] font-bold text-[#0ea5d6] no-underline hover:text-[#0c92bc];
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-[#dfe7f0] bg-white px-3 py-2 text-[11px] font-bold text-[#0ea5d6] no-underline transition-colors hover:border-[#b8dce8] hover:bg-[#edf7ff] hover:text-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-back svg {
+    @apply size-4 shrink-0;
   }
 
   .admin-restock-form {
@@ -2274,6 +2282,10 @@
 
   .admin-inventory-pagination {
     @apply mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf3f9] pt-3 text-[12px] text-[#5a7188];
+  }
+
+  .admin-inventory-page-summary {
+    @apply flex flex-wrap items-center gap-x-2 gap-y-1;
   }
 
   .admin-inventory-page-links {
@@ -3947,6 +3959,10 @@
 
   .admin-inventory-page-summary {
     @apply w-full;
+  }
+
+  .admin-inventory-page-number {
+    @apply rounded-full bg-white px-2.5 py-1 font-semibold text-[#46576b];
   }
 
   .admin-inventory-page-links {

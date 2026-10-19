@@ -2,6 +2,11 @@
 require_once __DIR__ . '/../config/dbconnect.php';
 
 const STORE_CART_HOLD_SECONDS = 300;
+const STORE_TALENT_FILTER_GROUP_SLUGS = [
+    'gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox',
+    'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice',
+    'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai',
+];
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -441,9 +446,18 @@ function store_product_rows(DatabaseConnection $conn, string $where = '', string
     return $result->fetch_all(PDO::FETCH_ASSOC);
 }
 
+function store_talent_filter_group_slugs_sql(): string
+{
+    return implode(
+        ', ',
+        array_map(static fn (string $slug): string => "'" . str_replace("'", "''", $slug) . "'", STORE_TALENT_FILTER_GROUP_SLUGS)
+    );
+}
+
 function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0): array
 {
     $availableStock = store_available_stock_sql();
+    $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
     $sql = "SELECT DISTINCT ON (p.product_id)
                    p.product_id, p.product_name, p.description, p.is_preorder,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
@@ -453,12 +467,40 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
             INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
             LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
             WHERE p.status = 'active'
+              AND EXISTS (
+                  SELECT 1
+                  FROM product_talents_tbl pt
+                  INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
+                  INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+                  WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
+              )
             ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC";
     if ($limit > 0) {
         $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . max(0, (int) $offset);
     }
 
     return $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
+}
+
+function store_catalog_product_count(DatabaseConnection $conn): int
+{
+    $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+    $result = $conn->query(
+        "SELECT COUNT(DISTINCT p.product_id) AS product_count
+         FROM product_tbl p
+         INNER JOIN category_tbl c ON c.category_id = p.category_id
+         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+         WHERE p.status = 'active'
+           AND EXISTS (
+               SELECT 1
+               FROM product_talents_tbl pt
+               INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
+               INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+               WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs})
+           )"
+    );
+
+    return (int) ($result->fetch_assoc()['product_count'] ?? 0);
 }
 
 function store_flash_sale_table_exists(DatabaseConnection $conn): bool

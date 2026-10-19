@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$groupOrder = ['gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox', 'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice', 'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai'];
+$groupOrder = STORE_TALENT_FILTER_GROUP_SLUGS;
 $groupArraySql = "ARRAY['" . implode("','", $groupOrder) . "']::text[]";
 $groupsResult = $conn->query(
     "SELECT group_slug, group_name

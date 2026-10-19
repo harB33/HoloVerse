@@ -17,6 +17,7 @@ if (!store_has_role('admin')) {
 $notice = '';
 $noticeIsError = false;
 $pageSize = 10;
+$inventoryLimit = 10000;
 $searchParameter = $_GET['search'] ?? $_POST['search'] ?? '';
 $inventorySearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $requestedPage = $_GET['page'] ?? $_POST['page'] ?? '1';
@@ -39,16 +40,18 @@ if ($inventorySearch !== '') {
     );
     $countStatement->bind_param('sss', $searchPattern, $searchPattern, $searchPattern);
     $countStatement->execute();
-    $inventoryCount = (int) $countStatement->get_result()->fetch_assoc()['total'];
+    $inventoryTotalCount = (int) $countStatement->get_result()->fetch_assoc()['total'];
     $countStatement->close();
 } else {
-    $inventoryCount = (int) $conn->query(
+    $inventoryTotalCount = (int) $conn->query(
         "SELECT COUNT(*) AS total
          FROM product_tbl p
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
          WHERE {$inventoryWhere}"
     )->fetch_assoc()['total'];
 }
+$inventoryCount = min($inventoryTotalCount, $inventoryLimit);
+$inventoryIsCapped = $inventoryTotalCount > $inventoryLimit;
 $pageCount = max(1, (int) ceil($inventoryCount / $pageSize));
 $currentPage = min($requestedPage, $pageCount);
 $offset = ($currentPage - 1) * $pageSize;
@@ -120,9 +123,11 @@ $inventoryStatement = $conn->prepare(
      LIMIT ? OFFSET ?"
 );
 if ($inventorySearch !== '') {
-    $inventoryStatement->bind_param('sssii', $searchPattern, $searchPattern, $searchPattern, $pageSize, $offset);
+    $queryLimit = min($pageSize, max(0, $inventoryLimit - $offset));
+    $inventoryStatement->bind_param('sssii', $searchPattern, $searchPattern, $searchPattern, $queryLimit, $offset);
 } else {
-    $inventoryStatement->bind_param('ii', $pageSize, $offset);
+    $queryLimit = min($pageSize, max(0, $inventoryLimit - $offset));
+    $inventoryStatement->bind_param('ii', $queryLimit, $offset);
 }
 $inventoryStatement->execute();
 $inventory = $inventoryStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
@@ -144,8 +149,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1>Inventory</h1>
                 </div>
                 <div class="admin-inventory-header-actions">
-                    <span class="admin-inventory-count"><?= $inventoryCount ?> variants</span>
-                    <a class="admin-inventory-back" href="admin-dashboard.php">Back to dashboard</a>
+                    <span class="admin-inventory-count"><?= number_format($inventoryTotalCount) ?> matching variants</span>
+                    <a class="admin-inventory-back" href="admin-dashboard.php">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 14 4 9l5-5" />
+                            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+                        </svg>
+                        <span>Back to dashboard</span>
+                    </a>
                 </div>
             </header>
 
@@ -164,6 +175,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php endif; ?>
                 </form>
             </div>
+            <?php if ($inventoryIsCapped): ?>
+                <p class="admin-inventory-cap-note" role="status">
+                    Showing the first <?= number_format($inventoryLimit) ?> results for performance; <?= number_format($inventoryTotalCount) ?> variants match.
+                </p>
+            <?php endif; ?>
             <div class="admin-table-wrap">
                 <table class="admin-inventory-table">
                     <thead>
@@ -210,8 +226,12 @@ require __DIR__ . '/../app/views/layout/head.php';
             </div>
             <nav class="admin-inventory-pagination" aria-label="Inventory pages">
                 <span class="admin-inventory-page-summary">
-                    <?= $inventoryCount > 0 ? 'Showing ' . ($offset + 1) . '-' . min($offset + $pageSize, $inventoryCount) . ' of ' . $inventoryCount . ' variants' : 'No variants to display' ?>
-                    <?php if ($pageCount > 1): ?> · Page <?= $currentPage ?> of <?= $pageCount ?><?php endif; ?>
+                    <?php if ($inventoryCount > 0): ?>
+                        <span>Showing <strong><?= number_format($offset + 1) ?>–<?= number_format(min($offset + $pageSize, $inventoryCount)) ?></strong> of <?= $inventoryIsCapped ? 'the first ' . number_format($inventoryLimit) : number_format($inventoryCount) ?> variants</span>
+                        <?php if ($pageCount > 1): ?><span class="admin-inventory-page-number">Page <?= number_format($currentPage) ?> of <?= number_format($pageCount) ?></span><?php endif; ?>
+                    <?php else: ?>
+                        <span>No variants to display</span>
+                    <?php endif; ?>
                 </span>
                 <?php if ($pageCount > 1): ?>
                     <div class="admin-inventory-page-links">

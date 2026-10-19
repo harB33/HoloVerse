@@ -2,8 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 $pageSize = 48;
-$totalProductCount = (int) $conn->query("SELECT COUNT(*) AS product_count FROM product_tbl WHERE status = 'active'")
-    ->fetch_assoc()['product_count'];
+$totalProductCount = store_catalog_product_count($conn);
 $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $currentPage = min(max(1, $currentPage), $pageCount);
