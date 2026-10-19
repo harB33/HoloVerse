@@ -1257,7 +1257,7 @@
   }
 
   .drop-card {
-    @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-transparent p-3;
+    @apply min-w-0 rounded-xl border border-[#e1e8f0] bg-white/55 p-3 backdrop-blur-xs;
     position: relative;
   }
 
