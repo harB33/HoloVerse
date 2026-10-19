@@ -9,6 +9,7 @@ $catalogSearchId = 'site-catalog-search';
 $catalogSearchClass = 'site-header-search';
 $catalogSearchLabel = 'Search products, categories, or talents';
 $catalogSearchPlaceholder = 'Search products, categories, or talents';
+$catalogSearchShowClear = false;
 $catalogSearchValue = $activePage === 'products' && isset($productSearch) && is_string($productSearch)
     ? $productSearch
     : '';

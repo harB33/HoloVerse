@@ -66,6 +66,16 @@ require __DIR__ . '/../app/views/layout/head.php';
 
             <div class="products-catalog-layout">
                 <aside class="generation-filter" aria-labelledby="generation-filter-title">
+                    <?php
+                    $catalogSearchAction = 'products.php';
+                    $catalogSearchId = 'filter-panel-catalog-search';
+                    $catalogSearchClass = 'filter-panel-search';
+                    $catalogSearchLabel = 'Search products, categories, or talents';
+                    $catalogSearchPlaceholder = 'Search products...';
+                    $catalogSearchValue = $productSearch;
+                    $catalogSearchShowClear = false;
+                    require __DIR__ . '/../app/views/components/catalog-search.php';
+                    ?>
                     <form class="category-filter" method="get" action="products.php">
                         <label for="catalog-category">Filter by category</label>
                         <?php if ($productSearch !== ''): ?>

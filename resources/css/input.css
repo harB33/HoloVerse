@@ -1121,6 +1121,22 @@
     @apply grid gap-1;
   }
 
+  .catalog-search.filter-panel-search {
+    @apply mb-5 mt-0 max-w-none gap-1.5 border-b border-[#e1e8f0] pb-4;
+  }
+
+  .catalog-search.filter-panel-search input[type="search"] {
+    @apply h-9 px-3 py-1.5 text-xs;
+  }
+
+  .catalog-search.filter-panel-search button {
+    @apply size-9 p-1.5;
+  }
+
+  .catalog-search.filter-panel-search button svg {
+    @apply size-3.5;
+  }
+
   .generation-filter-option {
     @apply rounded-lg px-3 py-2 text-[13px] font-medium text-[#526276] no-underline transition hover:bg-[#f0faff] hover:text-[#087fa8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
   }
@@ -1130,7 +1146,7 @@
   }
 
   .category-filter {
-    @apply mb-3 mt-5 grid gap-2 border-t border-[#e1e8f0] pt-4;
+    @apply mb-3 mt-0 grid gap-2;
   }
 
   .category-filter label {
@@ -1198,10 +1214,6 @@
     color: #dedee3;
   }
 
-  html[data-theme="dark"] .category-filter {
-    border-color: #3a3b42;
-  }
-
   html[data-theme="dark"] .category-filter select {
     border-color: #3a3b42;
     background-color: #292a30;
@@ -1225,10 +1237,6 @@
     html[data-theme="system"] .generation-filter-option,
     html[data-theme="system"] .category-filter label {
       color: #dedee3;
-    }
-
-    html[data-theme="system"] .category-filter {
-      border-color: #3a3b42;
     }
 
     html[data-theme="system"] .category-filter select {

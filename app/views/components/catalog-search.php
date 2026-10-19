@@ -1,5 +1,6 @@
 <?php
 $catalogSearchHiddenFields = $catalogSearchHiddenFields ?? [];
+$catalogSearchShowClear = $catalogSearchShowClear ?? true;
 $catalogSearchClearHref = $catalogSearchAction;
 $catalogSearchClass = isset($catalogSearchClass) && is_string($catalogSearchClass)
     ? ' ' . store_escape($catalogSearchClass)
@@ -20,7 +21,7 @@ if ($catalogSearchHiddenFields) {
             <circle cx="11" cy="11" r="8" />
         </svg>
     </button>
-    <?php if ($catalogSearchValue !== ''): ?>
+    <?php if ($catalogSearchShowClear && $catalogSearchValue !== ''): ?>
         <a href="<?= store_escape($catalogSearchClearHref) ?>">Clear</a>
     <?php endif; ?>
 </form>
