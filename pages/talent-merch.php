@@ -23,7 +23,7 @@ if ($talent) {
     $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT DISTINCT ON (p.product_id)
-                p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+                p.product_id, p.product_name, p.description, p.is_preorder,
                 c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
                 {$availableStock} AS stock_quantity, i.image_url, i.alt_text
          FROM product_tbl p
@@ -36,7 +36,7 @@ if ($talent) {
                FROM product_talents_tbl pt
                WHERE pt.product_id = p.product_id AND pt.talent_id = ?
            )
-         ORDER BY p.product_id, {$availableStock} DESC, v.variant_id, i.image_id"
+         ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC"
     );
     $statement->bind_param('i', $talentId);
     $statement->execute();
@@ -73,14 +73,14 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <?php if ($talent && $products): ?>
-                <section class="drops-grid all-products-grid talent-merch-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
+                <section class="drops-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
                     <?php foreach ($products as $product): ?>
                         <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                         <article class="drop-card">
                             <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                             <div class="drop-art">
                                 <div class="drop-art-labels">
-                                    <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? ((int) $product['is_preorder'] === 1 ? 'Pre-order' : 'Available now') : 'Sold out' ?></span>
+                                    <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Available now' : 'Sold out' ?></span>
                                     <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                                 </div>
                                 <?php if (!empty($product['image_url'])): ?>
@@ -112,11 +112,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         <span>Sold out</span>
                                     <?php endif; ?>
                                 </div>
-                                <?php if ((int) $product['is_preorder'] === 1): ?>
-                                    <div class="preorder-shipping">
-                                        <?= $product['expected_ship_date'] ? 'Estimated dispatch: ' . store_escape(date('F Y', strtotime($product['expected_ship_date']))) : 'Estimated dispatch date to be announced' ?>
-                                    </div>
-                                <?php endif; ?>
                             </div>
                         </article>
                     <?php endforeach; ?>

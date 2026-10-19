@@ -3548,29 +3548,9 @@
     @apply grid grid-cols-1 gap-[26px];
   }
 
-  .talent-merch-grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-    grid-auto-rows: 480px;
-    align-items: stretch;
-  }
-
   .preorder-card {
     @apply overflow-hidden rounded-[26px] border border-[rgba(49,180,207,0.2)] bg-transparent shadow-[0_24px_40px_rgba(17,41,73,0.06)];
     position: relative;
-  }
-
-  .talent-merch-grid .preorder-card {
-    display: grid;
-    grid-template-rows: 190px minmax(0, 1fr);
-    height: 100%;
-    min-width: 0;
-  }
-
-  .talent-merch-grid .talent-merch-image {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    object-fit: contain;
   }
 
   .preorder-art {
@@ -3699,45 +3679,6 @@
 
   .preorder-body {
     @apply px-5 pb-6 pt-[22px];
-  }
-
-  .talent-merch-grid .preorder-body {
-    display: flex;
-    min-height: 0;
-    flex-direction: column;
-    padding: 16px;
-  }
-
-  .talent-merch-grid .preorder-card h2 {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    font-size: 1rem;
-    line-height: 1.3;
-  }
-
-  .talent-merch-grid .preorder-card p {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    font-size: 0.85rem;
-    line-height: 1.45;
-  }
-
-  .talent-merch-grid .preorder-footer {
-    margin-top: auto;
-  }
-
-  .talent-merch-grid .preorder-price {
-    font-size: 1.15rem;
-  }
-
-  .talent-merch-grid .preorder-shipping {
-    margin-top: 12px;
-    padding-top: 10px;
-    font-size: 0.75rem;
   }
 
   .preorder-card h2 {
