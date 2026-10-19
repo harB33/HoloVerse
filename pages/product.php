@@ -317,7 +317,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-stock-status.is-sold-out { color: #b23a48; }
         .product-stock-status.is-sold-out span { background: #d74a58; }
 
-        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: 0; color: #d8792d; }
+        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: 0; color: #12a9ce; }
         .product-trust-note svg { flex: 0 0 38px; width: 38px; height: 38px; }
         .product-trust-note p { margin: 0; color: #425064; font-size: 14px; line-height: 1.45; }
 
@@ -374,7 +374,20 @@ require __DIR__ . '/../app/views/layout/head.php';
                     'image_url' => 'assets/images/logo.png',
                     'alt_text' => $product['product_name'],
                 ]];
-                $defaultImageUrl = store_asset_url($galleryImages[0]['image_url'], '../');
+                if (count($galleryImages) === 1) {
+                    for ($temporaryView = 2; $temporaryView <= 4; $temporaryView++) {
+                        $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480"><rect width="640" height="480" fill="#f3f6f8"/><rect x="185" y="90" width="270" height="250" rx="18" fill="#e6edf1" stroke="#cbd5dc" stroke-width="3"/><path d="M225 145h190M225 205h190M225 265h190" stroke="#b6c4cc" stroke-width="12" stroke-linecap="round"/><circle cx="320" cy="190" r="78" fill="#fff" fill-opacity=".82"/><path d="M300 160v60l48-30z" fill="#0ba9d0"/><text x="320" y="390" text-anchor="middle" fill="#526476" font-family="Arial,sans-serif" font-size="22" font-weight="700">Temporary product view ' . $temporaryView . '</text></svg>';
+                        $galleryImages[] = [
+                            'image_url' => 'data:image/svg+xml,' . rawurlencode($placeholderSvg),
+                            'alt_text' => $product['product_name'] . ' — temporary gallery view ' . $temporaryView,
+                            'is_temporary' => true,
+                        ];
+                    }
+                }
+                $galleryImageUrl = static fn (string $imageUrl): string => str_starts_with($imageUrl, 'data:')
+                    ? $imageUrl
+                    : store_asset_url($imageUrl, '../');
+                $defaultImageUrl = $galleryImageUrl($galleryImages[0]['image_url']);
                 ?>
                 <div class="product-page-topbar">
                     <nav class="product-breadcrumb" aria-label="Breadcrumb">
@@ -408,9 +421,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <button class="product-gallery-arrow" type="button" data-gallery-previous aria-label="Show previous product image">‹</button>
                                 <div class="product-gallery-thumbnails" aria-label="Product images" role="group">
                                 <?php foreach ($galleryImages as $imageIndex => $image): ?>
-                                    <?php $thumbnailUrl = store_asset_url($image['image_url'], '../'); ?>
+                                    <?php $thumbnailUrl = $galleryImageUrl($image['image_url']); ?>
                                     <?php $thumbnailAlt = (string) ($image['alt_text'] ?? '') !== '' ? $image['alt_text'] : $product['product_name'] . ' image ' . ($imageIndex + 1); ?>
-                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-gallery-image data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($thumbnailAlt) ?>" aria-label="Show product image <?= $imageIndex + 1 ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
+                                    <button class="product-gallery-thumbnail<?= $imageIndex === 0 ? ' is-active' : '' ?>" type="button" data-gallery-image data-image-src="<?= store_escape($thumbnailUrl) ?>" data-image-alt="<?= store_escape($thumbnailAlt) ?>" aria-label="Show product image <?= $imageIndex + 1 ?><?= !empty($image['is_temporary']) ? ' (temporary placeholder)' : '' ?>" aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>">
                                         <img src="<?= store_escape($thumbnailUrl) ?>" alt="" loading="lazy" decoding="async">
                                     </button>
                                 <?php endforeach; ?>
