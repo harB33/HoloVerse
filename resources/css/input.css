@@ -132,7 +132,7 @@
   }
 
   .main-nav {
-    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-4 border-[rgba(99,210,252,0.9)] bg-white px-[26px] py-3 shadow-[0_0_14px_rgba(81,195,245,0.4),0_0_0_2px_rgba(141,226,255,0.22)];
+    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-4 border-[rgba(99,210,252,0.9)] bg-white/70 px-[26px] py-3 shadow-[0_0_14px_rgba(81,195,245,0.4),0_0_0_2px_rgba(141,226,255,0.22)] backdrop-blur-md;
   }
 
   .main-nav a {

@@ -59,7 +59,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php foreach ([
                         [
                             'name' => 'Harvy Bautista',
-                            'image' => null,
+                            'image' => '../Assets/images/harvy.png',
                         ],
                         [
                             'name' => 'Jhon Rick Parica',
@@ -67,7 +67,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         ],
                         [
                             'name' => 'John Rommel Patriarca',
-                            'image' => null,
+                            'image' => '../Assets/images/rommel.jpg',
                         ],
                     ] as $teamMember): ?>
                         <article class="about-team-card">
