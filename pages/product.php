@@ -258,28 +258,57 @@ require __DIR__ . '/../app/views/layout/head.php';
             padding-bottom: 15px;
         }
 
-        .product-description summary {
+        .product-description-preview {
             position: relative;
+            display: -webkit-box;
+            overflow: hidden;
+            margin: 0;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            color: #303943;
+            font-size: 14px;
+            line-height: 1.7;
+            mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+        }
+
+        .product-description-preview[hidden] {
+            display: none;
+        }
+
+        .product-description-full {
+            margin: 0 0 12px;
+            color: #66717d;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .product-description-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            border: 0;
+            background: transparent;
+            padding: 0;
             cursor: pointer;
-            list-style: none;
             color: #303943;
             font-size: 14px;
         }
 
-        .product-description summary::-webkit-details-marker { display: none; }
-        .product-description summary::after {
+        .product-description-toggle::after {
             content: "";
             display: inline-block;
             width: 8px;
             height: 8px;
-            margin: 0 0 3px 10px;
+            margin-bottom: 4px;
             transform: rotate(45deg);
             border-right: 1.5px solid currentColor;
             border-bottom: 1.5px solid currentColor;
             transition: transform .18s ease;
         }
-        .product-description[open] summary::after { transform: translateY(4px) rotate(225deg); }
-        .product-description p { margin: 12px 0 0; color: #66717d; font-size: 14px; line-height: 1.7; }
+        .product-description-toggle[aria-expanded="true"]::after { transform: translateY(4px) rotate(225deg); }
+        .product-description-toggle:hover { color: #087fa8; }
+        .product-description-toggle:focus-visible { outline: 2px solid #0ba9d0; outline-offset: 4px; }
 
         .product-price-block {
             display: flex;
@@ -440,10 +469,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </div>
 
                         <?php if (!empty($product['description'])): ?>
-                            <details class="product-description">
-                                <summary>View full product description</summary>
-                                <p><?= nl2br(store_escape($product['description'])) ?></p>
-                            </details>
+                            <div class="product-description">
+                                <p class="product-description-preview" data-description-preview><?= nl2br(store_escape($product['description'])) ?></p>
+                                <p class="product-description-full" id="product-description-full" data-description-full hidden><?= nl2br(store_escape($product['description'])) ?></p>
+                                <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-description-full" data-description-toggle>View Full Product Description</button>
+                            </div>
                         <?php endif; ?>
 
                         <div class="product-price-block" aria-live="polite">
@@ -584,6 +614,19 @@ require __DIR__ . '/../app/views/layout/head.php';
                     } else if (event.key === 'ArrowRight') {
                         showGalleryImage(activeGalleryIndex + 1, true);
                     }
+                });
+
+                const descriptionToggle = document.querySelector('[data-description-toggle]');
+                const descriptionPreview = document.querySelector('[data-description-preview]');
+                const descriptionFull = document.querySelector('[data-description-full]');
+                descriptionToggle?.addEventListener('click', () => {
+                    const expanded = descriptionToggle.getAttribute('aria-expanded') !== 'true';
+                    descriptionToggle.setAttribute('aria-expanded', String(expanded));
+                    descriptionToggle.textContent = expanded
+                        ? 'Hide Full Product Description'
+                        : 'View Full Product Description';
+                    descriptionPreview.hidden = expanded;
+                    descriptionFull.hidden = !expanded;
                 });
 
                 const form = document.querySelector('[data-product-form]');
