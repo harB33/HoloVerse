@@ -87,11 +87,20 @@ require __DIR__ . '/../app/views/layout/head.php';
             display: flex;
             align-items: center;
             gap: 9px;
-            margin: 0 0 14px;
+            min-width: 0;
+            margin: 0;
             overflow: hidden;
             color: #758091;
             font-size: 13px;
             white-space: nowrap;
+        }
+
+        .product-page-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 14px;
         }
 
         .product-breadcrumb a {
@@ -101,6 +110,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-breadcrumb a:hover { color: #087fa8; }
         .product-breadcrumb span:last-child { overflow: hidden; text-overflow: ellipsis; }
+        .product-breadcrumb-separator { width: 14px; height: 14px; flex: 0 0 14px; color: #758091; }
 
         .product-layout {
             display: grid;
@@ -322,7 +332,8 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-add-button:disabled { cursor: not-allowed; background: #aab5bd; }
         .product-shipping-note, .product-talent-links { margin: 16px 0 0; color: #647386; font-size: 13px; line-height: 1.6; }
         .product-talent-links a { color: #087fa8; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-        .product-back-link { display: inline-flex; margin-top: 26px; color: #526476; font-size: 13px; text-decoration: none; }
+        .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin: 0; color: #526476; font-size: 13px; line-height: 1.5; text-decoration: none; }
+        .product-back-link svg { display: block; width: 14px; height: 14px; flex: 0 0 14px; }
         .product-back-link:hover { color: #087fa8; }
         .product-not-found { max-width: 760px; margin: 80px auto 28px; text-align: center; }
         .product-not-found h1 { color: #172333; font-size: 32px; }
@@ -337,6 +348,9 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         @media (max-width: 680px) {
             .product-page-main { width: min(100% - 32px, 560px); padding-top: 16px; }
+            .product-page-topbar { align-items: flex-start; gap: 12px; }
+            .product-page-topbar .product-breadcrumb { font-size: 11px; }
+            .product-page-topbar .product-back-link { font-size: 11px; }
             .product-layout { grid-template-columns: minmax(0, 1fr); gap: 26px; padding: 16px; }
             .product-gallery-stage { height: clamp(280px, 88vw, 380px); }
             .product-gallery-main { padding: 18px; }
@@ -375,11 +389,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                     ? $galleryImages[0]['image_url']
                     : store_asset_url($galleryImages[0]['image_url'], '../');
                 ?>
-                <nav class="product-breadcrumb" aria-label="Breadcrumb">
-                    <a href="../index.php">Home</a><span aria-hidden="true">›</span>
-                    <a href="products.php">Products</a><span aria-hidden="true">›</span>
-                    <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
-                </nav>
+                <div class="product-page-topbar">
+                    <nav class="product-breadcrumb" aria-label="Breadcrumb">
+                        <a href="../index.php">Home</a>
+                        <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                        <a href="products.php">Products</a>
+                        <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                        <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
+                    </nav>
+                    <a class="product-back-link" href="products.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
+                </div>
 
                 <section class="product-layout" aria-labelledby="product-title">
                     <div class="product-gallery">
@@ -503,7 +522,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                     </div>
                 </section>
-                <a class="product-back-link" href="<?= $talents ? 'talent-merch.php?talent=' . rawurlencode($talents[0]['talent_slug']) : '../index.php#featured' ?>">← Back to merchandise</a>
             <?php else: ?>
                 <section class="product-not-found">
                     <h1>Product not found</h1>
