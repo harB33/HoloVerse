@@ -63,7 +63,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         ],
                         [
                             'name' => 'Jhon Rick Parica',
-                            'image' => '../assets/images/parica.jpg',
+                            'image' => '../Assets/images/parica.jpg',
                         ],
                         [
                             'name' => 'John Rommel Patriarca',
