@@ -141,3 +141,30 @@ if (countdown) {
     updateCountdown();
     window.setInterval(updateCountdown, 1000);
 }
+
+const systemClock = document.querySelector("[data-system-clock]");
+if (systemClock) {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: systemClock.dataset.timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+        timeZoneName: "longOffset",
+    });
+
+    const updateSystemClock = () => {
+        const parts = Object.fromEntries(formatter.formatToParts(new Date()).map(({ type, value }) => [type, value]));
+        const offset = parts.timeZoneName.match(/GMT([+-]\d{2}:\d{2})/)?.[1] || "+00:00";
+        const date = `${parts.year}-${parts.month}-${parts.day}`;
+        const time = `${parts.hour}:${parts.minute}:${parts.second}`;
+        systemClock.dateTime = `${date}T${time}${offset}`;
+        systemClock.textContent = `System clock: ${date} ${time}`;
+    };
+
+    updateSystemClock();
+    window.setInterval(updateSystemClock, 1000);
+}

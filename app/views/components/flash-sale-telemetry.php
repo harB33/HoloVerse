@@ -6,7 +6,7 @@
             </svg>
             Flash sale status &amp; cart information
         </h2>
-        <span>System clock: <?= store_escape($flashSaleNow->format(DateTimeInterface::ATOM)) ?></span>
+        <time data-system-clock data-timezone="<?= store_escape($flashSaleTimezone->getName()) ?>" datetime="<?= store_escape($flashSaleNow->format(DateTimeInterface::ATOM)) ?>">System clock: <?= store_escape($flashSaleNow->format('Y-m-d H:i:s')) ?></time>
     </div>
     <div class="flash-telemetry-grid">
         <article class="flash-telemetry-card">
