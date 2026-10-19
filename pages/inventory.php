@@ -17,16 +17,38 @@ if (!store_has_role('admin')) {
 $notice = '';
 $noticeIsError = false;
 $pageSize = 10;
+$searchParameter = $_GET['search'] ?? $_POST['search'] ?? '';
+$inventorySearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $requestedPage = $_GET['page'] ?? $_POST['page'] ?? '1';
 $requestedPage = is_string($requestedPage) ? filter_var($requestedPage, FILTER_VALIDATE_INT) : false;
 $requestedPage = $requestedPage === false || $requestedPage < 1 ? 1 : $requestedPage;
 
-$inventoryCount = (int) $conn->query(
-    "SELECT COUNT(*) AS total
-     FROM product_tbl p
-     INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-     WHERE p.status = 'active'"
-)->fetch_assoc()['total'];
+$inventoryWhere = "p.status = 'active'";
+if ($inventorySearch !== '') {
+    $inventoryWhere .= ' AND (
+        p.product_name ILIKE ?
+        OR v.variant_name ILIKE ?
+        OR v.sku ILIKE ?
+    )';
+    $searchPattern = '%' . $inventorySearch . '%';
+    $countStatement = $conn->prepare(
+        "SELECT COUNT(*) AS total
+         FROM product_tbl p
+         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+         WHERE {$inventoryWhere}"
+    );
+    $countStatement->bind_param('sss', $searchPattern, $searchPattern, $searchPattern);
+    $countStatement->execute();
+    $inventoryCount = (int) $countStatement->get_result()->fetch_assoc()['total'];
+    $countStatement->close();
+} else {
+    $inventoryCount = (int) $conn->query(
+        "SELECT COUNT(*) AS total
+         FROM product_tbl p
+         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+         WHERE {$inventoryWhere}"
+    )->fetch_assoc()['total'];
+}
 $pageCount = max(1, (int) ceil($inventoryCount / $pageSize));
 $currentPage = min($requestedPage, $pageCount);
 $offset = ($currentPage - 1) * $pageSize;
@@ -67,7 +89,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
             if ($updated) {
                 $_SESSION['inventory_notice'] = 'Inventory restocked successfully.';
-                header('Location: inventory.php?page=' . $currentPage);
+                header('Location: inventory.php?' . http_build_query([
+                    'page' => $currentPage,
+                    'search' => $inventorySearch,
+                ]));
                 exit;
             }
 
@@ -90,11 +115,15 @@ $inventoryStatement = $conn->prepare(
     "SELECT p.product_id, p.product_name, v.variant_id, v.variant_name, v.sku, v.stock_quantity
      FROM product_tbl p
      INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-     WHERE p.status = 'active'
+     WHERE {$inventoryWhere}
      ORDER BY (v.stock_quantity > 0), p.product_name, v.variant_name, v.variant_id
      LIMIT ? OFFSET ?"
 );
-$inventoryStatement->bind_param('ii', $pageSize, $offset);
+if ($inventorySearch !== '') {
+    $inventoryStatement->bind_param('sssii', $searchPattern, $searchPattern, $searchPattern, $pageSize, $offset);
+} else {
+    $inventoryStatement->bind_param('ii', $pageSize, $offset);
+}
 $inventoryStatement->execute();
 $inventory = $inventoryStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
 $inventoryStatement->close();
@@ -124,7 +153,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <p class="admin-notice<?= $noticeIsError ? ' admin-notice--error' : '' ?>" role="<?= $noticeIsError ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
             <?php endif; ?>
 
-            <p class="admin-panel-description">Add units to a product variant’s current stock. Sold-out items appear first.</p>
+            <div class="admin-inventory-toolbar">
+                <p class="admin-panel-description">Add units to a product variant’s current stock. Sold-out items appear first.</p>
+                <form class="admin-inventory-search" method="get" action="inventory.php" role="search">
+                    <label class="sr-only" for="inventory-search">Search product, variant, or SKU</label>
+                    <input id="inventory-search" name="search" type="search" value="<?= store_escape($inventorySearch) ?>" placeholder="Search product, variant, or SKU">
+                    <button type="submit">Search</button>
+                    <?php if ($inventorySearch !== ''): ?>
+                        <a href="inventory.php">Clear</a>
+                    <?php endif; ?>
+                </form>
+            </div>
             <div class="admin-table-wrap">
                 <table class="admin-inventory-table">
                     <thead>
@@ -153,6 +192,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                             <input type="hidden" name="variant_id" value="<?= (int) $item['variant_id'] ?>">
                                             <input type="hidden" name="page" value="<?= $currentPage ?>">
+                                            <input type="hidden" name="search" value="<?= store_escape($inventorySearch) ?>">
                                             <label class="sr-only" for="restock-<?= (int) $item['variant_id'] ?>">Units to add for <?= store_escape($item['product_name'] . ' ' . $item['variant_name']) ?></label>
                                             <input id="restock-<?= (int) $item['variant_id'] ?>" name="restock_quantity" type="number" min="1" max="2147483647" step="1" value="1" required>
                                             <button type="submit">Add stock</button>
@@ -162,7 +202,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td class="admin-inventory-empty" colspan="5">There are no active product variants to manage.</td>
+                                <td class="admin-inventory-empty" colspan="5"><?= $inventorySearch !== '' ? 'No inventory variants match your search.' : 'There are no active product variants to manage.' ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -176,10 +216,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if ($pageCount > 1): ?>
                     <div class="admin-inventory-page-links">
                         <?php if ($currentPage > 1): ?>
-                            <a href="?page=<?= $currentPage - 1 ?>" aria-label="Previous inventory page">Previous</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1, 'search' => $inventorySearch])) ?>" aria-label="Previous inventory page">Previous</a>
                         <?php endif; ?>
                         <?php if ($currentPage < $pageCount): ?>
-                            <a href="?page=<?= $currentPage + 1 ?>" aria-label="Next inventory page">Next</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1, 'search' => $inventorySearch])) ?>" aria-label="Next inventory page">Next</a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

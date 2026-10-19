@@ -2045,6 +2045,30 @@
     @apply mb-2;
   }
 
+  .admin-inventory-toolbar {
+    @apply mb-3 flex flex-wrap items-center justify-between gap-3;
+  }
+
+  .admin-inventory-toolbar .admin-panel-description {
+    @apply mb-0;
+  }
+
+  .admin-inventory-search {
+    @apply flex min-w-0 flex-wrap items-center gap-2;
+  }
+
+  .admin-inventory-search input {
+    @apply min-h-9 w-[min(320px,60vw)] rounded-lg border border-[#d7e1eb] bg-white px-3 py-2 text-[12px] text-[#1c2331] outline-none placeholder:text-[#8795a5] focus:border-[#0ea5d6] focus:ring-2 focus:ring-[#0ea5d6]/20;
+  }
+
+  .admin-inventory-search button {
+    @apply min-h-9 cursor-pointer rounded-lg bg-[#0ea5d6] px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-search a {
+    @apply text-[11px] font-semibold text-[#617184] underline-offset-2 hover:text-[#087fa8] hover:underline;
+  }
+
   .admin-inventory-header-actions {
     @apply flex flex-wrap items-center justify-end gap-3;
   }
