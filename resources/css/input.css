@@ -1590,11 +1590,15 @@
   }
 
   .admin-dashboard-shell {
-    @apply min-h-screen bg-[#f4f7fb] px-4 pb-12 pt-6;
+    @apply min-h-screen bg-[#f4f7fb] px-4 pb-12 pt-0;
+  }
+
+  .admin-dashboard-shell > .site-header-wrap {
+    @apply -mx-4;
   }
 
   .admin-dashboard {
-    @apply mx-auto max-w-[1280px] rounded-[28px] border border-[#dfe7f0] bg-white p-6 shadow-[0_10px_30px_rgba(17,24,39,0.06)];
+    @apply mx-auto mt-6 max-w-[1280px] rounded-[28px] border border-[#dfe7f0] bg-white p-6 shadow-[0_10px_30px_rgba(17,24,39,0.06)];
   }
 
   .admin-dashboard-header {
@@ -3964,7 +3968,10 @@
   opacity: 0;
   visibility: hidden;
   transform: translateX(32px);
-  transition: opacity 450ms ease, transform 600ms ease, visibility 450ms ease;
+  transition:
+    opacity 450ms ease,
+    transform 600ms ease,
+    visibility 450ms ease;
 }
 
 .auth-register-content {
