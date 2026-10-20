@@ -96,9 +96,8 @@
   }
 
   .site-header-wrap {
-    @apply sticky top-0 z-30 bg-white;
+    @apply sticky top-0 z-30 bg-transparent;
     isolation: isolate;
-    box-shadow: 0 5px 12px rgb(16 24 40 / 10%);
   }
 
   .site-header {
