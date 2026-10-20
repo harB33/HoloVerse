@@ -5,6 +5,11 @@ $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$categoryParameter = $_GET['category'] ?? '';
+$selectedCategory = is_string($categoryParameter)
+    ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : false;
+$selectedCategory = $selectedCategory === false ? 0 : (int) $selectedCategory;
 $talent = null;
 
 if ($selectedTalent !== '') {
@@ -19,26 +24,23 @@ if (!$talent) {
     http_response_code(404);
 }
 
-$categories = [];
-$selectedCategory = 0;
-if ($talent) {
-    $categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
-    $categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
-    $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
-    $categoryParameter = $_GET['category'] ?? '';
-    $selectedCategory = is_string($categoryParameter)
-        ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
-        : false;
-    $selectedCategory = $selectedCategory !== false && in_array($selectedCategory, $categoryIds, true)
-        ? $selectedCategory
-        : 0;
-}
-
 $products = [];
+$categories = [];
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
+    $categoryStatement = $conn->prepare(
+        'SELECT category_id, category_name FROM category_tbl ORDER BY category_name'
+    );
+    $categoryStatement->execute();
+    $categories = $categoryStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+    $categoryStatement->close();
+
+    $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+    if (!in_array($selectedCategory, $categoryIds, true)) {
+        $selectedCategory = 0;
+    }
     $availableStock = store_available_stock_sql();
-    $categoryFilterSql = $selectedCategory > 0 ? ' AND p.category_id = ?' : '';
+    $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT collection_products.*
          FROM (
@@ -61,17 +63,23 @@ if ($talent) {
                    SELECT 1
                    FROM product_talents_tbl pt
                    WHERE pt.product_id = p.product_id AND pt.talent_id = ?
-               ){$categoryFilterSql}
+               )
+               AND (? = 0 OR p.category_id = ?)
              ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
          ) AS collection_products
          ORDER BY (collection_products.stock_quantity > 0) DESC, collection_products.product_id DESC"
     );
     $searchPattern = '%' . $productSearch . '%';
-    if ($selectedCategory > 0) {
-        $statement->bind_param('ssssii', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId, $selectedCategory);
-    } else {
-        $statement->bind_param('ssssi', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId);
-    }
+    $statement->bind_param(
+        'ssssiii',
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $talentId,
+        $selectedCategory,
+        $selectedCategory
+    );
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
@@ -118,10 +126,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $catalogSearchLabel = 'Search this talent collection';
                         $catalogSearchPlaceholder = 'Search this collection';
                         $catalogSearchValue = $productSearch;
-                        $catalogSearchHiddenFields = array_filter([
-                            'talent' => $selectedTalent,
-                            'category' => $selectedCategory,
-                        ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+                        $catalogSearchHiddenFields = ['talent' => $selectedTalent];
+                        if ($selectedCategory > 0) {
+                            $catalogSearchHiddenFields['category'] = $selectedCategory;
+                        }
                         $catalogSearchShowClear = false;
                         require __DIR__ . '/../app/views/components/catalog-search.php';
                         ?>
@@ -132,16 +140,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 'talent' => $selectedTalent,
                                 'search' => $productSearch,
                             ], static fn (string $value): bool => $value !== '');
-                            $allCategoriesHref = 'talent-merch.php?' . http_build_query($categoryFilterQuery);
                             ?>
-                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="<?= store_escape($allCategoriesHref) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
+                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
                             <?php foreach ($categories as $category): ?>
                                 <?php
                                 $categoryHref = 'talent-merch.php?' . http_build_query($categoryFilterQuery + [
                                     'category' => (int) $category['category_id'],
                                 ]);
+                                $categoryId = (int) $category['category_id'];
                                 ?>
-                                <a class="generation-filter-option<?= $selectedCategory === (int) $category['category_id'] ? ' is-active' : '' ?>" href="<?= store_escape($categoryHref) ?>"<?= $selectedCategory === (int) $category['category_id'] ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
+                                <a class="generation-filter-option<?= $selectedCategory === $categoryId ? ' is-active' : '' ?>" href="<?= store_escape($categoryHref) ?>"<?= $selectedCategory === $categoryId ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
                             <?php endforeach; ?>
                         </nav>
                     </aside>
