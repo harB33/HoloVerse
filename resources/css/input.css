@@ -1088,7 +1088,11 @@
   }
 
   .products-promo-links a {
-    @apply inline-flex items-center justify-center rounded-full bg-[#087fa8] px-4 py-1.5 text-xs font-bold text-white no-underline transition hover:bg-[#066989] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-[#087fa8] px-4 py-1.5 text-xs font-bold text-white no-underline transition hover:bg-[#066989] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .products-promo-links svg {
+    @apply size-4 shrink-0;
   }
 
   .catalog-search {
