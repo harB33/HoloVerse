@@ -160,7 +160,7 @@
   }
 
   .main-nav {
-    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[26px] py-3 shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
+    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[23px] py-[15px] shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
   }
 
   .main-nav a {
@@ -168,7 +168,7 @@
   }
 
   .main-nav a::before {
-    @apply pointer-events-none absolute -inset-y-[7px] -inset-x-3 -z-10 rounded-full bg-[#e0f7ff] opacity-0 transition-opacity duration-200 content-[''];
+    @apply pointer-events-none absolute -inset-y-[10px] -inset-x-[18px] -z-10 rounded-full bg-[#e0f7ff] opacity-0 transition-opacity duration-200 content-[''];
   }
 
   .main-nav a:hover,
@@ -3311,7 +3311,7 @@
   }
 
   .main-nav {
-    @apply col-span-full row-start-2 mx-auto max-w-full gap-[15px] overflow-x-auto px-[18px] py-[14px];
+    @apply col-span-full row-start-2 mx-auto max-w-full gap-[15px] overflow-x-auto px-[25px] py-[17px];
     position: static;
     transform: none;
   }
