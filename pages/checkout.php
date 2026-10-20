@@ -11,6 +11,9 @@ $intent = $_SESSION['checkout_intent'] ?? [];
 $message = '';
 $orderNumber = '';
 $paymentMethod = '';
+$orderSubtotal = 0.0;
+$orderTax = 0.0;
+$orderShippingFee = 0.0;
 $checkoutStep = $_SESSION['checkout_step'] ?? 'information';
 $savedShipping = $_SESSION['checkout_shipping'] ?? [];
 $shipping = [
@@ -25,7 +28,10 @@ $shipping = [
 
 if (isset($_GET['order']) && is_string($_GET['order'])) {
     $requestedOrder = $_GET['order'];
-    $statement = $conn->prepare('SELECT order_number, payment_method FROM order_tbl WHERE order_number = ? AND user_id = ? LIMIT 1');
+    $statement = $conn->prepare(
+        'SELECT order_id, order_number, payment_method, currency, shipping_fee, tax
+         FROM order_tbl WHERE order_number = ? AND user_id = ? LIMIT 1'
+    );
     $statement->bind_param('si', $requestedOrder, $userId);
     $statement->execute();
     $completedOrder = $statement->get_result()->fetch_assoc();
@@ -33,6 +39,17 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
     if ($completedOrder) {
         $orderNumber = $completedOrder['order_number'];
         $paymentMethod = (string) ($completedOrder['payment_method'] ?? '');
+        $orderTax = (float) $completedOrder['tax'];
+        $orderShippingFee = (float) $completedOrder['shipping_fee'];
+        $orderId = (int) $completedOrder['order_id'];
+        $subtotalStatement = $conn->prepare(
+            'SELECT COALESCE(SUM(unit_price * quantity), 0) AS subtotal
+             FROM order_items_tbl WHERE order_id = ?'
+        );
+        $subtotalStatement->bind_param('i', $orderId);
+        $subtotalStatement->execute();
+        $orderSubtotal = (float) $subtotalStatement->get_result()->fetch_assoc()['subtotal'];
+        $subtotalStatement->close();
     }
 }
 
@@ -176,12 +193,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                     }
                 }
 
+                $orderTax = store_calculate_sales_tax($items);
                 $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
                 $statement = $conn->prepare(
                     "INSERT INTO order_tbl (user_id, order_number, status, currency, payment_method, shipping_fee, tax)
-                     VALUES (?, ?, 'confirmed', ?, ?, 0, 0) RETURNING order_id"
+                     VALUES (?, ?, 'confirmed', ?, ?, 0, ?) RETURNING order_id"
                 );
-                $statement->bind_param('isss', $userId, $orderNumber, $currency, $paymentMethod);
+                $statement->bind_param('isssd', $userId, $orderNumber, $currency, $paymentMethod, $orderTax);
                 $statement->execute();
                 $createdOrder = $statement->get_result()->fetch_assoc();
                 $orderId = (int) ($createdOrder['order_id'] ?? 0);
@@ -282,7 +300,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                         $receiptItems,
                         $shipping,
                         0.0,
-                        0.0
+                        $orderTax
                     );
                 } catch (Throwable $error) {
                     error_log('HoloVerse order receipt email could not be sent: ' . $error->getMessage());
@@ -329,6 +347,11 @@ if ($orderNumber === '') {
         $statement->close();
     }
 }
+$checkoutSubtotal = 0.0;
+foreach ($items as $item) {
+    $checkoutSubtotal += round((float) $item['price'] * (int) $item['quantity'], 2);
+}
+$checkoutTax = store_calculate_sales_tax($items);
 
 $pageTitle = $orderNumber !== '' ? 'Order Confirmed | HoloVerse' : 'Checkout | HoloVerse';
 $siteRoot = '../';
@@ -355,6 +378,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <span class="checkout-progress-step is-current" aria-current="step">Confirmation</span>
                     </nav>
                     <p>Your order has been confirmed and payment has been collected. Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
+                    <div class="checkout-totals">
+                        <div><span>Subtotal</span><span><?= store_escape(store_format_price($orderSubtotal)) ?></span></div>
+                        <div><span>Tax (12%)</span><span><?= store_escape(store_format_price($orderTax)) ?></span></div>
+                        <div><span>Shipping fee</span><span><?= store_escape(store_format_price($orderShippingFee)) ?></span></div>
+                        <div class="checkout-total"><strong>Total</strong><strong><?= store_escape(store_format_price($orderSubtotal + $orderTax + $orderShippingFee)) ?></strong></div>
+                    </div>
                     <?php if ($paymentMethod !== ''): ?>
                         <p>Payment method: <strong><?= store_escape(match ($paymentMethod) {
                             'card' => 'Card',
@@ -459,10 +488,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </svg>
                             Order summary
                         </h2>
-                        <?php $checkoutTotal = 0.0; ?>
                         <div class="checkout-items">
                             <?php foreach ($items as $item): ?>
-                                <?php $lineTotal = (float) $item['price'] * (int) $item['quantity']; $checkoutTotal += $lineTotal; ?>
+                                <?php $lineTotal = round((float) $item['price'] * (int) $item['quantity'], 2); ?>
                                 <article class="checkout-item">
                                     <div class="checkout-item-image">
                                         <?php if (!empty($item['image_url'])): ?>
@@ -490,9 +518,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php endforeach; ?>
                         </div>
                         <div class="checkout-totals">
-                            <div><span>Subtotal</span><span><?= store_escape(store_format_price($checkoutTotal)) ?></span></div>
+                            <div><span>Subtotal</span><span><?= store_escape(store_format_price($checkoutSubtotal)) ?></span></div>
+                            <div><span>Tax (12%)</span><span><?= store_escape(store_format_price($checkoutTax)) ?></span></div>
                             <div><span>Shipping fee</span><span>Free</span></div>
-                            <div class="checkout-total"><strong>Total</strong><strong><?= store_escape(store_format_price($checkoutTotal)) ?></strong></div>
+                            <div class="checkout-total"><strong>Total</strong><strong><?= store_escape(store_format_price($checkoutSubtotal + $checkoutTax)) ?></strong></div>
                         </div>
                         <p>Shipping is free. Payment is not collected by this checkout.</p>
                     </aside>

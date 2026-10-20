@@ -129,10 +129,15 @@ $statement->execute();
 $cartItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
 $statement->close();
 $subtotals = [];
+$taxes = [];
+$quantitiesByCurrency = [];
 $totalQuantity = 0;
 foreach ($cartItems as $item) {
-    $currency = $item['currency'];
-    $subtotals[$currency] = ($subtotals[$currency] ?? 0) + (float) $item['price'] * (int) $item['quantity'];
+    $currency = (string) $item['currency'];
+    $lineSubtotal = round((float) $item['price'] * (int) $item['quantity'], 2);
+    $subtotals[$currency] = ($subtotals[$currency] ?? 0) + $lineSubtotal;
+    $taxes[$currency] = ($taxes[$currency] ?? 0) + store_calculate_sales_tax([$item]);
+    $quantitiesByCurrency[$currency] = ($quantitiesByCurrency[$currency] ?? 0) + (int) $item['quantity'];
     $totalQuantity += (int) $item['quantity'];
 }
 
@@ -231,8 +236,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <div class="cart-summary-list">
                             <?php foreach ($subtotals as $currency => $subtotal): ?>
                                 <div class="cart-summary-row">
-                                    <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ') (3 items)' : 'Subtotal (' . $totalQuantity . ' items)' ?></span>
+                                    <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ') (' . $quantitiesByCurrency[$currency] . ' items)' : 'Subtotal (' . $totalQuantity . ' items)' ?></span>
                                     <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
+                                </div>
+                                <div class="cart-summary-row">
+                                    <span>Tax (12%)</span>
+                                    <strong><?= store_escape(store_format_price($taxes[$currency])) ?></strong>
                                 </div>
                             <?php endforeach; ?>
                             <div class="cart-summary-row">
@@ -243,7 +252,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php foreach ($subtotals as $currency => $subtotal): ?>
                             <div class="cart-summary-total">
                                 <span>Total</span>
-                                <strong><?= store_escape(store_format_price($subtotal)) ?></strong>
+                                <strong><?= store_escape(store_format_price($subtotal + $taxes[$currency])) ?></strong>
                             </div>
                         <?php endforeach; ?>
                         <form action="cart.php" method="post">
