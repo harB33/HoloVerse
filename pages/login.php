@@ -1,11 +1,21 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$isRegistration = ($_GET['mode'] ?? '') === 'register' || ($_POST['mode'] ?? '') === 'register';
+$requestMode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$requestMode = is_string($requestMode) ? $requestMode : '';
+$isRegistration = $requestMode === 'register';
+$isPasswordResetRequest = $requestMode === 'forgot_password';
+$isPasswordReset = $requestMode === 'reset_password';
 $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
 $message = '';
+$notice = is_string($_SESSION['auth_notice'] ?? null) ? $_SESSION['auth_notice'] : '';
+unset($_SESSION['auth_notice']);
 $registrationName = '';
 $registrationEmail = '';
+$resetRequestEmail = '';
+$resetEmail = is_string($_SESSION['password_reset_email'] ?? null)
+    ? $_SESSION['password_reset_email']
+    : '';
 
 function login_password_is_strong(string $password): bool
 {
@@ -27,6 +37,146 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     if (!store_verify_csrf()) {
         http_response_code(403);
         $message = 'Your session expired. Refresh the page and try again.';
+    } elseif ($isPasswordResetRequest) {
+        $emailInput = $_POST['email'] ?? '';
+        $email = is_string($emailInput) ? strtolower(trim($emailInput)) : '';
+        $resetRequestEmail = $email;
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
+            $message = 'Enter a valid email address.';
+        } else {
+            $userStatement = $conn->prepare('SELECT user_id FROM user_tbl WHERE LOWER(email) = LOWER(?) LIMIT 1');
+            $userStatement->bind_param('s', $email);
+            $userStatement->execute();
+            $user = $userStatement->get_result()->fetch_assoc();
+            $userStatement->close();
+            $resetUserId = $user ? (int) $user['user_id'] : null;
+
+            $emailHash = hash('sha256', $email);
+            $conn->query(
+                "DELETE FROM password_reset_codes
+                 WHERE requested_at < CURRENT_TIMESTAMP - INTERVAL '1 day'"
+            );
+            $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $otpHash = password_hash($otp, PASSWORD_DEFAULT);
+            $expiresAt = (new DateTimeImmutable('+10 minutes', new DateTimeZone('UTC')))->format('Y-m-d H:i:sP');
+            $resetStatement = $conn->prepare(
+                "INSERT INTO password_reset_codes (email_hash, user_id, otp_hash, expires_at)
+                 VALUES (?, ?, ?, ?)
+                 ON CONFLICT (email_hash) DO UPDATE
+                 SET user_id = EXCLUDED.user_id,
+                     otp_hash = EXCLUDED.otp_hash,
+                     requested_at = CURRENT_TIMESTAMP,
+                     expires_at = EXCLUDED.expires_at,
+                     attempt_count = 0,
+                     used_at = NULL
+                 WHERE password_reset_codes.requested_at <= CURRENT_TIMESTAMP - INTERVAL '1 minute'
+                 RETURNING email_hash"
+            );
+            $resetStatement->bind_param('siss', $emailHash, $resetUserId, $otpHash, $expiresAt);
+            $resetStatement->execute();
+            $codeIssued = $resetStatement->get_result()->fetch_assoc() !== null;
+            $resetStatement->close();
+
+            if ($codeIssued && $resetUserId !== null) {
+                try {
+                    require_once __DIR__ . '/../phpmailer.php';
+                    sendPasswordResetOtp($email, $otp);
+                } catch (Throwable $error) {
+                    error_log('HoloVerse password reset email could not be sent: ' . $error->getMessage());
+                    $deleteFailedCode = $conn->prepare(
+                        'DELETE FROM password_reset_codes WHERE email_hash = ? AND otp_hash = ? AND used_at IS NULL'
+                    );
+                    $deleteFailedCode->bind_param('ss', $emailHash, $otpHash);
+                    $deleteFailedCode->execute();
+                    $deleteFailedCode->close();
+                }
+            }
+
+            $_SESSION['password_reset_email'] = $email;
+            $_SESSION['auth_notice'] = 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
+            header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+            exit;
+        }
+    } elseif ($isPasswordReset) {
+        $otpInput = $_POST['otp'] ?? '';
+        $passwordInput = $_POST['password'] ?? '';
+        $confirmationInput = $_POST['password_confirmation'] ?? '';
+        $otp = is_string($otpInput) ? trim($otpInput) : '';
+        $password = is_string($passwordInput) ? $passwordInput : '';
+        $passwordConfirmation = is_string($confirmationInput) ? $confirmationInput : '';
+
+        if ($resetEmail === '') {
+            $message = 'Start a new password reset request to receive a code.';
+            $isPasswordResetRequest = true;
+            $isPasswordReset = false;
+        } elseif (preg_match('/^\d{6}$/', $otp) !== 1) {
+            $message = 'Enter the six-digit code from your email.';
+        } elseif (!login_password_is_strong($password)) {
+            $message = 'Choose a strong password: at least 12 characters and at least 3 of these: lowercase, uppercase, number, and symbol.';
+        } elseif ($password !== $passwordConfirmation) {
+            $message = 'The password confirmation does not match.';
+        } else {
+            $emailHash = hash('sha256', strtolower(trim($resetEmail)));
+            $conn->begin_transaction();
+            try {
+                $resetStatement = $conn->prepare(
+                    'SELECT user_id, otp_hash, attempt_count, used_at, expires_at > CURRENT_TIMESTAMP AS is_unexpired
+                     FROM password_reset_codes
+                     WHERE email_hash = ?
+                     FOR UPDATE'
+                );
+                $resetStatement->bind_param('s', $emailHash);
+                $resetStatement->execute();
+                $reset = $resetStatement->get_result()->fetch_assoc();
+                $resetStatement->close();
+
+                $isUnexpired = in_array($reset['is_unexpired'] ?? false, [true, 't', 1, '1'], true);
+                if (
+                    !$reset
+                    || $reset['user_id'] === null
+                    || $reset['used_at'] !== null
+                    || !$isUnexpired
+                    || (int) $reset['attempt_count'] >= 5
+                ) {
+                    $conn->commit();
+                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                } elseif (!password_verify($otp, $reset['otp_hash'])) {
+                    $attemptStatement = $conn->prepare(
+                        'UPDATE password_reset_codes SET attempt_count = attempt_count + 1 WHERE email_hash = ?'
+                    );
+                    $attemptStatement->bind_param('s', $emailHash);
+                    $attemptStatement->execute();
+                    $attemptStatement->close();
+                    $conn->commit();
+                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                } else {
+                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                    $userId = (int) $reset['user_id'];
+                    $updateUser = $conn->prepare(
+                        'UPDATE user_tbl SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?'
+                    );
+                    $updateUser->bind_param('si', $passwordHash, $userId);
+                    $updateUser->execute();
+                    $updateUser->close();
+
+                    $consumeCode = $conn->prepare(
+                        'UPDATE password_reset_codes SET used_at = CURRENT_TIMESTAMP WHERE email_hash = ?'
+                    );
+                    $consumeCode->bind_param('s', $emailHash);
+                    $consumeCode->execute();
+                    $consumeCode->close();
+                    $conn->commit();
+
+                    unset($_SESSION['password_reset_email']);
+                    $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
+                    header('Location: login.php' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
+                    exit;
+                }
+            } catch (Throwable $error) {
+                $conn->rollback();
+                throw $error;
+            }
+        }
     } else {
         $emailInput = $_POST['email'] ?? '';
         $passwordInput = $_POST['password'] ?? '';
@@ -100,7 +250,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 }
 
-$pageTitle = $isRegistration ? 'Create Account | HoloVerse' : 'Sign In | HoloVerse';
+$pageTitle = $isRegistration
+    ? 'Create Account | HoloVerse'
+    : (($isPasswordResetRequest || $isPasswordReset) ? 'Reset Password | HoloVerse' : 'Sign In | HoloVerse');
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
@@ -109,17 +261,95 @@ require __DIR__ . '/../app/views/layout/head.php';
     <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
     <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-6">
         <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
-            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="Sign in" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
+            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
                 <div class="w-full max-w-md">
                     <div class="brand pointer-events-none mb-6">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
                     </div>
+                    <?php if ($isPasswordResetRequest): ?>
+                        <header class="mb-8">
+                            <h1 class="text-3xl font-bold text-slate-800">Forgot password?</h1>
+                            <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">Enter your account email and we’ll send you a one-time reset code.</p>
+                        </header>
+                        <?php if ($message !== ''): ?>
+                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
+                        <?php endif; ?>
+                        <form action="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="mode" value="forgot_password">
+                            <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                            <div>
+                                <label for="reset-request-email" class="mb-2 block text-sm font-medium text-slate-700">Email</label>
+                                <input id="reset-request-email" type="email" name="email" autocomplete="email" placeholder="Example@email.com" required value="<?= store_escape($resetRequestEmail) ?>"
+                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                            </div>
+                            <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
+                                Send reset code
+                            </button>
+                        </form>
+                        <p class="mt-7 text-center text-sm text-slate-600">
+                            <a class="auth-mode-button" href="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                        </p>
+                    <?php elseif ($isPasswordReset): ?>
+                        <header class="mb-8">
+                            <h1 class="text-3xl font-bold text-slate-800">Reset your password</h1>
+                            <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">
+                                Enter the six-digit code sent to <?= $resetEmail !== '' ? store_escape($resetEmail) : 'your email' ?> and choose a new password.
+                            </p>
+                        </header>
+                        <?php if ($message !== ''): ?>
+                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
+                        <?php endif; ?>
+                        <?php if ($resetEmail !== ''): ?>
+                            <form action="login.php?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                <input type="hidden" name="mode" value="reset_password">
+                                <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                                <div>
+                                    <label for="reset-otp" class="mb-2 block text-sm font-medium text-slate-700">One-time code</label>
+                                    <input id="reset-otp" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required
+                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-[0.3em] text-slate-800 shadow-sm outline-none transition placeholder:tracking-normal placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                </div>
+                                <div>
+                                    <label for="reset-password" class="mb-2 block text-sm font-medium text-slate-700">New password</label>
+                                    <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
+                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                </div>
+                                <div class="password-strength" aria-live="polite">
+                                    <div class="mb-2 flex items-center justify-between text-xs">
+                                        <span id="reset-password-strength-help" class="text-slate-500">Use at least 12 characters and 3 character types.</span>
+                                        <span id="reset-password-strength-label" class="font-semibold text-slate-500">Strength: empty</span>
+                                    </div>
+                                    <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+                                        <div id="reset-password-strength-bar" class="password-strength-bar h-full w-0 rounded-full bg-rose-500 transition-all duration-300"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="reset-password-confirmation" class="mb-2 block text-sm font-medium text-slate-700">Confirm password</label>
+                                    <input id="reset-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="72" placeholder="Re-enter your password" required aria-describedby="reset-password-confirmation-message"
+                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                    <p id="reset-password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
+                                </div>
+                                <button id="reset-password-submit" type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50">
+                                    Reset password
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
+                        <?php endif; ?>
+                        <p class="mt-7 text-center text-sm text-slate-600">
+                            <a class="auth-mode-button" href="login.php?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Request another code</a>
+                        </p>
+                    <?php else: ?>
                     <header class="mb-8">
                         <h1 class="text-3xl font-bold text-slate-800">Welcome back</h1>
                         <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">Sign in to manage your HoloVerse account and saved cart.</p>
                     </header>
 
+                    <?php if ($notice !== ''): ?>
+                        <p class="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status"><?= store_escape($notice) ?></p>
+                    <?php endif; ?>
                     <?php if ($message !== '' && !$isRegistration): ?>
                         <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                     <?php endif; ?>
@@ -138,6 +368,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
                                 class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                         </div>
+                        <p class="-mt-2 text-right text-sm">
+                            <a class="auth-mode-button" href="login.php?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
+                        </p>
                         <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
                             Sign in
                         </button>
@@ -147,6 +380,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         Don’t have an account?
                         <button type="button" class="auth-mode-button" data-show-register>Create account</button>
                     </p>
+                    <?php endif; ?>
                 </div>
             </section>
 
@@ -215,52 +449,77 @@ require __DIR__ . '/../app/views/layout/head.php';
         const loginPanel = document.querySelector(".auth-login-panel");
         const registerPanel = document.querySelector(".auth-register-surface");
         const registerForm = registerPanel.querySelector("form");
-        const passwordInput = document.querySelector("#register-password");
-        const confirmationInput = document.querySelector("#register-password-confirmation");
-        const submitButton = document.querySelector("#register-submit");
-        const strengthMeter = document.querySelector('[role="progressbar"]');
-        const strengthBar = document.querySelector(".password-strength-bar");
-        const strengthLabel = document.querySelector("#password-strength-label");
-        const confirmationMessage = document.querySelector("#password-confirmation-message");
-        const updatePasswordFeedback = () => {
-            const password = passwordInput.value;
-            const passwordLength = new TextEncoder().encode(password).length;
-            const checks = [
-                passwordLength >= 12 && passwordLength <= 72,
-                /[a-z]/.test(password),
-                /[A-Z]/.test(password),
-                /[0-9]/.test(password),
-                /[^a-zA-Z0-9]/.test(password),
-            ];
-            const score = checks.filter(Boolean).length;
-            const isStrong = checks[0] && score >= 4;
-            const strength = password.length === 0 ? "empty" : isStrong ? "strong" : score >= 3 ? "medium" : "weak";
-            const widths = { empty: 0, weak: 25, medium: 55, strong: 100 };
-            const colors = { empty: "bg-slate-300", weak: "bg-rose-500", medium: "bg-amber-500", strong: "bg-emerald-500" };
+        const passwordInput = registerPanel.querySelector("#register-password");
+        const confirmationInput = registerPanel.querySelector("#register-password-confirmation");
+        const submitButton = registerPanel.querySelector("#register-submit");
+        const strengthMeter = registerPanel.querySelector('[role="progressbar"]');
+        const strengthBar = registerPanel.querySelector(".password-strength-bar");
+        const strengthLabel = registerPanel.querySelector("#password-strength-label");
+        const confirmationMessage = registerPanel.querySelector("#password-confirmation-message");
+        const setupPasswordFeedback = (passwordInput, confirmationInput, submitButton, strengthMeter, strengthBar, strengthLabel, confirmationMessage) => {
+            if (!passwordInput || !confirmationInput || !submitButton || !strengthMeter || !strengthBar || !strengthLabel || !confirmationMessage) {
+                return;
+            }
 
-            strengthBar.style.width = `${widths[strength]}%`;
-            strengthBar.className = `password-strength-bar h-full rounded-full transition-all duration-300 ${colors[strength]}`;
-            strengthMeter.setAttribute("aria-valuenow", String(score));
-            strengthLabel.textContent = `Strength: ${strength}`;
-            strengthLabel.className = `font-semibold ${strength === "strong" ? "text-emerald-700" : strength === "medium" ? "text-amber-700" : strength === "empty" ? "text-slate-500" : "text-rose-700"}`;
+            const updatePasswordFeedback = () => {
+                const password = passwordInput.value;
+                const passwordLength = new TextEncoder().encode(password).length;
+                const checks = [
+                    passwordLength >= 12 && passwordLength <= 72,
+                    /[a-z]/.test(password),
+                    /[A-Z]/.test(password),
+                    /[0-9]/.test(password),
+                    /[^a-zA-Z0-9]/.test(password),
+                ];
+                const score = checks.filter(Boolean).length;
+                const isStrong = checks[0] && score >= 4;
+                const strength = password.length === 0 ? "empty" : isStrong ? "strong" : score >= 3 ? "medium" : "weak";
+                const widths = { empty: 0, weak: 25, medium: 55, strong: 100 };
+                const colors = { empty: "bg-slate-300", weak: "bg-rose-500", medium: "bg-amber-500", strong: "bg-emerald-500" };
 
-            const passwordsMatch = confirmationInput.value !== "" && password === confirmationInput.value;
-            confirmationMessage.textContent = confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "";
-            confirmationInput.setCustomValidity(confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "");
-            submitButton.disabled = !isStrong || !passwordsMatch;
+                strengthBar.style.width = `${widths[strength]}%`;
+                strengthBar.className = `password-strength-bar h-full rounded-full transition-all duration-300 ${colors[strength]}`;
+                strengthMeter.setAttribute("aria-valuenow", String(score));
+                strengthLabel.textContent = `Strength: ${strength}`;
+                strengthLabel.className = `font-semibold ${strength === "strong" ? "text-emerald-700" : strength === "medium" ? "text-amber-700" : strength === "empty" ? "text-slate-500" : "text-rose-700"}`;
+
+                const passwordsMatch = confirmationInput.value !== "" && password === confirmationInput.value;
+                confirmationMessage.textContent = confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "";
+                confirmationInput.setCustomValidity(confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "");
+                submitButton.disabled = !isStrong || !passwordsMatch;
+            };
+
+            passwordInput.addEventListener("input", updatePasswordFeedback);
+            confirmationInput.addEventListener("input", updatePasswordFeedback);
+            updatePasswordFeedback();
+
+            passwordInput.form?.addEventListener("submit", (event) => {
+                updatePasswordFeedback();
+                if (submitButton.disabled) {
+                    event.preventDefault();
+                    passwordInput.form.reportValidity();
+                }
+            });
         };
 
-        passwordInput.addEventListener("input", updatePasswordFeedback);
-        confirmationInput.addEventListener("input", updatePasswordFeedback);
-        updatePasswordFeedback();
-
-        registerForm.addEventListener("submit", (event) => {
-            updatePasswordFeedback();
-            if (submitButton.disabled) {
-                event.preventDefault();
-                registerForm.reportValidity();
-            }
-        });
+        setupPasswordFeedback(
+            passwordInput,
+            confirmationInput,
+            submitButton,
+            strengthMeter,
+            strengthBar,
+            strengthLabel,
+            confirmationMessage
+        );
+        setupPasswordFeedback(
+            loginPanel.querySelector("#reset-password"),
+            loginPanel.querySelector("#reset-password-confirmation"),
+            loginPanel.querySelector("#reset-password-submit"),
+            loginPanel.querySelector("#reset-password")?.closest("form")?.querySelector('[role="progressbar"]'),
+            loginPanel.querySelector("#reset-password-strength-bar"),
+            loginPanel.querySelector("#reset-password-strength-label"),
+            loginPanel.querySelector("#reset-password-confirmation-message")
+        );
 
         const setAuthMode = (showRegister) => {
             authShell.classList.toggle("is-register", showRegister);
