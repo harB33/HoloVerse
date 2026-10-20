@@ -9,7 +9,7 @@ $categoryParameter = $_GET['category'] ?? '';
 $selectedCategory = is_string($categoryParameter)
     ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
     : false;
-$selectedCategory = $selectedCategory === false ? 0 : $selectedCategory;
+$selectedCategory = $selectedCategory === false ? 0 : (int) $selectedCategory;
 $talent = null;
 
 if ($selectedTalent !== '') {
@@ -39,7 +39,7 @@ if ($talent) {
     if (!in_array($selectedCategory, $categoryIds, true)) {
         $selectedCategory = 0;
     }
-
+    $availableStock = store_available_stock_sql();
     $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT collection_products.*
@@ -133,21 +133,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $catalogSearchShowClear = false;
                         require __DIR__ . '/../app/views/components/catalog-search.php';
                         ?>
-                        <h2 id="talent-merch-category-title">Filter by category</h2>
-                        <nav class="talent-merch-category-list" aria-labelledby="talent-merch-category-title">
+                        <h2 class="talent-merch-category-title" id="talent-merch-category-title">Filter by category</h2>
+                        <nav aria-labelledby="talent-merch-category-title">
                             <?php
-                            $categoryFilterQuery = ['talent' => $selectedTalent];
-                            if ($productSearch !== '') {
-                                $categoryFilterQuery['search'] = $productSearch;
-                            }
+                            $categoryFilterQuery = array_filter([
+                                'talent' => $selectedTalent,
+                                'search' => $productSearch,
+                            ], static fn (string $value): bool => $value !== '');
                             ?>
                             <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
                             <?php foreach ($categories as $category): ?>
                                 <?php
-                                $categoryFilterQuery['category'] = (int) $category['category_id'];
+                                $categoryHref = 'talent-merch.php?' . http_build_query($categoryFilterQuery + [
+                                    'category' => (int) $category['category_id'],
+                                ]);
                                 $categoryId = (int) $category['category_id'];
                                 ?>
-                                <a class="generation-filter-option<?= $selectedCategory === $categoryId ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === $categoryId ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
+                                <a class="generation-filter-option<?= $selectedCategory === $categoryId ? ' is-active' : '' ?>" href="<?= store_escape($categoryHref) ?>"<?= $selectedCategory === $categoryId ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
                             <?php endforeach; ?>
                         </nav>
                     </aside>
@@ -199,12 +201,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endforeach; ?>
                             </section>
                         <?php else: ?>
-                            <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No merchandise matches your search for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
+                            <p class="all-products-empty" role="status"><?= $productSearch !== '' || $selectedCategory > 0 ? 'No merchandise matches the selected filters for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>
-            <a class="talent-directory-back-link" href="../index.php#explore">Back to the talent directory</a>
+            <a class="talent-directory-back-link" href="talents.php">Back to the talent directory</a>
         </main>
     </div>
 
