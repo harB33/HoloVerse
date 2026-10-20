@@ -50,36 +50,6 @@
     user-select: none;
   }
 
-  html.page-enter main > :not(.watermark) {
-    animation: page-content-enter 1200ms cubic-bezier(0.2, 0.65, 0.3, 1) backwards;
-  }
-
-  html.page-enter main > :nth-child(2):not(.watermark) {
-    animation-delay: 180ms;
-  }
-
-  html.page-enter main > :nth-child(3):not(.watermark) {
-    animation-delay: 360ms;
-  }
-
-  html.page-enter main > :nth-child(4):not(.watermark) {
-    animation-delay: 540ms;
-  }
-
-  @keyframes page-content-enter {
-    from {
-      opacity: 0;
-      filter: blur(3px);
-      transform: translateY(18px);
-    }
-
-    to {
-      opacity: 1;
-      filter: blur(0);
-      transform: translateY(0);
-    }
-  }
-
   input,
   textarea,
   select,
@@ -190,7 +160,7 @@
   }
 
   .main-nav {
-    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[23px] py-[15px] shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
+    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[26px] py-3 shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
   }
 
   .main-nav a {
@@ -198,7 +168,7 @@
   }
 
   .main-nav a::before {
-    @apply pointer-events-none absolute -inset-y-[10px] -inset-x-[18px] -z-10 rounded-full bg-[#e0f7ff] opacity-0 transition-opacity duration-200 content-[''];
+    @apply pointer-events-none absolute -inset-y-[7px] -inset-x-3 -z-10 rounded-full bg-[#e0f7ff] opacity-0 transition-opacity duration-200 content-[''];
   }
 
   .main-nav a:hover,
@@ -1293,94 +1263,6 @@
     @apply min-w-0;
   }
 
-  .products-loading-skeleton {
-    display: none;
-  }
-
-  .products-catalog-results.is-loading > :not(.products-loading-skeleton) {
-    display: none;
-  }
-
-  .products-catalog-results.is-loading .products-loading-skeleton {
-    display: grid;
-  }
-
-  .products-skeleton-block,
-  .drop-product-image.is-loading {
-    background: linear-gradient(90deg, #e5edf3 25%, #f5f8fa 50%, #e5edf3 75%);
-    background-size: 200% 100%;
-    animation: products-skeleton-shimmer 1.4s ease-in-out infinite;
-  }
-
-  .products-skeleton-card {
-    overflow: hidden;
-  }
-
-  .products-skeleton-card .products-skeleton-block {
-    display: block;
-    border-radius: 5px;
-  }
-
-  .products-skeleton-card .drop-art {
-    border-radius: 10px;
-  }
-
-  .products-skeleton-category {
-    width: 35%;
-    height: 10px;
-    margin-bottom: 9px;
-  }
-
-  .products-skeleton-title {
-    width: 82%;
-    height: 17px;
-    margin-bottom: 14px;
-  }
-
-  .products-skeleton-description {
-    width: 100%;
-    height: 11px;
-    margin-bottom: 6px;
-  }
-
-  .products-skeleton-description-short {
-    width: 68%;
-    margin-bottom: 12px;
-  }
-
-  .products-skeleton-price {
-    width: 40%;
-    height: 18px;
-    margin-bottom: 14px;
-  }
-
-  .products-skeleton-button {
-    width: 100%;
-    height: 34px;
-  }
-
-  .drop-product-image.is-loading {
-    background-color: var(--drop-art-bg);
-    opacity: 0;
-  }
-
-  @keyframes products-skeleton-shimmer {
-    to {
-      background-position: -200% 0;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .products-skeleton-block,
-    .drop-product-image.is-loading {
-      animation: none;
-    }
-
-    .drop-product-image {
-      transition: none;
-    }
-  }
-
   .all-products-grid .drop-card {
     --drop-accent: #05a9cf;
     --drop-ink: #075879;
@@ -1531,7 +1413,6 @@
 
   .drop-product-image {
     @apply absolute inset-0 z-[1] size-full object-contain p-10;
-    transition: opacity 220ms ease;
   }
 
   .drop-product-image-backdrop {
@@ -3415,10 +3296,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.page-enter main > :not(.watermark) {
-    animation: none;
-  }
-
   .watermark-ring {
     animation: none;
   }
@@ -3434,7 +3311,7 @@
   }
 
   .main-nav {
-    @apply col-span-full row-start-2 mx-auto max-w-full gap-[15px] overflow-x-auto px-[25px] py-[17px];
+    @apply col-span-full row-start-2 mx-auto max-w-full gap-[15px] overflow-x-auto px-[18px] py-[14px];
     position: static;
     transform: none;
   }
