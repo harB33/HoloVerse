@@ -5,6 +5,11 @@ $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$categoryParameter = $_GET['category'] ?? '';
+$selectedCategory = is_string($categoryParameter)
+    ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : false;
+$selectedCategory = $selectedCategory === false ? 0 : $selectedCategory;
 $talent = null;
 
 if ($selectedTalent !== '') {
@@ -20,8 +25,21 @@ if (!$talent) {
 }
 
 $products = [];
+$categories = [];
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
+    $categoryStatement = $conn->prepare(
+        'SELECT category_id, category_name FROM category_tbl ORDER BY category_name'
+    );
+    $categoryStatement->execute();
+    $categories = $categoryStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+    $categoryStatement->close();
+
+    $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+    if (!in_array($selectedCategory, $categoryIds, true)) {
+        $selectedCategory = 0;
+    }
+
     $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT collection_products.*
@@ -46,12 +64,22 @@ if ($talent) {
                    FROM product_talents_tbl pt
                    WHERE pt.product_id = p.product_id AND pt.talent_id = ?
                )
+               AND (? = 0 OR p.category_id = ?)
              ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
          ) AS collection_products
          ORDER BY (collection_products.stock_quantity > 0) DESC, collection_products.product_id DESC"
     );
     $searchPattern = '%' . $productSearch . '%';
-    $statement->bind_param('ssssi', $searchPattern, $searchPattern, $searchPattern, $searchPattern, $talentId);
+    $statement->bind_param(
+        'ssssiii',
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $talentId,
+        $selectedCategory,
+        $selectedCategory
+    );
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
@@ -99,9 +127,29 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $catalogSearchPlaceholder = 'Search this collection';
                         $catalogSearchValue = $productSearch;
                         $catalogSearchHiddenFields = ['talent' => $selectedTalent];
+                        if ($selectedCategory > 0) {
+                            $catalogSearchHiddenFields['category'] = $selectedCategory;
+                        }
                         $catalogSearchShowClear = false;
                         require __DIR__ . '/../app/views/components/catalog-search.php';
                         ?>
+                        <h2 id="talent-merch-category-title">Filter by category</h2>
+                        <nav class="talent-merch-category-list" aria-labelledby="talent-merch-category-title">
+                            <?php
+                            $categoryFilterQuery = ['talent' => $selectedTalent];
+                            if ($productSearch !== '') {
+                                $categoryFilterQuery['search'] = $productSearch;
+                            }
+                            ?>
+                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
+                            <?php foreach ($categories as $category): ?>
+                                <?php
+                                $categoryFilterQuery['category'] = (int) $category['category_id'];
+                                $categoryId = (int) $category['category_id'];
+                                ?>
+                                <a class="generation-filter-option<?= $selectedCategory === $categoryId ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === $categoryId ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
+                            <?php endforeach; ?>
+                        </nav>
                     </aside>
                     <div class="products-catalog-results">
                         <?php if ($products): ?>
