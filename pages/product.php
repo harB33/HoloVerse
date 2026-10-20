@@ -243,6 +243,18 @@ require __DIR__ . '/../app/views/layout/head.php';
             text-transform: uppercase;
         }
 
+        .product-preorder-badge {
+            display: inline-flex;
+            margin: 0 0 12px;
+            border-radius: 999px;
+            background: #e7f7fc;
+            padding: 6px 11px;
+            color: #087fa8;
+            font: 700 10px/1.2 "Montserrat", sans-serif;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
         .product-info-heading h1 {
             margin: 0;
             color: #111820;
@@ -479,6 +491,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <div class="product-info">
                         <div class="product-info-heading">
                             <span class="product-info-category"><?= store_escape($product['category_name']) ?></span>
+                            <?php if ((int) $product['is_preorder'] === 1): ?>
+                                <span class="product-preorder-badge">Pre-order</span>
+                            <?php endif; ?>
                             <h1 id="product-title"><?= store_escape($product['product_name']) ?></h1>
                         </div>
 
@@ -543,12 +558,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <input type="number" name="quantity" value="1" min="1" max="<?= max(1, (int) $defaultVariant['stock_quantity']) ?>" inputmode="numeric" aria-label="Quantity" data-quantity-input>
                                     <button type="button" data-quantity-change="1" aria-label="Increase quantity">+</button>
                                 </div>
-                                <button class="product-add-button" type="submit" <?= (int) $defaultVariant['stock_quantity'] < 1 ? 'disabled' : '' ?> data-add-button>
+                                <button class="product-add-button" type="submit" <?= (int) $defaultVariant['stock_quantity'] < 1 ? 'disabled' : '' ?> data-add-button data-in-stock-label="<?= (int) $product['is_preorder'] === 1 ? 'Add pre-order' : 'Add to cart' ?>">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <path d="m2 2 2 2 2.4 11.5a2 2 0 0 0 2 1.5h8.8a2 2 0 0 0 2-1.6L21 8H6" />
                                         <circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" />
                                     </svg>
-                                    <?= (int) $defaultVariant['stock_quantity'] > 0 ? 'Add to cart' : 'Sold out' ?>
+                                    <?= (int) $defaultVariant['stock_quantity'] > 0 ? ((int) $product['is_preorder'] === 1 ? 'Add pre-order' : 'Add to cart') : 'Sold out' ?>
                                 </button>
                             </div>
                         </form>
@@ -664,7 +679,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     quantityInput.max = String(Math.max(1, stock));
                     quantityInput.value = String(Math.min(Math.max(1, Number(quantityInput.value) || 1), Math.max(1, stock)));
                     addButton.disabled = stock < 1;
-                    addButton.lastChild.textContent = stock > 0 ? ' Add to cart' : ' Sold out';
+                    addButton.lastChild.textContent = stock > 0 ? ` ${addButton.dataset.inStockLabel}` : ' Sold out';
                     document.querySelectorAll('[data-variant-option]').forEach((item) => {
                         const selected = item === option;
                         item.classList.toggle('is-selected', selected);

@@ -268,7 +268,8 @@ if ($orderNumber === '') {
     store_clear_expired_cart_items($conn, $cartId);
     if ($cartId > 0) {
         $statement = $conn->prepare(
-            "SELECT p.product_name, v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity,
+            "SELECT p.product_name, p.is_preorder, p.expected_ship_date,
+                    v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity,
                     EXTRACT(EPOCH FROM ci.hold_expires_at)::bigint AS hold_expires_at_epoch,
                     i.image_url, i.alt_text
              FROM cart_items_tbl ci
@@ -428,6 +429,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             <strong><?= store_escape(store_format_price($lineTotal)) ?></strong>
                                         </div>
                                         <span><?= store_escape($item['variant_name']) ?></span>
+                                        <?php if ((int) $item['is_preorder'] === 1): ?>
+                                            <span class="preorder-checkout-note">
+                                                Pre-order<?= !empty($item['expected_ship_date']) ? ' · Estimated dispatch: ' . store_escape(date('F Y', strtotime($item['expected_ship_date']))) : ' · Estimated dispatch date to be announced' ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <?php if ($item['hold_expires_at_epoch'] !== null): ?>
                                             <span class="cart-hold-timer" data-hold-expiry="<?= (int) $item['hold_expires_at_epoch'] ?>">
                                                 Flash-sale reservation expires in <time><?= gmdate('i:s', STORE_CART_HOLD_SECONDS) ?></time>

@@ -62,6 +62,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <h1 id="all-products-title">Shop all products</h1>
                 <p>Browse the full collection of available talent merchandise.</p>
                 <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
+                <nav class="products-promo-links" aria-label="Shop product collections">
+                    <a href="flash_sale.php">Flash Sale</a>
+                    <a href="pre_order.php">Pre-order</a>
+                </nav>
             </section>
 
             <div class="products-catalog-layout">

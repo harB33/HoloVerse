@@ -106,7 +106,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 
 $statement = $conn->prepare(
-    'SELECT ci.cart_item_id, ci.quantity, p.product_name, v.variant_name, v.price, v.currency,
+    'SELECT ci.cart_item_id, ci.quantity, p.product_name, p.is_preorder, p.expected_ship_date,
+            v.variant_name, v.price, v.currency,
             GREATEST(v.stock_quantity - COALESCE((
                 SELECT SUM(other.quantity)
                 FROM cart_items_tbl other
@@ -184,6 +185,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             <strong class="cart-item-price"><?= store_escape(store_format_price((float) $item['price'] * (int) $item['quantity'])) ?></strong>
                                         </div>
                                         <p><span>Variant:</span> <?= store_escape($item['variant_name']) ?></p>
+                                        <?php if ((int) $item['is_preorder'] === 1): ?>
+                                            <p class="preorder-cart-note">
+                                                Pre-order<?= !empty($item['expected_ship_date']) ? ' · Estimated dispatch: ' . store_escape(date('F Y', strtotime($item['expected_ship_date']))) : ' · Estimated dispatch date to be announced' ?>
+                                            </p>
+                                        <?php endif; ?>
                                         <?php if ($item['hold_expires_at_epoch'] !== null): ?>
                                             <p class="cart-hold-timer" data-hold-expiry="<?= (int) $item['hold_expires_at_epoch'] ?>">
                                                 Flash-sale item reserved for <time><?= gmdate('i:s', STORE_CART_HOLD_SECONDS) ?></time>
