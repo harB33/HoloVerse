@@ -87,8 +87,10 @@ require __DIR__ . '/app/views/layout/head.php';
                     <article class="drop-card">
                         <a class="drop-card-link" href="pages/product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                         <div class="drop-art">
-                            <div class="drop-art-labels">
-                                <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Available now' : 'Sold out' ?></span>
+                            <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
+                                <?php if ((int) $product['stock_quantity'] <= 0): ?>
+                                    <span class="drop-status">Sold out</span>
+                                <?php endif; ?>
                                 <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                             </div>
                             <?php if (!empty($product['image_url'])): ?>

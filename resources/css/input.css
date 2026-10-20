@@ -1248,8 +1248,12 @@
 
   .all-products-grid .drop-art-labels {
     display: grid;
-    grid-template-columns: 42% minmax(0, 1fr);
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 4px;
+  }
+
+  .all-products-grid .drop-art-labels-no-status {
+    grid-template-columns: 42% minmax(0, 1fr);
   }
 
   .all-products-grid .drop-status,
@@ -1365,6 +1369,18 @@
 
   .drop-art-labels {
     @apply absolute left-2 right-2 top-2 z-10 flex items-center justify-between;
+  }
+
+  .drop-art-labels-no-status {
+    display: grid;
+    grid-template-columns: 42% minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .drop-art-labels-no-status .drop-edition {
+    grid-column: 1;
+    width: 100%;
+    max-width: none;
   }
 
   .drop-product-image {
