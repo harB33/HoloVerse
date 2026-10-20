@@ -8,7 +8,7 @@ $siteRoot = $siteRoot ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php if (!empty($showPageLoader)): ?>
+    <?php if (!isset($showPageLoader) || $showPageLoader): ?>
     <style>
         html::before,
         html::after {
