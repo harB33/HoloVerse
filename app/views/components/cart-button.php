@@ -7,6 +7,19 @@
         <circle cx="8" cy="20" r="2" />
     </svg>
 </a>
+<div class="cart-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="m8 12 2.5 2.5L16 9" />
+    </svg>
+    <span>Added to cart.</span>
+    <button type="button" aria-label="Dismiss notification">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m18 6-12 12" />
+            <path d="m6 6 12 12" />
+        </svg>
+    </button>
+</div>
 
 <style>
     .cart-fab {
@@ -58,6 +71,66 @@
         width: 24px;
         height: 24px;
     }
+
+    .cart-toast {
+        position: fixed;
+        right: 92px;
+        bottom: 28px;
+        z-index: 60;
+        display: flex;
+        min-height: 48px;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid #d9f2e2;
+        border-radius: 8px;
+        background: #f3fcf6;
+        color: #40564a;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+        font: 500 14px/1.4 Arial, sans-serif;
+    }
+
+    .cart-toast[hidden] {
+        display: none;
+    }
+
+    .cart-toast > svg {
+        flex: 0 0 auto;
+        color: #35d981;
+    }
+
+    .cart-toast button {
+        display: inline-flex;
+        width: 28px;
+        height: 28px;
+        align-items: center;
+        justify-content: center;
+        margin-left: 4px;
+        padding: 0;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: #647568;
+        cursor: pointer;
+    }
+
+    .cart-toast button:hover {
+        background: #e4f5e9;
+    }
+
+    .cart-toast button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    @media (max-width: 480px) {
+        .cart-toast {
+            right: 88px;
+            bottom: 28px;
+            left: auto;
+            max-width: calc(100vw - 112px);
+        }
+    }
 </style>
 
 <script>
@@ -71,6 +144,26 @@
         if (!badge) {
             return;
         }
+        const cartToast = document.querySelector('.cart-toast');
+        const cartToastCloseButton = cartToast?.querySelector('button');
+        let cartToastTimeout;
+
+        const showCartToast = () => {
+            if (!cartToast) {
+                return;
+            }
+
+            window.clearTimeout(cartToastTimeout);
+            cartToast.hidden = false;
+            cartToastTimeout = window.setTimeout(() => {
+                cartToast.hidden = true;
+            }, 4000);
+        };
+
+        cartToastCloseButton?.addEventListener('click', () => {
+            window.clearTimeout(cartToastTimeout);
+            cartToast.hidden = true;
+        });
 
         const cartBaseUrl = (() => {
             const currentPath = window.location.pathname || '/';
@@ -179,6 +272,7 @@
                     }
 
                     await syncCartBadge();
+                    showCartToast();
                 } catch (error) {
                     console.warn(error.message || 'Unable to add item to cart.', error);
                 } finally {
