@@ -156,14 +156,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
 
                 $currency = (string) $items[0]['currency'];
                 foreach ($items as $item) {
-                    if (
-                        $item['status'] !== 'active'
-                        || (int) $item['quantity'] < 1
-                        || (int) $item['quantity'] > 99
-                        || (int) $item['quantity'] > (int) $item['stock_quantity']
-                        || $item['currency'] !== $currency
-                    ) {
-                        throw new RuntimeException('An item is unavailable or no longer has enough stock. Update your cart and try again.');
+                    $productName = (string) $item['product_name'];
+                    $quantity = (int) $item['quantity'];
+                    $availableQuantity = (int) $item['stock_quantity'];
+                    if ($item['status'] !== 'active') {
+                        throw new RuntimeException("{$productName} is no longer available. Remove it from your cart and try again.");
+                    }
+                    if ($quantity < 1 || $quantity > 99) {
+                        throw new RuntimeException("The quantity for {$productName} is invalid. Update your cart and try again.");
+                    }
+                    if ($quantity > $availableQuantity) {
+                        $availabilityMessage = $availableQuantity > 0
+                            ? "Only {$availableQuantity} of {$productName} remain in stock, but your cart has {$quantity}. Update the quantity in your cart and try again."
+                            : "{$productName} is now out of stock. Remove it from your cart and try again.";
+                        throw new RuntimeException($availabilityMessage);
+                    }
+                    if ($item['currency'] !== $currency) {
+                        throw new RuntimeException('Items in different currencies cannot be placed in one order. Update your cart and try again.');
                     }
                 }
 
@@ -224,7 +233,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                     $stockStatement->bind_param('iii', $quantity, $variantId, $quantity);
                     $stockStatement->execute();
                     if ($stockStatement->affected_rows !== 1) {
-                        throw new RuntimeException('An item is no longer in stock. Update your cart and try again.');
+                        throw new RuntimeException("{$productName} just went out of stock. Update your cart and try again.");
                     }
                 }
                 $statement->close();
@@ -243,6 +252,41 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $conn->commit();
                 unset($_SESSION['checkout_intent']);
                 unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
+                try {
+                    $emailStatement = $conn->prepare('SELECT email FROM user_tbl WHERE user_id = ? LIMIT 1');
+                    $emailStatement->bind_param('i', $userId);
+                    $emailStatement->execute();
+                    $account = $emailStatement->get_result()->fetch_assoc();
+                    $emailStatement->close();
+                    if (!$account || !is_string($account['email'] ?? null)) {
+                        throw new RuntimeException('The order owner email address could not be loaded.');
+                    }
+
+                    $receiptItems = array_map(
+                        static fn (array $item): array => [
+                            'product_name' => (string) $item['product_name'],
+                            'variant_name' => (string) $item['variant_name'],
+                            'sku' => (string) $item['sku'],
+                            'unit_price' => (float) $item['price'],
+                            'quantity' => (int) $item['quantity'],
+                        ],
+                        $items
+                    );
+                    require_once __DIR__ . '/../phpmailer.php';
+                    sendOrderReceipt(
+                        (string) $account['email'],
+                        $orderNumber,
+                        $shipping['recipient_name'],
+                        $paymentMethod,
+                        $currency,
+                        $receiptItems,
+                        $shipping,
+                        0.0,
+                        0.0
+                    );
+                } catch (Throwable $error) {
+                    error_log('HoloVerse order receipt email could not be sent: ' . $error->getMessage());
+                }
                 header('Location: checkout.php?order=' . rawurlencode($orderNumber));
                 exit;
             } catch (Throwable $error) {
