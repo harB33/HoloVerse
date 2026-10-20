@@ -250,6 +250,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 }
 
+$showPageLoader = !isset($_SESSION['login_page_loader_shown']);
+$_SESSION['login_page_loader_shown'] = true;
+
 $pageTitle = $isRegistration
     ? 'Create Account | HoloVerse'
     : (($isPasswordResetRequest || $isPasswordReset) ? 'Reset Password | HoloVerse' : 'Sign In | HoloVerse');
