@@ -133,7 +133,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $catalogSearchShowClear = false;
                         require __DIR__ . '/../app/views/components/catalog-search.php';
                         ?>
-                        <h2 id="talent-merch-category-title">Filter by category</h2>
+                        <h2 class="talent-merch-category-title" id="talent-merch-category-title">Filter by category</h2>
                         <nav aria-labelledby="talent-merch-category-title">
                             <?php
                             $categoryFilterQuery = array_filter([

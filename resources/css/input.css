@@ -1169,6 +1169,10 @@
     @apply size-3.5;
   }
 
+  .talent-merch-filter .talent-merch-category-title {
+    @apply mt-4;
+  }
+
   .flash-sale-search-wrap {
     @apply my-5;
   }
