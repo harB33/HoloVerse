@@ -138,6 +138,8 @@ foreach ($cartItems as $item) {
 
 $pageTitle = 'Your Cart | HoloVerse';
 $siteRoot = '../';
+$showPageLoader = !isset($_SESSION['cart_page_loader_shown']);
+$_SESSION['cart_page_loader_shown'] = true;
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
