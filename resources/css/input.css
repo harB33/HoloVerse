@@ -160,7 +160,7 @@
   }
 
   .main-nav {
-    @apply mt-1 flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[23px] py-[15px] shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
+    @apply flex items-center justify-center justify-self-center gap-[clamp(18px,1.8vw,34px)] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/70 px-[23px] py-[15px] shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md;
   }
 
   .main-nav a {

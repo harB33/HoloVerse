@@ -2083,7 +2083,6 @@
     color: #05a9cf;
   }
   .main-nav {
-    margin-top: var(--spacing);
     display: flex;
     align-items: center;
     justify-content: center;
