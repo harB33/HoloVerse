@@ -58,7 +58,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 <p>Limited-Edition items for all hololive fans.</p>
             </section>
             <div class="hero-symbol">
-                <img src="assets/images/logo.png" alt="hololive logo" fetchpriority="high">
+                <img src="assets/images/logo.svg" alt="hololive logo" fetchpriority="high">
             </div>
         </div>
 

@@ -45,7 +45,7 @@ $headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
     </div>
 <header class="site-header">
     <a class="brand" href="<?= $siteRoot ?>index.php" aria-label="HoloVerse Store home">
-        <img class="brand-logo" src="<?= $siteRoot ?>assets/images/logo.png" alt="">
+        <img class="brand-logo" src="<?= $siteRoot ?>assets/images/logo.svg" alt="">
         <span class="brand-wordmark">holo<span>verse</span></span>
     </a>
 
