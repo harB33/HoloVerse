@@ -109,7 +109,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </nav>
                 </aside>
 
-                <div class="products-catalog-results">
+                <div class="products-catalog-results" aria-busy="false">
+                    <div class="drops-grid all-products-grid products-loading-skeleton" aria-hidden="true">
+                        <?php for ($skeletonIndex = 0; $skeletonIndex < 8; $skeletonIndex++): ?>
+                            <article class="drop-card products-skeleton-card">
+                                <div class="drop-art products-skeleton-block"></div>
+                                <div class="drop-details">
+                                    <span class="products-skeleton-block products-skeleton-category"></span>
+                                    <span class="products-skeleton-block products-skeleton-title"></span>
+                                    <span class="products-skeleton-block products-skeleton-description"></span>
+                                    <span class="products-skeleton-block products-skeleton-description products-skeleton-description-short"></span>
+                                    <hr class="drop-allocation-divider">
+                                    <span class="products-skeleton-block products-skeleton-price"></span>
+                                    <span class="products-skeleton-block products-skeleton-button"></span>
+                                </div>
+                            </article>
+                        <?php endfor; ?>
+                    </div>
             <?php if ($products): ?>
                 <section class="drops-grid all-products-grid" aria-label="All available products">
                     <?php foreach ($products as $product): ?>
@@ -125,7 +141,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </div>
                                 <?php if (!empty($product['image_url'])): ?>
                                     <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                    <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                    <img class="drop-product-image is-loading" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                                 <?php endif; ?>
                                 <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                             </div>
@@ -181,14 +197,51 @@ require __DIR__ . '/../app/views/layout/head.php';
             categoryFilter.requestSubmit();
         });
 
+        const catalogResults = document.querySelector(".products-catalog-results");
+        const startCatalogLoading = () => {
+            catalogResults?.classList.add("is-loading");
+            catalogResults?.setAttribute("aria-busy", "true");
+        };
+
+        window.addEventListener("beforeunload", startCatalogLoading);
+
+        document.querySelectorAll(".catalog-search, .category-filter").forEach((form) => {
+            form.addEventListener("submit", startCatalogLoading);
+        });
+
+        document.querySelectorAll(".generation-filter-option, .all-products-pagination a, .catalog-search a").forEach((link) => {
+            link.addEventListener("click", (event) => {
+                if (
+                    event.defaultPrevented ||
+                    event.button !== 0 ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    (link.target && link.target !== "_self")
+                ) {
+                    return;
+                }
+
+                startCatalogLoading();
+            });
+        });
+
         document.querySelectorAll(".drop-product-image").forEach((image) => {
+            const showLoadedImage = () => image.classList.remove("is-loading");
             const showInitialFallback = () => {
+                showLoadedImage();
                 image.classList.add("hidden");
                 image.nextElementSibling?.classList.remove("hidden");
             };
+            image.addEventListener("load", showLoadedImage, { once: true });
             image.addEventListener("error", showInitialFallback, { once: true });
-            if (image.complete && image.naturalWidth === 0) {
-                showInitialFallback();
+            if (image.complete) {
+                if (image.naturalWidth === 0) {
+                    showInitialFallback();
+                } else {
+                    showLoadedImage();
+                }
             }
         });
     </script>
