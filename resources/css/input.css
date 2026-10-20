@@ -163,13 +163,13 @@
 
   .main-nav a:hover,
   .main-nav a:focus-visible,
-  .main-nav a[aria-current="page"] {
+  .main-nav:not(:hover) a[aria-current="page"] {
     @apply text-[#087ea4];
   }
 
   .main-nav a:hover::before,
   .main-nav a:focus-visible::before,
-  .main-nav a[aria-current="page"]::before {
+  .main-nav:not(:hover) a[aria-current="page"]::before {
     @apply opacity-100;
   }
 
