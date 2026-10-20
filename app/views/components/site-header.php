@@ -50,7 +50,7 @@ $headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
     </a>
 
     <nav class="main-nav" aria-label="Main navigation">
-        <a href="<?= $siteRoot ?>index.php">Home</a>
+        <a href="<?= $siteRoot ?>index.php"<?= $activePage === 'home' ? ' aria-current="page"' : '' ?>>Home</a>
         <a href="<?= $pageUrlPrefix ?>products.php"<?= $activePage === 'products' ? ' aria-current="page"' : '' ?>>Products</a>
         <a href="<?= $pageUrlPrefix ?>talents.php"<?= $activePage === 'talents' ? ' aria-current="page"' : '' ?>>Talent</a>
         <a href="<?= $pageUrlPrefix ?>flash_sale.php"<?= $activePage === 'flash_sale' ? ' aria-current="page"' : '' ?>>Flash Sales</a>

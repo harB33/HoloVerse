@@ -103,7 +103,7 @@
 
   .site-header {
     @apply grid grid-cols-[minmax(0,1fr)_auto_minmax(240px,0.8fr)_auto] items-center gap-5;
-    padding: 10px 20px 8px;
+    padding: 10px 20px 16px;
   }
 
   .site-flash-notice {
@@ -155,24 +155,27 @@
   }
 
   .main-nav a {
-    @apply relative;
-    @apply whitespace-nowrap text-[clamp(12px,0.8vw,18px)] font-bold text-[#111] no-underline;
+    @apply relative isolate whitespace-nowrap text-[clamp(12px,0.8vw,18px)] font-bold text-[#111] no-underline transition-colors duration-200;
   }
 
-  .main-nav a::after {
-    @apply absolute -bottom-1 left-0 h-0.5 w-full origin-center scale-x-0 bg-[#1da3d8] transition-transform duration-200 content-[''];
+  .main-nav a::before {
+    @apply pointer-events-none absolute -inset-y-[7px] -inset-x-3 -z-10 rounded-full bg-[#e0f7ff] opacity-0 transition-opacity duration-200 content-[''];
   }
 
-  .main-nav a:hover::after,
-  .main-nav a:focus-visible::after,
-  .main-nav a[aria-current="page"]::after {
-    @apply scale-x-100;
+  .main-nav a:hover,
+  .main-nav a:focus-visible,
+  .main-nav a[aria-current="page"] {
+    @apply text-[#087ea4];
   }
 
-  .main-nav:has(a:hover) a[aria-current="page"]:not(:hover)::after,
-  .main-nav:has(a:focus-visible)
-    a[aria-current="page"]:not(:focus-visible)::after {
-    @apply scale-x-0;
+  .main-nav a:hover::before,
+  .main-nav a:focus-visible::before,
+  .main-nav a[aria-current="page"]::before {
+    @apply opacity-100;
+  }
+
+  .main-nav a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#1da3d8];
   }
 
   .header-actions {
