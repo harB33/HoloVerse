@@ -10,6 +10,96 @@ $siteRoot = $siteRoot ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php if (!isset($showPageLoader) || $showPageLoader): ?>
     <style>
+        html::before,
+        html::after {
+            position: fixed;
+            content: "";
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 450ms ease, visibility 0s linear 450ms;
+        }
+
+        html::before {
+            z-index: 99998;
+            inset: 0;
+            background-color: #fff;
+            background-image:
+                radial-gradient(circle at center, transparent 0 112px, rgb(28 167 198 / 5%) 113px 114px, transparent 115px 162px, rgb(28 167 198 / 4%) 163px 164px, transparent 165px),
+                repeating-conic-gradient(from 8deg at 50% 50%, transparent 0deg 28deg, rgb(28 167 198 / 2%) 29deg 30deg, transparent 31deg 60deg);
+        }
+
+        html::after {
+            z-index: 99999;
+            top: 50%;
+            left: 50%;
+            width: 360px;
+            height: 125px;
+            background-image: url("<?= htmlspecialchars($siteRoot, ENT_QUOTES, 'UTF-8') ?>assets/images/hololive.png");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 340px auto;
+            transform: translate(-50%, -50%);
+        }
+
+        html.page-loading {
+            overflow: hidden;
+        }
+
+        html.page-loading::before {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+            transition: opacity 450ms ease, visibility 0s;
+        }
+
+        html.page-loading::after {
+            opacity: 1;
+            visibility: visible;
+            animation: page-loader-pulse 1.5s ease-in-out infinite alternate;
+            transition: opacity 450ms ease, visibility 0s;
+        }
+
+        @keyframes page-loader-pulse {
+            from {
+                filter: blur(0);
+                transform: translate(-50%, -50%) scale(.96);
+            }
+
+            to {
+                filter: blur(.35px);
+                transform: translate(-50%, -50%) scale(1.04);
+            }
+        }
+
+        html.page-enter body > :not(.page-loading-skeleton) {
+            animation: page-opening 650ms cubic-bezier(.2, .75, .25, 1) both;
+        }
+
+        @keyframes page-opening {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html::before,
+            html::after {
+                transition: none;
+            }
+
+            html.page-loading::after,
+            html.page-enter body > :not(.page-loading-skeleton) {
+                animation: none;
+            }
+        }
+
         html.page-transition-loading {
             overflow: hidden;
         }
@@ -68,8 +158,16 @@ $siteRoot = $siteRoot ?? '';
     <script>
         (() => {
             const pageRoot = document.documentElement;
+            const minimumVisibleDuration = 1800;
+            const loadingStartedAt = performance.now();
+            let initialLoadingTimeout = null;
+            let navigationStarted = false;
 
             const stopPageLoading = () => {
+                if (initialLoadingTimeout !== null) {
+                    window.clearTimeout(initialLoadingTimeout);
+                    initialLoadingTimeout = null;
+                }
                 pageRoot.classList.remove("page-loading", "page-transition-loading");
                 pageRoot.removeAttribute("aria-busy");
                 document.querySelector(".page-loading-skeleton")?.remove();
@@ -216,9 +314,14 @@ $siteRoot = $siteRoot ?? '';
                 });
 
                 document.body.append(skeleton);
+                navigationStarted = true;
+                pageRoot.classList.remove("page-loading", "page-enter");
                 pageRoot.classList.add("page-transition-loading");
                 pageRoot.setAttribute("aria-busy", "true");
             };
+
+            pageRoot.classList.add("page-loading");
+            pageRoot.setAttribute("aria-busy", "true");
 
             document.addEventListener("click", (event) => {
                 if (!(event.target instanceof Element)) {
@@ -285,7 +388,28 @@ $siteRoot = $siteRoot ?? '';
                 }, 0);
             });
 
-            window.addEventListener("pageshow", stopPageLoading);
+            window.addEventListener("load", () => {
+                const remainingDuration = Math.max(
+                    0,
+                    minimumVisibleDuration - (performance.now() - loadingStartedAt)
+                );
+
+                initialLoadingTimeout = window.setTimeout(() => {
+                    initialLoadingTimeout = null;
+                    pageRoot.classList.remove("page-loading");
+                    if (!navigationStarted) {
+                        pageRoot.classList.add("page-enter");
+                        window.setTimeout(() => pageRoot.classList.remove("page-enter"), 700);
+                        pageRoot.removeAttribute("aria-busy");
+                    }
+                }, remainingDuration);
+            }, { once: true });
+
+            window.addEventListener("pageshow", (event) => {
+                if (event.persisted) {
+                    stopPageLoading();
+                }
+            });
         })();
     </script>
     <?php endif; ?>
