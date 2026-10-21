@@ -1097,6 +1097,7 @@
 
   .catalog-search {
     @apply my-4 flex w-full max-w-[560px] items-center gap-2;
+    position: relative;
   }
 
   .catalog-search input[type="search"] {
@@ -1118,6 +1119,39 @@
 
   .catalog-search a {
     @apply border-[#d6e1ea] bg-white text-[#087fa8] hover:bg-[#f0faff];
+  }
+
+  .catalog-search-suggestions {
+    @apply absolute left-0 right-0 z-50 grid gap-3 rounded-2xl border border-[#dce5ed] bg-white p-3 shadow-[0_12px_32px_rgba(17,24,39,0.16)];
+    top: calc(100% + 8px);
+  }
+
+  .catalog-search-suggestions[hidden] {
+    display: none;
+  }
+
+  .catalog-search-suggestion-group[hidden] {
+    display: none;
+  }
+
+  .catalog-search-suggestion-group {
+    @apply grid gap-2;
+  }
+
+  .catalog-search-suggestions-title {
+    @apply px-1 text-[11px] font-bold uppercase tracking-wide text-[#718096];
+  }
+
+  .catalog-search-suggestion-list {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  .catalog-search-suggestions button {
+    @apply h-auto w-auto shrink-0 whitespace-nowrap rounded-full border border-[#dce5ed] bg-[#f5faff] px-3 py-2 text-left text-[12px] font-semibold text-[#526276] hover:border-[#b8dce8] hover:bg-[#eaf8fc] hover:text-[#087fa8];
+  }
+
+  .catalog-search-suggestions button[hidden] {
+    display: none;
   }
 
   .talent-search-wrap {
@@ -1195,6 +1229,25 @@
     color: #dedee3;
   }
 
+  html[data-theme="dark"] .catalog-search-suggestions {
+    border-color: #3a3b42;
+    background-color: #292a30;
+  }
+
+  html[data-theme="dark"] .catalog-search-suggestions-title {
+    color: #a5a5ad;
+  }
+
+  html[data-theme="dark"] .catalog-search-suggestions button {
+    color: #dedee3;
+  }
+
+  html[data-theme="dark"] .catalog-search-suggestions button:hover,
+  html[data-theme="dark"] .catalog-search-suggestions button:focus-visible {
+    background-color: #363840;
+    color: #67d8f1;
+  }
+
   html[data-theme="dark"] .catalog-search.site-header-search input[type="search"] {
     background-color: rgb(41 42 48 / 45%);
   }
@@ -1208,6 +1261,25 @@
       border-color: #3a3b42;
       background-color: #292a30;
       color: #dedee3;
+    }
+
+    html[data-theme="system"] .catalog-search-suggestions {
+      border-color: #3a3b42;
+      background-color: #292a30;
+    }
+
+    html[data-theme="system"] .catalog-search-suggestions-title {
+      color: #a5a5ad;
+    }
+
+    html[data-theme="system"] .catalog-search-suggestions button {
+      color: #dedee3;
+    }
+
+    html[data-theme="system"] .catalog-search-suggestions button:hover,
+    html[data-theme="system"] .catalog-search-suggestions button:focus-visible {
+      background-color: #363840;
+      color: #67d8f1;
     }
   }
 
@@ -1244,15 +1316,21 @@
   }
 
   .catalog-search.filter-panel-search input[type="search"] {
-    @apply h-9 px-3 py-1.5 text-xs;
+    @apply h-9 rounded-md border-[#cbd5e1] bg-[#f1f5f9] px-3 py-1.5 text-xs shadow-inner focus-visible:border-[#087fa8] focus-visible:bg-white focus-visible:outline-offset-0;
   }
 
-  .catalog-search.filter-panel-search button {
-    @apply size-9 p-1.5;
+  .catalog-search.filter-panel-search button,
+  .catalog-search.talent-merch-filter-search button {
+    @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
   }
 
-  .catalog-search.filter-panel-search button svg {
+  .catalog-search.filter-panel-search button svg,
+  .catalog-search.talent-merch-filter-search button svg {
     @apply size-3.5;
+  }
+
+  .catalog-search.talent-merch-filter-search input[type="search"] {
+    @apply h-9 rounded-md border-[#cbd5e1] bg-[#f1f5f9] px-3 py-1.5 text-xs shadow-inner focus-visible:border-[#087fa8] focus-visible:bg-white focus-visible:outline-offset-0;
   }
 
   .generation-filter-option {
