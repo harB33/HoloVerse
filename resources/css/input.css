@@ -4064,6 +4064,15 @@
   margin-top: 1.25rem;
 }
 
+.otp-error {
+  width: 100%;
+  max-width: 25rem;
+  margin: 0.75rem auto 0;
+  color: #e11d48;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
 .otp-verification > p {
   margin-top: 1rem;
 }

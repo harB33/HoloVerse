@@ -151,7 +151,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     || (int) $reset['attempt_count'] >= 5
                 ) {
                     $conn->commit();
-                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                    $message = 'Invalid or expired code.';
                 } elseif (!password_verify($otp, $reset['otp_hash'])) {
                     $attemptStatement = $conn->prepare(
                         'UPDATE password_reset_codes SET attempt_count = attempt_count + 1 WHERE email_hash = ?'
@@ -160,7 +160,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $attemptStatement->execute();
                     $attemptStatement->close();
                     $conn->commit();
-                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                    $message = 'Invalid or expired code.';
                 } else {
                     $conn->commit();
                     $_SESSION['password_reset_verified'] = [
@@ -221,7 +221,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $conn->commit();
                     unset($_SESSION['password_reset_verified']);
                     $isResetPasswordVerified = false;
-                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                    $message = 'Invalid or expired code.';
                 } else {
                     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                     $userId = (int) $reset['user_id'];
@@ -378,10 +378,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endif; ?>
                             </p>
                         </header>
-                        <?php if ($notice !== ''): ?>
-                            <p class="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status"><?= store_escape($notice) ?></p>
-                        <?php endif; ?>
-                        <?php if ($message !== ''): ?>
+                        <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
                         <?php if ($resetEmail !== ''): ?>
@@ -441,6 +438,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     Verify code
                                 </button>
                             </form>
+                            <?php if ($message !== ''): ?>
+                                <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
+                            <?php endif; ?>
                             <?php endif; ?>
                         <?php else: ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
@@ -571,26 +571,35 @@ require __DIR__ . '/../app/views/layout/head.php';
         const strengthBar = registerPanel.querySelector(".password-strength-bar");
         const strengthLabel = registerPanel.querySelector("#password-strength-label");
         const confirmationMessage = registerPanel.querySelector("#password-confirmation-message");
-        const otpInput = loginPanel.querySelector("#reset-otp");
-        const otpTimer = loginPanel.querySelector("#reset-otp-timer");
-        if (otpTimer) {
-            const expiresAt = Number(otpTimer.dataset.expiresAt);
-            const updateOtpTimer = () => {
-                const remainingSeconds = Math.max(0, expiresAt - Math.floor(Date.now() / 1000));
-                const minutes = Math.floor(remainingSeconds / 60);
-                const seconds = remainingSeconds % 60;
-                otpTimer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-            };
-
-            updateOtpTimer();
-            const otpTimerInterval = window.setInterval(() => {
-                updateOtpTimer();
-                if (expiresAt <= Math.floor(Date.now() / 1000)) {
+        let otpTimerInterval = null;
+        const setupOtpControls = (panel) => {
+            const otpInput = panel.querySelector("#reset-otp");
+            const otpTimer = panel.querySelector("#reset-otp-timer");
+            if (otpTimer) {
+                if (otpTimerInterval !== null) {
                     window.clearInterval(otpTimerInterval);
                 }
-            }, 1000);
-        }
-        if (otpInput) {
+                const expiresAt = Number(otpTimer.dataset.expiresAt);
+                const updateOtpTimer = () => {
+                    const remainingSeconds = Math.max(0, expiresAt - Math.floor(Date.now() / 1000));
+                    const minutes = Math.floor(remainingSeconds / 60);
+                    const seconds = remainingSeconds % 60;
+                    otpTimer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                };
+
+                updateOtpTimer();
+                otpTimerInterval = window.setInterval(() => {
+                    updateOtpTimer();
+                    if (expiresAt <= Math.floor(Date.now() / 1000)) {
+                        window.clearInterval(otpTimerInterval);
+                        otpTimerInterval = null;
+                    }
+                }, 1000);
+            }
+            if (!otpInput) {
+                return;
+            }
+
             const otpEntry = otpInput.closest(".otp-entry");
             const otpBoxes = otpEntry.querySelectorAll(".otp-digit-box");
             otpEntry.classList.add("is-enhanced");
@@ -621,7 +630,85 @@ require __DIR__ . '/../app/views/layout/head.php';
                 updateOtpBoxes();
             });
             updateOtpBoxes();
-        }
+        };
+        setupOtpControls(loginPanel);
+
+        loginPanel.addEventListener("submit", async (event) => {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+            const submitter = event.submitter;
+            const isResetRequest = form.matches(".reset-request-form");
+            const isResendRequest = submitter instanceof HTMLButtonElement
+                && submitter.formAction.includes("mode=resend_reset_otp");
+            if (!isResetRequest && !isResendRequest) {
+                return;
+            }
+
+            event.preventDefault();
+            const submitButton = submitter instanceof HTMLButtonElement ? submitter : form.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending...";
+            form.setAttribute("aria-busy", "true");
+
+            try {
+                const formData = new FormData(form);
+                if (isResendRequest) {
+                    formData.delete("otp");
+                }
+                const response = await fetch(submitter?.formAction || form.action, {
+                    method: submitter?.formMethod || form.method,
+                    body: formData,
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    redirect: "follow",
+                });
+                const responseText = await response.text();
+                if (!response.ok) {
+                    throw new Error("Unable to send the reset code. Please refresh and try again.");
+                }
+
+                const responseDocument = new DOMParser().parseFromString(responseText, "text/html");
+                const nextPanelContent = responseDocument.querySelector(".auth-login-panel > div");
+                if (!nextPanelContent) {
+                    throw new Error("Unable to load the verification step. Please try again.");
+                }
+
+                const currentPanelContent = loginPanel.querySelector(":scope > div");
+                currentPanelContent.innerHTML = nextPanelContent.innerHTML;
+                currentPanelContent.classList.toggle("reset-request-layout", nextPanelContent.classList.contains("reset-request-layout"));
+                loginPanel.classList.toggle("reset-request-panel", responseDocument.querySelector(".auth-login-panel").classList.contains("reset-request-panel"));
+                loginPanel.setAttribute("aria-label", responseDocument.querySelector(".auth-login-panel").getAttribute("aria-label"));
+                if (response.redirected) {
+                    const currentUrl = new URL(window.location.href);
+                    const nextUrl = new URL(response.url);
+                    const updateHistory = currentUrl.searchParams.get("mode") === "reset_password"
+                        ? window.history.replaceState
+                        : window.history.pushState;
+                    updateHistory.call(window.history, { authMode: "reset_password" }, "", nextUrl);
+                }
+                setupOtpControls(loginPanel);
+                loginPanel.querySelector("#reset-otp")?.focus();
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : "Unable to send the reset code. Please try again.";
+                let errorNotice = form.parentElement.querySelector(".reset-request-error, .otp-error");
+                if (!errorNotice) {
+                    errorNotice = document.createElement("p");
+                    errorNotice.className = isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
+                    errorNotice.setAttribute("role", "alert");
+                    if (isResetRequest) {
+                        form.before(errorNotice);
+                    } else {
+                        form.after(errorNotice);
+                    }
+                }
+                errorNotice.textContent = errorMessage;
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                form.removeAttribute("aria-busy");
+            }
+        });
         const setupPasswordFeedback = (passwordInput, confirmationInput, submitButton, strengthMeter, strengthBar, strengthLabel, confirmationMessage) => {
             if (!passwordInput || !confirmationInput || !submitButton || !strengthMeter || !strengthBar || !strengthLabel || !confirmationMessage) {
                 return;
