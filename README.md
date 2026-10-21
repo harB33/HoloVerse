@@ -39,14 +39,6 @@ Build the stylesheet with `npm run build:css`; use `npm run watch:css` while dev
 
 `Database/holoverse.sql` is a one-time baseline for a new, empty schema; do not run it over an existing database. It includes the flash-sale table and the checked-in catalog, talent, sample-cart, and account snapshot data. It is not a live migration or backup of accounts, carts, or orders created after that snapshot.
 
-For an existing database, run `Database/migrations/20261018_add_flash_sale_cart_holds.sql` once in the Supabase SQL Editor to enable five-minute reservations for live flash-sale items. The migration releases any reservations from the earlier general cart-hold behavior; it keeps cart lines and regular items are not reserved.
-
-Run `Database/migrations/20261019_fix_talent_portrait_urls.sql` in the Supabase SQL Editor to fix outdated portrait URLs for Inugami Korone, Sakura Miko, Momosuzu Nene, Kazama Iroha, and Tsunomaki Watame.
-
-Run `Database/migrations/20261019_product_type_categories.sql` in the Supabase SQL Editor to replace generic sale labels with merchandise-type categories such as Acrylic, Figure, Album/CD, and Plush. Pre-order and flash-sale status remain separate from the product type.
-
-Run `database/migrations/20261020_password_reset_otp.sql` after the baseline schema for both new and existing databases to enable password reset codes.
-
 All catalog and order prices are stored and displayed in Philippine pesos (PHP/₱).
 
 The sign-in page supports account registration, login, and password resets using a single-use email code that expires after 10 minutes. Passwords and reset codes are stored using PHP's `password_hash`; guest carts are stored against a random session token and merged into the signed-in account cart after login. Run `composer install` to install PHPMailer and `vlucas/phpdotenv`. Configure SMTP settings in the root `.env` file using `.env.example` as a template; `.env` is ignored by Git and blocked from direct Apache access. `HOLOVERSE_SMTP_HOST`, `HOLOVERSE_SMTP_USERNAME`, `HOLOVERSE_SMTP_PASSWORD`, and `HOLOVERSE_MAIL_FROM` are required. `HOLOVERSE_SMTP_PORT` defaults to `587`, `HOLOVERSE_SMTP_ENCRYPTION` defaults to `tls` (use `ssl` for implicit TLS, typically on port `465`), and `HOLOVERSE_MAIL_FROM_NAME` defaults to `HoloVerse`. `HOLOVERSE_SITE_URL` sets the link used in email headers; if omitted, it defaults to `http://localhost:8000/index.php`. For Gmail, use an App Password rather than your regular account password. Keep SMTP credentials out of source control. Password reset codes and order receipts are sent with PHPMailer; email delivery failures are written to the PHP error log and do not undo a successfully completed order. The reset request response does not reveal whether the email has an account.

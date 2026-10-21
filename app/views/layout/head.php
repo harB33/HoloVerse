@@ -157,7 +157,7 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             content: "";
             background: linear-gradient(90deg, transparent, rgb(255 255 255 / 95%), transparent);
             transform: translateX(-100%);
-            animation: page-skeleton-shimmer 1500ms ease-in-out infinite;
+            animation: page-skeleton-shimmer 2.5s ease-in-out infinite;
             will-change: transform;
         }
 

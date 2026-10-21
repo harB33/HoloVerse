@@ -4070,3 +4070,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-page-layout="home"]):not([data-reduce-motion="true"]) body,
+  html:not([data-page-layout="home"]):not([data-reduce-motion="true"]) body *,
+  html:not([data-page-layout="home"]):not([data-reduce-motion="true"]) body *::before,
+  html:not([data-page-layout="home"]):not([data-reduce-motion="true"]) body *::after {
+    transition-duration: 450ms !important;
+  }
+}
