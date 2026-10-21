@@ -5,7 +5,10 @@
 - `index.php` is the home page entry point.
 - `pages/` contains the directly accessible PHP pages.
 - `Functions/` retains legacy page URLs and forwards them to `pages/`.
+- `app/store.php` initializes the session and database connection, then loads the shared application modules in `app/store/`.
+- `app/store/` separates shared helpers, authentication, cart, catalog, and flash-sale logic.
 - `app/views/layout/` contains shared page layouts.
+- `app/views/layout/head.php` applies the branded loading screen only on the home page and uses the same page transition across layouts.
 - `app/views/components/` contains reusable interface components.
 - `config/` contains application configuration, including the database connection.
 - `Database/holoverse.sql` creates the Supabase PostgreSQL schema and imports the initial catalog and talent data.

@@ -1,17 +1,30 @@
 <?php
 $pageTitle = $pageTitle ?? 'HoloVerse';
 $siteRoot = $siteRoot ?? '';
+$pageScriptName = basename((string) ($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? ''));
+if ($pageScriptName === '') {
+    $pageScriptName = basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? ''));
+}
+$pageLayout = $pageLayout ?? match ($pageScriptName) {
+    'index.php' => 'home',
+    'products.php', 'product.php', 'pre_order.php', 'talent-merch.php', 'flash_sale.php' => 'catalog',
+    'cart.php', 'checkout.php' => 'commerce',
+    'login.php', 'logout.php' => 'account',
+    'admin-dashboard.php', 'inventory.php', 'product-input.php', 'flash-sale-admin.php',
+    'temp-import-official-catalog.php' => 'admin',
+    'about-us.php', 'collector_showcase.php', 'personalized.php', 'talents.php' => 'editorial',
+    default => 'content',
+};
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page-layout="<?= htmlspecialchars($pageLayout, ENT_QUOTES, 'UTF-8') ?>">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php if (!isset($showPageLoader) || $showPageLoader): ?>
     <style>
-        html::before,
-        html::after {
+        html[data-page-layout="home"]::before,
+        html[data-page-layout="home"]::after {
             position: fixed;
             content: "";
             opacity: 0;
@@ -20,7 +33,7 @@ $siteRoot = $siteRoot ?? '';
             transition: opacity 450ms ease, visibility 0s linear 450ms;
         }
 
-        html::before {
+        html[data-page-layout="home"]::before {
             z-index: 99998;
             inset: 0;
             background-color: #fff;
@@ -29,7 +42,7 @@ $siteRoot = $siteRoot ?? '';
                 repeating-conic-gradient(from 8deg at 50% 50%, transparent 0deg 28deg, rgb(28 167 198 / 2%) 29deg 30deg, transparent 31deg 60deg);
         }
 
-        html::after {
+        html[data-page-layout="home"]::after {
             z-index: 99999;
             top: 50%;
             left: 50%;
@@ -42,21 +55,21 @@ $siteRoot = $siteRoot ?? '';
             transform: translate(-50%, -50%);
         }
 
-        html.page-loading {
+        html[data-page-layout="home"].page-loading {
             overflow: hidden;
         }
 
-        html.page-loading::before {
+        html[data-page-layout="home"].page-loading::before {
             opacity: 1;
             visibility: visible;
             pointer-events: all;
             transition: opacity 450ms ease, visibility 0s;
         }
 
-        html.page-loading::after {
+        html[data-page-layout="home"].page-loading::after {
             opacity: 1;
             visibility: visible;
-            animation: page-loader-pulse 1.5s ease-in-out infinite alternate;
+            animation: page-loader-pulse 2.5s ease-in-out infinite alternate;
             transition: opacity 450ms ease, visibility 0s;
         }
 
@@ -73,7 +86,7 @@ $siteRoot = $siteRoot ?? '';
         }
 
         html.page-enter body > :not(.page-loading-skeleton) {
-            animation: page-opening 650ms cubic-bezier(.2, .75, .25, 1) both;
+            animation: page-opening 1200ms cubic-bezier(.2, .75, .25, 1) both;
         }
 
         @keyframes page-opening {
@@ -89,13 +102,14 @@ $siteRoot = $siteRoot ?? '';
         }
 
         @media (prefers-reduced-motion: reduce) {
-            html::before,
-            html::after {
+            html[data-page-layout="home"]::before,
+            html[data-page-layout="home"]::after {
                 transition: none;
             }
 
-            html.page-loading::after,
-            html.page-enter body > :not(.page-loading-skeleton) {
+            html[data-page-layout="home"].page-loading::after,
+            html.page-enter body > :not(.page-loading-skeleton),
+            html.page-transition-loading .page-loading-skeleton__block::after {
                 animation: none;
             }
         }
@@ -143,7 +157,7 @@ $siteRoot = $siteRoot ?? '';
             content: "";
             background: linear-gradient(90deg, transparent, rgb(255 255 255 / 95%), transparent);
             transform: translateX(-100%);
-            animation: page-skeleton-shimmer 900ms ease-in-out infinite;
+            animation: page-skeleton-shimmer 1500ms ease-in-out infinite;
             will-change: transform;
         }
 
@@ -158,7 +172,8 @@ $siteRoot = $siteRoot ?? '';
     <script>
         (() => {
             const pageRoot = document.documentElement;
-            const minimumVisibleDuration = 1800;
+            const hasHomeLoader = pageRoot.dataset.pageLayout === "home";
+            const minimumVisibleDuration = hasHomeLoader ? 2600 : 0;
             const loadingStartedAt = performance.now();
             let initialLoadingTimeout = null;
             let navigationStarted = false;
@@ -320,8 +335,10 @@ $siteRoot = $siteRoot ?? '';
                 pageRoot.setAttribute("aria-busy", "true");
             };
 
-            pageRoot.classList.add("page-loading");
-            pageRoot.setAttribute("aria-busy", "true");
+            if (hasHomeLoader) {
+                pageRoot.classList.add("page-loading");
+                pageRoot.setAttribute("aria-busy", "true");
+            }
 
             document.addEventListener("click", (event) => {
                 if (!(event.target instanceof Element)) {
@@ -399,7 +416,7 @@ $siteRoot = $siteRoot ?? '';
                     pageRoot.classList.remove("page-loading");
                     if (!navigationStarted) {
                         pageRoot.classList.add("page-enter");
-                        window.setTimeout(() => pageRoot.classList.remove("page-enter"), 700);
+                        window.setTimeout(() => pageRoot.classList.remove("page-enter"), 1600);
                         pageRoot.removeAttribute("aria-busy");
                     }
                 }, remainingDuration);
@@ -412,7 +429,6 @@ $siteRoot = $siteRoot ?? '';
             });
         })();
     </script>
-    <?php endif; ?>
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="icon" type="image/png" href="<?= $siteRoot ?>assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">

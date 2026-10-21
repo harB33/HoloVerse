@@ -355,8 +355,6 @@ $checkoutTax = store_calculate_sales_tax($items);
 
 $pageTitle = $orderNumber !== '' ? 'Order Confirmed | HoloVerse' : 'Checkout | HoloVerse';
 $siteRoot = '../';
-$showPageLoader = !isset($_SESSION['checkout_page_loader_shown']);
-$_SESSION['checkout_page_loader_shown'] = true;
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
