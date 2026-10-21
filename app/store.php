@@ -6,6 +6,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 require_once __DIR__ . '/../config/dbconnect.php';
 
 const STORE_CART_HOLD_SECONDS = 300;
+const STORE_SALES_TAX_RATE = 0.12;
 const STORE_TALENT_FILTER_GROUP_SLUGS = [
     'gen-0', 'gen-1', 'gamers', 'gen-2', 'gen-3', 'gen-4', 'gen-5', 'holox',
     'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice',
@@ -20,6 +21,17 @@ function store_escape(string $value): string
 function store_format_price(float $amount): string
 {
     return '₱' . number_format($amount, 2);
+}
+
+function store_calculate_sales_tax(array $items, string $unitPriceField = 'price'): float
+{
+    $tax = 0.0;
+    foreach ($items as $item) {
+        $lineSubtotal = round((float) $item[$unitPriceField] * (int) $item['quantity'], 2);
+        $tax += round($lineSubtotal * STORE_SALES_TAX_RATE, 2);
+    }
+
+    return round($tax, 2);
 }
 
 function store_asset_url(string $path, string $siteRoot = ''): string

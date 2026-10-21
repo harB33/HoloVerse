@@ -8,6 +8,7 @@ $siteRoot = $siteRoot ?? '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php if (!isset($showPageLoader) || $showPageLoader): ?>
     <style>
         html.page-transition-loading {
             overflow: hidden;
@@ -287,6 +288,7 @@ $siteRoot = $siteRoot ?? '';
             window.addEventListener("pageshow", stopPageLoading);
         })();
     </script>
+    <?php endif; ?>
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="icon" type="image/png" href="<?= $siteRoot ?>assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">

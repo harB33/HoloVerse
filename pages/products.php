@@ -110,22 +110,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </aside>
 
                 <div class="products-catalog-results" aria-busy="false">
-                    <div class="drops-grid all-products-grid products-loading-skeleton" aria-hidden="true">
-                        <?php for ($skeletonIndex = 0; $skeletonIndex < 8; $skeletonIndex++): ?>
-                            <article class="drop-card products-skeleton-card">
-                                <div class="drop-art products-skeleton-block"></div>
-                                <div class="drop-details">
-                                    <span class="products-skeleton-block products-skeleton-category"></span>
-                                    <span class="products-skeleton-block products-skeleton-title"></span>
-                                    <span class="products-skeleton-block products-skeleton-description"></span>
-                                    <span class="products-skeleton-block products-skeleton-description products-skeleton-description-short"></span>
-                                    <hr class="drop-allocation-divider">
-                                    <span class="products-skeleton-block products-skeleton-price"></span>
-                                    <span class="products-skeleton-block products-skeleton-button"></span>
-                                </div>
-                            </article>
-                        <?php endfor; ?>
-                    </div>
             <?php if ($products): ?>
                 <section class="drops-grid all-products-grid" aria-label="All available products">
                     <?php foreach ($products as $product): ?>
