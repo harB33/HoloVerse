@@ -5,6 +5,19 @@ $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$pageSizeOptions = [12, 24, 48];
+$pageSizeParameter = $_GET['per_page'] ?? '';
+$validatedPageSize = is_string($pageSizeParameter)
+    ? filter_var($pageSizeParameter, FILTER_VALIDATE_INT)
+    : false;
+$pageSize = $validatedPageSize !== false && in_array($validatedPageSize, $pageSizeOptions, true)
+    ? $validatedPageSize
+    : 12;
+$pageParameter = $_GET['page'] ?? '';
+$currentPage = is_string($pageParameter)
+    ? filter_var($pageParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : false;
+$currentPage = $currentPage === false ? 1 : $currentPage;
 $categoryParameter = $_GET['category'] ?? '';
 $selectedCategory = is_string($categoryParameter)
     ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
@@ -25,6 +38,8 @@ if (!$talent) {
 }
 
 $products = [];
+$totalProductCount = 0;
+$pageCount = 1;
 $categories = [];
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
@@ -40,7 +55,42 @@ if ($talent) {
         $selectedCategory = 0;
     }
     $availableStock = store_available_stock_sql();
-    $availableStock = store_available_stock_sql();
+    $searchPattern = '%' . $productSearch . '%';
+    $countStatement = $conn->prepare(
+        "SELECT COUNT(DISTINCT p.product_id) AS product_count
+         FROM product_tbl p
+         INNER JOIN category_tbl c ON c.category_id = p.category_id
+         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+         WHERE p.status = 'active'
+           AND (
+               p.product_name ILIKE ?
+               OR p.description ILIKE ?
+               OR c.category_name ILIKE ?
+               OR v.variant_name ILIKE ?
+           )
+           AND EXISTS (
+               SELECT 1
+               FROM product_talents_tbl pt
+               WHERE pt.product_id = p.product_id AND pt.talent_id = ?
+           )
+           AND (? = 0 OR p.category_id = ?)"
+    );
+    $countStatement->bind_param(
+        'ssssiii',
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $searchPattern,
+        $talentId,
+        $selectedCategory,
+        $selectedCategory
+    );
+    $countStatement->execute();
+    $totalProductCount = (int) $countStatement->get_result()->fetch_assoc()['product_count'];
+    $countStatement->close();
+    $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
+    $currentPage = min($currentPage, $pageCount);
+    $offset = ($currentPage - 1) * $pageSize;
     $statement = $conn->prepare(
         "SELECT collection_products.*
          FROM (
@@ -67,18 +117,20 @@ if ($talent) {
                AND (? = 0 OR p.category_id = ?)
              ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
          ) AS collection_products
-         ORDER BY (collection_products.stock_quantity > 0) DESC, collection_products.product_id DESC"
+         ORDER BY (collection_products.stock_quantity > 0) DESC, collection_products.product_id DESC
+         LIMIT ? OFFSET ?"
     );
-    $searchPattern = '%' . $productSearch . '%';
     $statement->bind_param(
-        'ssssiii',
+        'ssssiiiii',
         $searchPattern,
         $searchPattern,
         $searchPattern,
         $searchPattern,
         $talentId,
         $selectedCategory,
-        $selectedCategory
+        $selectedCategory,
+        $pageSize,
+        $offset
     );
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
@@ -110,7 +162,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php endif; ?>
                 <?php if ($talent): ?>
                     <?php if ($products): ?>
-                        <span class="all-products-count"><?= count($products) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
+                        <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
                     <?php endif; ?>
                 <?php endif; ?>
             </section>
@@ -126,7 +178,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $catalogSearchLabel = 'Search this talent collection';
                         $catalogSearchPlaceholder = 'Search this collection';
                         $catalogSearchValue = $productSearch;
-                        $catalogSearchHiddenFields = ['talent' => $selectedTalent];
+                        $catalogSearchHiddenFields = [
+                            'talent' => $selectedTalent,
+                            'per_page' => $pageSize,
+                        ];
                         if ($selectedCategory > 0) {
                             $catalogSearchHiddenFields['category'] = $selectedCategory;
                         }
@@ -139,7 +194,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                             $categoryFilterQuery = array_filter([
                                 'talent' => $selectedTalent,
                                 'search' => $productSearch,
-                            ], static fn (string $value): bool => $value !== '');
+                                'per_page' => $pageSize,
+                            ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
                             ?>
                             <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
                             <?php foreach ($categories as $category): ?>
@@ -154,6 +210,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </nav>
                     </aside>
                     <div class="products-catalog-results">
+                        <?php if ($totalProductCount > 0): ?>
+                            <form class="product-page-size-form" method="get" action="talent-merch.php">
+                                <input type="hidden" name="talent" value="<?= store_escape($selectedTalent) ?>">
+                                <?php if ($productSearch !== ''): ?>
+                                    <input type="hidden" name="search" value="<?= store_escape($productSearch) ?>">
+                                <?php endif; ?>
+                                <?php if ($selectedCategory > 0): ?>
+                                    <input type="hidden" name="category" value="<?= $selectedCategory ?>">
+                                <?php endif; ?>
+                                <label for="talent-product-limit">Products per page</label>
+                                <select id="talent-product-limit" name="per_page">
+                                    <?php foreach ($pageSizeOptions as $option): ?>
+                                        <option value="<?= $option ?>"<?= $pageSize === $option ? ' selected' : '' ?>><?= $option ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </form>
+                        <?php endif; ?>
                         <?php if ($products): ?>
                             <section class="drops-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
                                 <?php foreach ($products as $product): ?>
@@ -200,6 +273,25 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </article>
                                 <?php endforeach; ?>
                             </section>
+                            <?php if ($pageCount > 1): ?>
+                                <?php
+                                $paginationQuery = array_filter([
+                                    'talent' => $selectedTalent,
+                                    'search' => $productSearch,
+                                    'category' => $selectedCategory,
+                                    'per_page' => $pageSize,
+                                ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+                                ?>
+                                <nav class="all-products-pagination" aria-label="Talent product pages">
+                                    <?php if ($currentPage > 1): ?>
+                                        <a href="?<?= store_escape(http_build_query($paginationQuery + ['page' => $currentPage - 1])) ?>" aria-label="Previous page">Previous</a>
+                                    <?php endif; ?>
+                                    <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
+                                    <?php if ($currentPage < $pageCount): ?>
+                                        <a href="?<?= store_escape(http_build_query($paginationQuery + ['page' => $currentPage + 1])) ?>" aria-label="Next page">Next</a>
+                                    <?php endif; ?>
+                                </nav>
+                            <?php endif; ?>
                         <?php else: ?>
                             <p class="all-products-empty" role="status"><?= $productSearch !== '' || $selectedCategory > 0 ? 'No merchandise matches the selected filters for ' . store_escape($talent['talent_name']) . '.' : 'There is no available merchandise for ' . store_escape($talent['talent_name']) . ' right now.' ?></p>
                         <?php endif; ?>
@@ -220,6 +312,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             if (image.complete && image.naturalWidth === 0) {
                 showInitialFallback();
             }
+        });
+
+        document.querySelector("#talent-product-limit")?.addEventListener("change", (event) => {
+            event.currentTarget.form.requestSubmit();
         });
     </script>
     <?php

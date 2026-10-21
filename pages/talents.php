@@ -50,7 +50,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <section class="explore" id="explore" aria-labelledby="explore-title">
+        <section class="explore talent-directory-explore" id="explore" aria-labelledby="explore-title">
             <div class="explore-inner">
                 <header class="explore-header">
                     <span class="explore-eyebrow">Talent Vault Directory</span>
