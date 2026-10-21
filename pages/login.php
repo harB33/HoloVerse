@@ -5,7 +5,8 @@ $requestMode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $requestMode = is_string($requestMode) ? $requestMode : '';
 $isRegistration = $requestMode === 'register';
 $isPasswordResetRequest = $requestMode === 'forgot_password';
-$isPasswordReset = $requestMode === 'reset_password';
+$isPasswordReset = in_array($requestMode, ['reset_password', 'verify_reset_otp'], true);
+$isOtpVerification = $requestMode === 'verify_reset_otp';
 $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
 $message = '';
 $notice = is_string($_SESSION['auth_notice'] ?? null) ? $_SESSION['auth_notice'] : '';
@@ -16,6 +17,13 @@ $resetRequestEmail = '';
 $resetEmail = is_string($_SESSION['password_reset_email'] ?? null)
     ? $_SESSION['password_reset_email']
     : '';
+$resetEmailHash = $resetEmail !== '' ? hash('sha256', strtolower(trim($resetEmail))) : '';
+$verifiedReset = $_SESSION['password_reset_verified'] ?? null;
+$isResetPasswordVerified = is_array($verifiedReset)
+    && $resetEmailHash !== ''
+    && is_string($verifiedReset['email_hash'] ?? null)
+    && hash_equals($resetEmailHash, $verifiedReset['email_hash'])
+    && is_string($verifiedReset['otp_hash'] ?? null);
 
 function login_password_is_strong(string $password): bool
 {
@@ -93,17 +101,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
 
             $_SESSION['password_reset_email'] = $email;
+            unset($_SESSION['password_reset_verified']);
             $_SESSION['auth_notice'] = 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
             header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
             exit;
         }
-    } elseif ($isPasswordReset) {
+    } elseif ($isOtpVerification) {
         $otpInput = $_POST['otp'] ?? '';
-        $passwordInput = $_POST['password'] ?? '';
-        $confirmationInput = $_POST['password_confirmation'] ?? '';
         $otp = is_string($otpInput) ? trim($otpInput) : '';
-        $password = is_string($passwordInput) ? $passwordInput : '';
-        $passwordConfirmation = is_string($confirmationInput) ? $confirmationInput : '';
 
         if ($resetEmail === '') {
             $message = 'Start a new password reset request to receive a code.';
@@ -111,12 +116,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $isPasswordReset = false;
         } elseif (preg_match('/^\d{6}$/', $otp) !== 1) {
             $message = 'Enter the six-digit code from your email.';
-        } elseif (!login_password_is_strong($password)) {
-            $message = 'Choose a strong password: at least 12 characters and at least 3 of these: lowercase, uppercase, number, and symbol.';
-        } elseif ($password !== $passwordConfirmation) {
-            $message = 'The password confirmation does not match.';
         } else {
-            $emailHash = hash('sha256', strtolower(trim($resetEmail)));
+            $emailHash = $resetEmailHash;
             $conn->begin_transaction();
             try {
                 $resetStatement = $conn->prepare(
@@ -150,6 +151,67 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $conn->commit();
                     $message = 'That code is invalid or expired. Request a new code and try again.';
                 } else {
+                    $conn->commit();
+                    $_SESSION['password_reset_verified'] = [
+                        'email_hash' => $emailHash,
+                        'otp_hash' => $reset['otp_hash'],
+                    ];
+                    header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+                    exit;
+                }
+            } catch (Throwable $error) {
+                $conn->rollback();
+                throw $error;
+            }
+        }
+    } elseif ($isPasswordReset) {
+        $passwordInput = $_POST['password'] ?? '';
+        $confirmationInput = $_POST['password_confirmation'] ?? '';
+        $password = is_string($passwordInput) ? $passwordInput : '';
+        $passwordConfirmation = is_string($confirmationInput) ? $confirmationInput : '';
+
+        if ($resetEmail === '') {
+            $message = 'Start a new password reset request to receive a code.';
+            $isPasswordResetRequest = true;
+            $isPasswordReset = false;
+        } elseif (!$isResetPasswordVerified) {
+            $message = 'Verify your reset code before choosing a new password.';
+        } elseif (!login_password_is_strong($password)) {
+            $message = 'Choose a strong password: at least 12 characters and at least 3 of these: lowercase, uppercase, number, and symbol.';
+        } elseif ($password !== $passwordConfirmation) {
+            $message = 'The password confirmation does not match.';
+        } else {
+            $emailHash = $resetEmailHash;
+            $conn->begin_transaction();
+            try {
+                $resetStatement = $conn->prepare(
+                    'SELECT user_id, otp_hash, attempt_count, used_at, expires_at > CURRENT_TIMESTAMP AS is_unexpired
+                     FROM password_reset_codes
+                     WHERE email_hash = ?
+                     FOR UPDATE'
+                );
+                $resetStatement->bind_param('s', $emailHash);
+                $resetStatement->execute();
+                $reset = $resetStatement->get_result()->fetch_assoc();
+                $resetStatement->close();
+
+                $isUnexpired = in_array($reset['is_unexpired'] ?? false, [true, 't', 1, '1'], true);
+                $verifiedCodeMatches = $reset
+                    && is_string($verifiedReset['otp_hash'] ?? null)
+                    && hash_equals($verifiedReset['otp_hash'], $reset['otp_hash']);
+                if (
+                    !$reset
+                    || !$verifiedCodeMatches
+                    || $reset['user_id'] === null
+                    || $reset['used_at'] !== null
+                    || !$isUnexpired
+                    || (int) $reset['attempt_count'] >= 5
+                ) {
+                    $conn->commit();
+                    unset($_SESSION['password_reset_verified']);
+                    $isResetPasswordVerified = false;
+                    $message = 'That code is invalid or expired. Request a new code and try again.';
+                } else {
                     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                     $userId = (int) $reset['user_id'];
                     $updateUser = $conn->prepare(
@@ -167,7 +229,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $consumeCode->close();
                     $conn->commit();
 
-                    unset($_SESSION['password_reset_email']);
+                    unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified']);
                     $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
                     header('Location: login.php' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
                     exit;
@@ -267,10 +329,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                         Back
                     </button>
-                    <div class="brand pointer-events-none mb-6">
+                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
-                    </div>
+                    </a>
                     <?php if ($isPasswordResetRequest): ?>
                         <header class="mb-8">
                             <h1 class="text-3xl font-bold text-slate-800">Forgot password?</h1>
@@ -297,24 +359,24 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </p>
                     <?php elseif ($isPasswordReset): ?>
                         <header class="mb-8">
-                            <h1 class="text-3xl font-bold text-slate-800">Reset your password</h1>
+                            <h1 class="text-3xl font-bold text-slate-800"><?= $isResetPasswordVerified ? 'Choose a new password' : 'Verify your email' ?></h1>
                             <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">
-                                Enter the six-digit code sent to <?= $resetEmail !== '' ? store_escape($resetEmail) : 'your email' ?> and choose a new password.
+                                <?php if ($isResetPasswordVerified): ?>
+                                    Your code is verified. Set a new password for <?= store_escape($resetEmail) ?>.
+                                <?php else: ?>
+                                    Enter the six-digit code sent to <?= $resetEmail !== '' ? store_escape($resetEmail) : 'your email' ?> to continue.
+                                <?php endif; ?>
                             </p>
                         </header>
                         <?php if ($message !== ''): ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
                         <?php if ($resetEmail !== ''): ?>
+                            <?php if ($isResetPasswordVerified): ?>
                             <form action="login.php?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="mode" value="reset_password">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                                <div>
-                                    <label for="reset-otp" class="mb-2 block text-sm font-medium text-slate-700">One-time code</label>
-                                    <input id="reset-otp" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required
-                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-[0.3em] text-slate-800 shadow-sm outline-none transition placeholder:tracking-normal placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
-                                </div>
                                 <div>
                                     <label for="reset-password" class="mb-2 block text-sm font-medium text-slate-700">New password</label>
                                     <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
@@ -339,6 +401,21 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     Reset password
                                 </button>
                             </form>
+                            <?php else: ?>
+                            <form action="login.php?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                <input type="hidden" name="mode" value="verify_reset_otp">
+                                <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                                <div>
+                                    <label for="reset-otp" class="mb-2 block text-sm font-medium text-slate-700">One-time code</label>
+                                    <input id="reset-otp" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required
+                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-[0.3em] text-slate-800 shadow-sm outline-none transition placeholder:tracking-normal placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                </div>
+                                <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
+                                    Verify code
+                                </button>
+                            </form>
+                            <?php endif; ?>
                         <?php else: ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
                         <?php endif; ?>
@@ -397,6 +474,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                             Back
                         </button>
+                        <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
+                            <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
+                            <span class="brand-wordmark">holo<span>verse</span></span>
+                        </a>
                         <header class="mb-4">
                             <h2 class="text-3xl font-bold text-slate-800">Create your account</h2>
                             <p class="mt-2 text-sm leading-6 text-slate-600">Create an account to keep your cart with you.</p>
