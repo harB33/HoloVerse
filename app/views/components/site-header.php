@@ -7,11 +7,12 @@ $pageUrlPrefix = $siteRoot . 'pages/';
 $catalogSearchAction = $pageUrlPrefix . 'products.php';
 $catalogSearchId = 'site-catalog-search';
 $catalogSearchClass = 'site-header-search';
+$catalogSearchInputName = 'global_search';
 $catalogSearchLabel = 'Search products, categories, or talents';
 $catalogSearchPlaceholder = 'Search products, categories, or talents';
 $catalogSearchShowClear = false;
-$catalogSearchValue = $activePage === 'products' && isset($productSearch) && is_string($productSearch)
-    ? $productSearch
+$catalogSearchValue = $activePage === 'products' && isset($generalProductSearch) && is_string($generalProductSearch)
+    ? $generalProductSearch
     : '';
 $headerFlashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
 $headerFlashSaleNow = new DateTimeImmutable('now', $headerFlashSaleTimezone);

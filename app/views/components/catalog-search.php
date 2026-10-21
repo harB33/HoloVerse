@@ -5,6 +5,9 @@ $catalogSearchClearHref = $catalogSearchAction;
 $catalogSearchClassName = isset($catalogSearchClass) && is_string($catalogSearchClass)
     ? $catalogSearchClass
     : '';
+$catalogSearchInputName = isset($catalogSearchInputName) && is_string($catalogSearchInputName)
+    ? $catalogSearchInputName
+    : 'search';
 $catalogSearchShowSuggestions = $catalogSearchClassName === 'site-header-search';
 $catalogSearchIsFilter = in_array($catalogSearchClassName, ['filter-panel-search', 'talent-merch-filter-search'], true);
 $catalogSearchClass = $catalogSearchClassName !== ''
@@ -16,12 +19,12 @@ if ($catalogSearchHiddenFields) {
 ?>
 <form class="catalog-search<?= $catalogSearchClass ?>" method="get" action="<?= store_escape($catalogSearchAction) ?>" role="search">
     <label class="sr-only" for="<?= store_escape($catalogSearchId) ?>"><?= store_escape($catalogSearchLabel) ?></label>
-    <input id="<?= store_escape($catalogSearchId) ?>" name="search" type="search" value="<?= store_escape($catalogSearchValue) ?>" placeholder="<?= store_escape($catalogSearchPlaceholder) ?>"<?= $catalogSearchShowSuggestions ? ' aria-controls="' . store_escape($catalogSearchId) . '-suggestions" aria-expanded="false" autocomplete="off" data-catalog-search-input' : '' ?>>
+    <input id="<?= store_escape($catalogSearchId) ?>" name="<?= store_escape($catalogSearchInputName) ?>" type="search" value="<?= store_escape($catalogSearchValue) ?>" placeholder="<?= store_escape($catalogSearchPlaceholder) ?>"<?= $catalogSearchShowSuggestions ? ' aria-controls="' . store_escape($catalogSearchId) . '-suggestions" aria-expanded="false" autocomplete="off" data-catalog-search-input' : '' ?>>
     <?php if ($catalogSearchShowSuggestions): ?>
         <div class="catalog-search-suggestions" id="<?= store_escape($catalogSearchId) ?>-suggestions" aria-label="Search suggestions" hidden>
             <div class="catalog-search-suggestion-group" data-recent-searches hidden>
                 <span class="catalog-search-suggestions-title">Recent searches</span>
-                <div class="catalog-search-suggestion-list" data-recent-search-list></div>
+                <div class="catalog-search-recent-list" data-recent-search-list></div>
             </div>
             <div class="catalog-search-suggestion-group" data-popular-searches>
                 <span class="catalog-search-suggestions-title">Popular searches</span>
@@ -46,3 +49,4 @@ if ($catalogSearchHiddenFields) {
         <a href="<?= store_escape($catalogSearchClearHref) ?>">Clear</a>
     <?php endif; ?>
 </form>
+<?php unset($catalogSearchInputName); ?>

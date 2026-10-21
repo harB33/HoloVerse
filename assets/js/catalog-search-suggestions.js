@@ -38,8 +38,17 @@ document.querySelectorAll("[data-catalog-search-input]").forEach((input) => {
         recentList.replaceChildren(...visibleRecent.map((search) => {
             const button = document.createElement("button");
             button.type = "button";
+            button.className = "catalog-search-recent-item";
             button.dataset.searchSuggestion = search;
-            button.textContent = search;
+            button.setAttribute("role", "option");
+            button.setAttribute("aria-selected", "false");
+            const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            icon.setAttribute("viewBox", "0 0 24 24");
+            icon.setAttribute("aria-hidden", "true");
+            icon.innerHTML = '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>';
+            const label = document.createElement("span");
+            label.textContent = search;
+            button.append(icon, label);
             return button;
         }));
         recentGroup.hidden = visibleRecent.length === 0;

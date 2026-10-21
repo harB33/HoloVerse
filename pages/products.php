@@ -3,7 +3,13 @@ require_once __DIR__ . '/../app/store.php';
 
 $pageSize = 12;
 $searchParameter = $_GET['search'] ?? '';
-$productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
+$generalSearchParameter = $_GET['global_search'] ?? '';
+$generalProductSearch = is_string($generalSearchParameter) ? trim($generalSearchParameter) : '';
+$productSearch = $filterSearch !== '' ? $filterSearch : $generalProductSearch;
+$activeSearchQuery = $filterSearch !== ''
+    ? ['search' => $filterSearch]
+    : ($generalProductSearch !== '' ? ['global_search' => $generalProductSearch] : []);
 $generationParameter = $_GET['generation'] ?? '';
 $selectedGeneration = is_string($generationParameter)
     && in_array($generationParameter, STORE_TALENT_FILTER_GROUP_SLUGS, true)
@@ -39,8 +45,7 @@ $catalogSearchHiddenFields = array_filter([
     'generation' => $selectedGeneration,
     'category' => $selectedCategory,
 ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
-$catalogFilterQuery = array_filter([
-    'search' => $productSearch,
+$catalogFilterQuery = array_filter($activeSearchQuery + [
     'category' => $selectedCategory,
 ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
 $pageTitle = 'All Products | HoloVerse';
@@ -76,15 +81,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                     $catalogSearchClass = 'filter-panel-search';
                     $catalogSearchLabel = 'Search products, categories, or talents';
                     $catalogSearchPlaceholder = 'Search products...';
-                    $catalogSearchValue = $productSearch;
+                    $catalogSearchInputName = 'search';
+                    $catalogSearchValue = $filterSearch;
                     $catalogSearchShowClear = false;
                     require __DIR__ . '/../app/views/components/catalog-search.php';
                     ?>
                     <form class="category-filter" method="get" action="products.php">
                         <label for="catalog-category">Filter by category</label>
-                        <?php if ($productSearch !== ''): ?>
-                            <input type="hidden" name="search" value="<?= store_escape($productSearch) ?>">
-                        <?php endif; ?>
+                        <?php foreach ($activeSearchQuery as $name => $value): ?>
+                            <input type="hidden" name="<?= store_escape($name) ?>" value="<?= store_escape((string) $value) ?>">
+                        <?php endforeach; ?>
                         <?php if ($selectedGeneration !== ''): ?>
                             <input type="hidden" name="generation" value="<?= store_escape($selectedGeneration) ?>">
                         <?php endif; ?>
@@ -159,11 +165,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if ($pageCount > 1): ?>
                     <nav class="all-products-pagination" aria-label="Product pages">
                         <?php if ($currentPage > 1): ?>
-                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1, 'search' => $productSearch, 'generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Previous page">Previous</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1] + $activeSearchQuery + ['generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Previous page">Previous</a>
                         <?php endif; ?>
                         <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
                         <?php if ($currentPage < $pageCount): ?>
-                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1, 'search' => $productSearch, 'generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Next page">Next</a>
+                            <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1] + $activeSearchQuery + ['generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Next page">Next</a>
                         <?php endif; ?>
                     </nav>
                 <?php endif; ?>
