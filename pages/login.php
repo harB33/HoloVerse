@@ -339,6 +339,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
                     <div class="otp-verification">
                     <?php endif; ?>
+                    <button type="button" data-history-back class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-sky-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                        Back
+                    </button>
                     <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
@@ -496,6 +500,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             </aside>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
                     <div class="auth-register-content">
+                        <button type="button" data-history-back class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-sky-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                            Back
+                        </button>
                         <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
                             <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                             <span class="brand-wordmark">holo<span>verse</span></span>
@@ -682,6 +690,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             loginPanel.querySelector("#reset-password-strength-label"),
             loginPanel.querySelector("#reset-password-confirmation-message")
         );
+
+        document.querySelectorAll("[data-history-back]").forEach((button) => {
+            button.addEventListener("click", () => window.history.back());
+        });
 
         const setAuthMode = (showRegister) => {
             authShell.classList.toggle("is-register", showRegister);
