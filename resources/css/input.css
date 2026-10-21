@@ -4064,13 +4064,31 @@
   margin-top: 1.25rem;
 }
 
-.otp-error {
+.otp-feedback-row {
+  display: flex;
   width: 100%;
   max-width: 25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   margin: 0.75rem auto 0;
+}
+
+.otp-error {
+  order: 1;
+  flex: 1 1 auto;
+  margin: 0;
   color: #e11d48;
   font-size: 0.875rem;
   line-height: 1.5;
+  text-align: left;
+}
+
+.otp-signin-link {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+  font-size: 0.875rem;
+  text-align: right;
 }
 
 .otp-verification > p {

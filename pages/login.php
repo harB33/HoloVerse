@@ -438,9 +438,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     Verify code
                                 </button>
                             </form>
-                            <?php if ($message !== ''): ?>
-                                <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
-                            <?php endif; ?>
+                            <div class="otp-feedback-row">
+                                <?php if ($message !== ''): ?>
+                                    <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
+                                <?php endif; ?>
+                                <p class="otp-signin-link">
+                                    <a class="auth-mode-button" href="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                                </p>
+                            </div>
                             <?php endif; ?>
                         <?php else: ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
@@ -643,7 +648,8 @@ require __DIR__ . '/../app/views/layout/head.php';
             const isResendRequest = submitter instanceof HTMLButtonElement
                 && submitter.formAction.includes("mode=resend_reset_otp");
             const isOtpVerification = form.matches(".otp-verify-form");
-            if (!isResetRequest && !isResendRequest && !isOtpVerification) {
+            const isOtpAction = isOtpVerification || isResendRequest;
+            if (!isResetRequest && !isOtpAction) {
                 return;
             }
 
@@ -696,10 +702,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             } catch (error) {
                 const errorMessage = error instanceof Error
                     ? error.message
-                    : isOtpVerification
+                    : isOtpAction
                         ? "Unable to verify the code. Please try again."
                         : "Unable to send the reset code. Please try again.";
-                let errorNotice = form.parentElement.querySelector(".reset-request-error, .otp-error");
+                let errorNotice = form.parentElement.querySelector(".reset-request-error, .otp-feedback-row .otp-error");
                 if (!errorNotice) {
                     errorNotice = document.createElement("p");
                     errorNotice.className = isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
@@ -707,7 +713,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                     if (isResetRequest) {
                         form.before(errorNotice);
                     } else {
-                        form.after(errorNotice);
+                        const feedbackRow = form.parentElement.querySelector(".otp-feedback-row");
+                        feedbackRow.insertBefore(errorNotice, feedbackRow.querySelector(".otp-signin-link"));
                     }
                 }
                 errorNotice.textContent = errorMessage;
