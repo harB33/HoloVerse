@@ -5,6 +5,7 @@ $requestMode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $requestMode = is_string($requestMode) ? $requestMode : '';
 $isRegistration = $requestMode === 'register';
 $isPasswordResetRequest = $requestMode === 'forgot_password';
+$isPasswordResetResend = $requestMode === 'resend_reset_otp';
 $isPasswordReset = in_array($requestMode, ['reset_password', 'verify_reset_otp'], true);
 $isOtpVerification = $requestMode === 'verify_reset_otp';
 $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
@@ -18,6 +19,7 @@ $resetEmail = is_string($_SESSION['password_reset_email'] ?? null)
     ? $_SESSION['password_reset_email']
     : '';
 $resetEmailHash = $resetEmail !== '' ? hash('sha256', strtolower(trim($resetEmail))) : '';
+$resetOtpExpiresAt = (int) ($_SESSION['password_reset_expires_at'] ?? 0);
 $verifiedReset = $_SESSION['password_reset_verified'] ?? null;
 $isResetPasswordVerified = is_array($verifiedReset)
     && $resetEmailHash !== ''
@@ -45,11 +47,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     if (!store_verify_csrf()) {
         http_response_code(403);
         $message = 'Your session expired. Refresh the page and try again.';
-    } elseif ($isPasswordResetRequest) {
-        $emailInput = $_POST['email'] ?? '';
+    } elseif ($isPasswordResetRequest || $isPasswordResetResend) {
+        $emailInput = $isPasswordResetResend ? $resetEmail : ($_POST['email'] ?? '');
         $email = is_string($emailInput) ? strtolower(trim($emailInput)) : '';
-        $resetRequestEmail = $email;
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
+        $resetRequestEmail = $isPasswordResetRequest ? $email : '';
+        if ($isPasswordResetResend && $resetEmail === '') {
+            $message = 'Start a new password reset request to receive a code.';
+            $isPasswordResetRequest = true;
+            $isPasswordResetResend = false;
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
             $message = 'Enter a valid email address.';
         } else {
             $userStatement = $conn->prepare('SELECT user_id FROM user_tbl WHERE LOWER(email) = LOWER(?) LIMIT 1');
@@ -101,8 +107,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
 
             $_SESSION['password_reset_email'] = $email;
+            if ($codeIssued || !$isPasswordResetResend || !isset($_SESSION['password_reset_expires_at'])) {
+                $_SESSION['password_reset_expires_at'] = time() + 600;
+            }
             unset($_SESSION['password_reset_verified']);
-            $_SESSION['auth_notice'] = 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
+            $_SESSION['auth_notice'] = $isPasswordResetResend && !$codeIssued
+                ? 'Please wait a minute before requesting another code.'
+                : 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
             header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
             exit;
         }
@@ -229,7 +240,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $consumeCode->close();
                     $conn->commit();
 
-                    unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified']);
+                    unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified'], $_SESSION['password_reset_expires_at']);
                     $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
                     header('Location: login.php' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
                     exit;
@@ -323,8 +334,11 @@ require __DIR__ . '/../app/views/layout/head.php';
     <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
     <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-6">
         <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
-            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
-                <div class="w-full max-w-md">
+            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20<?= $isPasswordResetRequest ? ' reset-request-panel' : '' ?>" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
+                <div class="w-full max-w-md<?= $isPasswordResetRequest ? ' reset-request-layout' : '' ?>">
+                    <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
+                    <div class="otp-verification">
+                    <?php endif; ?>
                     <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
@@ -337,7 +351,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php if ($message !== ''): ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
-                        <form action="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                        <form action="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="forgot_password">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -364,6 +378,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endif; ?>
                             </p>
                         </header>
+                        <?php if ($notice !== ''): ?>
+                            <p class="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status"><?= store_escape($notice) ?></p>
+                        <?php endif; ?>
                         <?php if ($message !== ''): ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
@@ -404,10 +421,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
                                 <div>
                                     <label for="reset-otp" class="mb-2 block text-sm font-medium text-slate-700">One-time code</label>
-                                    <input id="reset-otp" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required
-                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-[0.3em] text-slate-800 shadow-sm outline-none transition placeholder:tracking-normal placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                    <div class="otp-entry">
+                                        <input id="reset-otp" class="otp-input block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required aria-label="Six-digit one-time code">
+                                        <div class="otp-boxes" aria-hidden="true">
+                                            <span class="otp-digit-box"></span>
+                                            <span class="otp-digit-box"></span>
+                                            <span class="otp-digit-box"></span>
+                                            <span class="otp-digit-box"></span>
+                                            <span class="otp-digit-box"></span>
+                                            <span class="otp-digit-box"></span>
+                                        </div>
+                                    </div>
+                                    <div class="otp-meta-row">
+                                        <p class="otp-timer">Remaining time: <span id="reset-otp-timer" data-expires-at="<?= $resetOtpExpiresAt ?>">--:--</span></p>
+                                        <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login.php?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
+                                    </div>
                                 </div>
-                                <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
+                                <button type="submit" class="otp-verify-button">
                                     Verify code
                                 </button>
                             </form>
@@ -415,9 +445,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php else: ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
                         <?php endif; ?>
-                        <p class="mt-7 text-center text-sm text-slate-600">
-                            <a class="auth-mode-button" href="login.php?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Request another code</a>
-                        </p>
+                        <?php if (!$isResetPasswordVerified): ?>
+                        </div>
+                        <?php endif; ?>
                     <?php else: ?>
                     <header class="mb-8">
                         <h1 class="text-3xl font-bold text-slate-800">Welcome back</h1>
@@ -537,6 +567,57 @@ require __DIR__ . '/../app/views/layout/head.php';
         const strengthBar = registerPanel.querySelector(".password-strength-bar");
         const strengthLabel = registerPanel.querySelector("#password-strength-label");
         const confirmationMessage = registerPanel.querySelector("#password-confirmation-message");
+        const otpInput = loginPanel.querySelector("#reset-otp");
+        const otpTimer = loginPanel.querySelector("#reset-otp-timer");
+        if (otpTimer) {
+            const expiresAt = Number(otpTimer.dataset.expiresAt);
+            const updateOtpTimer = () => {
+                const remainingSeconds = Math.max(0, expiresAt - Math.floor(Date.now() / 1000));
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                otpTimer.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            };
+
+            updateOtpTimer();
+            const otpTimerInterval = window.setInterval(() => {
+                updateOtpTimer();
+                if (expiresAt <= Math.floor(Date.now() / 1000)) {
+                    window.clearInterval(otpTimerInterval);
+                }
+            }, 1000);
+        }
+        if (otpInput) {
+            const otpEntry = otpInput.closest(".otp-entry");
+            const otpBoxes = otpEntry.querySelectorAll(".otp-digit-box");
+            otpEntry.classList.add("is-enhanced");
+
+            const updateOtpBoxes = () => {
+                const digits = otpInput.value.replace(/\D/g, "").slice(0, otpBoxes.length);
+                if (digits !== otpInput.value) {
+                    otpInput.value = digits;
+                }
+
+                otpBoxes.forEach((box, index) => {
+                    box.textContent = digits[index] || "";
+                    box.classList.toggle("is-current", otpEntry.classList.contains("is-focused") && index === Math.min(digits.length, otpBoxes.length - 1));
+                });
+            };
+
+            otpInput.addEventListener("input", updateOtpBoxes);
+            otpInput.addEventListener("focus", () => {
+                otpEntry.classList.add("is-focused");
+                otpInput.setSelectionRange(otpInput.value.length, otpInput.value.length);
+                updateOtpBoxes();
+            });
+            otpInput.addEventListener("click", () => {
+                otpInput.setSelectionRange(otpInput.value.length, otpInput.value.length);
+            });
+            otpInput.addEventListener("blur", () => {
+                otpEntry.classList.remove("is-focused");
+                updateOtpBoxes();
+            });
+            updateOtpBoxes();
+        }
         const setupPasswordFeedback = (passwordInput, confirmationInput, submitButton, strengthMeter, strengthBar, strengthLabel, confirmationMessage) => {
             if (!passwordInput || !confirmationInput || !submitButton || !strengthMeter || !strengthBar || !strengthLabel || !confirmationMessage) {
                 return;
