@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/dbconnect.php';
+require_once __DIR__ . '/../app/store.php';
 $pageTitle = 'Shipping Info | hololive merchandise';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';

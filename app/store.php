@@ -1,4 +1,8 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../config/dbconnect.php';
 
 const STORE_CART_HOLD_SECONDS = 300;
@@ -7,10 +11,6 @@ const STORE_TALENT_FILTER_GROUP_SLUGS = [
     'regloss', 'flow-glow', 'myth', 'promise', 'advent', 'justice',
     'id-gen-1', 'id-gen-2', 'id-gen-3', 'asobi-mawaritai',
 ];
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
 
 function store_escape(string $value): string
 {
