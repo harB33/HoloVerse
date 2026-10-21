@@ -263,6 +263,10 @@ require __DIR__ . '/../app/views/layout/head.php';
         <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
             <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
                 <div class="w-full max-w-md">
+                    <button type="button" data-history-back class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-sky-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                        Back
+                    </button>
                     <div class="brand pointer-events-none mb-6">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
@@ -389,6 +393,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             </aside>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
                     <div class="auth-register-content">
+                        <button type="button" data-history-back class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-sky-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                            Back
+                        </button>
                         <header class="mb-4">
                             <h2 class="text-3xl font-bold text-slate-800">Create your account</h2>
                             <p class="mt-2 text-sm leading-6 text-slate-600">Create an account to keep your cart with you.</p>
@@ -520,6 +528,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             loginPanel.querySelector("#reset-password-strength-label"),
             loginPanel.querySelector("#reset-password-confirmation-message")
         );
+
+        document.querySelectorAll("[data-history-back]").forEach((button) => {
+            button.addEventListener("click", () => window.history.back());
+        });
 
         const setAuthMode = (showRegister) => {
             authShell.classList.toggle("is-register", showRegister);
