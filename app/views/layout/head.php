@@ -118,7 +118,12 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             overflow: hidden;
         }
 
-        html.page-transition-loading body > :not(.page-loading-skeleton) {
+        html.page-transition-loading body > :not(.page-loading-skeleton),
+        html.page-transition-loading body > :not(.page-loading-skeleton) *,
+        html.page-transition-loading body > :not(.page-loading-skeleton)::before,
+        html.page-transition-loading body > :not(.page-loading-skeleton)::after,
+        html.page-transition-loading body > :not(.page-loading-skeleton) *::before,
+        html.page-transition-loading body > :not(.page-loading-skeleton) *::after {
             visibility: hidden !important;
         }
 
