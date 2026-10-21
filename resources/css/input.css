@@ -3898,7 +3898,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
+  overflow-y: hidden;
   background: #fff;
   padding: clamp(24px, 4vw, 56px);
   opacity: 0;
@@ -4005,9 +4005,13 @@
   }
 }
 
-@media (min-width: 1024px) and (max-height: 700px) {
+@media (min-width: 1024px) and (max-height: 900px) {
   .auth-register-surface {
     padding-block: 12px;
+  }
+
+  .auth-register-content > .brand {
+    margin-bottom: 0.75rem;
   }
 
   .auth-register-content header {

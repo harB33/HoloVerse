@@ -466,6 +466,10 @@ require __DIR__ . '/../app/views/layout/head.php';
             </aside>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
                     <div class="auth-register-content">
+                        <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
+                            <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
+                            <span class="brand-wordmark">holo<span>verse</span></span>
+                        </a>
                         <header class="mb-4">
                             <h2 class="text-3xl font-bold text-slate-800">Create your account</h2>
                             <p class="mt-2 text-sm leading-6 text-slate-600">Create an account to keep your cart with you.</p>
