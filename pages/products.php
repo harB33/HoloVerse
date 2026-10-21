@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$pageSize = 48;
+$pageSize = 12;
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $generationParameter = $_GET['generation'] ?? '';
