@@ -186,7 +186,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $isPasswordResetRequest = true;
             $isPasswordReset = false;
         } elseif (!$isResetPasswordVerified) {
-            $message = 'Verify your reset code before choosing a new password.';
+            $message = 'Invalid or expired code.';
         } elseif (!login_password_is_strong($password)) {
             $message = 'Choose a strong password: at least 12 characters and at least 3 of these: lowercase, uppercase, number, and symbol.';
         } elseif ($password !== $passwordConfirmation) {
@@ -412,7 +412,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </button>
                             </form>
                             <?php else: ?>
-                            <form action="login.php?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                            <form action="login.php?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="mode" value="verify_reset_otp">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -642,7 +642,8 @@ require __DIR__ . '/../app/views/layout/head.php';
             const isResetRequest = form.matches(".reset-request-form");
             const isResendRequest = submitter instanceof HTMLButtonElement
                 && submitter.formAction.includes("mode=resend_reset_otp");
-            if (!isResetRequest && !isResendRequest) {
+            const isOtpVerification = form.matches(".otp-verify-form");
+            if (!isResetRequest && !isResendRequest && !isOtpVerification) {
                 return;
             }
 
@@ -650,7 +651,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             const submitButton = submitter instanceof HTMLButtonElement ? submitter : form.querySelector('button[type="submit"]');
             const originalButtonText = submitButton.textContent;
             submitButton.disabled = true;
-            submitButton.textContent = "Sending...";
+            submitButton.textContent = isOtpVerification ? "Verifying..." : "Sending...";
             form.setAttribute("aria-busy", "true");
 
             try {
@@ -666,7 +667,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                 });
                 const responseText = await response.text();
                 if (!response.ok) {
-                    throw new Error("Unable to send the reset code. Please refresh and try again.");
+                    throw new Error(isOtpVerification
+                        ? "Unable to verify the code. Please try again."
+                        : "Unable to send the reset code. Please refresh and try again.");
                 }
 
                 const responseDocument = new DOMParser().parseFromString(responseText, "text/html");
@@ -691,7 +694,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                 setupOtpControls(loginPanel);
                 loginPanel.querySelector("#reset-otp")?.focus();
             } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : "Unable to send the reset code. Please try again.";
+                const errorMessage = error instanceof Error
+                    ? error.message
+                    : isOtpVerification
+                        ? "Unable to verify the code. Please try again."
+                        : "Unable to send the reset code. Please try again.";
                 let errorNotice = form.parentElement.querySelector(".reset-request-error, .otp-error");
                 if (!errorNotice) {
                     errorNotice = document.createElement("p");
