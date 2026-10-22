@@ -69,23 +69,23 @@ if ($productSlug !== '' || ($productId !== false && $productId !== null && $prod
         $statement->close();
 
         $availableStock = store_available_stock_sql();
+        $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
         $statement = $conn->prepare(
             "SELECT v.variant_id, v.variant_name, v.price, v.compare_at_price, v.currency,
                     {$availableStock} AS stock_quantity,
                     COALESCE(
                         (
-                            SELECT STRING_AGG(
-                                tg.group_name,
-                                CHR(10)
-                                ORDER BY
-                                    CASE WHEN lower(v.variant_name) LIKE lower(tg.group_name || ' / %') THEN 0 ELSE 1 END,
-                                    tg.group_id
-                            )
+                            SELECT tg.group_name
                             FROM talent_tbl t
                             INNER JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
                             INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                             WHERE regexp_replace(regexp_replace(lower(v.variant_name), '^.* / ', ''), '[^a-z0-9]', '', 'g')
                                 = regexp_replace(lower(t.talent_name), '[^a-z0-9]', '', 'g')
+                              AND tg.group_slug IN ({$eligibleGroupSlugs})
+                            ORDER BY
+                                CASE WHEN tg.group_slug = 'gamers' THEN 1 ELSE 0 END,
+                                array_position(ARRAY[{$eligibleGroupSlugs}]::text[], tg.group_slug)
+                            LIMIT 1
                         ),
                         (
                             SELECT tg.group_name
@@ -127,17 +127,20 @@ $availableVariants = array_values(array_filter(
     static fn (array $variant): bool => (int) $variant['stock_quantity'] > 0
 ));
 $defaultVariant = $availableVariants[0] ?? ($variants[0] ?? null);
-$hasGroupedEditions = (bool) array_filter($variants, static fn (array $variant): bool => !empty($variant['edition_groups']));
 $variantGroups = [];
+$ungroupedVariants = [];
 foreach ($variants as $variant) {
     $hasVariantGroups = !empty($variant['edition_groups']);
-    $groupNames = $hasGroupedEditions && $hasVariantGroups
-        ? explode("\n", $variant['edition_groups'])
-        : [''];
+    $groupNames = $hasVariantGroups ? explode("\n", $variant['edition_groups']) : [];
     $separatorPosition = strpos($variant['variant_name'], ' / ');
     $variant['edition_label'] = $hasVariantGroups && $separatorPosition !== false
         ? substr($variant['variant_name'], $separatorPosition + 3)
         : $variant['variant_name'];
+
+    if (!$groupNames) {
+        $ungroupedVariants[] = $variant;
+        continue;
+    }
 
     foreach ($groupNames as $groupName) {
         if (!isset($variantGroups[$groupName])) {
@@ -149,6 +152,12 @@ foreach ($variants as $variant) {
 
         $variantGroups[$groupName]['variants'][] = $variant;
     }
+}
+if ($ungroupedVariants) {
+    $variantGroups['Other items'] = [
+        'name' => 'Other items',
+        'variants' => $ungroupedVariants,
+    ];
 }
 
 $pageTitle = $product ? $product['product_name'] . ' | HoloVerse' : 'Product Not Found | HoloVerse';

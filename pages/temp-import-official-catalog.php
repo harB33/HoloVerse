@@ -185,11 +185,9 @@ function catalog_import_variant_group_name(string $variantTitle): ?string
 function catalog_import_variant_option_name(string $variantTitle): string
 {
     $separatorPosition = mb_strrpos($variantTitle, '/', 0, 'UTF-8');
-    if ($separatorPosition === false) {
-        return '';
-    }
-
-    $optionName = trim(mb_substr($variantTitle, $separatorPosition + 1, null, 'UTF-8'));
+    $optionName = $separatorPosition === false
+        ? trim($variantTitle)
+        : trim(mb_substr($variantTitle, $separatorPosition + 1, null, 'UTF-8'));
     $optionName = preg_replace('/\s*\((?:Japanese|English|Indonesian|Chinese|Korean|French|Spanish)\)\s*$/iu', '', $optionName) ?? $optionName;
     $optionName = preg_replace('/^(?:Personalized Set)\s+/iu', '', $optionName) ?? $optionName;
     $optionName = preg_replace('/\s+SP Voice(?:\s+Pack)?\s*$/iu', '', $optionName) ?? $optionName;
@@ -199,10 +197,6 @@ function catalog_import_variant_option_name(string $variantTitle): string
 
 function catalog_import_normalize_talent_variant(string $variantTitle, array $talents): string
 {
-    if (catalog_import_variant_group_name($variantTitle) === null) {
-        return $variantTitle;
-    }
-
     $qualifier = '';
     if (preg_match('/\s+(SP Voice(?: Pack)?)\s*(\((?:Japanese|English|Indonesian|Chinese|Korean|French|Spanish)\))?\s*$/iu', $variantTitle, $qualifierMatch) === 1) {
         $qualifier = ' ' . $qualifierMatch[1] . ($qualifierMatch[2] ?? '');
