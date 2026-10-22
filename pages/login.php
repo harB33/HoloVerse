@@ -669,6 +669,20 @@ require __DIR__ . '/../app/views/layout/head.php';
         };
         setupOtpControls(loginPanel);
 
+        const authErrorDismissTimers = new WeakMap();
+        const dismissAuthErrorAfterDelay = (errorNotice) => {
+            const currentTimer = authErrorDismissTimers.get(errorNotice);
+            if (currentTimer) {
+                window.clearTimeout(currentTimer);
+            }
+
+            const timer = window.setTimeout(() => {
+                errorNotice.hidden = true;
+                authErrorDismissTimers.delete(errorNotice);
+            }, 5000);
+            authErrorDismissTimers.set(errorNotice, timer);
+        };
+
         const startLoginRateLimitTimer = (form, errorNotice, retryAfter) => {
             const seconds = Number(retryAfter);
             const retryTimer = errorNotice.parentElement.querySelector(".login-retry-timer");
@@ -715,8 +729,10 @@ require __DIR__ . '/../app/views/layout/head.php';
         const loginForm = loginPanel.querySelector(".login-form");
         const initialLoginError = loginPanel.querySelector(".auth-error-message");
         if (loginForm && initialLoginError) {
+            dismissAuthErrorAfterDelay(initialLoginError);
             startLoginRateLimitTimer(loginForm, initialLoginError, initialLoginError.dataset.retryAfter);
         }
+        loginPanel.querySelectorAll(".otp-feedback-row .otp-error").forEach(dismissAuthErrorAfterDelay);
 
         loginPanel.addEventListener("submit", async (event) => {
             const form = event.target;
@@ -792,7 +808,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         feedback.append(retryTimer);
                     }
                     errorNotice.textContent = responseError.textContent;
+                    errorNotice.hidden = false;
                     errorNotice.dataset.retryAfter = responseError.dataset.retryAfter || "0";
+                    dismissAuthErrorAfterDelay(errorNotice);
                     retryTimer.hidden = Number(errorNotice.dataset.retryAfter) <= 0;
                     startLoginRateLimitTimer(form, errorNotice, errorNotice.dataset.retryAfter);
                     if (!response.ok && response.status !== 429) {
@@ -833,6 +851,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                     updateHistory.call(window.history, { authMode: "reset_password" }, "", nextUrl);
                 }
                 setupOtpControls(loginPanel);
+                const otpError = loginPanel.querySelector(".otp-feedback-row .otp-error");
+                if (otpError) {
+                    otpError.hidden = false;
+                    dismissAuthErrorAfterDelay(otpError);
+                }
                 loginPanel.querySelector("#reset-otp")?.focus();
             } catch (error) {
                 const errorMessage = error instanceof Error
@@ -867,6 +890,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     }
                 }
                 errorNotice.textContent = errorMessage;
+                errorNotice.hidden = false;
+                if (isLogin || isOtpAction) {
+                    dismissAuthErrorAfterDelay(errorNotice);
+                }
                 submitButton.disabled = false;
                 submitButton.textContent = originalButtonText;
                 form.removeAttribute("aria-busy");
