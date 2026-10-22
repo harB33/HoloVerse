@@ -27,6 +27,63 @@ if (preg_match('~^/product/([^/]+)$~', $requestPath, $productRoute) === 1) {
     exit;
 }
 
+if (preg_match('~^/talent-merch/([^/]+)/?$~', $requestPath, $talentMerchRoute) === 1) {
+    $_GET['talent_slug'] = $talentMerchRoute[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/talent-merch.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/talent-merch/([^/]+)/([^/]+)/?$~', $requestPath, $talentCategoryRoute) === 1) {
+    $_GET['talent_slug'] = $talentCategoryRoute[1];
+    $_GET['category_slug'] = $talentCategoryRoute[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/talent-merch.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/products/category/([^/]+)/?$~', $requestPath, $categoryRoute) === 1) {
+    $_GET['category_slug'] = $categoryRoute[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/products/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $generationCategoryRoute) === 1) {
+    $_GET['generation'] = $generationCategoryRoute[1];
+    $_GET['category_slug'] = $generationCategoryRoute[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/products/([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$~', $requestPath, $generationCategoryRoute) === 1) {
+    $_GET['generation'] = $generationCategoryRoute[1];
+    $_GET['category_slug'] = $generationCategoryRoute[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/products/([A-Za-z0-9_-]+)/?$~', $requestPath, $generationRoute) === 1) {
+    $_GET['route_segment'] = $generationRoute[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath, $legacyPage) === 1
     && is_file(__DIR__ . '/pages/' . $legacyPage[1] . '.php')) {
     header('Location: /' . $legacyPage[1], true, 308);
@@ -80,12 +137,12 @@ while ($group = $groupsResult->fetch_assoc()) {
 
 $talents = [];
 $talentResult = $conn->query(
-    "SELECT t.talent_name, t.talent_img,
+    "SELECT t.talent_name, t.talent_slug, t.talent_img,
             STRING_AGG(g.group_slug, ' ' ORDER BY array_position({$groupArraySql}, g.group_slug)) AS group_slugs
      FROM talent_tbl t
      LEFT JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
      LEFT JOIN talent_group_tbl g ON g.group_id = gm.group_id
-     GROUP BY t.talent_id, t.talent_name, t.talent_img
+     GROUP BY t.talent_id, t.talent_name, t.talent_slug, t.talent_img
      ORDER BY t.talent_name"
 );
 while ($talent = $talentResult->fetch_assoc()) {
@@ -96,6 +153,7 @@ while ($talent = $talentResult->fetch_assoc()) {
     }
     $talents[] = [
         'name' => $talent['talent_name'],
+        'slug' => $talent['talent_slug'],
         'groups' => $groupSlugs,
         'group_names' => implode(' · ', $groupNames),
         'portrait' => $talent['talent_img'],
@@ -208,7 +266,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 </div>
                 <div class="talent-grid" aria-live="polite">
                     <?php foreach ($talents as $talent): ?>
-                        <?php $talentLink = 'talent-merch?talent=' . rawurlencode($talent['name']); ?>
+                        <?php $talentLink = '/talent-merch/' . rawurlencode($talent['slug']); ?>
                         <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
                             <article class="talent-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
                                 <span class="talent-avatar">

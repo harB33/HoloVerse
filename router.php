@@ -41,6 +41,39 @@ if ($requestPath === '/') {
     $_GET['slug'] = $matches[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/product.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/talent-merch/([^/]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/talent-merch.php';
+    $_GET['talent_slug'] = $matches[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/talent-merch/([^/]+)/([^/]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/talent-merch.php';
+    $_GET['talent_slug'] = $matches[1];
+    $_GET['category_slug'] = $matches[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/category/([^/]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['category_slug'] = $matches[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['generation'] = $matches[1];
+    $_GET['category_slug'] = $matches[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['generation'] = $matches[1];
+    $_GET['category_slug'] = $matches[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/([A-Za-z0-9_-]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['route_segment'] = $matches[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/([A-Za-z0-9_-]+)$~', $requestPath, $matches) === 1
     && is_file(__DIR__ . '/pages/' . $matches[1] . '.php')) {
     $scriptPath = __DIR__ . '/pages/' . $matches[1] . '.php';

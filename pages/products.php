@@ -13,27 +13,87 @@ $activeSearchQuery = $filterSearch !== ''
     ? ['search' => $filterSearch]
     : ($generalProductSearch !== '' ? ['global_search' => $generalProductSearch] : []);
 $generationParameter = $_GET['generation'] ?? '';
+$routeSegment = $_GET['route_segment'] ?? '';
 $selectedGeneration = is_string($generationParameter)
     && in_array($generationParameter, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? $generationParameter
         : '';
+if (
+    $selectedGeneration === ''
+    && is_string($routeSegment)
+    && in_array($routeSegment, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+) {
+    $selectedGeneration = $routeSegment;
+}
+$requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+$requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '';
+$routeSegments = array_filter(explode('/', trim($requestPath, '/')), static fn (string $segment): bool => $segment !== '');
+$siteRoot = str_repeat('../', max(1, count($routeSegments) - 1));
 $categories = [];
 $categoryIds = [];
-if (!$isCatalogSearchRequest) {
-    $categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
-    $categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
-    $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+$categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
+$categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
+$categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+$categorySlugInput = $_GET['category_slug'] ?? '';
+if (
+    (!is_string($categorySlugInput) || $categorySlugInput === '')
+    && is_string($routeSegment)
+    && $routeSegment !== ''
+    && $routeSegment !== 'products'
+    && !in_array($routeSegment, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+) {
+    $categorySlugInput = $routeSegment;
 }
+$categorySlugInput = is_string($categorySlugInput) ? strtolower(trim($categorySlugInput)) : '';
 $categoryParameter = $_GET['category'] ?? '';
 $selectedCategory = is_string($categoryParameter)
     ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
     : false;
-if ($isCatalogSearchRequest) {
+if ($categorySlugInput !== '') {
+    $selectedCategory = 0;
+    foreach ($categories as $category) {
+        if (store_category_slug($category['category_name']) === $categorySlugInput) {
+            $selectedCategory = (int) $category['category_id'];
+            break;
+        }
+    }
+} elseif ($isCatalogSearchRequest) {
     $selectedCategory = $selectedCategory !== false && $selectedCategory > 0 ? $selectedCategory : 0;
 } else {
     $selectedCategory = $selectedCategory !== false && in_array($selectedCategory, $categoryIds, true)
         ? $selectedCategory
         : 0;
+}
+$selectedCategorySlug = '';
+if ($selectedCategory > 0) {
+    foreach ($categories as $category) {
+        if ((int) $category['category_id'] === $selectedCategory) {
+            $selectedCategorySlug = store_category_slug($category['category_name']);
+            break;
+        }
+    }
+}
+$catalogBasePath = $selectedGeneration !== ''
+    ? '/products/' . rawurlencode($selectedGeneration)
+    : '/products';
+$catalogPath = $catalogBasePath . ($selectedCategorySlug !== '' ? '/' . rawurlencode($selectedCategorySlug) : '');
+$hasQueryFilters = array_key_exists('generation', $_GET)
+    || array_key_exists('category', $_GET)
+    || array_key_exists('category_slug', $_GET)
+    || array_key_exists('route_segment', $_GET);
+if (
+    !$isCatalogSearchRequest
+    && $hasQueryFilters
+    && $requestPath !== $catalogPath
+) {
+    $catalogQuery = $_GET;
+    unset($catalogQuery['generation'], $catalogQuery['category'], $catalogQuery['category_slug'], $catalogQuery['route_segment']);
+    $redirectUrl = $catalogPath;
+    if ($catalogQuery) {
+        $redirectUrl .= '?' . http_build_query($catalogQuery);
+    }
+    header('Location: ' . $redirectUrl, true, 308);
+    exit;
 }
 
 if (!$isCatalogSearchRequest) {
@@ -70,9 +130,7 @@ if ($isCatalogSearchRequest) {
     $pageCount = $searchPageCount;
     $currentPage = $searchCurrentPage;
     $activeSearchQuery = $productSearch !== '' ? ['search' => $productSearch] : [];
-    $catalogFilterQuery = array_filter($activeSearchQuery + [
-        'category' => $selectedCategory,
-    ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+    $catalogPaginationBasePath = $catalogPath;
     echo '<div class="catalog-product-results-fragment"><span id="all-products-count">'
         . number_format($totalProductCount)
         . ' products'
@@ -95,15 +153,9 @@ $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $currentPage = min(max(1, $currentPage), $pageCount);
 $products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize, $productSearch, $selectedGeneration, $selectedCategory);
-$catalogSearchHiddenFields = array_filter([
-    'generation' => $selectedGeneration,
-    'category' => $selectedCategory,
-], static fn (string|int $value): bool => $value !== '' && $value !== 0);
-$catalogFilterQuery = array_filter($activeSearchQuery + [
-    'category' => $selectedCategory,
-], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+$catalogSearchHiddenFields = [];
+$catalogPaginationBasePath = $catalogPath;
 $pageTitle = 'All Products | HoloVerse';
-$siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
@@ -122,15 +174,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <p>Browse the full collection of available talent merchandise.</p>
                 <span class="all-products-count" id="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
                 <nav class="products-promo-links" aria-label="Shop product collections">
-                    <a href="flash_sale"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap preview-icon" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>Flash Sale</a>
-                    <a href="pre_order"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-arrow-up preview-icon" aria-hidden="true"><path d="m14 17 4-4 4 4"/><path d="M16 2v3"/><path d="M18 21v-8"/><path d="M21 10.343V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h9"/><path d="M3 9h18"/><path d="M8 2v3"/></svg>Pre-order</a>
+                    <a href="<?= $siteRoot ?>flash_sale"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap preview-icon" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>Flash Sale</a>
+                    <a href="<?= $siteRoot ?>pre_order"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-arrow-up preview-icon" aria-hidden="true"><path d="m14 17 4-4 4 4"/><path d="M16 2v3"/><path d="M18 21v-8"/><path d="M21 10.343V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h9"/><path d="M3 9h18"/><path d="M8 2v3"/></svg>Pre-order</a>
                 </nav>
             </section>
 
             <div class="products-catalog-layout">
                 <aside class="generation-filter" aria-labelledby="generation-filter-title">
                     <?php
-                    $catalogSearchAction = 'products';
+                    $catalogSearchAction = $catalogPath;
                     $catalogSearchId = 'filter-panel-catalog-search';
                     $catalogSearchClass = 'filter-panel-search';
                     $catalogSearchLabel = 'Search products, categories, or talents';
@@ -140,15 +192,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                     $catalogSearchShowClear = false;
                     require __DIR__ . '/../app/views/components/catalog-search.php';
                     ?>
-                    <form class="category-filter" method="get" action="products">
+                    <form class="category-filter" method="get" action="<?= store_escape($catalogBasePath) ?>" data-catalog-base-path="<?= store_escape($catalogBasePath) ?>">
                         <label for="catalog-category-trigger">Filter by category</label>
                         <?php foreach ($activeSearchQuery as $name => $value): ?>
                             <input type="hidden" name="<?= store_escape($name) ?>" value="<?= store_escape((string) $value) ?>">
                         <?php endforeach; ?>
-                        <?php if ($selectedGeneration !== ''): ?>
-                            <input type="hidden" name="generation" value="<?= store_escape($selectedGeneration) ?>">
-                        <?php endif; ?>
-                        <input id="catalog-category" type="hidden" name="category" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
+                        <input id="catalog-category" type="hidden" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
                         <div class="category-filter-dropdown" data-category-dropdown>
                             <button class="category-filter-trigger" id="catalog-category-trigger" type="button" aria-expanded="false" aria-controls="catalog-category-options" data-category-trigger>
                                 <span data-category-label><?= $selectedCategory > 0
@@ -160,21 +209,31 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <button class="category-filter-option<?= $selectedCategory === 0 ? ' is-selected' : '' ?>" type="button" role="option" data-category-option data-category-value="" aria-selected="<?= $selectedCategory === 0 ? 'true' : 'false' ?>">All Categories</button>
                                 <?php foreach ($categories as $category): ?>
                                     <?php $categoryId = (int) $category['category_id']; ?>
-                                    <button class="category-filter-option<?= $selectedCategory === $categoryId ? ' is-selected' : '' ?>" type="button" role="option" data-category-option data-category-value="<?= $categoryId ?>" aria-selected="<?= $selectedCategory === $categoryId ? 'true' : 'false' ?>"><?= store_escape($category['category_name']) ?></button>
+                                    <button class="category-filter-option<?= $selectedCategory === $categoryId ? ' is-selected' : '' ?>" type="button" role="option" data-category-option data-category-value="<?= $categoryId ?>" data-category-slug="<?= store_escape(store_category_slug($category['category_name'])) ?>" aria-selected="<?= $selectedCategory === $categoryId ? 'true' : 'false' ?>"><?= store_escape($category['category_name']) ?></button>
                                 <?php endforeach; ?>
                             </div>
                         </div>
                     </form>
                     <h2 id="generation-filter-title">Filter by generation</h2>
                     <nav aria-label="Product generations">
-                        <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="products<?= $catalogFilterQuery ? '?' . store_escape(http_build_query($catalogFilterQuery)) : '' ?>"<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
+                        <?php
+                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/' . rawurlencode($selectedCategorySlug) : '');
+                        if ($activeSearchQuery) {
+                            $allGenerationsHref .= '?' . http_build_query($activeSearchQuery);
+                        }
+                        ?>
+                        <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="<?= store_escape($allGenerationsHref) ?>" data-generation-slug=""<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
                         <?php foreach ($generations as $generation): ?>
                             <?php
-                            $generationHref = 'products?' . http_build_query($catalogFilterQuery + [
-                                'generation' => $generation['group_slug'],
-                            ]);
+                            $generationHref = '/products/' . rawurlencode($generation['group_slug']);
+                            if ($selectedCategorySlug !== '') {
+                                $generationHref .= '/' . rawurlencode($selectedCategorySlug);
+                            }
+                            if ($activeSearchQuery) {
+                                $generationHref .= '?' . http_build_query($activeSearchQuery);
+                            }
                             ?>
-                            <a class="generation-filter-option<?= $selectedGeneration === $generation['group_slug'] ? ' is-active' : '' ?>" href="<?= store_escape($generationHref) ?>"<?= $selectedGeneration === $generation['group_slug'] ? ' aria-current="true"' : '' ?>><?= store_escape($generation['group_name']) ?></a>
+                            <a class="generation-filter-option<?= $selectedGeneration === $generation['group_slug'] ? ' is-active' : '' ?>" href="<?= store_escape($generationHref) ?>" data-generation-slug="<?= store_escape($generation['group_slug']) ?>"<?= $selectedGeneration === $generation['group_slug'] ? ' aria-current="true"' : '' ?>><?= store_escape($generation['group_name']) ?></a>
                         <?php endforeach; ?>
                     </nav>
                 </aside>
@@ -190,6 +249,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         const categoryFilter = document.querySelector(".category-filter");
         if (categoryFilter) {
             const categoryInput = categoryFilter.querySelector("#catalog-category");
+            const categoryBasePath = categoryFilter.dataset.catalogBasePath;
             const categoryTrigger = categoryFilter.querySelector("[data-category-trigger]");
             const categoryLabel = categoryFilter.querySelector("[data-category-label]");
             const categoryOptions = categoryFilter.querySelector("#catalog-category-options");
@@ -204,6 +264,9 @@ require __DIR__ . '/../app/views/layout/head.php';
             categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
                 option.addEventListener("click", () => {
                     categoryInput.value = option.dataset.categoryValue;
+                    categoryFilter.action = option.dataset.categorySlug
+                        ? `${categoryBasePath}/${encodeURIComponent(option.dataset.categorySlug)}`
+                        : categoryBasePath;
                     categoryLabel.textContent = option.textContent.trim();
                     categoryFilter.querySelectorAll("[data-category-option]").forEach((item) => {
                         const selected = item === option;
@@ -312,6 +375,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                             params.delete("ajax");
                             params.delete("page");
                             for (const [name, value] of params) {
+                                if (name === "generation" || name === "category") {
+                                    continue;
+                                }
                                 if (value) {
                                     currentUrl.searchParams.set(name, value);
                                 } else {
@@ -321,6 +387,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                             if (searchInput.value.trim()) {
                                 currentUrl.searchParams.set("search", searchInput.value.trim());
                             }
+                            const generation = document.querySelector(".generation-filter-option[aria-current='true']")
+                                ?.dataset.generationSlug || "";
+                            const categorySlug = document.querySelector(".category-filter [data-category-option].is-selected")
+                                ?.dataset.categorySlug || "";
+                            currentUrl.pathname = `/products${generation ? `/${generation}` : ""}${categorySlug ? `/${encodeURIComponent(categorySlug)}` : ""}`;
+                            currentUrl.searchParams.delete("category");
+                            currentUrl.searchParams.delete("generation");
                             currentUrl.searchParams.set("page", String(data.currentPage));
                             window.history.replaceState({}, "", currentUrl);
                             initializeProductImages();

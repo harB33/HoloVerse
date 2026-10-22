@@ -538,11 +538,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <nav class="product-breadcrumb" aria-label="Breadcrumb">
                         <a href="../home">Home</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-                        <a href="products">Products</a>
+                        <a href="../products">Products</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                         <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
                     </nav>
-                    <a class="product-back-link" href="products"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
+                    <a class="product-back-link" href="../products"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
                 </div>
 
                 <section class="product-layout" aria-labelledby="product-title">
@@ -677,7 +677,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 Featuring:
                                 <?php foreach ($talents as $index => $talent): ?>
                                     <?php if ($index > 0): ?>, <?php endif; ?>
-                                    <a href="talent-merch?talent=<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
+                                    <a href="/talent-merch/<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
                                 <?php endforeach; ?>
                             </p>
                             <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-featured-talents" data-featured-talents-toggle>View All Featured Talents</button>

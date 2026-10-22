@@ -24,6 +24,14 @@
     RewriteRule ^home/?$ index.php [L]
 
     RewriteRule ^product/([^/]+)/?$ pages/product.php?slug=$1 [L,QSA]
+    RewriteRule ^talent-merch/([^/]+)/([^/]+)/?$ pages/talent-merch.php?talent_slug=$1&category_slug=$2 [L,QSA]
+    RewriteRule ^talent-merch/([^/]+)/?$ pages/talent-merch.php?talent_slug=$1 [L,QSA]
+    RewriteRule ^products/category/([0-9]+)/?$ pages/products.php?category=$1 [L,QSA]
+    RewriteRule ^products/([A-Za-z0-9_-]+)/category/([0-9]+)/?$ pages/products.php?generation=$1&category=$2 [L,QSA]
+    RewriteRule ^products/category/([^/]+)/?$ pages/products.php?category_slug=$1 [L,QSA]
+    RewriteRule ^products/([A-Za-z0-9_-]+)/category/([^/]+)/?$ pages/products.php?generation=$1&category_slug=$2 [L,QSA]
+    RewriteRule ^products/([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$ pages/products.php?generation=$1&category_slug=$2 [L,QSA]
+    RewriteRule ^products/([A-Za-z0-9_-]+)/?$ pages/products.php?route_segment=$1 [L,QSA]
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

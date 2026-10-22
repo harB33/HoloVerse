@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$talentParameter = $_GET['talent'] ?? '';
+$talentParameter = $_GET['talent_slug'] ?? $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
 $productSearch = is_string($searchParameter) ? trim($searchParameter) : '';
@@ -13,6 +13,7 @@ $validatedPageSize = is_string($pageSizeParameter)
 $pageSize = $validatedPageSize !== false && in_array($validatedPageSize, $pageSizeOptions, true)
     ? $validatedPageSize
     : 12;
+$pageSizeQuery = $pageSize !== 12 ? ['per_page' => $pageSize] : [];
 $pageParameter = $_GET['page'] ?? '';
 $currentPage = is_string($pageParameter)
     ? filter_var($pageParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
@@ -23,10 +24,12 @@ $selectedCategory = is_string($categoryParameter)
     ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
     : false;
 $selectedCategory = $selectedCategory === false ? 0 : (int) $selectedCategory;
+$categorySlugInput = $_GET['category_slug'] ?? '';
+$categorySlugInput = is_string($categorySlugInput) ? strtolower(trim($categorySlugInput)) : '';
 $talent = null;
 
 if ($selectedTalent !== '') {
-    $statement = $conn->prepare('SELECT talent_id, talent_name FROM talent_tbl WHERE talent_name = ? OR talent_slug = ? LIMIT 1');
+    $statement = $conn->prepare('SELECT talent_id, talent_name, talent_slug FROM talent_tbl WHERE talent_name = ? OR talent_slug = ? LIMIT 1');
     $statement->bind_param('ss', $selectedTalent, $selectedTalent);
     $statement->execute();
     $talent = $statement->get_result()->fetch_assoc();
@@ -41,6 +44,8 @@ $products = [];
 $totalProductCount = 0;
 $pageCount = 1;
 $categories = [];
+$talentMerchPath = '';
+$talentCollectionPath = '';
 if ($talent) {
     $talentId = (int) $talent['talent_id'];
     $categoryStatement = $conn->prepare(
@@ -51,9 +56,49 @@ if ($talent) {
     $categoryStatement->close();
 
     $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
-    if (!in_array($selectedCategory, $categoryIds, true)) {
+    if ($categorySlugInput !== '') {
+        $selectedCategory = 0;
+        foreach ($categories as $category) {
+            if (store_category_slug($category['category_name']) === $categorySlugInput) {
+                $selectedCategory = (int) $category['category_id'];
+                break;
+            }
+        }
+    } elseif (!in_array($selectedCategory, $categoryIds, true)) {
         $selectedCategory = 0;
     }
+    $selectedCategorySlug = '';
+    if ($selectedCategory > 0) {
+        foreach ($categories as $category) {
+            if ((int) $category['category_id'] === $selectedCategory) {
+                $selectedCategorySlug = store_category_slug($category['category_name']);
+                break;
+            }
+        }
+    }
+    $talentMerchPath = '/talent-merch/' . rawurlencode($talent['talent_slug']);
+    $talentCollectionPath = $talentMerchPath . ($selectedCategorySlug !== '' ? '/' . rawurlencode($selectedCategorySlug) : '');
+    $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+    $requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '';
+    if (
+        $requestPath !== $talentCollectionPath
+        || array_key_exists('talent', $_GET)
+        || array_key_exists('category', $_GET)
+        || (($_GET['per_page'] ?? null) === '12')
+    ) {
+        $canonicalQuery = $_GET;
+        unset($canonicalQuery['talent'], $canonicalQuery['talent_slug'], $canonicalQuery['category'], $canonicalQuery['category_slug']);
+        if (($_GET['per_page'] ?? null) === '12') {
+            unset($canonicalQuery['per_page']);
+        }
+        $redirectUrl = $talentCollectionPath;
+        if ($canonicalQuery) {
+            $redirectUrl .= '?' . http_build_query($canonicalQuery);
+        }
+        header('Location: ' . $redirectUrl, true, 308);
+        exit;
+    }
+    $selectedTalent = $talent['talent_slug'];
     $availableStock = store_available_stock_sql();
     $searchPattern = '%' . $productSearch . '%';
     $countStatement = $conn->prepare(
@@ -138,7 +183,7 @@ if ($talent) {
 }
 
 $pageTitle = $talent ? $talent['talent_name'] . ' Merchandise | HoloVerse' : 'Talent Not Found | HoloVerse';
-$siteRoot = '../';
+$siteRoot = '/';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
@@ -172,19 +217,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <aside class="generation-filter talent-merch-filter" aria-labelledby="talent-merch-search-title">
                         <h2 id="talent-merch-search-title">Search this collection</h2>
                         <?php
-                        $catalogSearchAction = 'talent-merch';
+                        $catalogSearchAction = $talentCollectionPath;
                         $catalogSearchId = 'talent-merch-search';
                         $catalogSearchClass = 'talent-merch-filter-search';
                         $catalogSearchLabel = 'Search this talent collection';
                         $catalogSearchPlaceholder = 'Search this collection';
                         $catalogSearchValue = $productSearch;
-                        $catalogSearchHiddenFields = [
-                            'talent' => $selectedTalent,
-                            'per_page' => $pageSize,
-                        ];
-                        if ($selectedCategory > 0) {
-                            $catalogSearchHiddenFields['category'] = $selectedCategory;
-                        }
+                        $catalogSearchHiddenFields = $pageSizeQuery;
                         $catalogSearchShowClear = false;
                         require __DIR__ . '/../app/views/components/catalog-search.php';
                         ?>
@@ -192,18 +231,18 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <nav aria-labelledby="talent-merch-category-title">
                             <?php
                             $categoryFilterQuery = array_filter([
-                                'talent' => $selectedTalent,
                                 'search' => $productSearch,
-                                'per_page' => $pageSize,
                             ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+                            $categoryFilterQuery += $pageSizeQuery;
                             ?>
-                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
+                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="<?= store_escape($talentMerchPath . ($categoryFilterQuery ? '?' . http_build_query($categoryFilterQuery) : '')) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
                             <?php foreach ($categories as $category): ?>
                                 <?php
-                                $categoryHref = 'talent-merch.php?' . http_build_query($categoryFilterQuery + [
-                                    'category' => (int) $category['category_id'],
-                                ]);
                                 $categoryId = (int) $category['category_id'];
+                                $categoryHref = $talentMerchPath . '/' . rawurlencode(store_category_slug($category['category_name']));
+                                if ($categoryFilterQuery) {
+                                    $categoryHref .= '?' . http_build_query($categoryFilterQuery);
+                                }
                                 ?>
                                 <a class="generation-filter-option<?= $selectedCategory === $categoryId ? ' is-active' : '' ?>" href="<?= store_escape($categoryHref) ?>"<?= $selectedCategory === $categoryId ? ' aria-current="true"' : '' ?>><?= store_escape($category['category_name']) ?></a>
                             <?php endforeach; ?>
@@ -211,13 +250,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </aside>
                     <div class="products-catalog-results">
                         <?php if ($totalProductCount > 0): ?>
-                            <form class="product-page-size-form" method="get" action="talent-merch">
-                                <input type="hidden" name="talent" value="<?= store_escape($selectedTalent) ?>">
+                            <form class="product-page-size-form" method="get" action="<?= store_escape($talentCollectionPath) ?>">
                                 <?php if ($productSearch !== ''): ?>
                                     <input type="hidden" name="search" value="<?= store_escape($productSearch) ?>">
-                                <?php endif; ?>
-                                <?php if ($selectedCategory > 0): ?>
-                                    <input type="hidden" name="category" value="<?= $selectedCategory ?>">
                                 <?php endif; ?>
                                 <label for="talent-product-limit">Products per page</label>
                                 <select id="talent-product-limit" name="per_page">
@@ -241,8 +276,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                                                 <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                                             </div>
                                             <?php if (!empty($product['image_url'])): ?>
-                                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '/')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '/')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                                             <?php endif; ?>
                                             <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                                         </div>
@@ -276,19 +311,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php if ($pageCount > 1): ?>
                                 <?php
                                 $paginationQuery = array_filter([
-                                    'talent' => $selectedTalent,
                                     'search' => $productSearch,
-                                    'category' => $selectedCategory,
-                                    'per_page' => $pageSize,
                                 ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
+                                $paginationQuery += $pageSizeQuery;
                                 ?>
                                 <nav class="all-products-pagination" aria-label="Talent product pages">
                                     <?php if ($currentPage > 1): ?>
-                                        <a href="?<?= store_escape(http_build_query($paginationQuery + ['page' => $currentPage - 1])) ?>" aria-label="Previous page">Previous</a>
+                                        <a href="<?= store_escape($talentCollectionPath . '?' . http_build_query($paginationQuery + ['page' => $currentPage - 1])) ?>" aria-label="Previous page">Previous</a>
                                     <?php endif; ?>
                                     <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
                                     <?php if ($currentPage < $pageCount): ?>
-                                        <a href="?<?= store_escape(http_build_query($paginationQuery + ['page' => $currentPage + 1])) ?>" aria-label="Next page">Next</a>
+                                        <a href="<?= store_escape($talentCollectionPath . '?' . http_build_query($paginationQuery + ['page' => $currentPage + 1])) ?>" aria-label="Next page">Next</a>
                                     <?php endif; ?>
                                 </nav>
                             <?php endif; ?>
@@ -298,7 +331,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                 </div>
             <?php endif; ?>
-            <a class="talent-directory-back-link" href="talents">Back to the talent directory</a>
+            <a class="talent-directory-back-link" href="/talents">Back to the talent directory</a>
         </main>
     </div>
 
@@ -319,7 +352,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         });
     </script>
     <?php
-    $cartHref = 'cart';
+    $cartHref = '/cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>

@@ -12,8 +12,8 @@
                         <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                     </div>
                     <?php if (!empty($product['image_url'])): ?>
-                        <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                        <img class="drop-product-image is-loading" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                        <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                        <img class="drop-product-image is-loading" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                     <?php endif; ?>
                     <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                 </div>
@@ -31,7 +31,7 @@
                             </div>
                         </div>
                         <?php if ((int) $product['stock_quantity'] > 0): ?>
-                            <form action="cart" method="post">
+                            <form action="<?= store_escape($siteRoot . 'cart') ?>" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
                                 <button type="submit" name="action" value="add">Add to cart</button>
@@ -47,11 +47,11 @@
     <?php if ($pageCount > 1): ?>
         <nav class="all-products-pagination" aria-label="Product pages">
             <?php if ($currentPage > 1): ?>
-                <a href="?<?= store_escape(http_build_query(['page' => $currentPage - 1] + $activeSearchQuery + ['generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Previous page">Previous</a>
+                <a href="<?= store_escape($catalogPaginationBasePath . '?' . http_build_query(['page' => $currentPage - 1] + $activeSearchQuery)) ?>" aria-label="Previous page">Previous</a>
             <?php endif; ?>
             <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
             <?php if ($currentPage < $pageCount): ?>
-                <a href="?<?= store_escape(http_build_query(['page' => $currentPage + 1] + $activeSearchQuery + ['generation' => $selectedGeneration, 'category' => $selectedCategory ?: ''])) ?>" aria-label="Next page">Next</a>
+                <a href="<?= store_escape($catalogPaginationBasePath . '?' . http_build_query(['page' => $currentPage + 1] + $activeSearchQuery)) ?>" aria-label="Next page">Next</a>
             <?php endif; ?>
         </nav>
     <?php endif; ?>

@@ -14,6 +14,16 @@ function store_product_url(string $productName): string
     return '/product/' . rawurlencode(strtolower($slug));
 }
 
+function store_category_slug(string $categoryName): string
+{
+    $slug = preg_replace('/[^\p{L}\p{N}]+/u', '-', trim($categoryName));
+    if (!is_string($slug)) {
+        throw new InvalidArgumentException('Unable to create a category URL slug.');
+    }
+
+    return strtolower(trim($slug, '-'));
+}
+
 function store_product_rows(DatabaseConnection $conn, string $where = '', string $order = 'p.created_at DESC', int $limit = 0): array
 {
     $availableStock = store_available_stock_sql();
