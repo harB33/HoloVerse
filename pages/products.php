@@ -6,25 +6,15 @@ $searchParameter = $_GET['search'] ?? '';
 $filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $generalSearchParameter = $_GET['global_search'] ?? '';
 $generalProductSearch = is_string($generalSearchParameter) ? trim($generalSearchParameter) : '';
-$productSearch = $filterSearch !== '' ? $filterSearch : $generalProductSearch;
 $isCatalogSearchRequest = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
     && ($_GET['ajax'] ?? '') === 'search';
-$activeSearchQuery = $filterSearch !== ''
-    ? ['search' => $filterSearch]
-    : ($generalProductSearch !== '' ? ['global_search' => $generalProductSearch] : []);
 $generationParameter = $_GET['generation'] ?? '';
 $routeSegment = $_GET['route_segment'] ?? '';
+$routeSegment = is_string($routeSegment) ? rawurldecode($routeSegment) : '';
 $selectedGeneration = is_string($generationParameter)
     && in_array($generationParameter, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? $generationParameter
         : '';
-if (
-    $selectedGeneration === ''
-    && is_string($routeSegment)
-    && in_array($routeSegment, STORE_TALENT_FILTER_GROUP_SLUGS, true)
-) {
-    $selectedGeneration = $routeSegment;
-}
 $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
 $requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '';
 $routeSegments = array_filter(explode('/', trim($requestPath, '/')), static fn (string $segment): bool => $segment !== '');
@@ -34,17 +24,21 @@ $categoryIds = [];
 $categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
 $categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
 $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
-$categorySlugInput = $_GET['category_slug'] ?? '';
 if (
-    (!is_string($categorySlugInput) || $categorySlugInput === '')
-    && is_string($routeSegment)
+    $generalProductSearch === ''
     && $routeSegment !== ''
-    && $routeSegment !== 'products'
-    && !in_array($routeSegment, STORE_TALENT_FILTER_GROUP_SLUGS, true)
+    && $selectedGeneration === ''
+    && !array_key_exists('global_search', $_GET)
 ) {
-    $categorySlugInput = $routeSegment;
+    $generalProductSearch = $routeSegment;
 }
+$filterSearch = $filterSearch !== '' ? $filterSearch : $generalProductSearch;
+$categorySlugInput = $_GET['category_slug'] ?? '';
 $categorySlugInput = is_string($categorySlugInput) ? strtolower(trim($categorySlugInput)) : '';
+$productSearch = $filterSearch !== '' ? $filterSearch : $generalProductSearch;
+$activeSearchQuery = $filterSearch !== ''
+    ? ['search' => $filterSearch]
+    : ($generalProductSearch !== '' ? ['global_search' => $generalProductSearch] : []);
 $categoryParameter = $_GET['category'] ?? '';
 $selectedCategory = is_string($categoryParameter)
     ? filter_var($categoryParameter, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
@@ -74,13 +68,32 @@ if ($selectedCategory > 0) {
     }
 }
 $catalogBasePath = $selectedGeneration !== ''
-    ? '/products/' . rawurlencode($selectedGeneration)
+    ? '/products/generation/' . rawurlencode($selectedGeneration)
     : '/products';
-$catalogPath = $catalogBasePath . ($selectedCategorySlug !== '' ? '/' . rawurlencode($selectedCategorySlug) : '');
+$catalogPath = $selectedCategorySlug !== ''
+    ? $catalogBasePath . '/category/' . rawurlencode($selectedCategorySlug)
+    : $catalogBasePath;
 $hasQueryFilters = array_key_exists('generation', $_GET)
     || array_key_exists('category', $_GET)
-    || array_key_exists('category_slug', $_GET)
-    || array_key_exists('route_segment', $_GET);
+    || array_key_exists('category_slug', $_GET);
+if (
+    !$isCatalogSearchRequest
+    && $routeSegment !== ''
+    && $filterSearch === $routeSegment
+    && (array_key_exists('search', $_GET) || array_key_exists('page', $_GET))
+) {
+    $catalogQuery = $_GET;
+    unset($catalogQuery['search'], $catalogQuery['route_segment']);
+    if (($catalogQuery['page'] ?? '') === '1') {
+        unset($catalogQuery['page']);
+    }
+    $redirectUrl = $requestPath;
+    if ($catalogQuery) {
+        $redirectUrl .= '?' . http_build_query($catalogQuery);
+    }
+    header('Location: ' . $redirectUrl, true, 308);
+    exit;
+}
 if (
     !$isCatalogSearchRequest
     && $hasQueryFilters
@@ -217,7 +230,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h2 id="generation-filter-title">Filter by generation</h2>
                     <nav aria-label="Product generations">
                         <?php
-                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/' . rawurlencode($selectedCategorySlug) : '');
+                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '');
                         if ($activeSearchQuery) {
                             $allGenerationsHref .= '?' . http_build_query($activeSearchQuery);
                         }
@@ -225,9 +238,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="<?= store_escape($allGenerationsHref) ?>" data-generation-slug=""<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
                         <?php foreach ($generations as $generation): ?>
                             <?php
-                            $generationHref = '/products/' . rawurlencode($generation['group_slug']);
+                            $generationHref = '/products/generation/' . rawurlencode($generation['group_slug']);
                             if ($selectedCategorySlug !== '') {
-                                $generationHref .= '/' . rawurlencode($selectedCategorySlug);
+                                $generationHref .= '/category/' . rawurlencode($selectedCategorySlug);
                             }
                             if ($activeSearchQuery) {
                                 $generationHref .= '?' . http_build_query($activeSearchQuery);
@@ -265,7 +278,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 option.addEventListener("click", () => {
                     categoryInput.value = option.dataset.categoryValue;
                     categoryFilter.action = option.dataset.categorySlug
-                        ? `${categoryBasePath}/${encodeURIComponent(option.dataset.categorySlug)}`
+                        ? `${categoryBasePath}/category/${encodeURIComponent(option.dataset.categorySlug)}`
                         : categoryBasePath;
                     categoryLabel.textContent = option.textContent.trim();
                     categoryFilter.querySelectorAll("[data-category-option]").forEach((item) => {
@@ -368,6 +381,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                             document.querySelector("#all-products-count").textContent = nextCount.textContent;
 
                             const currentUrl = new URL(window.location.href);
+                            const globalSearch = params.get("global_search")?.trim() || "";
+                            const searchTerm = searchInput.value.trim() || globalSearch;
                             currentUrl.searchParams.delete("ajax");
                             currentUrl.searchParams.delete("global_search");
                             currentUrl.searchParams.delete("page");
@@ -375,7 +390,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             params.delete("ajax");
                             params.delete("page");
                             for (const [name, value] of params) {
-                                if (name === "generation" || name === "category") {
+                                if (name === "generation" || name === "category" || name === "global_search" || name === "search") {
                                     continue;
                                 }
                                 if (value) {
@@ -384,17 +399,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     currentUrl.searchParams.delete(name);
                                 }
                             }
-                            if (searchInput.value.trim()) {
-                                currentUrl.searchParams.set("search", searchInput.value.trim());
-                            }
                             const generation = document.querySelector(".generation-filter-option[aria-current='true']")
                                 ?.dataset.generationSlug || "";
                             const categorySlug = document.querySelector(".category-filter [data-category-option].is-selected")
                                 ?.dataset.categorySlug || "";
-                            currentUrl.pathname = `/products${generation ? `/${generation}` : ""}${categorySlug ? `/${encodeURIComponent(categorySlug)}` : ""}`;
+                            currentUrl.pathname = searchTerm && !generation && !categorySlug
+                                ? `/products/${encodeURIComponent(searchTerm)}`
+                                : `/products${generation ? `/generation/${generation}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
+                            if (globalSearch && (generation || categorySlug)) {
+                                currentUrl.searchParams.set("global_search", globalSearch);
+                            } else if (searchTerm && (generation || categorySlug)) {
+                                currentUrl.searchParams.set("search", searchTerm);
+                            }
                             currentUrl.searchParams.delete("category");
                             currentUrl.searchParams.delete("generation");
-                            currentUrl.searchParams.set("page", String(data.currentPage));
+                            if (data.currentPage > 1) {
+                                currentUrl.searchParams.set("page", String(data.currentPage));
+                            }
                             window.history.replaceState({}, "", currentUrl);
                             initializeProductImages();
                         } catch (error) {

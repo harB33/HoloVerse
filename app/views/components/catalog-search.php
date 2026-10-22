@@ -9,6 +9,7 @@ $catalogSearchInputName = isset($catalogSearchInputName) && is_string($catalogSe
     ? $catalogSearchInputName
     : 'search';
 $catalogSearchShowSuggestions = $catalogSearchClassName === 'site-header-search';
+$catalogSearchIsGlobal = $catalogSearchInputName === 'global_search';
 $catalogSearchIsFilter = in_array($catalogSearchClassName, ['filter-panel-search', 'talent-merch-filter-search'], true);
 $catalogSearchClass = $catalogSearchClassName !== ''
     ? ' ' . store_escape($catalogSearchClassName)
@@ -17,7 +18,7 @@ if ($catalogSearchHiddenFields) {
     $catalogSearchClearHref .= '?' . http_build_query($catalogSearchHiddenFields);
 }
 ?>
-<form class="catalog-search<?= $catalogSearchClass ?>" method="get" action="<?= store_escape($catalogSearchAction) ?>" role="search">
+<form class="catalog-search<?= $catalogSearchClass ?>" method="get" action="<?= store_escape($catalogSearchAction) ?>" role="search"<?= $catalogSearchIsGlobal ? ' data-global-search-form' : '' ?>>
     <label class="sr-only" for="<?= store_escape($catalogSearchId) ?>"><?= store_escape($catalogSearchLabel) ?></label>
     <input id="<?= store_escape($catalogSearchId) ?>" name="<?= store_escape($catalogSearchInputName) ?>" type="search" value="<?= store_escape($catalogSearchValue) ?>" placeholder="<?= store_escape($catalogSearchPlaceholder) ?>"<?= $catalogSearchShowSuggestions ? ' aria-controls="' . store_escape($catalogSearchId) . '-suggestions" aria-expanded="false" autocomplete="off" data-catalog-search-input' : '' ?>>
     <?php if ($catalogSearchShowSuggestions): ?>

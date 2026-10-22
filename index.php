@@ -55,6 +55,25 @@ if (preg_match('~^/products/category/([^/]+)/?$~', $requestPath, $categoryRoute)
     exit;
 }
 
+if (preg_match('~^/products/generation/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $generationCategoryRoute) === 1) {
+    $_GET['generation'] = $generationCategoryRoute[1];
+    $_GET['category_slug'] = $generationCategoryRoute[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
+if (preg_match('~^/products/generation/([A-Za-z0-9_-]+)/?$~', $requestPath, $generationRoute) === 1) {
+    $_GET['generation'] = $generationRoute[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/products.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if (preg_match('~^/products/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $generationCategoryRoute) === 1) {
     $_GET['generation'] = $generationCategoryRoute[1];
     $_GET['category_slug'] = $generationCategoryRoute[2];
@@ -75,7 +94,7 @@ if (preg_match('~^/products/([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$~', $requestPath
     exit;
 }
 
-if (preg_match('~^/products/([A-Za-z0-9_-]+)/?$~', $requestPath, $generationRoute) === 1) {
+if (preg_match('~^/products/([^/]+)/?$~', $requestPath, $generationRoute) === 1) {
     $_GET['route_segment'] = $generationRoute[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];

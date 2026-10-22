@@ -103,8 +103,14 @@ document.querySelectorAll("[data-catalog-search-input]").forEach((input) => {
         }
     });
 
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", (event) => {
         const search = input.value.trim();
+        if (search !== "" && form.hasAttribute("data-global-search-form")) {
+            event.preventDefault();
+            const actionUrl = new URL(form.action, window.location.href);
+            actionUrl.pathname = `${actionUrl.pathname.replace(/\/+$/, "")}/${encodeURIComponent(search)}`;
+            window.location.assign(actionUrl);
+        }
         if (search !== "") {
             const recentSearches = readRecentSearches().filter(
                 (recent) => recent.toLocaleLowerCase() !== search.toLocaleLowerCase()

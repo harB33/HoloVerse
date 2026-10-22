@@ -57,6 +57,17 @@ if ($requestPath === '/') {
     $_GET['category_slug'] = $matches[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/generation/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['generation'] = $matches[1];
+    $_GET['category_slug'] = $matches[2];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif (preg_match('~^/products/generation/([A-Za-z0-9_-]+)/?$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/products.php';
+    $_GET['generation'] = $matches[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/products/([A-Za-z0-9_-]+)/category/([^/]+)/?$~', $requestPath, $matches) === 1) {
     $scriptPath = __DIR__ . '/pages/products.php';
     $_GET['generation'] = $matches[1];
@@ -69,7 +80,7 @@ if ($requestPath === '/') {
     $_GET['category_slug'] = $matches[2];
     $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
-} elseif (preg_match('~^/products/([A-Za-z0-9_-]+)/?$~', $requestPath, $matches) === 1) {
+} elseif (preg_match('~^/products/([^/]+)/?$~', $requestPath, $matches) === 1) {
     $scriptPath = __DIR__ . '/pages/products.php';
     $_GET['route_segment'] = $matches[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
