@@ -1727,8 +1727,8 @@
   }
 
   .drop-art > .collector-favorite-form {
-    top: 10.5%;
-    right: 11%;
+    top: 8%;
+    right: 9%;
     transform: translate(50%, -50%);
   }
 
@@ -4651,15 +4651,15 @@
 
   .collector-favorite-button {
     display: grid;
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     cursor: pointer;
     place-items: center;
-    border: 1px solid rgb(221 228 236 / 88%);
-    border-radius: 999px;
-    background: rgb(255 255 255 / 94%);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: #526276;
-    box-shadow: 0 5px 18px rgb(25 39 52 / 12%);
+    box-shadow: none;
     transition:
       color 0.18s ease,
       background 0.18s ease,
@@ -4685,8 +4685,8 @@
   }
 
   .collector-favorite-button svg {
-    width: 21px;
-    height: 21px;
+    width: 24px;
+    height: 24px;
   }
 
   .collector-feedback-toast {
