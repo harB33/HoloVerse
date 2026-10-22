@@ -133,10 +133,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <a class="collector-showcase-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                                 <div class="collector-showcase-card-art">
                                     <?php if (!empty($product['image_url'])): ?>
-                                        <img src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                        <img class="collector-showcase-card-art-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                        <img class="collector-showcase-card-art-image" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                                     <?php else: ?>
                                         <span aria-hidden="true"><?= store_escape(strtoupper(substr($product['product_name'], 0, 1))) ?></span>
                                     <?php endif; ?>
+                                    <div class="collector-showcase-card-art-labels">
+                                        <span><?= store_escape($product['variant_name']) ?></span>
+                                    </div>
                                     <?php
                                     $favoriteFormModifier = 'collector-favorite-form--showcase';
                                     require __DIR__ . '/../app/views/components/collector-favorite-button.php';
@@ -146,8 +150,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <div class="collector-showcase-card-copy">
                                     <span><?= store_escape($product['category_name']) ?></span>
                                     <h3><?= store_escape($product['product_name']) ?></h3>
-                                    <p><?= store_escape($product['variant_name']) ?></p>
-                                    <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                    <p><?= store_escape($product['description'] ?? '') ?></p>
+                                    <hr>
+                                    <span class="collector-showcase-card-price-label">Price</span>
+                                    <strong class="collector-showcase-card-price"><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
                                 </div>
                             </article>
                         <?php endforeach; ?>

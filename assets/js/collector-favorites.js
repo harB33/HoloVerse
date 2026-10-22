@@ -7,9 +7,23 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
         toast.setAttribute('aria-live', 'polite');
         toast.setAttribute('data-collector-feedback-toast', '');
 
-        const icon = document.createElement('span');
-        icon.className = 'collector-feedback-toast-icon';
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('class', 'collector-feedback-toast-icon');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', 'currentColor');
+        icon.setAttribute('stroke-width', '2');
+        icon.setAttribute('stroke-linecap', 'round');
+        icon.setAttribute('stroke-linejoin', 'round');
         icon.setAttribute('aria-hidden', 'true');
+        const iconCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        iconCircle.setAttribute('cx', '12');
+        iconCircle.setAttribute('cy', '12');
+        iconCircle.setAttribute('r', '10');
+        icon.append(iconCircle);
+        const iconCheck = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        iconCheck.setAttribute('d', 'm8 12 2.5 2.5L16 9');
+        icon.append(iconCheck);
         toast.append(icon);
 
         const copy = document.createElement('p');
@@ -20,7 +34,18 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
         close.className = 'collector-feedback-toast-close';
         close.type = 'button';
         close.setAttribute('aria-label', 'Dismiss message');
-        close.textContent = '×';
+        const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        closeIcon.setAttribute('viewBox', '0 0 24 24');
+        closeIcon.setAttribute('fill', 'none');
+        closeIcon.setAttribute('stroke', 'currentColor');
+        closeIcon.setAttribute('stroke-width', '2');
+        closeIcon.setAttribute('stroke-linecap', 'round');
+        closeIcon.setAttribute('stroke-linejoin', 'round');
+        closeIcon.setAttribute('aria-hidden', 'true');
+        const closePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        closePath.setAttribute('d', 'm18 6-12 12M6 6l12 12');
+        closeIcon.append(closePath);
+        close.append(closeIcon);
         close.addEventListener('click', () => {
             toast.hidden = true;
         });
@@ -33,8 +58,6 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
     toast.classList.toggle('is-success', !isError);
     toast.setAttribute('role', isError ? 'alert' : 'status');
     toast.setAttribute('aria-live', isError ? 'assertive' : 'polite');
-    toast.querySelector('.collector-feedback-toast-icon').textContent = isError ? '!' : '✓';
-
     const copy = toast.querySelector('.collector-feedback-toast-copy');
     copy.replaceChildren(document.createTextNode(message));
     if (loginUrl) {
@@ -103,7 +126,7 @@ document.addEventListener('submit', async (event) => {
         button.title = isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase';
         form.querySelector('input[name="action"]').value = isFavorite ? 'remove' : 'save';
         showCollectorFeedback(
-            isFavorite ? 'Saved to your Collector Showcase.' : 'Removed from your Collector Showcase.',
+            isFavorite ? 'Added to your Collector Showcase.' : 'Removed from your Collector Showcase.',
         );
     } catch (error) {
         showCollectorFeedback('Could not reach the save service. Check your connection and try again.', '', 'error');
