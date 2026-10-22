@@ -664,8 +664,27 @@ require __DIR__ . '/../app/views/layout/head.php';
             (() => {
                 const galleryMain = document.querySelector('.product-gallery-main');
                 const galleryBackdrop = document.querySelector('.product-gallery-backdrop');
+                const galleryThumbnailStrip = document.querySelector('.product-gallery-thumbnails');
                 const galleryThumbnails = [...document.querySelectorAll('[data-gallery-image]')];
                 let activeGalleryIndex = 0;
+
+                galleryThumbnailStrip?.addEventListener('wheel', (event) => {
+                    if (galleryThumbnailStrip.scrollWidth <= galleryThumbnailStrip.clientWidth) {
+                        return;
+                    }
+
+                    const wheelDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+                        ? event.deltaX
+                        : event.deltaY;
+                    const maxScrollLeft = galleryThumbnailStrip.scrollWidth - galleryThumbnailStrip.clientWidth;
+                    const canScroll = wheelDelta < 0
+                        ? galleryThumbnailStrip.scrollLeft > 0
+                        : galleryThumbnailStrip.scrollLeft < maxScrollLeft;
+                    if (canScroll && wheelDelta !== 0) {
+                        event.preventDefault();
+                        galleryThumbnailStrip.scrollLeft += wheelDelta;
+                    }
+                }, { passive: false });
 
                 const showGalleryImage = (index, scrollThumbnail = false) => {
                     if (!galleryThumbnails.length) {
