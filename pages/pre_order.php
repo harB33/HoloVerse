@@ -133,7 +133,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php foreach ($products as $product): ?>
                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                     <article class="drop-card">
-                        <a class="drop-card-link" href="product?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                        <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                         <div class="drop-art">
                             <div class="drop-art-labels">
                                 <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Pre-order' : 'Sold out' ?></span>

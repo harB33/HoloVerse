@@ -18,6 +18,15 @@ if ($requestPath === '/home/') {
     exit;
 }
 
+if (preg_match('~^/product/([^/]+)$~', $requestPath, $productRoute) === 1) {
+    $_GET['slug'] = $productRoute[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/product.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/product.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath, $legacyPage) === 1
     && is_file(__DIR__ . '/pages/' . $legacyPage[1] . '.php')) {
     header('Location: /' . $legacyPage[1], true, 308);
@@ -140,7 +149,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 <?php foreach ($featuredProducts as $product): ?>
                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                     <article class="drop-card">
-                        <a class="drop-card-link" href="product?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                        <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                         <div class="drop-art">
                             <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
                                 <?php if ((int) $product['stock_quantity'] <= 0): ?>

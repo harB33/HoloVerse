@@ -1,5 +1,19 @@
 <?php
 
+function store_product_url(string $productName): string
+{
+    $slug = preg_replace('/[^\p{L}\p{N}]+/u', '-', trim($productName));
+    if (!is_string($slug) || $slug === '') {
+        throw new InvalidArgumentException('A product name is required to build its URL.');
+    }
+    $slug = trim($slug, '-');
+    if ($slug === '') {
+        throw new InvalidArgumentException('A product name must contain letters or numbers to build its URL.');
+    }
+
+    return '/product/' . rawurlencode(strtolower($slug));
+}
+
 function store_product_rows(DatabaseConnection $conn, string $where = '', string $order = 'p.created_at DESC', int $limit = 0): array
 {
     $availableStock = store_available_stock_sql();
@@ -137,4 +151,3 @@ function store_catalog_product_count(DatabaseConnection $conn, string $search = 
     $result = $conn->query($sql);
     return (int) ($result->fetch_assoc()['product_count'] ?? 0);
 }
-

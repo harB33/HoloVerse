@@ -36,6 +36,11 @@ if ($requestPath === '/') {
     $scriptPath = __DIR__ . '/index.php';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
     $_SERVER['PHP_SELF'] = '/index.php';
+} elseif (preg_match('~^/product/([^/]+)$~', $requestPath, $matches) === 1) {
+    $scriptPath = __DIR__ . '/pages/product.php';
+    $_GET['slug'] = $matches[1];
+    $_SERVER['SCRIPT_NAME'] = '/pages/product.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/([A-Za-z0-9_-]+)$~', $requestPath, $matches) === 1
     && is_file(__DIR__ . '/pages/' . $matches[1] . '.php')) {
     $scriptPath = __DIR__ . '/pages/' . $matches[1] . '.php';

@@ -23,6 +23,8 @@
 
     RewriteRule ^home/?$ index.php [L]
 
+    RewriteRule ^product/([^/]+)/?$ pages/product.php?slug=$1 [L,QSA]
+
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^([A-Za-z0-9_-]+)/?$ pages/$1.php [L,QSA]

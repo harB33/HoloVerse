@@ -170,7 +170,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="products<?= $catalogFilterQuery ? '?' . store_escape(http_build_query($catalogFilterQuery)) : '' ?>"<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
                         <?php foreach ($generations as $generation): ?>
                             <?php
-                            $generationHref = 'products.php?' . http_build_query($catalogFilterQuery + [
+                            $generationHref = 'products?' . http_build_query($catalogFilterQuery + [
                                 'generation' => $generation['group_slug'],
                             ]);
                             ?>

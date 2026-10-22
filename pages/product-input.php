@@ -18,6 +18,7 @@ $talents = [];
 $message = '';
 $messageIsError = false;
 $createdProductId = 0;
+$createdProductName = '';
 $createdProductStatus = null;
 $invalidPostData = false;
 $additionalImageAltTexts = [''];
@@ -329,6 +330,14 @@ if (!$accessDenied) {
         if ($createdProductId > 0) {
             $message = $_SESSION['product_created_message'] ?? 'Product saved successfully.';
             $createdProductStatus = $_SESSION['product_created_status'] ?? null;
+            $statement = $conn->prepare('SELECT product_name FROM product_tbl WHERE product_id = ? LIMIT 1');
+            $statement->bind_param('i', $createdProductId);
+            $statement->execute();
+            $createdProduct = $statement->get_result()->fetch_assoc();
+            $statement->close();
+            $createdProductName = is_string($createdProduct['product_name'] ?? null)
+                ? $createdProduct['product_name']
+                : '';
             unset($_SESSION['product_created_message']);
             unset($_SESSION['product_created_status']);
         }
@@ -373,7 +382,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <p class="product-input-message<?= $messageIsError ? ' is-error' : '' ?>" role="<?= $messageIsError ? 'alert' : 'status' ?>">
                         <?= store_escape($message) ?>
                         <?php if (!$messageIsError && $createdProductId > 0 && $createdProductStatus === 'active'): ?>
-                            <a href="product?id=<?= $createdProductId ?>">View product</a>
+                            <a href="<?= store_escape(store_product_url($createdProductName)) ?>">View product</a>
                         <?php endif; ?>
                     </p>
                 <?php endif; ?>

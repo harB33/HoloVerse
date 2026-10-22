@@ -1,25 +1,63 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$productId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+$productSlugInput = $_GET['slug'] ?? '';
+$productSlug = is_string($productSlugInput) ? strtolower(trim($productSlugInput)) : '';
+$productId = $productSlug === '' ? filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) : null;
 $product = null;
 $variants = [];
 $talents = [];
 $images = [];
 
-if ($productId !== false && $productId !== null && $productId > 0) {
-    $statement = $conn->prepare(
-        "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
-            c.category_name
-         FROM product_tbl p
-         INNER JOIN category_tbl c ON c.category_id = p.category_id
-         WHERE p.product_id = ? AND p.status = 'active'
-         LIMIT 1"
-    );
-    $statement->bind_param('i', $productId);
-    $statement->execute();
-    $product = $statement->get_result()->fetch_assoc();
-    $statement->close();
+if ($productSlug !== '' || ($productId !== false && $productId !== null && $productId > 0)) {
+    $productQuery = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+                            c.category_name
+                     FROM product_tbl p
+                     INNER JOIN category_tbl c ON c.category_id = p.category_id
+                     WHERE p.status = 'active' AND ";
+    $productStatement = $productSlug !== ''
+        ? $conn->prepare(
+            $productQuery . "(
+                lower(regexp_replace(
+                    regexp_replace(p.product_name, '[^[:alnum:]]+', '-', 'g'),
+                    '(^-+|-+$)',
+                    '',
+                    'g'
+                )) = ?
+                OR lower(regexp_replace(
+                    regexp_replace(p.product_name, '^[[:space:]]+|[[:space:]]+$', '', 'g'),
+                    '[[:space:]]+',
+                    '-',
+                    'g'
+                )) = ?
+            ) ORDER BY p.product_id LIMIT 1"
+        )
+        : $conn->prepare($productQuery . 'p.product_id = ? LIMIT 1');
+    if ($productSlug !== '') {
+        $productStatement->bind_param('ss', $productSlug, $productSlug);
+    } else {
+        $productStatement->bind_param('i', $productId);
+    }
+    $productStatement->execute();
+    $product = $productStatement->get_result()->fetch_assoc();
+    $productStatement->close();
+
+    if ($product && $productSlug === '') {
+        header('Location: ' . store_product_url($product['product_name']), true, 308);
+        exit;
+    }
+
+    if ($product && $productSlug !== '') {
+        $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+        if (is_string($requestPath) && $requestPath !== store_product_url($product['product_name'])) {
+            header('Location: ' . store_product_url($product['product_name']), true, 308);
+            exit;
+        }
+    }
+
+    if ($product) {
+        $productId = (int) $product['product_id'];
+    }
 
     if ($product) {
         $statement = $conn->prepare(
