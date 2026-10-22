@@ -4343,7 +4343,7 @@
 }
 
 .otp-error {
-  order: 1;
+  order: 0;
   flex: 1 1 auto;
   margin: 0;
   color: #e11d48;
@@ -4353,6 +4353,7 @@
 }
 
 .otp-signin-link {
+  order: 1;
   flex: 0 0 auto;
   margin: 0 0 0 auto;
   font-size: 0.875rem;
