@@ -511,7 +511,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
                         </p>
                         <?php if ($message !== '' && !$isRegistration): ?>
-                            <p class="auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
+                            <div class="login-feedback space-y-1">
+                                <p class="auth-error-message otp-error" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
+                                <p class="login-retry-timer otp-timer"<?= $loginRateLimitSeconds > 0 ? '' : ' hidden' ?>>Try again in <span>--:--</span>.</p>
+                            </div>
                         <?php endif; ?>
                         <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
                             Sign in
@@ -666,24 +669,34 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         const startLoginRateLimitTimer = (form, errorNotice, retryAfter) => {
             const seconds = Number(retryAfter);
+            const retryTimer = errorNotice.parentElement.querySelector(".login-retry-timer");
             if (!Number.isFinite(seconds) || seconds <= 0) {
+                if (retryTimer) {
+                    retryTimer.hidden = true;
+                }
                 return;
             }
 
             const submitButton = form.querySelector('button[type="submit"]');
+            const timerDisplay = retryTimer?.querySelector("span");
+            if (!retryTimer || !timerDisplay) {
+                return;
+            }
+            retryTimer.hidden = false;
             const deadline = Date.now() + seconds * 1000;
             const updateTimer = () => {
                 const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
                 if (remaining === 0) {
                     errorNotice.textContent = "You can try signing in again now.";
                     errorNotice.dataset.retryAfter = "0";
+                    retryTimer.hidden = true;
                     submitButton.disabled = false;
                     return false;
                 }
 
                 const minutes = Math.floor(remaining / 60);
                 const secondsRemaining = remaining % 60;
-                errorNotice.textContent = `Too many sign-in attempts. Try again in ${minutes}:${String(secondsRemaining).padStart(2, "0")}.`;
+                timerDisplay.textContent = `${minutes}:${String(secondsRemaining).padStart(2, "0")}`;
                 submitButton.disabled = true;
                 return true;
             };
@@ -754,15 +767,31 @@ require __DIR__ . '/../app/views/layout/head.php';
                     if (passwordInput instanceof HTMLInputElement) {
                         passwordInput.value = "";
                     }
+                    let feedback = form.querySelector(".login-feedback");
+                    if (!feedback) {
+                        feedback = document.createElement("div");
+                        feedback.className = "login-feedback space-y-1";
+                        form.querySelector(".login-forgot-password").after(feedback);
+                    }
                     let errorNotice = form.parentElement.querySelector(".auth-error-message");
                     if (!errorNotice) {
                         errorNotice = document.createElement("p");
-                        errorNotice.className = "auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700";
+                        errorNotice.className = "auth-error-message otp-error";
                         errorNotice.setAttribute("role", "alert");
-                        form.querySelector(".login-forgot-password").after(errorNotice);
+                        feedback.append(errorNotice);
+                    } else if (errorNotice.parentElement !== feedback) {
+                        feedback.append(errorNotice);
+                    }
+                    let retryTimer = feedback.querySelector(".login-retry-timer");
+                    if (!retryTimer) {
+                        retryTimer = document.createElement("p");
+                        retryTimer.className = "login-retry-timer otp-timer";
+                        retryTimer.innerHTML = 'Try again in <span>--:--</span>.';
+                        feedback.append(retryTimer);
                     }
                     errorNotice.textContent = responseError.textContent;
                     errorNotice.dataset.retryAfter = responseError.dataset.retryAfter || "0";
+                    retryTimer.hidden = Number(errorNotice.dataset.retryAfter) <= 0;
                     startLoginRateLimitTimer(form, errorNotice, errorNotice.dataset.retryAfter);
                     if (!response.ok && response.status !== 429) {
                         throw new Error(responseError.textContent || "Unable to sign in. Please try again.");
@@ -817,11 +846,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                 if (!errorNotice) {
                     errorNotice = document.createElement("p");
                     errorNotice.className = isLogin
-                        ? "auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                        ? "auth-error-message otp-error"
                         : isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
                     errorNotice.setAttribute("role", "alert");
                     if (isLogin) {
-                        form.querySelector(".login-forgot-password").after(errorNotice);
+                        let feedback = form.querySelector(".login-feedback");
+                        if (!feedback) {
+                            feedback = document.createElement("div");
+                            feedback.className = "login-feedback space-y-1";
+                            form.querySelector(".login-forgot-password").after(feedback);
+                        }
+                        feedback.append(errorNotice);
                     } else if (isResetRequest) {
                         form.before(errorNotice);
                     } else {
