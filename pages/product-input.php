@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 
@@ -299,7 +299,7 @@ if (!$accessDenied) {
                     $conn->commit();
                     $_SESSION['product_created_message'] = 'Product saved successfully.';
                     $_SESSION['product_created_status'] = $status;
-                    header('Location: product-input.php?created=' . $createdProductId);
+                    header('Location: product-input?created=' . $createdProductId);
                     exit;
                 } catch (PDOException $error) {
                     $conn->rollback();
@@ -360,7 +360,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1>Add a product</h1>
                     <p>Enter product details, inventory, and images.</p>
                 </div>
-                <a href="admin-dashboard.php">Back to dashboard</a>
+                <a href="admin-dashboard">Back to dashboard</a>
             </header>
 
             <section class="product-input-panel">
@@ -373,7 +373,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <p class="product-input-message<?= $messageIsError ? ' is-error' : '' ?>" role="<?= $messageIsError ? 'alert' : 'status' ?>">
                         <?= store_escape($message) ?>
                         <?php if (!$messageIsError && $createdProductId > 0 && $createdProductStatus === 'active'): ?>
-                            <a href="product.php?id=<?= $createdProductId ?>">View product</a>
+                            <a href="product?id=<?= $createdProductId ?>">View product</a>
                         <?php endif; ?>
                     </p>
                 <?php endif; ?>
@@ -381,7 +381,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if (!$categories): ?>
                     <p class="product-input-warning" role="alert">No product categories are set up. Add categories to the database before creating a product.</p>
                 <?php else: ?>
-                    <form method="post" action="product-input.php" enctype="multipart/form-data" class="product-input-form">
+                    <form method="post" action="product-input" enctype="multipart/form-data" class="product-input-form">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
 
                         <fieldset class="product-input-section product-input-section--details grid gap-5 sm:grid-cols-2">
@@ -500,7 +500,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                         <div class="product-input-actions">
                             <button type="submit" class="product-input-submit">Save product</button>
-                            <a href="admin-dashboard.php">Cancel</a>
+                            <a href="admin-dashboard">Cancel</a>
                         </div>
                     </form>
                 <?php endif; ?>

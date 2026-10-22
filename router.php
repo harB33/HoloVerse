@@ -6,6 +6,11 @@ $query = parse_url($requestUri, PHP_URL_QUERY);
 $requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '/';
 $requestPath = '/' . ltrim($requestPath, '/');
 
+if (preg_match('~(?:^|/)\.[^/]*~', $requestPath) === 1) {
+    http_response_code(404);
+    exit('Not Found');
+}
+
 $redirectToCleanUrl = static function (string $path) use ($query): never {
     $location = $path . (is_string($query) && $query !== '' ? '?' . $query : '');
     header('Location: ' . $location, true, 308);
@@ -21,11 +26,13 @@ if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath
     $redirectToCleanUrl('/' . $matches[1]);
 }
 
-if (preg_match('~^/([A-Za-z0-9_-]+)/$~', $requestPath, $matches) === 1) {
+if ($requestPath === '/') {
+    $scriptPath = __DIR__ . '/index.php';
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
+    $_SERVER['PHP_SELF'] = '/index.php';
+} elseif (preg_match('~^/([A-Za-z0-9_-]+)/$~', $requestPath, $matches) === 1) {
     $redirectToCleanUrl('/' . $matches[1]);
-}
-
-if ($requestPath === '/home') {
+} elseif ($requestPath === '/home') {
     $scriptPath = __DIR__ . '/index.php';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
     $_SERVER['PHP_SELF'] = '/index.php';

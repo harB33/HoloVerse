@@ -114,7 +114,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $_SESSION['auth_notice'] = $isPasswordResetResend && !$codeIssued
                 ? 'Please wait a minute before requesting another code.'
                 : 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
-            header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+            header('Location: login?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
             exit;
         }
     } elseif ($isOtpVerification) {
@@ -167,7 +167,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                         'email_hash' => $emailHash,
                         'otp_hash' => $reset['otp_hash'],
                     ];
-                    header('Location: login.php?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+                    header('Location: login?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
                     exit;
                 }
             } catch (Throwable $error) {
@@ -242,7 +242,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
                     unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified'], $_SESSION['password_reset_expires_at']);
                     $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
-                    header('Location: login.php' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
+                    header('Location: login' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
                     exit;
                 }
             } catch (Throwable $error) {
@@ -351,7 +351,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php if ($message !== ''): ?>
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
-                        <form action="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5">
+                        <form action="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="forgot_password">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -365,7 +365,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </button>
                         </form>
                         <p class="mt-7 text-center text-sm text-slate-600">
-                            <a class="auth-mode-button" href="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                            <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
                         </p>
                     <?php elseif ($isPasswordReset): ?>
                         <header class="mb-8">
@@ -383,7 +383,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                         <?php if ($resetEmail !== ''): ?>
                             <?php if ($isResetPasswordVerified): ?>
-                            <form action="login.php?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                            <form action="login?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="mode" value="reset_password">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -412,7 +412,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </button>
                             </form>
                             <?php else: ?>
-                            <form action="login.php?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5">
+                            <form action="login?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="mode" value="verify_reset_otp">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -431,7 +431,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </div>
                                     <div class="otp-meta-row">
                                         <p class="otp-timer">Remaining time: <span id="reset-otp-timer" data-expires-at="<?= $resetOtpExpiresAt ?>">--:--</span></p>
-                                        <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login.php?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
+                                        <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
                                     </div>
                                 </div>
                                 <button type="submit" class="otp-verify-button">
@@ -443,7 +443,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
                                 <?php endif; ?>
                                 <p class="otp-signin-link">
-                                    <a class="auth-mode-button" href="login.php<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                                    <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
                                 </p>
                             </div>
                             <?php endif; ?>
@@ -466,7 +466,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                     <?php endif; ?>
 
-                    <form action="login.php" method="post" class="space-y-5">
+                    <form action="login" method="post" class="space-y-5">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                         <input type="hidden" name="mode" value="login">
                         <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -481,7 +481,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                         </div>
                         <p class="-mt-2 text-right text-sm">
-                            <a class="auth-mode-button" href="login.php?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
+                            <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
                         </p>
                         <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
                             Sign in
@@ -499,15 +499,11 @@ require __DIR__ . '/../app/views/layout/head.php';
             <aside class="auth-artwork-panel relative min-h-[420px] overflow-hidden rounded-2xl shadow-sm lg:min-h-full" aria-label="Create account">
                 <img src="../assets/images/suisei2.jpg" alt="" draggable="false" class="absolute inset-0 h-full w-full object-cover object-[center_70%]">
             </aside>
-                <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
-                    <div class="auth-register-content">
-                        <button type="button" data-history-back class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none focus:ring-4 focus:ring-sky-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-                            Back
-                        </button>
-                        <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
-                            <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
-                            <span class="brand-wordmark">holo<span>verse</span></span>
+            <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
+                <div class="auth-register-content">
+                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
+                        <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
+                        <span class="brand-wordmark">holo<span>verse</span></span>
                         </a>
                         <header class="mb-4">
                             <h2 class="text-3xl font-bold text-slate-800">Create your account</h2>
@@ -518,7 +514,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
 
-                        <form action="login.php?mode=register" method="post" class="space-y-5">
+                        <form action="login?mode=register" method="post" class="space-y-5">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="register">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -787,10 +783,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             loginPanel.querySelector("#reset-password-strength-label"),
             loginPanel.querySelector("#reset-password-confirmation-message")
         );
-
-        document.querySelectorAll("[data-history-back]").forEach((button) => {
-            button.addEventListener("click", () => window.history.back());
-        });
 
         const setAuthMode = (showRegister) => {
             authShell.classList.toggle("is-register", showRegister);

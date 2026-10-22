@@ -126,7 +126,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>

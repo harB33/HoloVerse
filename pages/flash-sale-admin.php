@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 
@@ -34,7 +34,7 @@ if (!store_flash_sale_table_exists($conn)) {
                         <li>Ask the database administrator to restore the table using the schema in <code>Database/holoverse.sql</code>.</li>
                         <li>Refresh this page after the table has been restored.</li>
                     </ol>
-                    <a class="mt-5 inline-flex rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-slate-900" href="flash_sale.php">Return to flash sales</a>
+                    <a class="mt-5 inline-flex rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-slate-900" href="flash_sale">Return to flash sales</a>
                 </section>
             </main>
         </div>
@@ -81,7 +81,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 ? 'The scheduled drop was cancelled.'
                 : 'That drop was already cancelled or could not be found.';
             $_SESSION['flash_sale_admin_error'] = !$wasCancelled;
-            header('Location: flash-sale-admin.php');
+            header('Location: flash-sale-admin');
             exit;
         }
     } elseif ($error === '' && $action === 'schedule') {
@@ -154,7 +154,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                         $conn->commit();
 
                         $_SESSION['flash_sale_admin_notice'] = 'The flash sale drop was scheduled.';
-                        header('Location: flash-sale-admin.php');
+                        header('Location: flash-sale-admin');
                         exit;
                     }
                 }
@@ -222,7 +222,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php if (!$eligibleProducts): ?>
                     <p class="m-0 rounded-lg bg-amber-50 p-4 text-sm text-amber-800">No active, discounted, in-stock product variants are available to schedule.</p>
                 <?php else: ?>
-                    <form method="post" action="flash-sale-admin.php" class="grid gap-5 md:grid-cols-2">
+                    <form method="post" action="flash-sale-admin" class="grid gap-5 md:grid-cols-2">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                         <input type="hidden" name="action" value="schedule">
                         <label class="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2" for="sale-variant">
@@ -277,7 +277,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         <td class="px-3 py-4 text-slate-600"><?= store_escape($dropState) ?></td>
                                         <td class="px-3 py-4">
                                             <?php if ($drop['status'] === 'scheduled' && $dropEnd > $now): ?>
-                                                <form method="post" action="flash-sale-admin.php">
+                                                <form method="post" action="flash-sale-admin">
                                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                                     <input type="hidden" name="action" value="cancel">
                                                     <input type="hidden" name="flash_sale_id" value="<?= (int) $drop['flash_sale_id'] ?>">

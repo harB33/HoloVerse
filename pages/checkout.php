@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 }
 
@@ -54,7 +54,7 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
 }
 
 if ($orderNumber === '' && ($intent['scope'] ?? '') !== 'cart') {
-    header('Location: cart.php');
+    header('Location: cart');
     exit;
 }
 
@@ -305,7 +305,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 } catch (Throwable $error) {
                     error_log('HoloVerse order receipt email could not be sent: ' . $error->getMessage());
                 }
-                header('Location: checkout.php?order=' . rawurlencode($orderNumber));
+                header('Location: checkout?order=' . rawurlencode($orderNumber));
                 exit;
             } catch (Throwable $error) {
                 $conn->rollback();
@@ -390,13 +390,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                             default => 'Not specified',
                         }) ?></strong>. Your order is now confirmed and ready for processing.</p>
                     <?php endif; ?>
-                    <a class="cart-continue-button" href="products.php">Continue shopping</a>
+                    <a class="cart-continue-button" href="products">Continue shopping</a>
                 </section>
             <?php elseif (!$items): ?>
                 <section class="checkout-panel" aria-labelledby="checkout-title">
                     <h1 id="checkout-title">Nothing to check out</h1>
                     <p><?= $message !== '' ? store_escape($message) : 'Your selected item is no longer available. Return to the shop and try again.' ?></p>
-                    <a class="cart-continue-button" href="products.php">Browse products</a>
+                    <a class="cart-continue-button" href="products">Browse products</a>
                 </section>
             <?php else: ?>
                 <div class="checkout-layout">
@@ -412,7 +412,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
                         <?php if ($checkoutStep === 'information'): ?>
-                            <form class="checkout-address-form" action="checkout.php" method="post">
+                            <form class="checkout-address-form" action="checkout" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="action" value="continue_to_payment">
                                 <label>
@@ -450,7 +450,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <button class="cart-checkout-button" type="submit">Proceed to payment method</button>
                             </form>
                         <?php else: ?>
-                            <form class="checkout-address-form checkout-payment-form" action="checkout.php" method="post">
+                            <form class="checkout-address-form checkout-payment-form" action="checkout" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <fieldset class="checkout-payment-options">
                                     <legend>Choose a payment method</legend>

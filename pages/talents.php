@@ -80,7 +80,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <div class="talent-directory-results">
                         <div class="talent-grid" aria-live="polite">
                             <?php foreach ($talents as $talent): ?>
-                                <?php $talentLink = 'talent-merch.php?talent=' . rawurlencode($talent['name']); ?>
+                                <?php $talentLink = 'talent-merch?talent=' . rawurlencode($talent['name']); ?>
                                 <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
                                     <article class="talent-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
                                         <span class="talent-avatar">
@@ -139,7 +139,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         }, { once: true }));
     </script>
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
 </body>

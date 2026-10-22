@@ -1,4 +1,59 @@
 <?php
+$requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+$requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '/';
+$requestPath = '/' . ltrim($requestPath, '/');
+
+if (preg_match('~(?:^|/)\.[^/]*~', $requestPath) === 1 && $requestPath !== '/index.php') {
+    http_response_code(404);
+    exit('Not Found');
+}
+
+if ($requestPath === '/index.php') {
+    header('Location: /home', true, 308);
+    exit;
+}
+
+if ($requestPath === '/home/') {
+    header('Location: /home', true, 308);
+    exit;
+}
+
+if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath, $legacyPage) === 1
+    && is_file(__DIR__ . '/pages/' . $legacyPage[1] . '.php')) {
+    header('Location: /' . $legacyPage[1], true, 308);
+    exit;
+}
+
+if (preg_match('~^/([A-Za-z0-9_-]+)/$~', $requestPath, $trailingSlashPage) === 1
+    && is_file(__DIR__ . '/pages/' . $trailingSlashPage[1] . '.php')) {
+    header('Location: /' . $trailingSlashPage[1], true, 308);
+    exit;
+}
+
+if (preg_match('~^/([A-Za-z0-9_-]+)$~', $requestPath, $cleanPage) === 1
+    && is_file(__DIR__ . '/pages/' . $cleanPage[1] . '.php')) {
+    $pageScript = __DIR__ . '/pages/' . $cleanPage[1] . '.php';
+    $_SERVER['SCRIPT_NAME'] = '/pages/' . $cleanPage[1] . '.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = $pageScript;
+    require $pageScript;
+    exit;
+}
+
+if ($requestPath !== '/' && $requestPath !== '/home') {
+    $requestedFile = realpath(__DIR__ . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim($requestPath, '/')));
+    $projectRoot = realpath(__DIR__);
+    if ($requestedFile !== false
+        && $projectRoot !== false
+        && str_starts_with($requestedFile, $projectRoot . DIRECTORY_SEPARATOR)
+        && is_file($requestedFile)) {
+        return false;
+    }
+
+    http_response_code(404);
+    exit('Not Found');
+}
+
 require_once __DIR__ . '/app/store.php';
 
 $featuredProducts = store_catalog_product_rows($conn, 10);

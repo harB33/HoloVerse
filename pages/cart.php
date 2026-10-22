@@ -49,9 +49,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['checkout_intent'] = ['scope' => 'cart'];
 
                 if (!isset($_SESSION['user_id'])) {
-                    header('Location: login.php?mode=register&return_to=checkout');
+                    header('Location: login?mode=register&return_to=checkout');
                 } else {
-                    header('Location: checkout.php');
+                    header('Location: checkout');
                 }
                 exit;
             } elseif ($action === 'update') {
@@ -89,7 +89,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 ]);
                 exit;
             }
-            header('Location: cart.php');
+            header('Location: cart');
             exit;
         }
 
@@ -170,7 +170,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php if (!isset($_SESSION['user_id'])): ?>
                             <p class="cart-guest-notice" role="status">
                                 Guest mode: your cart is associated with this browser session.
-                                <a href="login.php">Sign in or create an account</a> to link it to your account.
+                                <a href="login">Sign in or create an account</a> to link it to your account.
                             </p>
                         <?php endif; ?>
                         <?php if ($message !== ''): ?>
@@ -202,7 +202,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         <?php endif; ?>
                                         <div class="cart-item-bottom">
                                             <div class="cart-item-controls">
-                                                <form action="cart.php" method="post" class="quantity-picker">
+                                                <form action="cart" method="post" class="quantity-picker">
                                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                                     <input type="hidden" name="action" value="update">
                                                     <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
@@ -212,7 +212,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                                 </form>
                                             </div>
                                             <div class="cart-item-secondary-actions">
-                                                <form action="cart.php" method="post" class="cart-remove-form">
+                                                <form action="cart" method="post" class="cart-remove-form">
                                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                                     <input type="hidden" name="action" value="remove">
                                                     <input type="hidden" name="cart_item_id" value="<?= (int) $item['cart_item_id'] ?>">
@@ -253,7 +253,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <strong><?= store_escape(store_format_price($subtotal + $taxes[$currency])) ?></strong>
                             </div>
                         <?php endforeach; ?>
-                        <form action="cart.php" method="post">
+                        <form action="cart" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="action" value="checkout">
                             <input type="hidden" name="checkout_scope" value="cart">
@@ -276,7 +276,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
                     <?php endif; ?>
                     <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
-                    <a class="cart-continue-button" href="products.php">
+                    <a class="cart-continue-button" href="products">
                         Browse products
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M5 12h14" />

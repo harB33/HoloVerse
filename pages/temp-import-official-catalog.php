@@ -399,7 +399,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             <?php if ($message !== ''): ?>
                 <p class="admin-notice<?= $messageIsError ? ' admin-notice--error' : '' ?>" role="<?= $messageIsError ? 'alert' : 'status' ?>"><?= store_escape($message) ?></p>
                 <?php if (!$messageIsError): ?>
-                    <p><a href="products.php">Open the imported catalog</a></p>
+                    <p><a href="products">Open the imported catalog</a></p>
                 <?php endif; ?>
             <?php else: ?>
                 <p>Source: official hololive production English storefront. All listed products are included, including sold-out and digital products.</p>

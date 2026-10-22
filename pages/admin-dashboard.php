@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: login');
     exit;
 }
 
@@ -51,7 +51,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             } elseif ($targetUser['user_role'] === $role) {
                 $conn->commit();
                 $_SESSION['admin_dashboard_notice'] = 'That account already has the selected privilege.';
-                header('Location: admin-dashboard.php#accounts');
+                header('Location: admin-dashboard#accounts');
                 exit;
             } else {
                 if ($targetUser['user_role'] === 'admin' && $role === 'user') {
@@ -70,7 +70,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $statement->close();
                     $conn->commit();
                     $_SESSION['admin_dashboard_notice'] = 'User privileges updated successfully.';
-                    header('Location: admin-dashboard.php#accounts');
+                    header('Location: admin-dashboard#accounts');
                     exit;
                 }
             }
@@ -153,9 +153,9 @@ $usersResult = $conn->query(
 $recentUsers = $usersResult ? $usersResult->fetch_all(PDO::FETCH_ASSOC) : [];
 
 $quickLinks = [
-    ['label' => 'Add Product', 'href' => 'product-input.php', 'accent' => 'primary'],
-    ['label' => 'Manage Flash Sales', 'href' => 'flash-sale-admin.php', 'accent' => 'secondary'],
-    ['label' => 'Inventory List', 'href' => 'inventory.php', 'accent' => 'secondary'],
+    ['label' => 'Add Product', 'href' => 'product-input', 'accent' => 'primary'],
+    ['label' => 'Manage Flash Sales', 'href' => 'flash-sale-admin', 'accent' => 'secondary'],
+    ['label' => 'Inventory List', 'href' => 'inventory', 'accent' => 'secondary'],
     ['label' => 'Order Queue', 'href' => '#orders', 'accent' => 'secondary'],
     ['label' => 'Customer Accounts', 'href' => '#accounts', 'accent' => 'secondary'],
 ];
@@ -216,7 +216,7 @@ $quickLinks = [
                 <section class="admin-panel" id="products">
                     <div class="admin-panel-header">
                         <h2>Latest products</h2>
-                        <a href="product-input.php">Add product</a>
+                        <a href="product-input">Add product</a>
                     </div>
                     <div class="admin-table-wrap">
                         <table>
@@ -308,7 +308,7 @@ $quickLinks = [
                                                 <td>Self-managed access is disabled</td>
                                             <?php else: ?>
                                                 <td colspan="2">
-                                                    <form class="admin-privilege-form" method="post" action="admin-dashboard.php#accounts">
+                                                    <form class="admin-privilege-form" method="post" action="admin-dashboard#accounts">
                                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                                         <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
                                                         <label class="sr-only" for="role-<?= (int) $user['user_id'] ?>">Privilege for <?= store_escape($user['username']) ?></label>

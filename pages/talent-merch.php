@@ -172,7 +172,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <aside class="generation-filter talent-merch-filter" aria-labelledby="talent-merch-search-title">
                         <h2 id="talent-merch-search-title">Search this collection</h2>
                         <?php
-                        $catalogSearchAction = 'talent-merch.php';
+                        $catalogSearchAction = 'talent-merch';
                         $catalogSearchId = 'talent-merch-search';
                         $catalogSearchClass = 'talent-merch-filter-search';
                         $catalogSearchLabel = 'Search this talent collection';
@@ -197,7 +197,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 'per_page' => $pageSize,
                             ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
                             ?>
-                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch.php?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
+                            <a class="generation-filter-option<?= $selectedCategory === 0 ? ' is-active' : '' ?>" href="talent-merch?<?= store_escape(http_build_query($categoryFilterQuery)) ?>"<?= $selectedCategory === 0 ? ' aria-current="true"' : '' ?>>All Categories</a>
                             <?php foreach ($categories as $category): ?>
                                 <?php
                                 $categoryHref = 'talent-merch.php?' . http_build_query($categoryFilterQuery + [
@@ -211,7 +211,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </aside>
                     <div class="products-catalog-results">
                         <?php if ($totalProductCount > 0): ?>
-                            <form class="product-page-size-form" method="get" action="talent-merch.php">
+                            <form class="product-page-size-form" method="get" action="talent-merch">
                                 <input type="hidden" name="talent" value="<?= store_escape($selectedTalent) ?>">
                                 <?php if ($productSearch !== ''): ?>
                                     <input type="hidden" name="search" value="<?= store_escape($productSearch) ?>">
@@ -232,7 +232,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php foreach ($products as $product): ?>
                                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                                     <article class="drop-card">
-                                        <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                                        <a class="drop-card-link" href="product?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                                         <div class="drop-art">
                                             <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
                                                 <?php if ((int) $product['stock_quantity'] <= 0): ?>
@@ -260,7 +260,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                                     </div>
                                                 </div>
                                                 <?php if ((int) $product['stock_quantity'] > 0): ?>
-                                                    <form action="cart.php" method="post">
+                                                    <form action="cart" method="post">
                                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                                         <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
                                                         <button type="submit" name="action" value="add">Add to cart</button>
@@ -298,7 +298,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                 </div>
             <?php endif; ?>
-            <a class="talent-directory-back-link" href="talents.php">Back to the talent directory</a>
+            <a class="talent-directory-back-link" href="talents">Back to the talent directory</a>
         </main>
     </div>
 
@@ -319,7 +319,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         });
     </script>
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>

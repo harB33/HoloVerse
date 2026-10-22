@@ -11,12 +11,12 @@
     RewriteCond %{THE_REQUEST} \s/+pages/([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
     RewriteRule ^pages/([A-Za-z0-9_-]+)\.php$ $1 [R=308,L]
 
-    RewriteCond %{THE_REQUEST} \s/+Functions/([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
-    RewriteRule ^Functions/([A-Za-z0-9_-]+)\.php$ $1 [R=308,L,NC]
-
     RewriteCond %{THE_REQUEST} \s/+([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
     RewriteCond %{DOCUMENT_ROOT}/pages/%1.php -f
     RewriteRule ^([A-Za-z0-9_-]+)\.php$ $1 [R=308,L]
+
+    RewriteCond %{THE_REQUEST} \s/+Functions/([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
+    RewriteRule ^Functions/([A-Za-z0-9_-]+)\.php$ $1 [R=308,L,NC]
 
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^([A-Za-z0-9_-]+)/$ $1 [R=308,L]

@@ -2112,19 +2112,49 @@
   }
 
   .admin-inventory-search {
-    @apply flex min-w-0 flex-wrap items-center gap-2;
+    @apply flex min-w-0 flex-[1_1_460px] items-center gap-2;
+    max-width: 620px;
+  }
+
+  .admin-inventory-search-field {
+    @apply relative min-w-0 flex-1;
   }
 
   .admin-inventory-search input {
-    @apply min-h-9 w-[min(320px,60vw)] rounded-lg border border-[#d7e1eb] bg-white px-3 py-2 text-[12px] text-[#1c2331] outline-none placeholder:text-[#8795a5] focus:border-[#0ea5d6] focus:ring-2 focus:ring-[#0ea5d6]/20;
+    @apply min-h-11 w-full rounded-xl border border-[#d7e1eb] bg-[#f8fafc] py-2 pl-10 pr-10 text-[13px] text-[#1c2331] outline-none transition placeholder:text-[#8795a5] focus:border-[#0ea5d6] focus:bg-white focus:ring-4 focus:ring-[#0ea5d6]/15;
   }
 
-  .admin-inventory-search button {
-    @apply min-h-9 cursor-pointer rounded-lg bg-[#0ea5d6] px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  .admin-inventory-search input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
   }
 
-  .admin-inventory-search a {
-    @apply text-[11px] font-semibold text-[#617184] underline-offset-2 hover:text-[#087fa8] hover:underline;
+  .admin-inventory-search-field > svg {
+    @apply pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 stroke-[#8492a3] stroke-[1.8];
+  }
+
+  .admin-inventory-search-clear {
+    @apply absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-[#8492a3] transition-colors hover:bg-[#e9f1f7] hover:text-[#34445a] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-search-clear[hidden] {
+    display: none;
+  }
+
+  .admin-inventory-search-clear svg {
+    @apply h-4 w-4 stroke-current stroke-2;
+  }
+
+  .admin-inventory-search > button[type="submit"] {
+    @apply min-h-11 cursor-pointer rounded-xl bg-[#0ea5d6] px-5 py-2 text-[12px] font-bold text-white shadow-sm transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6] disabled:cursor-wait disabled:opacity-70;
+  }
+
+  .admin-inventory-table tbody {
+    transition: opacity 120ms ease;
+  }
+
+  .admin-inventory-table tbody[aria-busy="true"] {
+    opacity: 0.55;
   }
 
   .admin-inventory-header-actions {
@@ -3641,6 +3671,14 @@
 
   .admin-inventory-header-actions {
     @apply flex-col items-end gap-2;
+  }
+
+  .admin-inventory-toolbar {
+    @apply items-stretch;
+  }
+
+  .admin-inventory-search {
+    @apply w-full max-w-none;
   }
 
   .admin-inventory-dashboard .admin-table-wrap {

@@ -448,11 +448,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <nav class="product-breadcrumb" aria-label="Breadcrumb">
                         <a href="../home">Home</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-                        <a href="products.php">Products</a>
+                        <a href="products">Products</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                         <span aria-current="page"><?= store_escape($product['product_name']) ?></span>
                     </nav>
-                    <a class="product-back-link" href="products.php"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
+                    <a class="product-back-link" href="products"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>Back to Products</a>
                 </div>
 
                 <section class="product-layout" aria-labelledby="product-title">
@@ -510,7 +510,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <del class="product-compare-price" data-product-compare <?= empty($defaultVariant['compare_at_price']) || (float) $defaultVariant['compare_at_price'] <= (float) $defaultVariant['price'] ? 'hidden' : '' ?>><?= !empty($defaultVariant['compare_at_price']) ? store_escape(store_format_price((float) $defaultVariant['compare_at_price'])) : '' ?></del>
                         </div>
 
-                        <form class="product-purchase-form" action="cart.php" method="post" data-product-form>
+                        <form class="product-purchase-form" action="cart" method="post" data-product-form>
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="action" value="add">
                             <input type="hidden" name="variant_id" value="<?= (int) $defaultVariant['variant_id'] ?>" data-variant-input>
@@ -577,7 +577,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <p class="product-talent-links">Featuring:
                                 <?php foreach ($talents as $index => $talent): ?>
                                     <?php if ($index > 0): ?>, <?php endif; ?>
-                                    <a href="talent-merch.php?talent=<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
+                                    <a href="talent-merch?talent=<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
                                 <?php endforeach; ?>
                             </p>
                         <?php endif; ?>
@@ -593,7 +593,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php if ($product && $variants): ?>

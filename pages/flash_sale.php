@@ -56,7 +56,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </svg>
                         Product availability is live
                     </span>
-                    <?php if (store_has_role('admin')): ?><a href="flash-sale-admin.php">Manage drops</a><?php endif; ?>
+                    <?php if (store_has_role('admin')): ?><a href="flash-sale-admin">Manage drops</a><?php endif; ?>
                 </span>
             </div>
             <?php if (!$flashSaleSchedulingAvailable): ?>
@@ -154,7 +154,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
 
                     <?php if ((int) $saleProduct['stock_quantity'] > 0): ?>
-                        <form action="cart.php" method="post">
+                        <form action="cart" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>">
                             <button class="flash-reserve-button" type="submit" name="action" value="add">
@@ -203,7 +203,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     <script src="../assets/js/flash-sale.js" defer></script>
 
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
 </body>

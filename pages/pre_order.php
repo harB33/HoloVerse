@@ -121,7 +121,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <?php
-            $catalogSearchAction = 'pre_order.php';
+            $catalogSearchAction = 'pre_order';
             $catalogSearchId = 'preorder-search';
             $catalogSearchLabel = 'Search pre-order products';
             $catalogSearchPlaceholder = 'Search pre-orders';
@@ -133,7 +133,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <?php foreach ($products as $product): ?>
                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
                     <article class="drop-card">
-                        <a class="drop-card-link" href="product.php?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                        <a class="drop-card-link" href="product?id=<?= (int) $product['product_id'] ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                         <div class="drop-art">
                             <div class="drop-art-labels">
                                 <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Pre-order' : 'Sold out' ?></span>
@@ -160,7 +160,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </div>
                                 </div>
                                 <?php if ((int) $product['stock_quantity'] > 0): ?>
-                                    <form action="cart.php" method="post">
+                                    <form action="cart" method="post">
                                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                         <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
                                         <button type="submit" name="action" value="add">Add pre-order</button>
@@ -199,7 +199,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h2>How pre-orders work</h2>
                     <p>Add an available item to your cart and complete checkout to place your pre-order. The estimated dispatch date is shown on each item; dates are estimates and may change.</p>
                 </div>
-                <a href="collector_showcase.php">
+                <a href="collector_showcase">
                     Explore the order process
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14" />
@@ -210,7 +210,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php
-    $cartHref = 'cart.php';
+    $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <script>
