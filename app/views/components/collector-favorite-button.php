@@ -2,8 +2,9 @@
 $favoriteProductId = (int) $product['product_id'];
 $isFavorite = in_array($favoriteProductId, $favoriteProductIds ?? [], true);
 $favoriteFormModifier = is_string($favoriteFormModifier ?? null) ? $favoriteFormModifier : '';
+$favoriteShowcaseUrl = store_collector_showcase_url();
 ?>
-<form class="collector-favorite-form<?= $favoriteFormModifier !== '' ? ' ' . store_escape($favoriteFormModifier) : '' ?>" action="/collector_showcase" method="post" data-favorite-form>
+<form class="collector-favorite-form<?= $favoriteFormModifier !== '' ? ' ' . store_escape($favoriteFormModifier) : '' ?>" action="<?= store_escape($favoriteShowcaseUrl) ?>" method="post" data-favorite-form>
     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
     <input type="hidden" name="product_id" value="<?= $favoriteProductId ?>">
     <input type="hidden" name="action" value="<?= $isFavorite ? 'remove' : 'save' ?>">
@@ -12,5 +13,4 @@ $favoriteFormModifier = is_string($favoriteFormModifier ?? null) ? $favoriteForm
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" />
         </svg>
     </button>
-    <span class="collector-favorite-feedback" data-favorite-feedback aria-live="polite"></span>
 </form>

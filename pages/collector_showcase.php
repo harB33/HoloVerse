@@ -33,30 +33,37 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $respondToFavoriteRequest(['message' => 'Choose a valid product to update your favorites.'], 400);
     }
 
-    $statement = $conn->prepare(
-        "SELECT product_name FROM product_tbl WHERE product_id = ? AND status = 'active' LIMIT 1"
-    );
-    $statement->bind_param('i', $productId);
-    $statement->execute();
-    $product = $statement->get_result()->fetch_assoc();
-    $statement->close();
-    if (!$product) {
-        $respondToFavoriteRequest(['message' => 'This product is no longer available to save.'], 404);
-    }
+    try {
+        $statement = $conn->prepare(
+            "SELECT product_name FROM product_tbl WHERE product_id = ? AND status = 'active' LIMIT 1"
+        );
+        $statement->bind_param('i', $productId);
+        $statement->execute();
+        $product = $statement->get_result()->fetch_assoc();
+        $statement->close();
+        if (!$product) {
+            $respondToFavoriteRequest(['message' => 'This product is no longer available to save.'], 404);
+        }
 
-    if ($action === 'save') {
-        $statement = $conn->prepare(
-            'INSERT INTO collector_favorites_tbl (user_id, product_id) VALUES (?, ?)
-             ON CONFLICT (user_id, product_id) DO NOTHING'
-        );
-    } else {
-        $statement = $conn->prepare(
-            'DELETE FROM collector_favorites_tbl WHERE user_id = ? AND product_id = ?'
-        );
+        if ($action === 'save') {
+            $statement = $conn->prepare(
+                'INSERT INTO collector_favorites_tbl (user_id, product_id) VALUES (?, ?)
+                 ON CONFLICT (user_id, product_id) DO NOTHING'
+            );
+        } else {
+            $statement = $conn->prepare(
+                'DELETE FROM collector_favorites_tbl WHERE user_id = ? AND product_id = ?'
+            );
+        }
+        $statement->bind_param('ii', $userId, $productId);
+        $statement->execute();
+        $statement->close();
+    } catch (PDOException $error) {
+        error_log('Collector Showcase favorite update failed: ' . $error->getMessage());
+        $respondToFavoriteRequest([
+            'message' => 'We could not save that favorite right now. Please try again in a moment.',
+        ], 500);
     }
-    $statement->bind_param('ii', $userId, $productId);
-    $statement->execute();
-    $statement->close();
 
     $isFavorite = $action === 'save';
     $respondToFavoriteRequest([
