@@ -79,8 +79,30 @@ $favoriteNotice = is_string($_SESSION['collector_showcase_notice'] ?? null)
     ? $_SESSION['collector_showcase_notice']
     : '';
 unset($_SESSION['collector_showcase_notice']);
-$favoriteIds = $userId > 0 ? store_collector_favorite_ids($conn, $userId) : [];
-$favoriteProducts = $userId > 0 ? store_collector_favorite_products($conn, $userId) : [];
+$favoritePageSize = 10;
+$favoriteProductCount = $userId > 0 ? store_collector_favorite_product_count($conn, $userId) : 0;
+$favoritePageCount = max(1, (int) ceil($favoriteProductCount / $favoritePageSize));
+$favoritePageParameter = filter_var(
+    $_GET['favorites_page'] ?? 1,
+    FILTER_VALIDATE_INT,
+    ['options' => ['min_range' => 1]]
+);
+$favoriteCurrentPage = min(
+    max(1, $favoritePageParameter === false ? 1 : $favoritePageParameter),
+    $favoritePageCount
+);
+$favoriteProducts = $userId > 0
+    ? store_collector_favorite_products(
+        $conn,
+        $userId,
+        $favoritePageSize,
+        ($favoriteCurrentPage - 1) * $favoritePageSize
+    )
+    : [];
+$favoriteProductIds = array_map(
+    static fn (array $product): int => (int) $product['product_id'],
+    $favoriteProducts
+);
 $purchasedProducts = $userId > 0 ? store_collector_purchase_rows($conn, $userId) : [];
 $pageTitle = 'Collector Showcase | HoloVerse';
 $siteRoot = '../';
@@ -118,7 +140,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <h2 id="collector-favorites-title">Your favorites</h2>
                     </div>
                     <?php if ($userId > 0): ?>
-                        <span class="collector-showcase-count"><?= count($favoriteProducts) ?> saved</span>
+                        <span class="collector-showcase-count"><?= $favoriteProductCount ?> saved</span>
                     <?php endif; ?>
                 </div>
                 <?php if ($userId < 1): ?>
@@ -158,6 +180,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </article>
                         <?php endforeach; ?>
                     </div>
+                    <?php if ($favoritePageCount > 1): ?>
+                        <nav class="collector-showcase-pagination" aria-label="Favorite product pages">
+                            <?php if ($favoriteCurrentPage > 1): ?>
+                                <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage - 1 ?>" rel="prev">Previous</a>
+                            <?php endif; ?>
+                            <span aria-current="page">Page <?= $favoriteCurrentPage ?> of <?= $favoritePageCount ?></span>
+                            <?php if ($favoriteCurrentPage < $favoritePageCount): ?>
+                                <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage + 1 ?>" rel="next">Next</a>
+                            <?php endif; ?>
+                        </nav>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="collector-showcase-empty">
                         <span class="collector-showcase-empty-heart" aria-hidden="true">♡</span>
@@ -184,7 +217,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p>Sign in to see your purchased items and the appreciation we have saved for you.</p>
                     </div>
                 <?php elseif ($purchasedProducts): ?>
-                    <div class="collector-purchases-list">
+                    <div class="collector-purchases-list" role="region" aria-label="Purchased items" tabindex="0">
                         <?php foreach ($purchasedProducts as $purchase): ?>
                             <article class="collector-purchase-card">
                                 <?php if (!empty($purchase['image_url'])): ?>

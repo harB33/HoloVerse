@@ -20,8 +20,34 @@ function store_collector_favorite_ids(DatabaseConnection $conn, int $userId): ar
     return $favoriteIds;
 }
 
-function store_collector_favorite_products(DatabaseConnection $conn, int $userId): array
+function store_collector_favorite_product_count(DatabaseConnection $conn, int $userId): int
 {
+    if ($userId < 1) {
+        return 0;
+    }
+
+    $statement = $conn->prepare(
+        "SELECT COUNT(DISTINCT p.product_id) AS product_count
+         FROM collector_favorites_tbl f
+         INNER JOIN product_tbl p ON p.product_id = f.product_id
+         INNER JOIN category_tbl c ON c.category_id = p.category_id
+         INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
+         WHERE f.user_id = ? AND p.status = 'active'"
+    );
+    $statement->bind_param('i', $userId);
+    $statement->execute();
+    $productCount = (int) $statement->get_result()->fetch_assoc()['product_count'];
+    $statement->close();
+
+    return $productCount;
+}
+
+function store_collector_favorite_products(DatabaseConnection $conn, int $userId, int $limit, int $offset): array
+{
+    if ($userId < 1 || $limit < 1 || $offset < 0) {
+        return [];
+    }
+
     $statement = $conn->prepare(
         "SELECT DISTINCT ON (p.product_id)
                 p.product_id, p.product_name, p.description, p.is_preorder,
@@ -32,9 +58,10 @@ function store_collector_favorite_products(DatabaseConnection $conn, int $userId
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
          LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
          WHERE f.user_id = ? AND p.status = 'active'
-         ORDER BY p.product_id, v.variant_id, i.image_id"
+         ORDER BY p.product_id, v.variant_id, i.image_id
+         LIMIT ? OFFSET ?"
     );
-    $statement->bind_param('i', $userId);
+    $statement->bind_param('iii', $userId, $limit, $offset);
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();

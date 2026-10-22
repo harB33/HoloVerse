@@ -4931,6 +4931,39 @@
     gap: 18px;
   }
 
+  .collector-showcase-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    color: #617184;
+    font-size: 12px;
+  }
+
+  .collector-showcase-pagination a {
+    border: 1px solid #d6e1ea;
+    border-radius: 6px;
+    background: #fff;
+    padding: 8px 12px;
+    color: #087fa8;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .collector-showcase-pagination a:hover {
+    border-color: #1da3d8;
+    background: #f0faff;
+  }
+
+  .collector-showcase-pagination a:focus-visible {
+    outline: 2px solid #087fa8;
+    outline-offset: 2px;
+  }
+
   .collector-showcase-card {
     position: relative;
     border: 1px solid #e1e8ed;
@@ -5122,6 +5155,16 @@
   .collector-purchases-list {
     display: grid;
     gap: 13px;
+    max-height: 752px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 2px 8px 2px 2px;
+    scrollbar-gutter: stable;
+  }
+
+  .collector-purchases-list:focus-visible {
+    outline: 2px solid #087fa8;
+    outline-offset: 3px;
   }
 
   .collector-purchase-card {
@@ -5206,6 +5249,10 @@
   }
 
   @media (max-width: 760px) {
+    .collector-purchases-list {
+      max-height: 952px;
+    }
+
     .collector-purchase-card {
       grid-template-columns: 88px minmax(0, 1fr);
       gap: 14px;
