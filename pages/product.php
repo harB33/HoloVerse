@@ -689,6 +689,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                 };
 
                 galleryThumbnails.forEach((thumbnail, index) => {
+                    thumbnail.addEventListener('mouseenter', () => {
+                        showGalleryImage(index);
+                    });
                     thumbnail.addEventListener('click', () => {
                         showGalleryImage(index);
                     });
