@@ -202,7 +202,7 @@
   }
 
   .catalog-search.site-header-search input[type="search"] {
-    @apply h-[50px] rounded-full border-2 border-[#d9e8f0] bg-white px-5 text-[13px] shadow-[0_3px_12px_rgba(21,61,84,0.06)] transition-[border-color,box-shadow] duration-200 placeholder:text-[#8293a7] focus-visible:border-[#078bbd] focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_rgba(7,139,189,0.12)];
+    @apply h-[50px] rounded-full border-2 border-[#d9e8f0] bg-[#f1f5f9] px-5 text-[13px] shadow-[0_3px_12px_rgba(21,61,84,0.06)] transition-[border-color,box-shadow] duration-200 placeholder:text-[#8293a7] focus-visible:border-[#078bbd] focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_rgba(7,139,189,0.12)];
   }
 
   .catalog-search.site-header-search:focus-within input[type="search"] {
@@ -1197,7 +1197,7 @@
   }
 
   .catalog-search.talent-directory-search input[type="search"] {
-    @apply mb-0 h-9 w-full rounded-full border border-[#d6e1ea] bg-white px-3 text-xs text-[#152238] placeholder:text-[#718096] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+    @apply mb-0 h-9 w-full rounded-md border border-[#cbd5e1] bg-[#f1f5f9] px-3 py-1.5 text-xs text-[#152238] placeholder:text-[#718096] shadow-inner focus-visible:border-[#087fa8] focus-visible:bg-white focus-visible:outline-offset-0;
   }
 
   .catalog-search.talent-directory-search {
@@ -1205,7 +1205,7 @@
   }
 
   .catalog-search.talent-directory-search button {
-    @apply size-9 p-1.5;
+    @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
   }
 
   .catalog-search.talent-directory-search button svg {
@@ -1389,7 +1389,10 @@
     @apply h-9 rounded-md border-[#cbd5e1] bg-[#f1f5f9] px-3 py-1.5 text-xs shadow-inner focus-visible:border-[#087fa8] focus-visible:bg-white focus-visible:outline-offset-0;
   }
 
-  .catalog-search.filter-panel-search button,
+  .catalog-search.filter-panel-search button {
+    @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
+  }
+
   .catalog-search.talent-merch-filter-search button {
     @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
   }
