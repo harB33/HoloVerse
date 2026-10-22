@@ -10,6 +10,7 @@ $isPasswordReset = in_array($requestMode, ['reset_password', 'verify_reset_otp']
 $isOtpVerification = $requestMode === 'verify_reset_otp';
 $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
 $message = '';
+$loginRateLimitSeconds = 0;
 $notice = is_string($_SESSION['auth_notice'] ?? null) ? $_SESSION['auth_notice'] : '';
 unset($_SESSION['auth_notice']);
 $registrationName = '';
@@ -41,6 +42,20 @@ function login_password_is_strong(string $password): bool
     ];
 
     return count(array_filter($characterTypes)) >= 3;
+}
+
+function login_apply_failed_attempt_limit(
+    DatabaseConnection $conn,
+    string &$message,
+    int &$loginRateLimitSeconds
+): void
+{
+    $loginRateLimitSeconds = store_record_login_failure($conn);
+    if ($loginRateLimitSeconds > 0) {
+        http_response_code(429);
+        header('Retry-After: ' . $loginRateLimitSeconds);
+        $message = 'Too many sign-in attempts. Please wait before trying again.';
+    }
 }
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
@@ -260,9 +275,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $registrationEmail = $isRegistration ? $email : '';
         $usernameInput = $_POST['username'] ?? '';
         $registrationName = is_string($usernameInput) ? trim($usernameInput) : '';
+        $retryAfter = $isRegistration ? 0 : store_login_rate_limit_retry_after($conn);
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100 || $password === '') {
-            $message = 'Enter a valid email and password.';
+        if ($retryAfter > 0) {
+            http_response_code(429);
+            header('Retry-After: ' . $retryAfter);
+            $loginRateLimitSeconds = $retryAfter;
+            $message = 'Too many sign-in attempts. Please wait before trying again.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
+            $message = 'Enter a valid email address.';
+            if (!$isRegistration) {
+                login_apply_failed_attempt_limit($conn, $message, $loginRateLimitSeconds);
+            }
+        } elseif ($password === '') {
+            $message = 'Enter your password.';
+            if (!$isRegistration) {
+                login_apply_failed_attempt_limit($conn, $message, $loginRateLimitSeconds);
+            }
         } elseif ($isRegistration) {
             $username = $registrationName;
             if (strlen($username) < 2 || strlen($username) > 50) {
@@ -310,7 +339,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
             if (!$user || !password_verify($password, $user['password_hash'])) {
                 $message = 'Email or password is incorrect.';
+                login_apply_failed_attempt_limit($conn, $message, $loginRateLimitSeconds);
             } else {
+                store_reset_login_rate_limit($conn);
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = (int) $user['user_id'];
                 $_SESSION['username'] = $user['username'];
@@ -462,11 +493,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php if ($notice !== ''): ?>
                         <p class="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status"><?= store_escape($notice) ?></p>
                     <?php endif; ?>
-                    <?php if ($message !== '' && !$isRegistration): ?>
-                        <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
-                    <?php endif; ?>
-
-                    <form action="login" method="post" class="space-y-5">
+                    <form action="login" method="post" class="login-form space-y-5">
                         <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                         <input type="hidden" name="mode" value="login">
                         <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -480,9 +507,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
                                 class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                         </div>
-                        <p class="-mt-2 text-right text-sm">
+                        <p class="login-forgot-password -mt-2 text-right text-sm">
                             <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
                         </p>
+                        <?php if ($message !== '' && !$isRegistration): ?>
+                            <p class="auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
+                        <?php endif; ?>
                         <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
                             Sign in
                         </button>
@@ -634,6 +664,45 @@ require __DIR__ . '/../app/views/layout/head.php';
         };
         setupOtpControls(loginPanel);
 
+        const startLoginRateLimitTimer = (form, errorNotice, retryAfter) => {
+            const seconds = Number(retryAfter);
+            if (!Number.isFinite(seconds) || seconds <= 0) {
+                return;
+            }
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            const deadline = Date.now() + seconds * 1000;
+            const updateTimer = () => {
+                const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+                if (remaining === 0) {
+                    errorNotice.textContent = "You can try signing in again now.";
+                    errorNotice.dataset.retryAfter = "0";
+                    submitButton.disabled = false;
+                    return false;
+                }
+
+                const minutes = Math.floor(remaining / 60);
+                const secondsRemaining = remaining % 60;
+                errorNotice.textContent = `Too many sign-in attempts. Try again in ${minutes}:${String(secondsRemaining).padStart(2, "0")}.`;
+                submitButton.disabled = true;
+                return true;
+            };
+
+            if (updateTimer()) {
+                const timer = window.setInterval(() => {
+                    if (!updateTimer()) {
+                        window.clearInterval(timer);
+                    }
+                }, 1000);
+            }
+        };
+
+        const loginForm = loginPanel.querySelector(".login-form");
+        const initialLoginError = loginPanel.querySelector(".auth-error-message");
+        if (loginForm && initialLoginError) {
+            startLoginRateLimitTimer(loginForm, initialLoginError, initialLoginError.dataset.retryAfter);
+        }
+
         loginPanel.addEventListener("submit", async (event) => {
             const form = event.target;
             if (!(form instanceof HTMLFormElement)) {
@@ -641,11 +710,12 @@ require __DIR__ . '/../app/views/layout/head.php';
             }
             const submitter = event.submitter;
             const isResetRequest = form.matches(".reset-request-form");
+            const isLogin = form.matches(".login-form");
             const isResendRequest = submitter instanceof HTMLButtonElement
                 && submitter.formAction.includes("mode=resend_reset_otp");
             const isOtpVerification = form.matches(".otp-verify-form");
             const isOtpAction = isOtpVerification || isResendRequest;
-            if (!isResetRequest && !isOtpAction) {
+            if (!isLogin && !isResetRequest && !isOtpAction) {
                 return;
             }
 
@@ -653,7 +723,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             const submitButton = submitter instanceof HTMLButtonElement ? submitter : form.querySelector('button[type="submit"]');
             const originalButtonText = submitButton.textContent;
             submitButton.disabled = true;
-            submitButton.textContent = isOtpVerification ? "Verifying..." : "Sending...";
+            submitButton.textContent = isLogin ? "Signing in..." : isOtpVerification ? "Verifying..." : "Sending...";
             form.setAttribute("aria-busy", "true");
 
             try {
@@ -668,6 +738,44 @@ require __DIR__ . '/../app/views/layout/head.php';
                     redirect: "follow",
                 });
                 const responseText = await response.text();
+                if (isLogin) {
+                    if (response.redirected) {
+                        window.location.assign(response.url);
+                        return;
+                    }
+
+                    const responseDocument = new DOMParser().parseFromString(responseText, "text/html");
+                    const responseError = responseDocument.querySelector(".auth-login-panel .auth-error-message");
+                    if (!responseError) {
+                        throw new Error("We couldn't process your sign-in. Please try again.");
+                    }
+
+                    const passwordInput = form.querySelector('input[name="password"]');
+                    if (passwordInput instanceof HTMLInputElement) {
+                        passwordInput.value = "";
+                    }
+                    let errorNotice = form.parentElement.querySelector(".auth-error-message");
+                    if (!errorNotice) {
+                        errorNotice = document.createElement("p");
+                        errorNotice.className = "auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700";
+                        errorNotice.setAttribute("role", "alert");
+                        form.querySelector(".login-forgot-password").after(errorNotice);
+                    }
+                    errorNotice.textContent = responseError.textContent;
+                    errorNotice.dataset.retryAfter = responseError.dataset.retryAfter || "0";
+                    startLoginRateLimitTimer(form, errorNotice, errorNotice.dataset.retryAfter);
+                    if (!response.ok && response.status !== 429) {
+                        throw new Error(responseError.textContent || "Unable to sign in. Please try again.");
+                    }
+                    if (Number(errorNotice.dataset.retryAfter) <= 0) {
+                        submitButton.disabled = false;
+                    }
+                    submitButton.textContent = originalButtonText;
+                    form.removeAttribute("aria-busy");
+                    passwordInput?.focus();
+                    return;
+                }
+
                 if (!response.ok) {
                     throw new Error(isOtpVerification
                         ? "Unable to verify the code. Please try again."
@@ -698,15 +806,23 @@ require __DIR__ . '/../app/views/layout/head.php';
             } catch (error) {
                 const errorMessage = error instanceof Error
                     ? error.message
-                    : isOtpAction
+                    : isLogin
+                        ? "We couldn't process your sign-in. Please try again."
+                        : isOtpAction
                         ? "Unable to verify the code. Please try again."
                         : "Unable to send the reset code. Please try again.";
-                let errorNotice = form.parentElement.querySelector(".reset-request-error, .otp-feedback-row .otp-error");
+                let errorNotice = isLogin
+                    ? form.parentElement.querySelector(".auth-error-message")
+                    : form.parentElement.querySelector(".reset-request-error, .otp-feedback-row .otp-error");
                 if (!errorNotice) {
                     errorNotice = document.createElement("p");
-                    errorNotice.className = isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
+                    errorNotice.className = isLogin
+                        ? "auth-error-message rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700"
+                        : isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
                     errorNotice.setAttribute("role", "alert");
-                    if (isResetRequest) {
+                    if (isLogin) {
+                        form.querySelector(".login-forgot-password").after(errorNotice);
+                    } else if (isResetRequest) {
                         form.before(errorNotice);
                     } else {
                         const feedbackRow = form.parentElement.querySelector(".otp-feedback-row");

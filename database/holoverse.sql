@@ -134,6 +134,14 @@ CREATE TABLE user_tbl (
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE login_rate_limits (
+    rate_key char(64) NOT NULL,
+    window_started_at TIMESTAMPTZ NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0)
+);
+ALTER TABLE login_rate_limits ADD PRIMARY KEY (rate_key);
+CREATE INDEX idx_login_rate_limits_window ON login_rate_limits (window_started_at);
+ALTER TABLE public.login_rate_limits ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO cart_items_tbl (cart_item_id, cart_id, variant_id, quantity, added_at, hold_expires_at) VALUES
 (9, 6, 1, 1, '2026-10-14 19:34:17', NULL);
