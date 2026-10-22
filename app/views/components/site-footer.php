@@ -26,7 +26,7 @@ $showRadarSignup = $showRadarSignup ?? false;
 
     <div class="footer-main">
         <div class="footer-about">
-            <a class="footer-brand" href="<?= $siteRoot ?>index.php#top" aria-label="HoloVerse Store home">
+            <a class="footer-brand" href="<?= $siteRoot ?>home#top" aria-label="HoloVerse Store home">
                 <img src="<?= $siteRoot ?>assets/images/logo.png" alt="">
                 <span>holo<span>verse</span></span>
                 <small>Store</small>
@@ -37,40 +37,40 @@ $showRadarSignup = $showRadarSignup ?? false;
 
         <nav class="footer-links" aria-label="Merchandise links">
             <h3>Merchandise</h3>
-            <a href="<?= $siteRoot ?>pages/flash_sale.php">Scale Figures (1/4, 1/7)</a>
-            <a href="<?= $siteRoot ?>pages/flash_sale.php">Commemorative Box Sets</a>
-            <a href="<?= $siteRoot ?>pages/flash_sale.php">Apparel &amp; Sukajan</a>
-            <a href="<?= $siteRoot ?>pages/flash_sale.php">Acrylic Stands &amp; Keychains</a>
-            <a href="<?= $siteRoot ?>pages/flash_sale.php">Official Plushies &amp; Mochiduru</a>
+            <a href="<?= $siteRoot ?>flash_sale">Scale Figures (1/4, 1/7)</a>
+            <a href="<?= $siteRoot ?>flash_sale">Commemorative Box Sets</a>
+            <a href="<?= $siteRoot ?>flash_sale">Apparel &amp; Sukajan</a>
+            <a href="<?= $siteRoot ?>flash_sale">Acrylic Stands &amp; Keychains</a>
+            <a href="<?= $siteRoot ?>flash_sale">Official Plushies &amp; Mochiduru</a>
         </nav>
 
         <nav class="footer-links" aria-label="Customer care links">
             <h3>Customer Care</h3>
-            <a href="<?= $siteRoot ?>pages/pre_order.php">Pre-Order Batch ETA Tracker</a>
-            <a href="<?= $siteRoot ?>pages/personalized.php">Shipping Rates &amp; Customs Info</a>
-            <a href="<?= $siteRoot ?>pages/personalized.php">Mint Condition Box Guarantee</a>
-            <a href="<?= $siteRoot ?>pages/collector_showcase.php">Anti-Scalper Verification</a>
-            <a href="<?= $siteRoot ?>pages/collector_showcase.php">NFC Chip Mobile Tap Support</a>
+            <a href="<?= $siteRoot ?>pre_order">Pre-Order Batch ETA Tracker</a>
+            <a href="<?= $siteRoot ?>personalized">Shipping Rates &amp; Customs Info</a>
+            <a href="<?= $siteRoot ?>personalized">Mint Condition Box Guarantee</a>
+            <a href="<?= $siteRoot ?>collector_showcase">Anti-Scalper Verification</a>
+            <a href="<?= $siteRoot ?>collector_showcase">NFC Chip Mobile Tap Support</a>
         </nav>
 
         <nav class="footer-links" aria-label="Corporate links">
             <h3>COVER Corp Portal</h3>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Talent Licensing Guidelines</a>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Authenticity Guarantee</a>
-            <a href="<?= $siteRoot ?>pages/about-us.php">ISO 27001 Security</a>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Privacy Policy &amp; Terms</a>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Wholesale Partner Inquiries</a>
+            <a href="<?= $siteRoot ?>about-us">Talent Licensing Guidelines</a>
+            <a href="<?= $siteRoot ?>about-us">Authenticity Guarantee</a>
+            <a href="<?= $siteRoot ?>about-us">ISO 27001 Security</a>
+            <a href="<?= $siteRoot ?>about-us">Privacy Policy &amp; Terms</a>
+            <a href="<?= $siteRoot ?>about-us">Wholesale Partner Inquiries</a>
         </nav>
     </div>
 
     <div class="footer-bottom">
         <p>&copy; 2016-2026 COVER Corp. / HoloVerse Store. All rights reserved.</p>
         <nav aria-label="Legal links">
-            <a href="<?= $siteRoot ?>pages/about-us.php">Terms of Service</a>
+            <a href="<?= $siteRoot ?>about-us">Terms of Service</a>
             <span aria-hidden="true">&bull;</span>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Privacy Notice</a>
+            <a href="<?= $siteRoot ?>about-us">Privacy Notice</a>
             <span aria-hidden="true">&bull;</span>
-            <a href="<?= $siteRoot ?>pages/about-us.php">Cookie Preferences</a>
+            <a href="<?= $siteRoot ?>about-us">Cookie Preferences</a>
         </nav>
     </div>
 </footer>

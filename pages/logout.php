@@ -12,5 +12,5 @@ if (ini_get('session.use_cookies')) {
     setcookie(session_name(), '', time() - 42000, $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
 }
 session_destroy();
-header('Location: ../index.php');
+header('Location: ../home');
 exit;

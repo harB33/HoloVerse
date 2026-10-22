@@ -446,7 +446,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 ?>
                 <div class="product-page-topbar">
                     <nav class="product-breadcrumb" aria-label="Breadcrumb">
-                        <a href="../index.php">Home</a>
+                        <a href="../home">Home</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                         <a href="products.php">Products</a>
                         <svg class="product-breadcrumb-separator" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
@@ -588,7 +588,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1>Product not found</h1>
                     <p>This product is unavailable. Return to the shop to browse available merchandise.</p>
                 </section>
-                <a class="product-back-link" href="../index.php#featured">Back to the shop</a>
+                <a class="product-back-link" href="../home#featured">Back to the shop</a>
             <?php endif; ?>
         </main>
     </div>

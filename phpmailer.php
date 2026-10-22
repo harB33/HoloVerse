@@ -52,7 +52,7 @@ function createHoloVerseMailer(string $email): \PHPMailer\PHPMailer\PHPMailer
 
 function getHoloVerseSiteUrl(): string
 {
-    $siteUrl = getenv('HOLOVERSE_SITE_URL') ?: 'http://localhost:8000/index.php';
+    $siteUrl = getenv('HOLOVERSE_SITE_URL') ?: 'http://localhost:8000/home';
     if (filter_var($siteUrl, FILTER_VALIDATE_URL) === false || !in_array(parse_url($siteUrl, PHP_URL_SCHEME), ['http', 'https'], true)) {
         throw new RuntimeException('HOLOVERSE_SITE_URL must be a valid HTTP or HTTPS URL.');
     }

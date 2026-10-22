@@ -351,7 +351,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             <section class="product-input-denied">
                 <h1 class="text-2xl font-bold">Administrator access required</h1>
                 <p class="mt-3 text-slate-600">Your account is not allowed to add catalog products.</p>
-                <a class="mt-6 inline-flex rounded-lg bg-slate-800 px-5 py-3 font-medium text-white" href="../index.php">Return to the shop</a>
+                <a class="mt-6 inline-flex rounded-lg bg-slate-800 px-5 py-3 font-medium text-white" href="../home">Return to the shop</a>
             </section>
         <?php else: ?>
             <header class="product-input-heading">

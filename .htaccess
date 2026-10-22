@@ -1,3 +1,29 @@
 <FilesMatch "^\.env(?:\..*)?$">
     Require all denied
 </FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{THE_REQUEST} \s/+index\.php(?:[\s?]) [NC]
+    RewriteRule ^index\.php$ home [R=308,L]
+
+    RewriteCond %{THE_REQUEST} \s/+pages/([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
+    RewriteRule ^pages/([A-Za-z0-9_-]+)\.php$ $1 [R=308,L]
+
+    RewriteCond %{THE_REQUEST} \s/+Functions/([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
+    RewriteRule ^Functions/([A-Za-z0-9_-]+)\.php$ $1 [R=308,L,NC]
+
+    RewriteCond %{THE_REQUEST} \s/+([A-Za-z0-9_-]+)\.php(?:[\s?]) [NC]
+    RewriteCond %{DOCUMENT_ROOT}/pages/%1.php -f
+    RewriteRule ^([A-Za-z0-9_-]+)\.php$ $1 [R=308,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([A-Za-z0-9_-]+)/$ $1 [R=308,L]
+
+    RewriteRule ^home/?$ index.php [L]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([A-Za-z0-9_-]+)/?$ pages/$1.php [L,QSA]
+</IfModule>

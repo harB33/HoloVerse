@@ -65,7 +65,7 @@ $flashSaleTabs = [
                             <?php endif; ?>
                         </div>
                         <?php if ($state === 'live' && $stock > 0): ?>
-                            <form action="cart.php" method="post">
+                            <form action="cart" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="action" value="add">
                                 <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">

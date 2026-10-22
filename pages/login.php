@@ -297,7 +297,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     $_SESSION['user_role'] = 'user';
                     session_regenerate_id(true);
                     store_merge_guest_cart($conn, $registeredUserId);
-                    header('Location: ' . ($returnTo === 'checkout' ? '/pages/checkout.php' : '/index.php'));
+                    header('Location: ' . ($returnTo === 'checkout' ? '/checkout' : '/home'));
                     exit;
                 }
             }
@@ -316,7 +316,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['user_role'] = $user['user_role'];
                 store_merge_guest_cart($conn, (int) $user['user_id']);
-                header('Location: ' . ($returnTo === 'checkout' ? '/pages/checkout.php' : '/index.php'));
+                header('Location: ' . ($returnTo === 'checkout' ? '/checkout' : '/home'));
                 exit;
             }
         }
@@ -339,7 +339,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
                     <div class="otp-verification">
                     <?php endif; ?>
-                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
+                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
                         <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                         <span class="brand-wordmark">holo<span>verse</span></span>
                     </a>
@@ -505,7 +505,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                             Back
                         </button>
-                        <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/index.php" aria-label="HoloVerse home">
+                        <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
                             <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
                             <span class="brand-wordmark">holo<span>verse</span></span>
                         </a>

@@ -166,8 +166,7 @@
         });
 
         const cartBaseUrl = (() => {
-            const currentPath = window.location.pathname || '/';
-            return currentPath.includes('/pages/') ? 'cart.php' : 'pages/cart.php';
+            return <?= json_encode($siteRoot . 'cart', JSON_UNESCAPED_SLASHES) ?>;
         })();
 
         const formatCount = (count) => {
