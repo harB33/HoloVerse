@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 $favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
-$pageSize = 12;
+$pageSize = 20;
 $searchParameter = $_GET['search'] ?? '';
 $filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $generalSearchParameter = $_GET['global_search'] ?? '';
@@ -125,7 +125,7 @@ if (!$isCatalogSearchRequest) {
 }
 
 if ($isCatalogSearchRequest) {
-    $searchPageSize = 12;
+    $searchPageSize = 20;
     $searchTotalCount = store_catalog_product_count($conn, $productSearch, $selectedGeneration, $selectedCategory);
     $searchPageCount = max(1, (int) ceil($searchTotalCount / $searchPageSize));
     $searchRequestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;

@@ -118,16 +118,14 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
 
         <main class="collector-showcase-main">
-            <section class="collector-showcase-hero">
-                <span class="collector-showcase-eyebrow">Your personal collection</span>
+            <header class="explore-header">
+                <span class="explore-eyebrow">Your personal collection</span>
                 <h1>Collector Showcase</h1>
                 <p>Keep the pieces you love close, and celebrate the ones you have made part of your collection.</p>
-                <?php if ($userId > 0): ?>
-                    <span class="collector-showcase-welcome">Curated for <?= store_escape((string) ($_SESSION['username'] ?? 'you')) ?></span>
-                <?php else: ?>
+                <?php if ($userId < 1): ?>
                     <a class="collector-showcase-sign-in" href="/login">Sign in to start your collection</a>
                 <?php endif; ?>
-            </section>
+            </header>
 
             <?php if ($favoriteNotice !== ''): ?>
                 <p class="collector-showcase-notice" role="status"><?= store_escape($favoriteNotice) ?></p>
