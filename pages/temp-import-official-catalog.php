@@ -130,6 +130,122 @@ function catalog_import_product_type(string $classificationText, bool $isDigital
     return 'Other';
 }
 
+function catalog_import_variant_matches_talent(string $variantTitle, array $talents): bool
+{
+    $normalizedVariantTitle = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower($variantTitle, 'UTF-8'));
+    $normalizedVariantTitle = is_string($normalizedVariantTitle) ? $normalizedVariantTitle : '';
+    $talentAliases = [
+        'kureijiollie' => ['kureiijiollie'],
+        'rindochihaya' => ['rindouchihaya'],
+    ];
+    foreach ($talents as $talent) {
+        $talentName = trim((string) $talent['talent_name']);
+        $normalizedTalentName = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower($talentName, 'UTF-8'));
+        $talentSlug = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower((string) ($talent['talent_slug'] ?? ''), 'UTF-8'));
+        if ($talentName !== '' && (
+            mb_stripos($variantTitle, $talentName, 0, 'UTF-8') !== false
+            || (is_string($normalizedTalentName)
+                && $normalizedTalentName !== ''
+                && (
+                    mb_stripos($normalizedVariantTitle, $normalizedTalentName, 0, 'UTF-8') !== false
+                    || array_filter(
+                        $talentAliases[$normalizedTalentName] ?? [],
+                        static fn (string $alias): bool => mb_stripos($normalizedVariantTitle, $alias, 0, 'UTF-8') !== false
+                    ) !== []
+                ))
+            || (is_string($talentSlug)
+                && $talentSlug !== ''
+                && mb_stripos($normalizedVariantTitle, $talentSlug, 0, 'UTF-8') !== false)
+        )) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function catalog_import_variant_group_name(string $variantTitle): ?string
+{
+    $separatorPosition = mb_strrpos($variantTitle, '/', 0, 'UTF-8');
+    if ($separatorPosition === false) {
+        return null;
+    }
+
+    $groupName = trim(mb_substr($variantTitle, 0, $separatorPosition, 'UTF-8'));
+    if (preg_match(
+        '/^(?:holostars(?:\s+english|\s+generation\s+\d+)?|hololive(?:\s+(?:dev_is|indonesia|gamers|stage[1-4]|english(?:\s+(?:-[^-]+-|project:\s*hope))?))?)$/i',
+        $groupName
+    ) !== 1) {
+        return null;
+    }
+
+    return $groupName;
+}
+
+function catalog_import_variant_option_name(string $variantTitle): string
+{
+    $separatorPosition = mb_strrpos($variantTitle, '/', 0, 'UTF-8');
+    if ($separatorPosition === false) {
+        return '';
+    }
+
+    $optionName = trim(mb_substr($variantTitle, $separatorPosition + 1, null, 'UTF-8'));
+    $optionName = preg_replace('/\s*\((?:Japanese|English|Indonesian|Chinese|Korean|French|Spanish)\)\s*$/iu', '', $optionName) ?? $optionName;
+    $optionName = preg_replace('/^(?:Personalized Set)\s+/iu', '', $optionName) ?? $optionName;
+    $optionName = preg_replace('/\s+SP Voice(?:\s+Pack)?\s*$/iu', '', $optionName) ?? $optionName;
+
+    return trim($optionName);
+}
+
+function catalog_import_normalize_talent_variant(string $variantTitle, array $talents): string
+{
+    if (catalog_import_variant_group_name($variantTitle) === null) {
+        return $variantTitle;
+    }
+
+    $qualifier = '';
+    if (preg_match('/\s+(SP Voice(?: Pack)?)\s*(\((?:Japanese|English|Indonesian|Chinese|Korean|French|Spanish)\))?\s*$/iu', $variantTitle, $qualifierMatch) === 1) {
+        $qualifier = ' ' . $qualifierMatch[1] . ($qualifierMatch[2] ?? '');
+    } elseif (preg_match('/\s*(\((?:Japanese|English|Indonesian|Chinese|Korean|French|Spanish)\))\s*$/iu', $variantTitle, $qualifierMatch) === 1) {
+        $qualifier = ' ' . $qualifierMatch[1];
+    }
+    $optionName = catalog_import_variant_option_name($variantTitle);
+    $normalizedOptionName = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower($optionName, 'UTF-8'));
+    foreach ($talents as $talent) {
+        $talentName = trim((string) $talent['talent_name']);
+        $normalizedTalentName = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower($talentName, 'UTF-8'));
+        $talentSlug = preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower((string) ($talent['talent_slug'] ?? ''), 'UTF-8'));
+        $aliases = [
+            'kureijiollie' => ['kureiijiollie'],
+            'rindochihaya' => ['rindouchihaya'],
+        ];
+        if ($normalizedOptionName === $normalizedTalentName
+            || (is_string($talentSlug) && $talentSlug !== '' && $normalizedOptionName === $talentSlug)
+            || in_array($normalizedOptionName, $aliases[$normalizedTalentName] ?? [], true)) {
+            $generationName = $talent['generation_name'] ?? '';
+            if (is_string($generationName) && $generationName !== '') {
+                return $generationName . ' / ' . $talentName . $qualifier;
+            }
+        }
+    }
+
+    return $variantTitle;
+}
+
+function catalog_import_variant_is_unlisted_talent_option(string $variantTitle, array $talents): bool
+{
+    if (catalog_import_variant_group_name($variantTitle) === null) {
+        return false;
+    }
+
+    $optionName = catalog_import_variant_option_name($variantTitle);
+    if (catalog_import_variant_matches_talent($optionName, $talents)) {
+        return false;
+    }
+
+    return preg_match('/^\p{Lu}[\p{L}\p{M}\'’.-]*(?:\s+\p{Lu}[\p{L}\p{M}\'’.-]*){0,3}$/u', $optionName) === 1;
+}
+
 function catalog_import_build_rows(array $products, array $talents, string $localImageDirectory): array
 {
     $productRows = [];
@@ -144,6 +260,9 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
     $freeVariantCount = 0;
     $matchedTalentCount = 0;
     $targetSkuCount = 0;
+    $filteredTalentVariantCount = 0;
+    $filteredTalentProductCount = 0;
+    $nextProductId = 1;
     $nextVariantId = 1;
     $nextImageId = 1;
 
@@ -160,17 +279,31 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
         ['regloss-x-rechord-pamphlet.png', 'ReGLOSS AR LIVE X-ReCHORD pamphlet'],
     ];
 
-    foreach ($products as $productIndex => $product) {
-        $productId = $productIndex + 1;
+    foreach ($products as $product) {
+        $sourceVariants = $product['variants'];
+        $sourceVariants = array_values(array_filter(
+            $sourceVariants,
+            static fn (array $variant): bool => !catalog_import_variant_is_unlisted_talent_option(
+                (string) ($variant['title'] ?? ''),
+                $talents
+            )
+        ));
+        $filteredTalentVariantCount += count($product['variants']) - count($sourceVariants);
+        if (!$sourceVariants) {
+            $filteredTalentProductCount++;
+            continue;
+        }
+
+        $productId = $nextProductId++;
         $productTitle = trim((string) $product['title']);
         $productTags = implode(' ', array_map('strval', $product['tags'] ?? []));
         $variantTitles = array_map(
             static fn (array $variant): string => (string) ($variant['title'] ?? ''),
-            $product['variants']
+            $sourceVariants
         );
         $classificationText = $productTitle . ' ' . $productTags . ' ' . implode(' ', $variantTitles);
         $shippingVariants = array_filter(
-            $product['variants'],
+            $sourceVariants,
             static fn (array $variant): bool => !empty($variant['requires_shipping'])
         );
         $isDigital = count($shippingVariants) === 0
@@ -189,12 +322,13 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
         ];
 
         $variantNames = [];
-        foreach ($product['variants'] as $variant) {
+        foreach ($sourceVariants as $variant) {
             $variantId = $nextVariantId++;
             $variantTitle = trim((string) ($variant['title'] ?? ''));
             if ($variantTitle === '' || $variantTitle === 'Default Title') {
                 $variantTitle = 'Default';
             }
+            $variantTitle = catalog_import_normalize_talent_variant($variantTitle, $talents);
             if (mb_strlen($variantTitle, 'UTF-8') > 100) {
                 $suffix = ' [' . (string) $variantId . ']';
                 $variantTitle = mb_substr($variantTitle, 0, 100 - mb_strlen($suffix, 'UTF-8'), 'UTF-8') . $suffix;
@@ -294,11 +428,37 @@ function catalog_import_build_rows(array $products, array $talents, string $loca
         'free_variants' => $freeVariantCount,
         'matched_talents' => $matchedTalentCount,
         'target_sku_count' => $targetSkuCount,
+        'filtered_talent_variants' => $filteredTalentVariantCount,
+        'filtered_talent_products' => $filteredTalentProductCount,
     ];
 }
 
 $products = catalog_import_load($stageDirectory);
-$talents = $conn->query('SELECT talent_id, talent_name FROM talent_tbl ORDER BY talent_name')->fetch_all(PDO::FETCH_ASSOC);
+$eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+$talentRows = $conn->query(
+    "SELECT t.talent_id, t.talent_name, t.talent_slug, tg.group_name
+     FROM talent_tbl t
+     INNER JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
+     INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+     WHERE tg.group_slug IN ({$eligibleGroupSlugs})
+     ORDER BY t.talent_id, array_position(ARRAY[" . implode(',', array_map(
+        static fn (string $slug): string => "'" . str_replace("'", "''", $slug) . "'",
+        STORE_TALENT_FILTER_GROUP_SLUGS
+    )) . "]::text[], tg.group_slug)"
+)->fetch_all(PDO::FETCH_ASSOC);
+$talentsById = [];
+foreach ($talentRows as $talentRow) {
+    $talentId = (int) $talentRow['talent_id'];
+    if (!isset($talentsById[$talentId])) {
+        $talentsById[$talentId] = [
+            'talent_id' => $talentId,
+            'talent_name' => $talentRow['talent_name'],
+            'talent_slug' => $talentRow['talent_slug'],
+            'generation_name' => $talentRow['group_name'],
+        ];
+    }
+}
+$talents = array_values($talentsById);
 $catalog = catalog_import_build_rows($products, $talents, __DIR__ . '/../Assets/images/products');
 $existingCounts = [
     'products' => (int) $conn->query("SELECT COUNT(*) AS row_count FROM product_tbl")->fetch_assoc()['row_count'],
@@ -402,9 +562,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <p><a href="products">Open the imported catalog</a></p>
                 <?php endif; ?>
             <?php else: ?>
-                <p>Source: official hololive production English storefront. All listed products are included, including sold-out and digital products.</p>
+                <p>Source: official hololive production English storefront. Talent variants are limited to the talent groups available on HoloVerse; sold-out and digital products remain included.</p>
                 <p>Current catalog: <?= $existingCounts['products'] ?> products, <?= $existingCounts['variants'] ?> variants, <?= $existingCounts['images'] ?> images.</p>
                 <p>New catalog: <?= count($catalog['products']) ?> products, <?= count($catalog['variants']) ?> variants, <?= count($catalog['images']) ?> images. <?= $catalog['available_variants'] ?> available variants receive stock 1 because exact inventory is not public; <?= $catalog['sold_out_variants'] ?> sold-out variants receive 0. Sticker Set SKU 26000225021 keeps stock 245. <?= $catalog['free_variants'] ?> zero-price digital variants are included.</p>
+                <p><?= $catalog['filtered_talent_variants'] ?> talent variants outside the website's talent list and <?= $catalog['filtered_talent_products'] ?> products with no remaining supported talent variants will be excluded.</p>
                 <p><?= $catalog['sku_adjustments'] ?> blank or duplicate SKUs will receive unique HoloVerse SKUs; <?= $catalog['long_variant_names'] ?> long or duplicate variant labels will be shortened to fit local limits. <?= $catalog['matched_talents'] ?> title-matched talent links will be created.</p>
                 <p>Import will clear <?= $existingCounts['cart_items'] ?> cart items, replace product-linked rows and flash-sale schedules, and leave <?= $existingCounts['order_items'] ?> order item snapshots intact. A backup of products, variants, images, talent links, cart items, and flash-sale schedules will be saved to the temporary directory.</p>
                 <p>Product images use local X-ReCHORD assets for that concert item and official Shopify CDN images for the rest of the catalog.</p>

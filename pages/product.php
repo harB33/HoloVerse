@@ -32,7 +32,31 @@ if ($productId !== false && $productId !== null && $productId > 0) {
 
         $availableStock = store_available_stock_sql();
         $statement = $conn->prepare(
-            "SELECT variant_id, variant_name, price, compare_at_price, currency, {$availableStock} AS stock_quantity
+            "SELECT v.variant_id, v.variant_name, v.price, v.compare_at_price, v.currency,
+                    {$availableStock} AS stock_quantity,
+                    COALESCE(
+                        (
+                            SELECT STRING_AGG(
+                                tg.group_name,
+                                CHR(10)
+                                ORDER BY
+                                    CASE WHEN lower(v.variant_name) LIKE lower(tg.group_name || ' / %') THEN 0 ELSE 1 END,
+                                    tg.group_id
+                            )
+                            FROM talent_tbl t
+                            INNER JOIN talent_group_members_tbl gm ON gm.talent_id = t.talent_id
+                            INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+                            WHERE regexp_replace(regexp_replace(lower(v.variant_name), '^.* / ', ''), '[^a-z0-9]', '', 'g')
+                                = regexp_replace(lower(t.talent_name), '[^a-z0-9]', '', 'g')
+                        ),
+                        (
+                            SELECT tg.group_name
+                            FROM talent_group_tbl tg
+                            WHERE lower(v.variant_name) LIKE lower(tg.group_name || ' / %')
+                            ORDER BY length(tg.group_name) DESC
+                            LIMIT 1
+                        )
+                    ) AS edition_groups
              FROM product_variants_tbl v
              WHERE v.product_id = ?
              ORDER BY variant_id"
@@ -65,6 +89,29 @@ $availableVariants = array_values(array_filter(
     static fn (array $variant): bool => (int) $variant['stock_quantity'] > 0
 ));
 $defaultVariant = $availableVariants[0] ?? ($variants[0] ?? null);
+$hasGroupedEditions = (bool) array_filter($variants, static fn (array $variant): bool => !empty($variant['edition_groups']));
+$variantGroups = [];
+foreach ($variants as $variant) {
+    $hasVariantGroups = !empty($variant['edition_groups']);
+    $groupNames = $hasGroupedEditions && $hasVariantGroups
+        ? explode("\n", $variant['edition_groups'])
+        : [''];
+    $separatorPosition = strpos($variant['variant_name'], ' / ');
+    $variant['edition_label'] = $hasVariantGroups && $separatorPosition !== false
+        ? substr($variant['variant_name'], $separatorPosition + 3)
+        : $variant['variant_name'];
+
+    foreach ($groupNames as $groupName) {
+        if (!isset($variantGroups[$groupName])) {
+            $variantGroups[$groupName] = [
+                'name' => $groupName,
+                'variants' => [],
+            ];
+        }
+
+        $variantGroups[$groupName]['variants'][] = $variant;
+    }
+}
 
 $pageTitle = $product ? $product['product_name'] . ' | HoloVerse' : 'Product Not Found | HoloVerse';
 $siteRoot = '../';
@@ -351,6 +398,9 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-variant-options::-webkit-scrollbar { width: 8px; }
         .product-variant-options::-webkit-scrollbar-track { border-radius: 8px; background: #f0f3f5; }
         .product-variant-options::-webkit-scrollbar-thumb { border-radius: 8px; background: #aab8c4; }
+        .product-variant-group { flex: 1 0 100%; display: grid; gap: 8px; }
+        .product-variant-group h3 { margin: 0; color: #344253; font-size: 13px; font-weight: 600; }
+        .product-variant-group-options { display: flex; flex-wrap: wrap; gap: 8px; }
         .product-variant-option {
             min-height: 38px;
             cursor: pointer;
@@ -519,19 +569,28 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <fieldset class="product-variant-picker">
                                     <legend>Choose edition</legend>
                                     <div class="product-variant-options">
-                                        <?php foreach ($variants as $variant): ?>
-                                            <button
-                                                class="product-variant-option<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? ' is-selected' : '' ?>"
-                                                type="button"
-                                                data-variant-option
-                                                data-variant-id="<?= (int) $variant['variant_id'] ?>"
-                                                data-price="<?= store_escape(store_format_price((float) $variant['price'])) ?>"
-                                                data-compare="<?= !empty($variant['compare_at_price']) ? store_escape(store_format_price((float) $variant['compare_at_price'])) : '' ?>"
-                                                data-stock="<?= (int) $variant['stock_quantity'] ?>"
-                                                aria-pressed="<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? 'true' : 'false' ?>"
-                                                <?= (int) $variant['stock_quantity'] < 1 ? 'disabled' : '' ?>>
-                                                <?= store_escape($variant['variant_name']) ?><?= (int) $variant['stock_quantity'] < 1 ? ' · Sold out' : '' ?>
-                                            </button>
+                                        <?php foreach ($variantGroups as $group): ?>
+                                            <div class="product-variant-group">
+                                                <?php if ($group['name'] !== ''): ?>
+                                                    <h3><?= store_escape($group['name']) ?></h3>
+                                                <?php endif; ?>
+                                                <div class="product-variant-group-options">
+                                                    <?php foreach ($group['variants'] as $variant): ?>
+                                                        <button
+                                                            class="product-variant-option<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? ' is-selected' : '' ?>"
+                                                            type="button"
+                                                            data-variant-option
+                                                            data-variant-id="<?= (int) $variant['variant_id'] ?>"
+                                                            data-price="<?= store_escape(store_format_price((float) $variant['price'])) ?>"
+                                                            data-compare="<?= !empty($variant['compare_at_price']) ? store_escape(store_format_price((float) $variant['compare_at_price'])) : '' ?>"
+                                                            data-stock="<?= (int) $variant['stock_quantity'] ?>"
+                                                            aria-pressed="<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? 'true' : 'false' ?>"
+                                                            <?= (int) $variant['stock_quantity'] < 1 ? 'disabled' : '' ?>>
+                                                            <?= store_escape($variant['edition_label']) ?><?= (int) $variant['stock_quantity'] < 1 ? ' · Sold out' : '' ?>
+                                                        </button>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
                                         <?php endforeach; ?>
                                     </div>
                                 </fieldset>
@@ -681,7 +740,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     addButton.disabled = stock < 1;
                     addButton.lastChild.textContent = stock > 0 ? ` ${addButton.dataset.inStockLabel}` : ' Sold out';
                     document.querySelectorAll('[data-variant-option]').forEach((item) => {
-                        const selected = item === option;
+                        const selected = item.dataset.variantId === option.dataset.variantId;
                         item.classList.toggle('is-selected', selected);
                         item.setAttribute('aria-pressed', String(selected));
                     });
