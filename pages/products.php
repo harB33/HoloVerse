@@ -141,19 +141,29 @@ require __DIR__ . '/../app/views/layout/head.php';
                     require __DIR__ . '/../app/views/components/catalog-search.php';
                     ?>
                     <form class="category-filter" method="get" action="products">
-                        <label for="catalog-category">Filter by category</label>
+                        <label for="catalog-category-trigger">Filter by category</label>
                         <?php foreach ($activeSearchQuery as $name => $value): ?>
                             <input type="hidden" name="<?= store_escape($name) ?>" value="<?= store_escape((string) $value) ?>">
                         <?php endforeach; ?>
                         <?php if ($selectedGeneration !== ''): ?>
                             <input type="hidden" name="generation" value="<?= store_escape($selectedGeneration) ?>">
                         <?php endif; ?>
-                        <select id="catalog-category" name="category">
-                            <option value="">All Categories</option>
-                            <?php foreach ($categories as $category): ?>
-                                <option value="<?= (int) $category['category_id'] ?>"<?= $selectedCategory === (int) $category['category_id'] ? ' selected' : '' ?>><?= store_escape($category['category_name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input id="catalog-category" type="hidden" name="category" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
+                        <div class="category-filter-dropdown" data-category-dropdown>
+                            <button class="category-filter-trigger" id="catalog-category-trigger" type="button" aria-expanded="false" aria-controls="catalog-category-options" data-category-trigger>
+                                <span data-category-label><?= $selectedCategory > 0
+                                    ? store_escape((string) array_column($categories, 'category_name', 'category_id')[$selectedCategory])
+                                    : 'All Categories' ?></span>
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                            </button>
+                            <div class="category-filter-options" id="catalog-category-options" role="listbox" aria-label="Choose a category" hidden>
+                                <button class="category-filter-option<?= $selectedCategory === 0 ? ' is-selected' : '' ?>" type="button" role="option" data-category-option data-category-value="" aria-selected="<?= $selectedCategory === 0 ? 'true' : 'false' ?>">All Categories</button>
+                                <?php foreach ($categories as $category): ?>
+                                    <?php $categoryId = (int) $category['category_id']; ?>
+                                    <button class="category-filter-option<?= $selectedCategory === $categoryId ? ' is-selected' : '' ?>" type="button" role="option" data-category-option data-category-value="<?= $categoryId ?>" aria-selected="<?= $selectedCategory === $categoryId ? 'true' : 'false' ?>"><?= store_escape($category['category_name']) ?></button>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </form>
                     <h2 id="generation-filter-title">Filter by generation</h2>
                     <nav aria-label="Product generations">
@@ -178,9 +188,68 @@ require __DIR__ . '/../app/views/layout/head.php';
 
     <script>
         const categoryFilter = document.querySelector(".category-filter");
-        categoryFilter?.querySelector("select")?.addEventListener("change", () => {
-            categoryFilter.requestSubmit();
-        });
+        if (categoryFilter) {
+            const categoryInput = categoryFilter.querySelector("#catalog-category");
+            const categoryTrigger = categoryFilter.querySelector("[data-category-trigger]");
+            const categoryLabel = categoryFilter.querySelector("[data-category-label]");
+            const categoryOptions = categoryFilter.querySelector("#catalog-category-options");
+            const setCategoryMenuOpen = (open) => {
+                categoryTrigger.setAttribute("aria-expanded", String(open));
+                categoryOptions.hidden = !open;
+            };
+
+            categoryTrigger.addEventListener("click", () => {
+                setCategoryMenuOpen(categoryTrigger.getAttribute("aria-expanded") !== "true");
+            });
+            categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
+                option.addEventListener("click", () => {
+                    categoryInput.value = option.dataset.categoryValue;
+                    categoryLabel.textContent = option.textContent.trim();
+                    categoryFilter.querySelectorAll("[data-category-option]").forEach((item) => {
+                        const selected = item === option;
+                        item.classList.toggle("is-selected", selected);
+                        item.setAttribute("aria-selected", String(selected));
+                    });
+                    setCategoryMenuOpen(false);
+                    categoryFilter.requestSubmit();
+                });
+                option.addEventListener("keydown", (event) => {
+                    const options = [...categoryFilter.querySelectorAll("[data-category-option]")];
+                    const index = options.indexOf(option);
+                    const nextIndex = event.key === "ArrowDown"
+                        ? Math.min(index + 1, options.length - 1)
+                        : event.key === "ArrowUp"
+                            ? Math.max(index - 1, 0)
+                            : event.key === "Home"
+                                ? 0
+                                : event.key === "End"
+                                    ? options.length - 1
+                                    : -1;
+                    if (nextIndex >= 0) {
+                        event.preventDefault();
+                        options[nextIndex].focus();
+                    } else if (event.key === "Escape") {
+                        event.preventDefault();
+                        setCategoryMenuOpen(false);
+                        categoryTrigger.focus();
+                    }
+                });
+            });
+            categoryTrigger.addEventListener("keydown", (event) => {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setCategoryMenuOpen(true);
+                    categoryFilter.querySelector('[data-category-option][aria-selected="true"]')?.focus();
+                } else if (event.key === "Escape") {
+                    setCategoryMenuOpen(false);
+                }
+            });
+            document.addEventListener("click", (event) => {
+                if (!categoryFilter.contains(event.target)) {
+                    setCategoryMenuOpen(false);
+                }
+            });
+        }
 
         const catalogResults = document.querySelector(".products-catalog-results");
         const startCatalogLoading = () => {
