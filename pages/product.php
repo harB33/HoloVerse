@@ -436,6 +436,8 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-add-button:hover:not(:disabled) { transform: translateY(-1px); background: #078cad; }
         .product-add-button:disabled { cursor: not-allowed; background: #aab5bd; }
         .product-shipping-note, .product-talent-links { margin: 16px 0 0; color: #647386; font-size: 13px; line-height: 1.6; }
+        .product-talent-links.is-collapsed { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); }
+        .product-talent-links.is-expanded { display: block; mask-image: none; }
         .product-talent-links a { color: #087fa8; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
         .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin: 0; color: #526476; font-size: 13px; line-height: 1.5; text-decoration: none; }
         .product-back-link svg { display: block; width: 14px; height: 14px; flex: 0 0 14px; }
@@ -633,12 +635,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </p>
                         <?php endif; ?>
                         <?php if ($talents): ?>
-                            <p class="product-talent-links">Featuring:
+                            <p class="product-talent-links is-collapsed" id="product-featured-talents" data-featured-talents>
+                                Featuring:
                                 <?php foreach ($talents as $index => $talent): ?>
                                     <?php if ($index > 0): ?>, <?php endif; ?>
                                     <a href="talent-merch?talent=<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
                                 <?php endforeach; ?>
                             </p>
+                            <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-featured-talents" data-featured-talents-toggle>View All Featured Talents</button>
                         <?php endif; ?>
                     </div>
                 </section>
@@ -715,6 +719,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                         : 'View Full Product Description';
                     descriptionPreview.hidden = expanded;
                     descriptionFull.hidden = !expanded;
+                });
+
+                const featuredTalents = document.querySelector('[data-featured-talents]');
+                const featuredTalentsToggle = document.querySelector('[data-featured-talents-toggle]');
+                featuredTalentsToggle?.addEventListener('click', () => {
+                    const expanded = featuredTalentsToggle.getAttribute('aria-expanded') !== 'true';
+                    featuredTalentsToggle.setAttribute('aria-expanded', String(expanded));
+                    featuredTalentsToggle.textContent = expanded ? 'Show Less' : 'View All Featured Talents';
+                    featuredTalents?.classList.toggle('is-collapsed', !expanded);
+                    featuredTalents?.classList.toggle('is-expanded', expanded);
                 });
 
                 const form = document.querySelector('[data-product-form]');
