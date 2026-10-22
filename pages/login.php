@@ -507,15 +507,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
                                 class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                         </div>
-                        <p class="login-forgot-password -mt-2 text-right text-sm">
-                            <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
-                        </p>
-                        <?php if ($message !== '' && !$isRegistration): ?>
-                            <div class="login-feedback space-y-1">
-                                <p class="auth-error-message otp-error" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
-                                <p class="login-retry-timer otp-timer"<?= $loginRateLimitSeconds > 0 ? '' : ' hidden' ?>>Try again in <span>--:--</span>.</p>
-                            </div>
-                        <?php endif; ?>
+                        <div class="login-feedback-row">
+                            <?php if ($message !== '' && !$isRegistration): ?>
+                                <div class="login-feedback space-y-1">
+                                    <p class="auth-error-message otp-error" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
+                                    <p class="login-retry-timer otp-timer"<?= $loginRateLimitSeconds > 0 ? '' : ' hidden' ?>>Try again in <span>--:--</span>.</p>
+                                </div>
+                            <?php endif; ?>
+                            <p class="login-forgot-password text-right text-sm">
+                                <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
+                            </p>
+                        </div>
                         <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
                             Sign in
                         </button>
@@ -771,7 +773,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     if (!feedback) {
                         feedback = document.createElement("div");
                         feedback.className = "login-feedback space-y-1";
-                        form.querySelector(".login-forgot-password").after(feedback);
+                        form.querySelector(".login-feedback-row").prepend(feedback);
                     }
                     let errorNotice = form.parentElement.querySelector(".auth-error-message");
                     if (!errorNotice) {
@@ -854,7 +856,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         if (!feedback) {
                             feedback = document.createElement("div");
                             feedback.className = "login-feedback space-y-1";
-                            form.querySelector(".login-forgot-password").after(feedback);
+                            form.querySelector(".login-feedback-row").prepend(feedback);
                         }
                         feedback.append(errorNotice);
                     } else if (isResetRequest) {
