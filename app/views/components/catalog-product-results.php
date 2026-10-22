@@ -5,6 +5,7 @@
             <article class="drop-card">
                 <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                 <div class="drop-art">
+                    <?php require __DIR__ . '/collector-favorite-button.php'; ?>
                     <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
                         <?php if ((int) $product['stock_quantity'] <= 0): ?>
                             <span class="drop-status">Sold out</span>

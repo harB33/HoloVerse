@@ -18,5 +18,6 @@ require_once __DIR__ . '/store/auth.php';
 require_once __DIR__ . '/store/cart.php';
 require_once __DIR__ . '/store/catalog.php';
 require_once __DIR__ . '/store/flash-sales.php';
+require_once __DIR__ . '/store/collector-showcase.php';
 
 store_refresh_authenticated_user($conn);

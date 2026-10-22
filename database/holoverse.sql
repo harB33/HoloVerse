@@ -134,6 +134,12 @@ CREATE TABLE user_tbl (
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE collector_favorites_tbl (
+    user_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, product_id)
+);
 CREATE TABLE login_rate_limits (
     rate_key char(64) NOT NULL,
     window_started_at TIMESTAMPTZ NOT NULL,
@@ -433,6 +439,8 @@ ALTER TABLE order_address_tbl ADD CONSTRAINT fk_order_addresses_order FOREIGN KE
 ALTER TABLE order_items_tbl ADD CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES order_tbl (order_id) ON DELETE CASCADE;
 ALTER TABLE order_items_tbl ADD CONSTRAINT fk_order_items_variant FOREIGN KEY (variant_id) REFERENCES product_variants_tbl (variant_id) ON DELETE SET NULL;
 ALTER TABLE order_tbl ADD CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES user_tbl (user_id) ON DELETE SET NULL;
+ALTER TABLE collector_favorites_tbl ADD CONSTRAINT fk_collector_favorites_user FOREIGN KEY (user_id) REFERENCES user_tbl (user_id) ON DELETE CASCADE;
+ALTER TABLE collector_favorites_tbl ADD CONSTRAINT fk_collector_favorites_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
 ALTER TABLE product_image_tbl ADD CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
 ALTER TABLE product_talents_tbl ADD CONSTRAINT fk_product_talents_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
 ALTER TABLE product_talents_tbl ADD CONSTRAINT fk_product_talents_talent FOREIGN KEY (talent_id) REFERENCES talent_tbl (talent_id);
@@ -449,6 +457,7 @@ ALTER TABLE public.flash_sale_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_address_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_tbl ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.collector_favorites_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_image_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_talents_tbl ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_tbl ENABLE ROW LEVEL SECURITY;

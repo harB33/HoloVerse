@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
+$favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
 $talentParameter = $_GET['talent_slug'] ?? $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
@@ -269,6 +270,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <article class="drop-card">
                                         <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                                         <div class="drop-art">
+                                            <?php require __DIR__ . '/../app/views/components/collector-favorite-button.php'; ?>
                                             <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
                                                 <?php if ((int) $product['stock_quantity'] <= 0): ?>
                                                     <span class="drop-status">Sold out</span>

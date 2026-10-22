@@ -1,73 +1,206 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
-$pageTitle = 'Order Process | hololive merchandise';
+
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$wantsJson = str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
+$respondToFavoriteRequest = static function (array $payload, int $status = 200) use ($wantsJson): never {
+    if ($wantsJson) {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload, JSON_THROW_ON_ERROR);
+        exit;
+    }
+
+    $_SESSION['collector_showcase_notice'] = (string) ($payload['message'] ?? 'Your Collector Showcase was updated.');
+    header('Location: ' . ($status === 401 ? '/login' : '/collector_showcase'), true, 303);
+    exit;
+};
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    if (!store_verify_csrf()) {
+        $respondToFavoriteRequest(['message' => 'Your session expired. Refresh the page and try again.'], 403);
+    }
+    if ($userId < 1) {
+        $respondToFavoriteRequest([
+            'message' => 'Sign in to save items to your Collector Showcase.',
+            'login_url' => '/login',
+        ], 401);
+    }
+
+    $productId = filter_var($_POST['product_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $action = $_POST['action'] ?? '';
+    if ($productId === false || !is_string($action) || !in_array($action, ['save', 'remove'], true)) {
+        $respondToFavoriteRequest(['message' => 'Choose a valid product to update your favorites.'], 400);
+    }
+
+    $statement = $conn->prepare(
+        "SELECT product_name FROM product_tbl WHERE product_id = ? AND status = 'active' LIMIT 1"
+    );
+    $statement->bind_param('i', $productId);
+    $statement->execute();
+    $product = $statement->get_result()->fetch_assoc();
+    $statement->close();
+    if (!$product) {
+        $respondToFavoriteRequest(['message' => 'This product is no longer available to save.'], 404);
+    }
+
+    if ($action === 'save') {
+        $statement = $conn->prepare(
+            'INSERT INTO collector_favorites_tbl (user_id, product_id) VALUES (?, ?)
+             ON CONFLICT (user_id, product_id) DO NOTHING'
+        );
+    } else {
+        $statement = $conn->prepare(
+            'DELETE FROM collector_favorites_tbl WHERE user_id = ? AND product_id = ?'
+        );
+    }
+    $statement->bind_param('ii', $userId, $productId);
+    $statement->execute();
+    $statement->close();
+
+    $isFavorite = $action === 'save';
+    $respondToFavoriteRequest([
+        'is_favorite' => $isFavorite,
+        'message' => $isFavorite
+            ? 'Saved to your Collector Showcase.'
+            : 'Removed from your Collector Showcase.',
+        'product_name' => (string) $product['product_name'],
+    ]);
+}
+
+$favoriteNotice = is_string($_SESSION['collector_showcase_notice'] ?? null)
+    ? $_SESSION['collector_showcase_notice']
+    : '';
+unset($_SESSION['collector_showcase_notice']);
+$favoriteIds = $userId > 0 ? store_collector_favorite_ids($conn, $userId) : [];
+$favoriteProducts = $userId > 0 ? store_collector_favorite_products($conn, $userId) : [];
+$purchasedProducts = $userId > 0 ? store_collector_purchase_rows($conn, $userId) : [];
+$pageTitle = 'Collector Showcase | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
 <body>
-    <div class="page-shell info-page order-page">
+    <div class="page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
-
         <?php
         $activePage = 'collector_showcase';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="info-main">
-            <section class="page-intro">
-                <span class="eyebrow">How it works</span>
-                <h1>Simple steps from cart to your doorstep.</h1>
-                <p>We keep the shopping flow clear and easy so you can focus on your favorite items, not the details. Every order is reviewed, packed, and shipped with care.</p>
+        <main class="collector-showcase-main">
+            <section class="collector-showcase-hero">
+                <span class="collector-showcase-eyebrow">Your personal collection</span>
+                <h1>Collector Showcase</h1>
+                <p>Keep the pieces you love close, and celebrate the ones you have made part of your collection.</p>
+                <?php if ($userId > 0): ?>
+                    <span class="collector-showcase-welcome">Curated for <?= store_escape((string) ($_SESSION['username'] ?? 'you')) ?></span>
+                <?php else: ?>
+                    <a class="collector-showcase-sign-in" href="/login">Sign in to start your collection</a>
+                <?php endif; ?>
             </section>
 
-            <section class="timeline">
-                <article class="step-card">
-                    <div class="step-number">1</div>
-                    <h2>Choose your item</h2>
-                    <p>Browse featured collections, compare sizes, and confirm the exact pieces you want before checkout.</p>
-                </article>
+            <?php if ($favoriteNotice !== ''): ?>
+                <p class="collector-showcase-notice" role="status"><?= store_escape($favoriteNotice) ?></p>
+            <?php endif; ?>
 
-                <article class="step-card">
-                    <div class="step-number">2</div>
-                    <h2>Secure checkout</h2>
-                    <p>Select your shipping option and complete payment through a secure order form.</p>
-                </article>
-
-                <article class="step-card">
-                    <div class="step-number">3</div>
-                    <h2>Pack & prepare</h2>
-                    <p>Our team reviews the order, prepares the packaging, and verifies the details before dispatch.</p>
-                </article>
-
-                <article class="step-card">
-                    <div class="step-number">4</div>
-                    <h2>Track delivery</h2>
-                    <p>Once shipped, you receive tracking information and can monitor the journey to your address.</p>
-                </article>
-            </section>
-
-            <section class="info-panel">
-                <div class="panel-box">
-                    <h3>What happens after checkout</h3>
-                    <ul class="check-list">
-                        <li>Order confirmation email with summary and timing</li>
-                        <li>Packaging review for quality control and item verification</li>
-                        <li>Shipment created and tracking information sent promptly</li>
-                        <li>Support available for size, shipping, or order updates</li>
-                    </ul>
+            <section class="collector-showcase-section" aria-labelledby="collector-favorites-title">
+                <div class="collector-showcase-section-heading">
+                    <div>
+                        <span class="collector-showcase-kicker">Saved for later</span>
+                        <h2 id="collector-favorites-title">Your favorites</h2>
+                    </div>
+                    <?php if ($userId > 0): ?>
+                        <span class="collector-showcase-count"><?= count($favoriteProducts) ?> saved</span>
+                    <?php endif; ?>
                 </div>
+                <?php if ($userId < 1): ?>
+                    <div class="collector-showcase-empty">
+                        <p>Sign in to save favorite products and find them here whenever you return.</p>
+                    </div>
+                <?php elseif ($favoriteProducts): ?>
+                    <div class="collector-showcase-grid">
+                        <?php foreach ($favoriteProducts as $product): ?>
+                            <?php $favoriteProductId = (int) $product['product_id']; ?>
+                            <article class="collector-showcase-card">
+                                <a class="collector-showcase-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
+                                <div class="collector-showcase-card-art">
+                                    <?php if (!empty($product['image_url'])): ?>
+                                        <img src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                                    <?php else: ?>
+                                        <span aria-hidden="true"><?= store_escape(strtoupper(substr($product['product_name'], 0, 1))) ?></span>
+                                    <?php endif; ?>
+                                    <?php
+                                    $favoriteFormModifier = 'collector-favorite-form--showcase';
+                                    require __DIR__ . '/../app/views/components/collector-favorite-button.php';
+                                    unset($favoriteFormModifier);
+                                    ?>
+                                </div>
+                                <div class="collector-showcase-card-copy">
+                                    <span><?= store_escape($product['category_name']) ?></span>
+                                    <h3><?= store_escape($product['product_name']) ?></h3>
+                                    <p><?= store_escape($product['variant_name']) ?></p>
+                                    <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="collector-showcase-empty">
+                        <span class="collector-showcase-empty-heart" aria-hidden="true">♡</span>
+                        <h3>Your showcase is waiting for a favorite</h3>
+                        <p>Tap the heart on any product to save it here.</p>
+                        <a href="/products">Explore products</a>
+                    </div>
+                <?php endif; ?>
+            </section>
 
-                <aside class="side-box">
-                    <h3>Need help?</h3>
-                    <p>Our support team can assist with checkout questions, shipping updates, and order adjustments before dispatch.</p>
-                    <a href="#">support@hololive-merch.example</a>
-                </aside>
+            <section class="collector-showcase-section collector-purchases-section" aria-labelledby="collector-purchases-title">
+                <div class="collector-showcase-section-heading">
+                    <div>
+                        <span class="collector-showcase-kicker">With gratitude</span>
+                        <h2 id="collector-purchases-title">Your collection, completed</h2>
+                    </div>
+                    <?php if ($userId > 0): ?>
+                        <span class="collector-showcase-count"><?= count($purchasedProducts) ?> <?= count($purchasedProducts) === 1 ? 'item' : 'items' ?></span>
+                    <?php endif; ?>
+                </div>
+                <p class="collector-purchases-intro">Every piece you choose supports the creators and the community around them. Thank you for being part of HoloVerse.</p>
+                <?php if ($userId < 1): ?>
+                    <div class="collector-showcase-empty">
+                        <p>Sign in to see your purchased items and the appreciation we have saved for you.</p>
+                    </div>
+                <?php elseif ($purchasedProducts): ?>
+                    <div class="collector-purchases-list">
+                        <?php foreach ($purchasedProducts as $purchase): ?>
+                            <article class="collector-purchase-card">
+                                <?php if (!empty($purchase['image_url'])): ?>
+                                    <img src="<?= store_escape(store_asset_url($purchase['image_url'], $siteRoot)) ?>" alt="<?= store_escape($purchase['alt_text'] ?? $purchase['product_name_snapshot']) ?>" loading="lazy" decoding="async">
+                                <?php else: ?>
+                                    <span class="collector-purchase-placeholder" aria-hidden="true"><?= store_escape(strtoupper(substr($purchase['product_name_snapshot'], 0, 1))) ?></span>
+                                <?php endif; ?>
+                                <div class="collector-purchase-details">
+                                    <span class="collector-showcase-kicker">A piece of your collection</span>
+                                    <h3><?= store_escape($purchase['product_name_snapshot']) ?></h3>
+                                    <p><?= store_escape($purchase['variant_name_snapshot']) ?> · Qty <?= (int) $purchase['quantity'] ?></p>
+                                    <span class="collector-purchase-order">Order <?= store_escape($purchase['order_number']) ?> · <?= store_escape(date('M j, Y', strtotime($purchase['created_at']))) ?></span>
+                                </div>
+                                <p class="collector-purchase-thanks">Thank you for choosing this piece. We hope it brings a little joy to your collection.</p>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="collector-showcase-empty">
+                        <h3>Your next favorite is out there</h3>
+                        <p>Your confirmed purchases will appear here with a thank-you from us.</p>
+                        <a href="/products">Find your next collectible</a>
+                    </div>
+                <?php endif; ?>
             </section>
         </main>
     </div>
     <?php
-    $cartHref = 'cart';
+    $cartHref = '/cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>

@@ -122,6 +122,9 @@ if (!$product || !$variants) {
     http_response_code(404);
 }
 
+$favoriteProductIds = $product
+    ? store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0))
+    : [];
 $availableVariants = array_values(array_filter(
     $variants,
     static fn (array $variant): bool => (int) $variant['stock_quantity'] > 0
@@ -593,7 +596,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php if ((int) $product['is_preorder'] === 1): ?>
                                 <span class="product-preorder-badge">Pre-order</span>
                             <?php endif; ?>
-                            <h1 id="product-title"><?= store_escape($product['product_name']) ?></h1>
+                            <div class="product-title-row">
+                                <h1 id="product-title"><?= store_escape($product['product_name']) ?></h1>
+                                <?php
+                                $favoriteFormModifier = 'collector-favorite-form--inline';
+                                require __DIR__ . '/../app/views/components/collector-favorite-button.php';
+                                unset($favoriteFormModifier);
+                                ?>
+                            </div>
                         </div>
 
                         <?php if (!empty($product['description'])): ?>

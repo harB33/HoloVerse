@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
+$favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
 $pageSize = 12;
 $searchParameter = $_GET['search'] ?? '';
 $filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
