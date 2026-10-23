@@ -145,9 +145,21 @@ CREATE TABLE login_rate_limits (
     window_started_at TIMESTAMPTZ NOT NULL,
     attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0)
 );
+CREATE TABLE password_reset_codes (
+    email_hash char(64) NOT NULL,
+    user_id INTEGER DEFAULT NULL,
+    otp_hash varchar(255) NOT NULL,
+    requested_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMPTZ NOT NULL,
+    attempt_count SMALLINT NOT NULL DEFAULT 0 CHECK (attempt_count >= 0 AND attempt_count <= 5),
+    used_at TIMESTAMPTZ DEFAULT NULL,
+    PRIMARY KEY (email_hash)
+);
 ALTER TABLE login_rate_limits ADD PRIMARY KEY (rate_key);
 CREATE INDEX idx_login_rate_limits_window ON login_rate_limits (window_started_at);
+CREATE INDEX password_reset_codes_requested_at_idx ON password_reset_codes (requested_at);
 ALTER TABLE public.login_rate_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.password_reset_codes ENABLE ROW LEVEL SECURITY;
 
 INSERT INTO cart_items_tbl (cart_item_id, cart_id, variant_id, quantity, added_at, hold_expires_at) VALUES
 (9, 6, 1, 1, '2026-10-14 19:34:17', NULL);
@@ -397,8 +409,7 @@ CREATE INDEX fk_addresses_user ON address_tbl (user_id);
 ALTER TABLE cart_items_tbl ADD PRIMARY KEY (cart_item_id);
 CREATE UNIQUE INDEX uq_cart_variant ON cart_items_tbl (cart_id,variant_id);
 CREATE INDEX fk_cart_items_variant ON cart_items_tbl (variant_id);
-CREATE INDEX idx_cart_item_hold_variant ON cart_items_tbl (variant_id,hold_expires_at)
-WHERE hold_expires_at IS NOT NULL;
+CREATE INDEX idx_cart_item_hold_variant ON cart_items_tbl (variant_id,hold_expires_at);
 ALTER TABLE cart_tbl ADD PRIMARY KEY (cart_id);
 CREATE UNIQUE INDEX session_token ON cart_tbl (session_token);
 CREATE INDEX fk_carts_user ON cart_tbl (user_id);
@@ -441,6 +452,7 @@ ALTER TABLE order_items_tbl ADD CONSTRAINT fk_order_items_variant FOREIGN KEY (v
 ALTER TABLE order_tbl ADD CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES user_tbl (user_id) ON DELETE SET NULL;
 ALTER TABLE collector_favorites_tbl ADD CONSTRAINT fk_collector_favorites_user FOREIGN KEY (user_id) REFERENCES user_tbl (user_id) ON DELETE CASCADE;
 ALTER TABLE collector_favorites_tbl ADD CONSTRAINT fk_collector_favorites_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
+ALTER TABLE password_reset_codes ADD CONSTRAINT password_reset_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES user_tbl (user_id) ON DELETE CASCADE;
 ALTER TABLE product_image_tbl ADD CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
 ALTER TABLE product_talents_tbl ADD CONSTRAINT fk_product_talents_product FOREIGN KEY (product_id) REFERENCES product_tbl (product_id) ON DELETE CASCADE;
 ALTER TABLE product_talents_tbl ADD CONSTRAINT fk_product_talents_talent FOREIGN KEY (talent_id) REFERENCES talent_tbl (talent_id);
