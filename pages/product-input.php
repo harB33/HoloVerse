@@ -253,11 +253,31 @@ if (!$accessDenied) {
                     $currency = 'PHP';
                     $statement = $conn->prepare(
                         'INSERT INTO product_variants_tbl (product_id, variant_name, sku, price, compare_at_price, currency, stock_quantity)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)'
+                         VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING variant_id'
                     );
                     $statement->bind_param('isssssi', $createdProductId, $variantName, $sku, $price, $compareAtPrice, $currency, $stockQuantity);
                     $statement->execute();
+                    $createdVariant = $statement->get_result()->fetch_assoc();
+                    $createdVariantId = (int) ($createdVariant['variant_id'] ?? 0);
                     $statement->close();
+                    if ($createdVariantId < 1) {
+                        throw new RuntimeException('PostgreSQL did not return the new product variant ID.');
+                    }
+                    if ($stockQuantity > 0) {
+                        store_record_inventory_movement(
+                            $conn,
+                            $createdVariantId,
+                            $productName,
+                            $variantName,
+                            $sku,
+                            'initial_stock',
+                            $stockQuantity,
+                            0,
+                            $stockQuantity,
+                            'Initial stock entered during product creation',
+                            (int) $_SESSION['user_id']
+                        );
+                    }
 
                     if ($imageUploads) {
                         $uploadDirectory = dirname(__DIR__) . '/Assets/images/products';

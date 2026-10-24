@@ -10,16 +10,28 @@
                         <?= (int) $item['stock_quantity'] > 0 ? (int) $item['stock_quantity'] : 'Sold out' ?>
                     </span>
                 </td>
-                <td data-label="Restock">
-                    <form class="admin-restock-form" method="post" action="inventory">
-                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                        <input type="hidden" name="variant_id" value="<?= (int) $item['variant_id'] ?>">
-                        <input type="hidden" name="page" value="<?= $currentPage ?>">
-                        <input type="hidden" name="search" value="<?= store_escape($inventorySearch) ?>">
-                        <label class="sr-only" for="restock-<?= (int) $item['variant_id'] ?>">Units to add for <?= store_escape($item['product_name'] . ' ' . $item['variant_name']) ?></label>
-                        <input id="restock-<?= (int) $item['variant_id'] ?>" name="restock_quantity" type="number" min="1" max="2147483647" step="1" value="1" required>
-                        <button type="submit">Add stock</button>
-                    </form>
+                <td data-label="Stock action">
+                    <details class="admin-inventory-adjustment">
+                        <summary>Adjust stock</summary>
+                        <form class="admin-restock-form" method="post" action="inventory">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="variant_id" value="<?= (int) $item['variant_id'] ?>">
+                            <input type="hidden" name="page" value="<?= $currentPage ?>">
+                            <input type="hidden" name="search" value="<?= store_escape($inventorySearch) ?>">
+                            <input type="hidden" name="history_page" value="<?= $historyPage ?>">
+                            <label for="adjustment-type-<?= (int) $item['variant_id'] ?>">Adjustment</label>
+                            <select id="adjustment-type-<?= (int) $item['variant_id'] ?>" name="adjustment_type" required>
+                                <option value="restock">Add units</option>
+                                <option value="remove">Remove units</option>
+                                <option value="count">Set counted stock</option>
+                            </select>
+                            <label for="adjustment-quantity-<?= (int) $item['variant_id'] ?>">Quantity</label>
+                            <input id="adjustment-quantity-<?= (int) $item['variant_id'] ?>" name="quantity" type="number" min="0" max="2147483647" step="1" value="1" required>
+                            <label for="adjustment-reason-<?= (int) $item['variant_id'] ?>">Reason</label>
+                            <textarea id="adjustment-reason-<?= (int) $item['variant_id'] ?>" name="reason" rows="2" maxlength="500" placeholder="Why is this stock changing?" required></textarea>
+                            <button type="submit">Save adjustment</button>
+                        </form>
+                    </details>
                 </td>
             </tr>
         <?php endforeach; ?>

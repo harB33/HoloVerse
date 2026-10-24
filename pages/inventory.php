@@ -22,6 +22,9 @@ $inventorySearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $requestedPage = $_GET['page'] ?? $_POST['page'] ?? '1';
 $requestedPage = is_string($requestedPage) ? filter_var($requestedPage, FILTER_VALIDATE_INT) : false;
 $requestedPage = $requestedPage === false || $requestedPage < 1 ? 1 : $requestedPage;
+$historyPageInput = $_GET['history_page'] ?? $_POST['history_page'] ?? '1';
+$historyPageInput = is_string($historyPageInput) ? filter_var($historyPageInput, FILTER_VALIDATE_INT) : false;
+$historyPage = $historyPageInput === false || $historyPageInput < 1 ? 1 : $historyPageInput;
 
 $inventoryWhere = "p.status = 'active'";
 if ($inventorySearch !== '') {
@@ -105,50 +108,60 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $variantId = isset($_POST['variant_id']) && is_string($_POST['variant_id'])
         ? filter_var($_POST['variant_id'], FILTER_VALIDATE_INT)
         : false;
-    $restockQuantity = isset($_POST['restock_quantity']) && is_string($_POST['restock_quantity'])
-        ? filter_var($_POST['restock_quantity'], FILTER_VALIDATE_INT)
+    $quantity = isset($_POST['quantity']) && is_string($_POST['quantity'])
+        ? filter_var($_POST['quantity'], FILTER_VALIDATE_INT)
         : false;
+    $adjustmentType = isset($_POST['adjustment_type']) && is_string($_POST['adjustment_type'])
+        ? $_POST['adjustment_type']
+        : '';
+    $reason = isset($_POST['reason']) && is_string($_POST['reason'])
+        ? trim($_POST['reason'])
+        : '';
 
     if (!store_verify_csrf()) {
         http_response_code(403);
         $notice = 'Your session expired. Refresh the page and try again.';
         $noticeIsError = true;
-    } elseif ($variantId === false || $variantId < 1 || $restockQuantity === false || $restockQuantity < 1 || $restockQuantity > 2147483647) {
-        $notice = 'Enter a valid item and a restock quantity greater than zero.';
+    } elseif (
+        $variantId === false
+        || $variantId < 1
+        || $quantity === false
+        || $quantity < 0
+        || $quantity > 2147483647
+        || !in_array($adjustmentType, ['restock', 'remove', 'count'], true)
+        || $reason === ''
+        || strlen($reason) > 500
+    ) {
+        $notice = 'Enter a valid adjustment, quantity, and reason (up to 500 characters).';
         $noticeIsError = true;
     } else {
         try {
-            $statement = $conn->prepare(
-                "UPDATE product_variants_tbl
-                 SET stock_quantity = stock_quantity + ?
-                 WHERE variant_id = ?
-                   AND stock_quantity <= 2147483647 - ?
-                   AND EXISTS (
-                       SELECT 1 FROM product_tbl p
-                       WHERE p.product_id = product_variants_tbl.product_id AND p.status = 'active'
-                   )"
+            $result = store_adjust_inventory(
+                $conn,
+                (int) $variantId,
+                $adjustmentType,
+                (int) $quantity,
+                $reason,
+                (int) $_SESSION['user_id']
             );
-            $variantId = (int) $variantId;
-            $restockQuantity = (int) $restockQuantity;
-            $statement->bind_param('iii', $restockQuantity, $variantId, $restockQuantity);
-            $statement->execute();
-            $updated = $statement->affected_rows > 0;
-            $statement->close();
-
-            if ($updated) {
-                $_SESSION['inventory_notice'] = 'Inventory restocked successfully.';
-                header('Location: inventory?' . http_build_query([
-                    'page' => $currentPage,
-                    'search' => $inventorySearch,
-                ]));
-                exit;
-            }
-
-            $notice = 'This active item could not be restocked. It may have been removed or reached the maximum stock quantity.';
-            $noticeIsError = true;
+            $_SESSION['inventory_notice'] = sprintf(
+                'Inventory updated from %d to %d units (%+d).',
+                $result['previous_quantity'],
+                $result['new_quantity'],
+                $result['quantity_change']
+            );
+            header('Location: inventory?' . http_build_query([
+                'page' => $currentPage,
+                'search' => $inventorySearch,
+                'history_page' => $historyPage,
+            ]));
+            exit;
         } catch (PDOException $error) {
-            error_log('Inventory restock failed: ' . $error->getMessage());
+            error_log('Inventory adjustment failed: ' . $error->getMessage());
             $notice = 'Inventory could not be updated. Please try again.';
+            $noticeIsError = true;
+        } catch (InvalidArgumentException | RuntimeException $error) {
+            $notice = $error->getMessage();
             $noticeIsError = true;
         }
     }
@@ -177,6 +190,34 @@ if ($inventorySearch !== '') {
 $inventoryStatement->execute();
 $inventory = $inventoryStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
 $inventoryStatement->close();
+
+$historyPageSize = 10;
+$historyCount = (int) $conn->query('SELECT COUNT(*) AS total FROM inventory_movements_tbl')->fetch_assoc()['total'];
+$historyPageCount = max(1, (int) ceil($historyCount / $historyPageSize));
+$historyPage = min($historyPage, $historyPageCount);
+$historyOffset = ($historyPage - 1) * $historyPageSize;
+$historyStatement = $conn->prepare(
+    'SELECT m.product_name_snapshot, m.variant_name_snapshot, m.sku_snapshot,
+            m.movement_type, m.quantity_change, m.previous_quantity, m.new_quantity,
+            m.reason, m.created_at, u.username, o.order_number
+     FROM inventory_movements_tbl m
+     LEFT JOIN user_tbl u ON u.user_id = m.user_id
+     LEFT JOIN order_tbl o ON o.order_id = m.order_id
+     ORDER BY m.created_at DESC, m.movement_id DESC
+     LIMIT ? OFFSET ?'
+);
+$historyStatement->bind_param('ii', $historyPageSize, $historyOffset);
+$historyStatement->execute();
+$inventoryMovements = $historyStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+$historyStatement->close();
+$inventoryOverview = $conn->query(
+    "SELECT COUNT(*) AS variant_count,
+            COUNT(*) FILTER (WHERE stock_quantity = 0) AS out_of_stock_count,
+            COALESCE(SUM(stock_quantity), 0) AS units_on_hand
+     FROM product_variants_tbl v
+     INNER JOIN product_tbl p ON p.product_id = v.product_id
+     WHERE p.status = 'active'"
+)->fetch_assoc();
 
 $siteRoot = '../';
 $pageTitle = 'Inventory | HoloVerse';
@@ -209,8 +250,26 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <p class="admin-notice<?= $noticeIsError ? ' admin-notice--error' : '' ?>" role="<?= $noticeIsError ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
             <?php endif; ?>
 
+            <div class="admin-inventory-overview" aria-label="Inventory overview">
+                <article class="admin-inventory-overview-card">
+                    <span>Active variants</span>
+                    <strong><?= number_format((int) $inventoryOverview['variant_count']) ?></strong>
+                </article>
+                <article class="admin-inventory-overview-card">
+                    <span>Total units on hand</span>
+                    <strong><?= number_format((int) $inventoryOverview['units_on_hand']) ?></strong>
+                </article>
+                <article class="admin-inventory-overview-card<?= (int) $inventoryOverview['out_of_stock_count'] > 0 ? ' is-alert' : '' ?>">
+                    <span>Out of stock</span>
+                    <strong><?= number_format((int) $inventoryOverview['out_of_stock_count']) ?></strong>
+                </article>
+            </div>
+
             <div class="admin-inventory-toolbar">
-                <p class="admin-panel-description">Add units to a product variant’s current stock. Sold-out items appear first.</p>
+                <div class="admin-inventory-toolbar-copy">
+                    <h2>Stock levels</h2>
+                    <p class="admin-panel-description">Search a product, then open its adjustment controls. Every change is recorded in the audit trail.</p>
+                </div>
                 <form class="admin-inventory-search" method="get" action="inventory" role="search">
                     <label class="sr-only" for="inventory-search">Search product, variant, or SKU</label>
                     <span class="admin-inventory-search-field">
@@ -237,13 +296,46 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <th scope="col">Variant</th>
                             <th scope="col">SKU</th>
                             <th scope="col">Current stock</th>
-                            <th scope="col">Restock</th>
+                            <th scope="col">Adjust stock</th>
                         </tr>
                     </thead>
                     <?php require __DIR__ . '/../app/views/components/inventory-table-body.php'; ?>
                 </table>
             </div>
             <?php require __DIR__ . '/../app/views/components/inventory-pagination.php'; ?>
+
+            <section class="admin-inventory-history" aria-labelledby="inventory-history-title">
+                <header class="admin-inventory-section-header">
+                    <div>
+                        <p class="admin-kicker">Audit trail</p>
+                        <h2 id="inventory-history-title">Inventory movement history</h2>
+                    </div>
+                    <p>Recent stock receipts, corrections, removals, and order deductions.</p>
+                </header>
+                <div class="admin-table-wrap">
+                    <?php require __DIR__ . '/../app/views/components/inventory-movement-table.php'; ?>
+                </div>
+                <nav class="admin-inventory-pagination" aria-label="Inventory movement history pages">
+                    <span class="admin-inventory-page-summary">
+                        <?php if ($historyCount > 0): ?>
+                            Showing <strong><?= number_format($historyOffset + 1) ?>–<?= number_format(min($historyOffset + $historyPageSize, $historyCount)) ?></strong> of <?= number_format($historyCount) ?> movements
+                            <?php if ($historyPageCount > 1): ?><span class="admin-inventory-page-number">Page <?= number_format($historyPage) ?> of <?= number_format($historyPageCount) ?></span><?php endif; ?>
+                        <?php else: ?>
+                            No inventory movements recorded
+                        <?php endif; ?>
+                    </span>
+                    <?php if ($historyPageCount > 1): ?>
+                        <div class="admin-inventory-page-links">
+                            <?php if ($historyPage > 1): ?>
+                                <a href="?<?= store_escape(http_build_query(['page' => $currentPage, 'search' => $inventorySearch, 'history_page' => $historyPage - 1])) ?>">Previous history page</a>
+                            <?php endif; ?>
+                            <?php if ($historyPage < $historyPageCount): ?>
+                                <a href="?<?= store_escape(http_build_query(['page' => $currentPage, 'search' => $inventorySearch, 'history_page' => $historyPage + 1])) ?>">Next history page</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </nav>
+            </section>
         </section>
     </main>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>

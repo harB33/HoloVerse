@@ -2164,28 +2164,59 @@
   }
 
   .admin-inventory-dashboard {
-    @apply mt-3 p-4;
+    @apply mt-5 p-6;
   }
 
   .admin-inventory-dashboard .admin-dashboard-header {
-    @apply mb-3 pb-3;
+    @apply mb-5 pb-4;
   }
 
-  .admin-inventory-dashboard .admin-panel-description {
-    @apply mb-2;
+  .admin-inventory-dashboard > .admin-dashboard-header h1 {
+    @apply mt-1;
+  }
+
+  .admin-inventory-overview {
+    @apply mb-6 grid gap-3 sm:grid-cols-3;
+  }
+
+  .admin-inventory-overview-card {
+    @apply rounded-2xl border border-[#e6edf5] bg-[#f8fbff] px-4 py-3;
+  }
+
+  .admin-inventory-overview-card span {
+    @apply block text-[10px] font-bold uppercase tracking-[0.1em] text-[#718096];
+  }
+
+  .admin-inventory-overview-card strong {
+    @apply mt-1 block text-[24px] font-black leading-tight text-[#152235];
+  }
+
+  .admin-inventory-overview-card.is-alert {
+    @apply border-amber-200 bg-amber-50;
+  }
+
+  .admin-inventory-overview-card.is-alert strong {
+    @apply text-amber-800;
   }
 
   .admin-inventory-toolbar {
-    @apply mb-3 flex flex-wrap items-center justify-between gap-3;
+    @apply mb-4 flex flex-wrap items-end justify-between gap-4;
   }
 
-  .admin-inventory-toolbar .admin-panel-description {
-    @apply mb-0;
+  .admin-inventory-toolbar-copy {
+    @apply min-w-[240px] flex-1;
+  }
+
+  .admin-inventory-toolbar-copy h2 {
+    @apply mb-1 text-[18px] font-bold text-[#152235];
+  }
+
+  .admin-inventory-toolbar-copy .admin-panel-description {
+    @apply mb-0 max-w-2xl;
   }
 
   .admin-inventory-search {
-    @apply flex min-w-0 flex-[1_1_460px] items-center gap-2;
-    max-width: 620px;
+    @apply flex min-w-[260px] flex-[0_1_470px] items-center gap-2;
   }
 
   .admin-inventory-search-field {
@@ -2242,27 +2273,51 @@
   }
 
   .admin-inventory-dashboard .admin-inventory-table {
-    @apply table-fixed overflow-hidden rounded-xl border border-[#e6edf5];
+    @apply table-fixed overflow-hidden rounded-2xl border border-[#e6edf5] bg-white;
+    width: 100%;
+  }
+
+  .admin-inventory-dashboard .admin-table-wrap {
+    @apply mx-auto overflow-visible;
   }
 
   .admin-inventory-table th {
-    @apply whitespace-nowrap;
+    @apply whitespace-nowrap bg-[#f7faff] py-3 text-center text-[10px] tracking-[0.1em];
   }
 
-  .admin-inventory-table th:nth-child(1) {
-    width: 32%;
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(1) {
+    width: 28%;
   }
-  .admin-inventory-table th:nth-child(2) {
-    width: 19%;
-  }
-  .admin-inventory-table th:nth-child(3) {
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(2) {
     width: 17%;
   }
-  .admin-inventory-table th:nth-child(4) {
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(3) {
+    width: 15%;
+  }
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(4) {
+    width: 13%;
+  }
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(5) {
+    width: 27%;
+  }
+
+  .admin-inventory-movement-table th:nth-child(1) {
+    width: 15%;
+  }
+  .admin-inventory-movement-table th:nth-child(2) {
+    width: 23%;
+  }
+  .admin-inventory-movement-table th:nth-child(3) {
+    width: 13%;
+  }
+  .admin-inventory-movement-table th:nth-child(4) {
+    width: 15%;
+  }
+  .admin-inventory-movement-table th:nth-child(5) {
     width: 14%;
   }
-  .admin-inventory-table th:nth-child(5) {
-    width: 18%;
+  .admin-inventory-movement-table th:nth-child(6) {
+    width: 20%;
   }
 
   .admin-inventory-table tbody tr {
@@ -2271,6 +2326,10 @@
 
   .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td {
     @apply align-middle;
+  }
+
+  .admin-inventory-dashboard.admin-dashboard .admin-inventory-table td:not(:first-child) {
+    @apply text-center;
   }
 
   .admin-inventory-product {
@@ -2287,7 +2346,11 @@
 
   .admin-inventory-dashboard.admin-dashboard th,
   .admin-inventory-dashboard.admin-dashboard td {
-    @apply px-2 py-1.5;
+    @apply px-3 py-2.5;
+  }
+
+  .admin-inventory-dashboard .admin-inventory-table td {
+    @apply text-[12px];
   }
 
   .admin-dashboard-header {
@@ -2403,16 +2466,97 @@
     @apply size-4 shrink-0;
   }
 
-  .admin-restock-form {
-    @apply flex min-w-[190px] items-center gap-1.5;
+  .admin-inventory-adjustment {
+    @apply relative;
   }
 
-  .admin-restock-form input {
-    @apply w-16 rounded-lg border border-[#d7e1eb] bg-white px-2 py-1.5 text-[12px] text-[#1c2331] focus:border-[#0ea5d6] focus:outline-none focus:ring-2 focus:ring-[#0ea5d6]/20;
+  .admin-inventory-dashboard .admin-inventory-table tbody tr:focus-within {
+    position: relative;
+    z-index: 10;
+  }
+
+  .admin-inventory-adjustment summary {
+    @apply inline-flex min-h-9 cursor-pointer list-none items-center justify-center rounded-xl border border-[#cdebf4] bg-[#effaff] px-3 text-[11px] font-bold text-[#087fa8] transition hover:border-[#9dd9e9] hover:bg-[#e4f7fd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-adjustment summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .admin-restock-form {
+    @apply absolute right-0 top-[calc(100%+0.5rem)] z-20 mt-0 grid w-[260px] min-w-[230px] gap-1.5 rounded-xl border border-[#dfe7f0] bg-white p-3 shadow-xl;
+  }
+
+  .admin-restock-form label {
+    @apply mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#65758a];
+  }
+
+  .admin-restock-form input,
+  .admin-restock-form select,
+  .admin-restock-form textarea {
+    @apply min-h-9 w-full rounded-lg border border-[#d7e1eb] bg-[#fbfdff] px-2.5 py-2 text-[12px] text-[#1c2331] outline-none transition focus:border-[#0ea5d6] focus:bg-white focus:ring-2 focus:ring-[#0ea5d6]/20;
+  }
+
+  .admin-restock-form textarea {
+    @apply min-h-[62px] resize-y;
   }
 
   .admin-restock-form button {
-    @apply cursor-pointer rounded-lg bg-[#0ea5d6] px-2.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+    @apply mt-1 min-h-9 cursor-pointer rounded-lg bg-[#0ea5d6] px-3 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-inventory-history {
+    @apply mt-9 border-t border-[#e6edf5] pt-6;
+  }
+
+  .admin-inventory-section-header {
+    @apply mb-4 flex flex-wrap items-end justify-between gap-3;
+  }
+
+  .admin-inventory-section-header h2 {
+    @apply mt-1 text-[20px] font-bold text-[#152235];
+  }
+
+  .admin-inventory-section-header p:last-child {
+    @apply mb-1 text-[12px] text-[#718096];
+  }
+
+  .admin-inventory-movement-type {
+    @apply inline-flex rounded-full bg-[#f1f5f9] px-2 py-1 text-[10px] font-bold text-[#475569];
+  }
+
+  .admin-inventory-movement-type--restock,
+  .admin-inventory-movement-type--initial_stock {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .admin-inventory-movement-type--removal,
+  .admin-inventory-movement-type--sale {
+    @apply bg-rose-50 text-rose-700;
+  }
+
+  .admin-inventory-movement-type--count_correction {
+    @apply bg-amber-50 text-amber-800;
+  }
+
+  .admin-inventory-movement-quantity {
+    @apply ml-1 whitespace-nowrap font-bold text-[#24364b];
+  }
+
+  .admin-inventory-stock-transition {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] text-[#718096];
+  }
+
+  .admin-inventory-stock-transition strong {
+    @apply text-[12px] text-[#152235];
+  }
+
+  .admin-inventory-movement-table td[data-label="Reason / reference"] > span {
+    @apply mt-1 block text-[10px] text-[#718096];
+  }
+
+  .admin-inventory-movement-table td[data-label="Reason / reference"] > span + span {
+    @apply mt-0;
   }
 
   .admin-inventory-pagination {
@@ -3783,7 +3927,7 @@
   }
 
   .admin-inventory-dashboard.admin-dashboard .admin-inventory-table tbody tr {
-    @apply mb-3 overflow-hidden rounded-xl border border-[#e6edf5] bg-white shadow-sm;
+    @apply relative mb-3 overflow-visible rounded-xl border border-[#e6edf5] bg-white shadow-sm;
   }
 
   .admin-inventory-dashboard.admin-dashboard
@@ -3805,7 +3949,7 @@
   .admin-inventory-dashboard.admin-dashboard
     .admin-inventory-table
     td:first-child {
-    @apply bg-[#f7fbff] py-2.5 text-left;
+    @apply justify-center bg-[#f7fbff] py-2.5 text-center;
   }
 
   .admin-inventory-dashboard.admin-dashboard
@@ -3821,7 +3965,7 @@
   .admin-inventory-dashboard.admin-dashboard
     .admin-inventory-table
     td:last-child {
-    @apply block border-b-0 text-left;
+    @apply relative block border-b-0 text-left;
   }
 
   .admin-inventory-dashboard.admin-dashboard
@@ -3831,11 +3975,20 @@
   }
 
   .admin-restock-form {
-    @apply w-full min-w-0;
+    @apply right-0 top-[calc(100%+0.5rem)] w-[min(260px,calc(100vw-3rem))] min-w-0;
   }
 
   .admin-restock-form input {
-    @apply w-20;
+    @apply w-full;
+  }
+
+  .admin-restock-form select,
+  .admin-restock-form textarea {
+    @apply w-full;
+  }
+
+  .admin-restock-form {
+    @apply min-w-0;
   }
 
   .admin-inventory-pagination {

@@ -112,35 +112,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
             $paymentMethod = (string) ($_POST['payment_method'] ?? '');
             $cartId = store_current_cart_id($conn, false);
             try {
-                $statement = $conn->prepare(
-                    'SELECT p.product_name, p.status, v.variant_id, v.variant_name, v.sku,
-                            v.price, v.currency,
-                            GREATEST(v.stock_quantity - COALESCE((
-                                SELECT SUM(other.quantity)
-                                FROM cart_items_tbl other
-                                WHERE other.variant_id = v.variant_id
-                                  AND other.cart_id <> ci.cart_id
-                                  AND other.hold_expires_at > statement_timestamp()
-                            ), 0), 0) AS stock_quantity,
-                            ci.quantity,
-                            ci.hold_expires_at
-                     FROM cart_items_tbl ci
-                     INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
-                     INNER JOIN product_tbl p ON p.product_id = v.product_id
-                     WHERE ci.cart_id = ?
-                     ORDER BY v.variant_id
-                     FOR UPDATE OF ci'
-                );
-                $statement->bind_param('i', $cartId);
-                $statement->execute();
-                $items = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
-                $statement->close();
-
-                if ($cartId < 1 || !$items) {
+                if ($cartId < 1) {
                     throw new RuntimeException('Your cart is empty. Add an item before checkout.');
                 }
 
-                $orderNumber = store_checkout_place_order($conn, $userId, $cartId, $shipping, $paymentMethod, $items);
+                $order = store_checkout_place_order($conn, $userId, $cartId, $shipping, $paymentMethod);
+                $orderNumber = $order['order_number'];
+                $items = $order['items'];
 
                 try {
                     $emailStatement = $conn->prepare('SELECT email FROM user_tbl WHERE user_id = ? LIMIT 1');
@@ -168,11 +146,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                         $orderNumber,
                         $shipping['recipient_name'],
                         $paymentMethod,
-                        (string) $items[0]['currency'],
+                        $order['currency'],
                         $receiptItems,
                         $shipping,
                         0.0,
-                        store_calculate_sales_tax($items)
+                        $order['tax']
                     );
                 } catch (Throwable $error) {
                     error_log('HoloVerse order receipt email could not be sent: ' . $error->getMessage());

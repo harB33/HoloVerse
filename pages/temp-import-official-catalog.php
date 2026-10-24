@@ -512,6 +512,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
             $importedProducts = catalog_import_batch($conn, 'product_tbl', ['product_id', 'category_id', 'product_name', 'description', 'status', 'is_preorder', 'expected_ship_date'], 'iisssis', $catalog['products']);
             $importedVariants = catalog_import_batch($conn, 'product_variants_tbl', ['variant_id', 'product_id', 'variant_name', 'sku', 'price', 'compare_at_price', 'currency', 'stock_quantity'], 'iisssssi', $catalog['variants']);
+            $movementReason = 'Initial stock set by catalog import';
+            $movementUserId = (int) $_SESSION['user_id'];
+            $movementStatement = $conn->prepare(
+                "INSERT INTO inventory_movements_tbl
+                    (variant_id, product_name_snapshot, variant_name_snapshot, sku_snapshot,
+                     movement_type, quantity_change, previous_quantity, new_quantity, reason, user_id)
+                 SELECT v.variant_id, p.product_name, v.variant_name, v.sku,
+                        'initial_stock', v.stock_quantity, 0, v.stock_quantity, ?, ?
+                 FROM product_variants_tbl v
+                 INNER JOIN product_tbl p ON p.product_id = v.product_id
+                 WHERE v.stock_quantity > 0"
+            );
+            $movementStatement->bind_param('si', $movementReason, $movementUserId);
+            $movementStatement->execute();
+            $movementStatement->close();
             $importedImages = catalog_import_batch($conn, 'product_image_tbl', ['image_id', 'product_id', 'image_url', 'alt_text', 'sort_order'], 'iissi', $catalog['images']);
             $importedTalentLinks = catalog_import_batch($conn, 'product_talents_tbl', ['product_id', 'talent_id'], 'ii', $catalog['talents']);
 

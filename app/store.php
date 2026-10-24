@@ -26,6 +26,7 @@ const STORE_TALENT_FILTER_GROUP_SLUGS = [
 
 require_once __DIR__ . '/store/helpers.php';
 require_once __DIR__ . '/store/auth.php';
+require_once __DIR__ . '/store/inventory.php';
 require_once __DIR__ . '/store/cart.php';
 require_once __DIR__ . '/store/catalog.php';
 require_once __DIR__ . '/store/flash-sales.php';
