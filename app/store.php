@@ -1,5 +1,16 @@
 <?php
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    $cookieParams = session_get_cookie_params();
+    session_set_cookie_params([
+        'lifetime' => $cookieParams['lifetime'] ?? 0,
+        'path' => $cookieParams['path'] ?? '/',
+        'domain' => $cookieParams['domain'] ?? '',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? '') === '443')
+            || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 

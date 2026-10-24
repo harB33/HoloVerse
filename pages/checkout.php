@@ -108,6 +108,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
         }
 
         if ($message === '' && $action === 'place_order') {
+            $paymentMethod = (string) ($_POST['payment_method'] ?? '');
+            $orderStatus = $paymentMethod === 'cash_on_delivery' ? 'pending' : 'pending_payment';
+            $shouldReserveStock = $paymentMethod === 'cash_on_delivery';
             $cartId = store_current_cart_id($conn, false);
             try {
                 $conn->begin_transaction();
@@ -197,9 +200,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
                 $statement = $conn->prepare(
                     "INSERT INTO order_tbl (user_id, order_number, status, currency, payment_method, shipping_fee, tax)
-                     VALUES (?, ?, 'confirmed', ?, ?, 0, ?) RETURNING order_id"
+                     VALUES (?, ?, ?, ?, ?, 0, ?) RETURNING order_id"
                 );
-                $statement->bind_param('isssd', $userId, $orderNumber, $currency, $paymentMethod, $orderTax);
+                $statement->bind_param('issssd', $userId, $orderNumber, $orderStatus, $currency, $paymentMethod, $orderTax);
                 $statement->execute();
                 $createdOrder = $statement->get_result()->fetch_assoc();
                 $orderId = (int) ($createdOrder['order_id'] ?? 0);
@@ -234,10 +237,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                         (order_id, variant_id, product_name_snapshot, variant_name_snapshot, sku_snapshot, unit_price, quantity)
                      VALUES (?, ?, ?, ?, ?, ?, ?)'
                 );
-                $stockStatement = $conn->prepare(
-                    'UPDATE product_variants_tbl SET stock_quantity = stock_quantity - ?
-                     WHERE variant_id = ? AND stock_quantity >= ?'
-                );
+                $stockStatement = null;
+                if ($shouldReserveStock) {
+                    $stockStatement = $conn->prepare(
+                        'UPDATE product_variants_tbl SET stock_quantity = stock_quantity - ?
+                         WHERE variant_id = ? AND stock_quantity >= ?'
+                    );
+                }
                 foreach ($items as $item) {
                     $variantId = (int) $item['variant_id'];
                     $quantity = (int) $item['quantity'];
@@ -248,14 +254,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                     $statement->bind_param('iisssdi', $orderId, $variantId, $productName, $variantName, $sku, $unitPrice, $quantity);
                     $statement->execute();
 
-                    $stockStatement->bind_param('iii', $quantity, $variantId, $quantity);
-                    $stockStatement->execute();
-                    if ($stockStatement->affected_rows !== 1) {
-                        throw new RuntimeException("{$productName} just went out of stock. Update your cart and try again.");
+                    if ($stockStatement !== null) {
+                        $stockStatement->bind_param('iii', $quantity, $variantId, $quantity);
+                        $stockStatement->execute();
+                        if ($stockStatement->affected_rows !== 1) {
+                            throw new RuntimeException("{$productName} just went out of stock. Update your cart and try again.");
+                        }
                     }
                 }
                 $statement->close();
-                $stockStatement->close();
+                if ($stockStatement !== null) {
+                    $stockStatement->close();
+                }
 
                 $statement = $conn->prepare("UPDATE cart_tbl SET status = 'checked_out' WHERE cart_id = ? AND user_id = ?");
                 $statement->bind_param('ii', $cartId, $userId);
@@ -375,7 +385,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <span class="checkout-progress-step is-complete">Payment Method</span>
                         <span class="checkout-progress-step is-current" aria-current="step">Confirmation</span>
                     </nav>
-                    <p>Your order has been confirmed and payment has been collected. Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
+                    <?php $confirmationMessage = match ($paymentMethod) {
+                        'card', 'e_wallet' => 'Your order has been received and is awaiting payment confirmation before fulfillment.',
+                        'cash_on_delivery' => 'Your order has been confirmed and is ready for delivery processing.',
+                        default => 'Your order has been received and is ready for processing.',
+                    }; ?>
+                    <p><?= store_escape($confirmationMessage) ?> Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
                     <div class="checkout-totals">
                         <div><span>Subtotal</span><span><?= store_escape(store_format_price($orderSubtotal)) ?></span></div>
                         <div><span>Tax (12%)</span><span><?= store_escape(store_format_price($orderTax)) ?></span></div>
@@ -388,7 +403,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                             'e_wallet' => 'E-wallet',
                             'cash_on_delivery' => 'Cash on delivery',
                             default => 'Not specified',
-                        }) ?></strong>. Your order is now confirmed and ready for processing.</p>
+                        }) ?></strong>. <?= store_escape(match ($paymentMethod) {
+                            'card', 'e_wallet' => 'Payment verification is still pending before the order is fulfilled.',
+                            'cash_on_delivery' => 'The order will be processed for delivery.',
+                            default => 'Your order is being processed.',
+                        }) ?></p>
                     <?php endif; ?>
                     <a class="cart-continue-button" href="products">Continue shopping</a>
                 </section>
