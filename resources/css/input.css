@@ -2323,6 +2323,736 @@
     @apply -mx-4;
   }
 
+  .flash-sale-admin-shell {
+    @apply pb-12;
+  }
+
+  .admin-dashboard.flash-sale-admin {
+    @apply mt-6 max-w-[1320px] p-0;
+  }
+
+  .flash-sale-admin-header {
+    @apply items-start px-7 pt-7;
+  }
+
+  .flash-sale-admin-header h1 {
+    @apply mt-1 text-[clamp(28px,4vw,40px)];
+  }
+
+  .flash-sale-admin-subtitle {
+    @apply mb-0 mt-2 max-w-2xl text-[13px] leading-relaxed text-[#718096];
+  }
+
+  .flash-sale-admin-header-actions {
+    @apply flex flex-wrap items-center justify-end gap-2;
+  }
+
+  .flash-sale-overview {
+    @apply mb-6 grid gap-3 px-7 sm:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .flash-sale-overview-card {
+    @apply flex min-h-[116px] items-start gap-3 rounded-2xl border border-[#e6edf5] bg-[#f8fbff] p-4;
+  }
+
+  .flash-sale-overview-card--live {
+    @apply border-[#b8ead7] bg-[#f0fcf7];
+  }
+
+  .flash-sale-overview-icon {
+    @apply flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-[16px] font-bold text-[#0ea5a4] shadow-sm;
+  }
+
+  .flash-sale-overview-card p {
+    @apply mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#718096];
+  }
+
+  .flash-sale-overview-card strong {
+    @apply block text-[27px] font-black leading-none text-[#152235];
+  }
+
+  .flash-sale-overview-card small {
+    @apply mt-2 block text-[10px] text-[#718096];
+  }
+
+  .flash-sale-panel {
+    @apply mx-7 mb-6 overflow-hidden rounded-2xl border border-[#e6edf5] bg-white;
+  }
+
+  .flash-sale-panel-heading {
+    @apply flex items-start justify-between gap-4 border-b border-[#edf3f9] px-6 py-5;
+  }
+
+  .flash-sale-section-kicker {
+    @apply mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0ea5d6];
+  }
+
+  .flash-sale-panel-heading h2 {
+    @apply m-0 text-[20px] font-bold text-[#152235];
+  }
+
+  .flash-sale-panel-heading p:last-child {
+    @apply mb-0 mt-1 max-w-3xl text-[12px] leading-relaxed text-[#718096];
+  }
+
+  .flash-sale-step-mark {
+    @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#effaff] text-[12px] font-black tracking-wide text-[#0786ae];
+  }
+
+  .flash-sale-schedule-form {
+    @apply grid gap-4 p-6 md:grid-cols-2;
+  }
+
+  .flash-sale-field {
+    @apply grid content-start gap-2 text-[11px] font-bold text-[#526477];
+  }
+
+  .flash-sale-field--product {
+    @apply md:col-span-2;
+  }
+
+  .flash-sale-field input,
+  .flash-sale-field select {
+    @apply min-h-11 w-full rounded-xl border border-[#d7e1eb] bg-[#fbfdff] px-3 py-2 text-[13px] font-medium text-[#1c2331] outline-none transition focus:border-[#0ea5d6] focus:bg-white focus:ring-4 focus:ring-[#0ea5d6]/15;
+  }
+
+  .flash-sale-product-summary {
+    @apply flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-[#d9eef5] bg-[#f4fbfe] px-4 py-3 md:col-span-2;
+  }
+
+  .flash-sale-summary-label {
+    @apply w-full text-[9px] font-bold uppercase tracking-[0.12em] text-[#718096];
+  }
+
+  .flash-sale-product-summary strong {
+    @apply text-[13px] font-bold text-[#087fa8];
+  }
+
+  .flash-sale-product-summary > span:last-child {
+    @apply text-[11px] text-[#65758a];
+  }
+
+  .flash-sale-form-footer {
+    @apply flex flex-wrap items-center justify-between gap-3 pt-1 md:col-span-2;
+  }
+
+  .flash-sale-form-footer p {
+    @apply m-0 text-[10px] text-[#718096];
+  }
+
+  .flash-sale-form-footer button {
+    @apply inline-flex min-h-11 cursor-pointer items-center gap-3 rounded-xl bg-[#0ea5d6] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .flash-sale-empty-notice {
+    @apply m-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] leading-relaxed text-amber-800;
+  }
+
+  .flash-sale-campaign-heading {
+    @apply items-center;
+  }
+
+  .flash-sale-secondary-action,
+  .flash-sale-create-link {
+    @apply inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#d7e7ef] bg-white px-3 py-2 text-[11px] font-bold text-[#087fa8] transition hover:border-[#a9d8e6] hover:bg-[#f4fbfe] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .flash-sale-toolbar {
+    @apply flex flex-wrap items-center gap-3 border-b border-[#edf3f9] bg-[#fbfdff] px-6 py-4;
+  }
+
+  .flash-sale-search {
+    @apply relative min-w-[220px] flex-1;
+  }
+
+  .flash-sale-search svg {
+    @apply pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8492a3];
+  }
+
+  .flash-sale-search input,
+  .flash-sale-filter select {
+    @apply min-h-10 rounded-xl border border-[#d7e1eb] bg-white text-[11px] font-medium text-[#34445a] outline-none transition focus:border-[#0ea5d6] focus:ring-4 focus:ring-[#0ea5d6]/15;
+  }
+
+  .flash-sale-search input {
+    @apply w-full pl-9 pr-3;
+  }
+
+  .flash-sale-filter {
+    @apply flex items-center gap-2 text-[10px] font-bold text-[#718096];
+  }
+
+  .flash-sale-filter select {
+    @apply px-3;
+  }
+
+  .flash-sale-table-wrap {
+    @apply overflow-x-auto;
+  }
+
+  .flash-sale-table {
+    @apply w-full min-w-[900px] border-collapse text-left;
+  }
+
+  .flash-sale-table th {
+    @apply border-b border-[#edf3f9] bg-[#f7faff] px-4 py-3 text-[9px] font-bold uppercase tracking-[0.1em] text-[#718096];
+  }
+
+  .flash-sale-table td {
+    @apply border-b border-[#edf3f9] px-4 py-4 align-middle text-[11px] text-[#526477];
+  }
+
+  .flash-sale-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .flash-sale-table tbody tr:hover {
+    @apply bg-[#fbfdff];
+  }
+
+  .flash-sale-table tr[hidden] {
+    display: none;
+  }
+
+  .flash-sale-product-name,
+  .flash-sale-variant-name,
+  .flash-sale-date-label,
+  .flash-sale-table time {
+    @apply block;
+  }
+
+  .flash-sale-product-name {
+    @apply max-w-[230px] font-bold text-[#1c2938];
+  }
+
+  .flash-sale-variant-name {
+    @apply mt-1 text-[10px] text-[#718096];
+  }
+
+  .flash-sale-price {
+    @apply mr-1 font-bold text-[#1c2938];
+  }
+
+  .flash-sale-table del {
+    @apply text-[10px] text-[#8a97a6];
+  }
+
+  .flash-sale-discount {
+    @apply mt-1 inline-flex rounded-md bg-[#fff1ed] px-1.5 py-0.5 text-[9px] font-bold text-[#d35435];
+  }
+
+  .flash-sale-no-discount {
+    @apply mt-1 block text-[9px] text-[#a06a24];
+  }
+
+  .flash-sale-stock {
+    @apply whitespace-nowrap font-semibold text-[#24745e];
+  }
+
+  .flash-sale-stock.is-low {
+    @apply text-[#b45309];
+  }
+
+  .flash-sale-date-label {
+    @apply mb-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-[#9aa5b1];
+  }
+
+  .flash-sale-table time {
+    @apply mb-2 whitespace-nowrap text-[10px] text-[#526477];
+  }
+
+  .flash-sale-table time:last-child {
+    @apply mb-0;
+  }
+
+  .flash-sale-status {
+    @apply inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[9px] font-bold;
+  }
+
+  .flash-sale-status--live {
+    @apply bg-[#e7fbf3] text-[#0f766e];
+  }
+
+  .flash-sale-status--upcoming {
+    @apply bg-[#eff6ff] text-[#2563a9];
+  }
+
+  .flash-sale-status--ended {
+    @apply bg-[#f1f5f9] text-[#64748b];
+  }
+
+  .flash-sale-status--cancelled {
+    @apply bg-[#fff1f2] text-[#be123c];
+  }
+
+  .flash-sale-cancel-button {
+    @apply cursor-pointer whitespace-nowrap rounded-lg border border-[#f1c9cf] bg-white px-2.5 py-1.5 text-[9px] font-bold text-[#be3d50] transition hover:border-[#e9a8b2] hover:bg-[#fff6f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d65c6d];
+  }
+
+  .flash-sale-no-action {
+    @apply text-[#b8c1cb];
+  }
+
+  .flash-sale-empty-state {
+    @apply px-5 py-12 text-center;
+  }
+
+  .flash-sale-empty-state > span {
+    @apply mx-auto mb-2 flex size-11 items-center justify-center rounded-2xl bg-[#effaff] text-[22px] text-[#0ea5d6];
+  }
+
+  .flash-sale-empty-state h3 {
+    @apply mb-1 text-[14px] font-bold text-[#1c2938];
+  }
+
+  .flash-sale-empty-state p {
+    @apply mb-3 text-[11px] text-[#718096];
+  }
+
+  .flash-sale-empty-state a {
+    @apply text-[11px] font-bold text-[#087fa8] underline underline-offset-2;
+  }
+
+  .flash-sale-filter-empty {
+    @apply m-0 border-t border-[#edf3f9] px-5 py-8 text-center text-[11px] text-[#718096];
+  }
+
+  .flash-sale-filter-empty[hidden] {
+    display: none;
+  }
+
+  .flash-sale-admin-shell {
+    background:
+      radial-gradient(ellipse at 10% 0%, rgb(14 165 214 / 7%), transparent 34rem),
+      #f4f7fb;
+  }
+
+  .admin-dashboard.flash-sale-admin {
+    @apply mt-8 max-w-[1360px] overflow-hidden rounded-[28px] border border-[#e1e9f1] bg-white p-0 shadow-[0_24px_70px_rgba(27,48,73,0.08)];
+  }
+
+  .flash-sale-admin-header {
+    @apply mb-0 items-center border-0 bg-gradient-to-r from-[#f1faff] via-white to-[#f8f5ff] px-8 pb-7 pt-8;
+    position: relative;
+  }
+
+  .flash-sale-admin-header::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background: linear-gradient(90deg, #d8eef6, #e9edf4 55%, transparent);
+    content: "";
+  }
+
+  .flash-sale-admin-header h1 {
+    @apply mt-2 tracking-[-0.04em] text-[#142338];
+  }
+
+  .flash-sale-admin-subtitle {
+    @apply mt-2.5 text-[14px] text-[#66778b];
+  }
+
+  .flash-sale-admin-header-actions {
+    @apply gap-2.5;
+  }
+
+  .flash-sale-admin-header-actions .admin-badge {
+    @apply border border-[#d8eaf1] bg-white/80 px-3.5 py-2 text-[10px] tracking-[0.08em] shadow-sm;
+  }
+
+  .flash-sale-overview {
+    @apply mb-7 gap-4 px-8 pt-6;
+  }
+
+  .flash-sale-overview-card {
+    @apply min-h-[126px] items-center gap-4 rounded-2xl border-[#e5ebf2] bg-white px-5 py-4 shadow-[0_3px_14px_rgba(31,52,75,0.035)];
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .flash-sale-overview-card:hover {
+    border-color: #cbdce8;
+    box-shadow: 0 10px 25px rgb(31 52 75 / 7%);
+    transform: translateY(-2px);
+  }
+
+  .flash-sale-overview-card--live {
+    @apply border-[#b9ead7] bg-gradient-to-br from-[#effcf6] to-white;
+  }
+
+  .flash-sale-overview-icon {
+    @apply size-11 rounded-2xl bg-[#effaff] text-[#0786ae] shadow-none;
+  }
+
+  .flash-sale-overview-card--live .flash-sale-overview-icon {
+    @apply bg-[#d9f8e9] text-[#07845e];
+  }
+
+  .flash-sale-overview-card p {
+    @apply mb-2 tracking-[0.12em];
+  }
+
+  .flash-sale-overview-card strong {
+    @apply text-[30px] tracking-[-0.04em];
+  }
+
+  .flash-sale-overview-card small {
+    @apply mt-2 text-[11px];
+  }
+
+  .flash-sale-panel {
+    @apply mx-8 mb-7 rounded-[22px] border-[#e2eaf2] shadow-[0_5px_22px_rgba(31,52,75,0.04)];
+  }
+
+  .flash-sale-panel-heading {
+    @apply px-7 py-6;
+  }
+
+  .flash-sale-section-kicker {
+    @apply mb-2 tracking-[0.16em];
+  }
+
+  .flash-sale-panel-heading h2 {
+    @apply text-[22px] tracking-[-0.025em];
+  }
+
+  .flash-sale-panel-heading p:last-child {
+    @apply mt-2 text-[13px];
+  }
+
+  .flash-sale-step-mark {
+    @apply size-11 rounded-2xl;
+  }
+
+  .flash-sale-schedule-form {
+    @apply gap-x-5 gap-y-4 p-7;
+  }
+
+  .flash-sale-field {
+    @apply gap-2.5 text-[12px];
+  }
+
+  .flash-sale-field input,
+  .flash-sale-field select {
+    @apply min-h-12 rounded-xl border-[#d5e0ea] bg-[#fbfcfe] px-3.5 text-[13px];
+  }
+
+  .flash-sale-field input:hover,
+  .flash-sale-field select:hover {
+    @apply border-[#b9cbd9];
+  }
+
+  .flash-sale-product-summary {
+    @apply min-h-[76px] gap-x-4 rounded-2xl border-[#d8eaf1] bg-gradient-to-r from-[#f1fbfe] to-[#f8fcff] px-5 py-4;
+  }
+
+  .flash-sale-summary-label {
+    @apply tracking-[0.15em];
+  }
+
+  .flash-sale-product-summary strong {
+    @apply text-[14px];
+  }
+
+  .flash-sale-product-summary > span:last-child {
+    @apply text-[12px];
+  }
+
+  .flash-sale-form-footer {
+    @apply justify-end gap-3 border-t border-[#edf1f5] pt-5;
+  }
+
+  .flash-sale-form-footer p {
+    @apply mr-auto text-[11px];
+  }
+
+  .flash-sale-form-footer button {
+    @apply min-h-12 rounded-xl px-5 text-[12px];
+  }
+
+  .flash-sale-form-footer button[name="action"][value="schedule"] {
+    @apply border border-[#cfe2ec] bg-white text-[#087fa8] shadow-none hover:border-[#9bcddd] hover:bg-[#f3fbfe];
+  }
+
+  .flash-sale-form-footer button[name="action"][value="flash_sale_now"] {
+    @apply bg-[#e94f65] shadow-[0_6px_16px_rgba(233,79,101,0.2)] hover:bg-[#d93e55] focus-visible:outline-[#e94f65];
+  }
+
+  .flash-sale-empty-notice {
+    @apply mx-7 my-6 rounded-2xl px-5 py-4 text-[13px];
+  }
+
+  .flash-sale-campaign-heading {
+    @apply items-center;
+  }
+
+  .flash-sale-secondary-action,
+  .flash-sale-create-link {
+    @apply min-h-10 rounded-xl px-4 text-[12px];
+  }
+
+  .flash-sale-toolbar {
+    @apply gap-4 border-b-0 bg-[#f8fafc] px-7 py-5;
+  }
+
+  .flash-sale-search input,
+  .flash-sale-filter select {
+    @apply min-h-11 rounded-xl border-[#dbe4ec] px-3.5 text-[12px];
+  }
+
+  .flash-sale-search input {
+    @apply pl-10;
+  }
+
+  .flash-sale-filter {
+    @apply gap-2.5 text-[11px];
+  }
+
+  .flash-sale-table {
+    @apply min-w-[940px];
+  }
+
+  .flash-sale-table th {
+    @apply border-y border-[#e9eef4] bg-[#f8fafc] px-5 py-3.5 text-[10px] tracking-[0.12em];
+  }
+
+  .flash-sale-table td {
+    @apply border-b border-[#edf1f5] px-5 py-4 text-[12px];
+  }
+
+  .flash-sale-table tbody tr {
+    transition: background-color 140ms ease;
+  }
+
+  .flash-sale-table tbody tr:hover {
+    @apply bg-[#f8fbfd];
+  }
+
+  .flash-sale-product-name {
+    @apply max-w-[250px] text-[12px];
+  }
+
+  .flash-sale-variant-name {
+    @apply mt-1.5 text-[11px];
+  }
+
+  .flash-sale-price {
+    @apply text-[12px];
+  }
+
+  .flash-sale-table time {
+    @apply text-[11px];
+  }
+
+  .flash-sale-status {
+    @apply px-3 py-1.5 text-[10px];
+  }
+
+  .flash-sale-cancel-button {
+    @apply rounded-lg px-3 py-2 text-[10px];
+  }
+
+  .flash-sale-empty-state {
+    @apply px-6 py-16;
+  }
+
+  @media (max-width: 760px) {
+    .admin-dashboard.flash-sale-admin {
+      @apply mt-4 rounded-2xl;
+    }
+
+    .flash-sale-admin-header {
+      @apply items-start gap-5 px-5 pb-6 pt-6;
+    }
+
+    .flash-sale-admin-header-actions {
+      @apply justify-start;
+    }
+
+    .flash-sale-overview {
+      @apply mb-5 gap-3 px-5 pt-5;
+    }
+
+    .flash-sale-overview-card {
+      @apply min-h-[112px] px-4;
+    }
+
+    .flash-sale-panel {
+      @apply mx-5 mb-5 rounded-2xl;
+    }
+
+    .flash-sale-panel-heading,
+    .flash-sale-toolbar {
+      @apply px-5;
+    }
+
+    .flash-sale-schedule-form {
+      @apply p-5;
+    }
+
+    .flash-sale-field--product {
+      @apply col-span-1;
+    }
+
+    .flash-sale-form-footer {
+      @apply justify-start;
+    }
+
+    .flash-sale-form-footer p {
+      @apply w-full;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .admin-dashboard.flash-sale-admin {
+      @apply mx-auto w-full border-x-0 rounded-none shadow-none;
+    }
+
+    .flash-sale-admin-header {
+      @apply flex-col;
+    }
+
+    .flash-sale-admin-header-actions {
+      @apply w-full justify-between;
+    }
+
+    .flash-sale-overview {
+      @apply grid-cols-2;
+    }
+
+    .flash-sale-overview-card {
+      @apply min-h-[106px] items-start gap-2.5 rounded-xl p-3;
+    }
+
+    .flash-sale-overview-icon {
+      @apply size-9 rounded-xl text-[14px];
+    }
+
+    .flash-sale-overview-card strong {
+      @apply text-[25px];
+    }
+
+    .flash-sale-panel {
+      @apply mx-3;
+    }
+
+    .flash-sale-panel-heading {
+      @apply gap-3 px-4 py-5;
+    }
+
+    .flash-sale-panel-heading h2 {
+      @apply text-[19px];
+    }
+
+    .flash-sale-panel-heading p:last-child {
+      @apply text-[12px];
+    }
+
+    .flash-sale-campaign-heading {
+      @apply items-start;
+    }
+
+    .flash-sale-schedule-form {
+      @apply grid-cols-1 gap-4 px-4 py-5;
+    }
+
+    .flash-sale-form-footer {
+      @apply grid grid-cols-1;
+    }
+
+    .flash-sale-form-footer p {
+      @apply mb-1;
+    }
+
+    .flash-sale-form-footer button {
+      @apply w-full justify-center;
+    }
+
+    .flash-sale-toolbar {
+      @apply items-stretch px-4 py-4;
+    }
+
+    .flash-sale-search {
+      @apply min-w-0 basis-full;
+    }
+
+    .flash-sale-filter {
+      @apply min-w-0 flex-1 justify-between;
+    }
+
+    .flash-sale-filter select {
+      @apply min-w-0 flex-1;
+    }
+
+    .flash-sale-create-link {
+      @apply flex-1;
+    }
+
+    .flash-sale-table-wrap {
+      @apply overflow-visible px-3 pb-3;
+    }
+
+    .flash-sale-table,
+    .flash-sale-table tbody {
+      @apply block min-w-0;
+    }
+
+    .flash-sale-table thead {
+      @apply sr-only;
+    }
+
+    .flash-sale-table tbody tr {
+      @apply mb-3 grid grid-cols-2 overflow-hidden rounded-xl border border-[#e5ebf2] bg-white shadow-[0_2px_8px_rgba(31,52,75,0.035)];
+    }
+
+    .flash-sale-table tbody tr:last-child {
+      @apply mb-0;
+    }
+
+    .flash-sale-table td {
+      @apply block min-w-0 border-b-0 px-3 py-3;
+    }
+
+    .flash-sale-table td::before {
+      display: block;
+      margin-bottom: 7px;
+      color: #8795a5;
+      content: attr(data-label);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .flash-sale-table td[data-label="Product"],
+    .flash-sale-table td[data-label="Schedule"] {
+      grid-column: 1 / -1;
+    }
+
+    .flash-sale-table td[data-label="Product"] {
+      border-bottom: 1px solid #edf1f5;
+      background: #fbfdff;
+    }
+
+    .flash-sale-product-name {
+      @apply max-w-none text-[13px];
+    }
+
+    .flash-sale-table time {
+      @apply whitespace-normal;
+    }
+
+    .flash-sale-table td[data-label="Actions"] {
+      grid-column: 1 / -1;
+      border-top: 1px solid #edf1f5;
+      text-align: right;
+    }
+  }
+
   .admin-dashboard {
     @apply mx-auto mt-6 max-w-[1280px] rounded-[28px] border border-[#dfe7f0] bg-white p-6 shadow-[0_10px_30px_rgba(17,24,39,0.06)];
   }
@@ -2377,6 +3107,10 @@
 
   .admin-inventory-toolbar-copy .admin-panel-description {
     @apply mb-0 max-w-2xl;
+  }
+
+  .admin-inventory-flash-link {
+    @apply font-bold text-[#087fa8] underline underline-offset-2 hover:text-[#0c92bc];
   }
 
   .admin-inventory-search {
@@ -2437,7 +3171,7 @@
   }
 
   .admin-inventory-dashboard .admin-inventory-table {
-    @apply table-fixed overflow-hidden rounded-2xl border border-[#e6edf5] bg-white;
+    @apply table-fixed overflow-visible rounded-2xl border border-[#e6edf5] bg-white;
     width: 100%;
   }
 
@@ -2450,19 +3184,23 @@
   }
 
   .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(1) {
-    width: 28%;
+    width: 22%;
   }
   .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(2) {
-    width: 17%;
-  }
-  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(3) {
-    width: 15%;
-  }
-  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(4) {
     width: 13%;
   }
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(3) {
+    width: 12%;
+  }
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(4) {
+    width: 14%;
+  }
   .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(5) {
-    width: 27%;
+    width: 11%;
+  }
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(6),
+  .admin-inventory-table:not(.admin-inventory-movement-table) th:nth-child(7) {
+    width: 14%;
   }
 
   .admin-inventory-movement-table th:nth-child(1) {
@@ -2475,13 +3213,16 @@
     width: 13%;
   }
   .admin-inventory-movement-table th:nth-child(4) {
-    width: 15%;
+    width: 10%;
   }
   .admin-inventory-movement-table th:nth-child(5) {
-    width: 14%;
+    width: 10%;
   }
   .admin-inventory-movement-table th:nth-child(6) {
-    width: 20%;
+    width: 22%;
+  }
+  .admin-inventory-movement-table th:nth-child(7) {
+    width: 17%;
   }
 
   .admin-inventory-table tbody tr {
@@ -2498,6 +3239,30 @@
 
   .admin-inventory-product {
     @apply block overflow-hidden font-semibold text-ellipsis text-[#1b2735];
+  }
+
+  .admin-inventory-price {
+    @apply block whitespace-nowrap font-bold text-[#1c2938];
+  }
+
+  .admin-inventory-compare-price {
+    @apply mt-0.5 block whitespace-nowrap text-[9px] text-[#8492a3];
+  }
+
+  .admin-inventory-sale-ready {
+    @apply mt-1 inline-flex rounded-full bg-[#e7fbf3] px-1.5 py-0.5 text-[8px] font-bold text-[#0f766e];
+  }
+
+  .admin-price-discount-preview {
+    @apply rounded-lg border border-[#e6edf5] bg-[#f7faff] px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-[#718096];
+  }
+
+  .admin-price-discount-preview.is-calculated {
+    @apply border-[#b8ead7] bg-[#f0fcf7] text-[#0f766e];
+  }
+
+  .admin-inventory-no-sale {
+    @apply mt-1 block text-[9px] text-[#9a6a32];
   }
 
   .admin-inventory-sku {
@@ -2651,6 +3416,18 @@
     @apply absolute right-0 top-[calc(100%+0.5rem)] z-20 mt-0 grid w-[260px] min-w-[230px] gap-1.5 rounded-xl border border-[#dfe7f0] bg-white p-3 shadow-xl;
   }
 
+  .admin-price-form {
+    @apply w-[min(300px,calc(100vw-3rem))];
+  }
+
+  .admin-price-form-product {
+    @apply mb-1 text-[11px] font-bold leading-relaxed text-[#1c2938];
+  }
+
+  .admin-price-form small {
+    @apply text-[9px] leading-relaxed text-[#718096];
+  }
+
   .admin-restock-form label {
     @apply mt-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#65758a];
   }
@@ -2685,6 +3462,69 @@
     @apply mb-1 text-[12px] text-[#718096];
   }
 
+  .admin-inventory-history-actions {
+    @apply flex flex-wrap items-center justify-end gap-3;
+  }
+
+  .admin-inventory-history-actions > p {
+    @apply mb-1 text-right;
+  }
+
+  .admin-price-history-add {
+    @apply relative;
+  }
+
+  .admin-price-history-add summary {
+    @apply inline-flex min-h-10 cursor-pointer list-none items-center justify-center rounded-xl bg-[#0ea5d6] px-4 py-2 text-[11px] font-bold text-white shadow-sm transition hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6];
+  }
+
+  .admin-price-history-add summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .admin-price-history-form {
+    @apply absolute right-0 top-[calc(100%+0.5rem)] z-30 grid w-[min(560px,calc(100vw-3rem))] gap-2 rounded-2xl border border-[#dfe7f0] bg-white p-4 text-left shadow-xl;
+  }
+
+  .admin-price-history-intro {
+    @apply mb-1 grid gap-1;
+  }
+
+  .admin-price-history-intro strong {
+    @apply text-[14px] text-[#1c2938];
+  }
+
+  .admin-price-history-intro span {
+    @apply text-[10px] leading-relaxed text-[#718096];
+  }
+
+  .admin-price-history-form > label,
+  .admin-price-history-prices label {
+    @apply mt-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#65758a];
+  }
+
+  .admin-price-history-form > input,
+  .admin-price-history-form > select,
+  .admin-price-history-prices input {
+    @apply min-h-9 w-full rounded-lg border border-[#d7e1eb] bg-[#fbfdff] px-2.5 py-2 text-[11px] text-[#1c2331] outline-none transition focus:border-[#0ea5d6] focus:bg-white focus:ring-2 focus:ring-[#0ea5d6]/20;
+  }
+
+  .admin-price-history-prices {
+    @apply grid gap-3 sm:grid-cols-2;
+  }
+
+  .admin-price-history-prices fieldset {
+    @apply grid content-start gap-1 rounded-xl border border-[#e6edf5] p-3;
+  }
+
+  .admin-price-history-prices legend {
+    @apply px-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#526477];
+  }
+
+  .admin-price-history-form button {
+    @apply mt-1 min-h-10 cursor-pointer rounded-lg bg-[#0ea5d6] px-4 py-2 text-[11px] font-bold text-white transition-colors hover:bg-[#0c92bc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0ea5d6] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
   .admin-inventory-movement-type {
     @apply inline-flex rounded-full bg-[#f1f5f9] px-2 py-1 text-[10px] font-bold text-[#475569];
   }
@@ -2705,6 +3545,42 @@
 
   .admin-inventory-movement-quantity {
     @apply ml-1 whitespace-nowrap font-bold text-[#24364b];
+  }
+
+  .admin-inventory-movement-type--price_update {
+    @apply bg-sky-50 text-sky-700;
+  }
+
+  .admin-inventory-price-transition {
+    @apply mt-1 block whitespace-nowrap text-[10px] font-bold text-[#24364b];
+  }
+
+  .admin-inventory-price-transition small {
+    @apply block text-[9px] font-medium text-[#718096];
+  }
+
+  .admin-inventory-price-transition > span {
+    @apply mx-1 text-[#0ea5d6];
+  }
+
+  .admin-inventory-price-change {
+    @apply grid gap-1 whitespace-nowrap text-[10px] text-[#526477];
+  }
+
+  .admin-inventory-price-change > span {
+    @apply flex items-center gap-1;
+  }
+
+  .admin-inventory-price-change strong {
+    @apply mr-1 min-w-[42px] text-[9px] uppercase tracking-wide text-[#718096];
+  }
+
+  .admin-inventory-price-change > span > span {
+    @apply text-[#0ea5d6];
+  }
+
+  .admin-inventory-no-price-change {
+    @apply text-[#b8c1cb];
   }
 
   .admin-inventory-stock-transition {

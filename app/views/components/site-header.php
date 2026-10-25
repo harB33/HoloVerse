@@ -20,11 +20,7 @@ $headerLiveFlashSaleProducts = isset($flashSaleProducts['live']) && is_array($fl
     ? $flashSaleProducts['live']
     : (store_flash_sale_table_exists($conn)
         ? store_flash_sale_rows($conn, 'live', $headerFlashSaleNow)
-        : store_product_rows(
-            $conn,
-            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND ' . store_available_stock_sql() . ' > 0',
-            'p.product_id DESC'
-        ));
+        : []);
 $headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
 ?>
 <div class="site-header-wrap">

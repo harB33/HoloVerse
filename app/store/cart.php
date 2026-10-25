@@ -100,24 +100,19 @@ function store_variant_is_live_flash_sale(DatabaseConnection $conn, int $variant
         return false;
     }
     if (!store_flash_sale_table_exists($conn)) {
-        return true;
+        return false;
     }
 
     $timezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
     $now = (new DateTimeImmutable('now', $timezone))->format('Y-m-d H:i:s');
     $statement = $conn->prepare(
-        "SELECT
-             NOT EXISTS (
-                 SELECT 1 FROM flash_sale_tbl
-                 WHERE variant_id = ? AND status = 'scheduled'
-             )
-             OR EXISTS (
-                 SELECT 1 FROM flash_sale_tbl
-                 WHERE variant_id = ? AND status = 'scheduled'
-                   AND starts_at <= ? AND ends_at > ?
-             ) AS is_live"
+        "SELECT EXISTS (
+             SELECT 1 FROM flash_sale_tbl
+             WHERE variant_id = ? AND status = 'scheduled'
+               AND starts_at <= ? AND ends_at > ?
+         ) AS is_live"
     );
-    $statement->bind_param('iiss', $variantId, $variantId, $now, $now);
+    $statement->bind_param('iss', $variantId, $now, $now);
     $statement->execute();
     $isLive = $statement->get_result()->fetch_assoc()['is_live'];
     $statement->close();
@@ -354,4 +349,3 @@ function store_update_cart_item(DatabaseConnection $conn, int $cartId, int $item
         throw $error;
     }
 }
-

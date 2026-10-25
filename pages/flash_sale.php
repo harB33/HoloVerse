@@ -10,16 +10,7 @@ $flashSaleProducts = $flashSaleSchedulingAvailable
         'tomorrow' => store_flash_sale_rows($conn, 'tomorrow', $flashSaleNow),
         'archive' => store_flash_sale_rows($conn, 'archive', $flashSaleNow),
     ]
-    : [
-        'live' => store_product_rows(
-            $conn,
-            'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND ' . store_available_stock_sql() . ' > 0',
-            'p.product_id DESC'
-        ),
-        'starting' => [],
-        'tomorrow' => [],
-        'archive' => [],
-    ];
+    : ['live' => [], 'starting' => [], 'tomorrow' => [], 'archive' => []];
 $saleProduct = $flashSaleProducts['live'][0] ?? null;
 $activeCartQuantity = 0;
 $activeCartId = store_current_cart_id($conn, false);
@@ -60,7 +51,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </span>
             </div>
             <?php if (!$flashSaleSchedulingAvailable): ?>
-                <p class="flash-setup-notice" role="status">Scheduled drop filters are temporarily unavailable. Showing all discounted, in-stock products. The Supabase database must include the <code>flash_sale_tbl</code> table from <code>Database/holoverse.sql</code>.</p>
+                <p class="flash-setup-notice" role="status">Flash sale scheduling is temporarily unavailable, so no drops are being shown. The database must include the <code>flash_sale_tbl</code> table from <code>Database/holoverse.sql</code> before an administrator can schedule sales.</p>
             <?php endif; ?>
 
             <section class="flash-sale-heading" aria-labelledby="flash-sale-title">

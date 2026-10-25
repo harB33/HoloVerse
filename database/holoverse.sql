@@ -162,19 +162,26 @@ CREATE TABLE inventory_movements_tbl (
     variant_name_snapshot varchar(100) NOT NULL,
     sku_snapshot varchar(50) NOT NULL,
     movement_type varchar(20) NOT NULL CHECK (
-        movement_type IN ('initial_stock', 'restock', 'removal', 'count_correction', 'sale')
+        movement_type IN ('initial_stock', 'restock', 'removal', 'count_correction', 'sale', 'price_update')
     ),
-    quantity_change INTEGER NOT NULL CHECK (quantity_change <> 0),
-    previous_quantity INTEGER NOT NULL CHECK (previous_quantity >= 0),
-    new_quantity INTEGER NOT NULL CHECK (new_quantity >= 0),
+    quantity_change INTEGER DEFAULT NULL CHECK (quantity_change IS NULL OR quantity_change <> 0),
+    previous_quantity INTEGER DEFAULT NULL CHECK (previous_quantity IS NULL OR previous_quantity >= 0),
+    new_quantity INTEGER DEFAULT NULL CHECK (new_quantity IS NULL OR new_quantity >= 0),
     reason varchar(500) NOT NULL,
     user_id INTEGER DEFAULT NULL,
     order_id INTEGER DEFAULT NULL,
+    previous_price NUMERIC(10,2) DEFAULT NULL,
+    previous_compare_at_price NUMERIC(10,2) DEFAULT NULL,
+    new_price NUMERIC(10,2) DEFAULT NULL,
+    new_compare_at_price NUMERIC(10,2) DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE inventory_movements_tbl ADD PRIMARY KEY (movement_id);
 CREATE INDEX idx_inventory_movements_created_at ON inventory_movements_tbl (created_at DESC, movement_id DESC);
 CREATE INDEX idx_inventory_movements_variant ON inventory_movements_tbl (variant_id, created_at DESC);
+CREATE UNIQUE INDEX idx_inventory_movements_one_price_per_variant
+    ON inventory_movements_tbl (variant_id)
+    WHERE movement_type = 'price_update' AND variant_id IS NOT NULL;
 ALTER TABLE login_rate_limits ADD PRIMARY KEY (rate_key);
 CREATE INDEX idx_login_rate_limits_window ON login_rate_limits (window_started_at);
 CREATE INDEX password_reset_codes_requested_at_idx ON password_reset_codes (requested_at);

@@ -33,18 +33,13 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
             LEFT JOIN flash_sale_tbl fs ON fs.variant_id = v.variant_id AND fs.status = 'scheduled'
             WHERE p.status = 'active'
               AND v.compare_at_price IS NOT NULL
-              AND v.compare_at_price > v.price";
+              AND v.compare_at_price > v.price
+              AND fs.flash_sale_id IS NOT NULL";
 
     if ($state === 'live') {
         $sql .= " AND {$availableStock} > 0
-                  AND (
-                      (fs.flash_sale_id IS NULL AND NOT EXISTS (
-                          SELECT 1 FROM flash_sale_tbl scheduled
-                          WHERE scheduled.variant_id = v.variant_id AND scheduled.status = 'scheduled'
-                      ))
-                      OR (fs.starts_at <= ? AND fs.ends_at > ?)
-                  )
-                  ORDER BY fs.ends_at IS NULL, fs.ends_at ASC, p.product_id DESC";
+                  AND fs.starts_at <= ? AND fs.ends_at > ?
+                  ORDER BY fs.ends_at ASC, p.product_id DESC";
         $statement = $conn->prepare($sql);
         $statement->bind_param('ss', $nowValue, $nowValue);
     } elseif ($state === 'starting') {
@@ -74,4 +69,3 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
 
     return $rows;
 }
-
