@@ -2924,6 +2924,15 @@
     @apply m-0 max-w-[640px] text-sm leading-[1.85] text-[#526071];
   }
 
+  .about-interlude {
+    @apply my-10 overflow-hidden border-b border-[#dfe4e9] pb-10 sm:my-14 sm:pb-14;
+  }
+
+  .about-interlude img {
+    @apply block max-h-[520px] w-full object-cover object-center;
+    aspect-ratio: 16 / 8;
+  }
+
   .about-principles {
     @apply mb-24 grid grid-cols-1 gap-7 py-9 sm:grid-cols-3 sm:gap-6 sm:py-12;
   }
