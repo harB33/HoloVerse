@@ -373,7 +373,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             catalogResults?.setAttribute("aria-busy", "false");
         };
 
-        window.addEventListener("beforeunload", startCatalogLoading);
         window.addEventListener("pageshow", stopCatalogLoading);
 
         document.querySelectorAll(".catalog-search, .category-filter").forEach((form) => {
