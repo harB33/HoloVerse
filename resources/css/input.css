@@ -1983,7 +1983,7 @@
   }
 
   .talent-grid {
-    @apply grid grid-cols-4 gap-[14px];
+    @apply grid grid-cols-4 gap-2;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -1991,7 +1991,7 @@
 
   .talent-card-link {
     @apply block text-inherit no-underline;
-    flex: 0 1 calc((100% - 42px) / 4);
+    flex: 0 1 calc((100% - 24px) / 4);
     max-width: 280px;
   }
 
@@ -4541,7 +4541,7 @@
   }
 
   .talent-card-link {
-    flex-basis: calc((100% - 28px) / 3);
+    flex-basis: calc((100% - 16px) / 3);
   }
 }
 
@@ -4568,7 +4568,7 @@
   }
 
   .talent-card-link {
-    flex-basis: calc((100% - 14px) / 2);
+    flex-basis: calc((100% - 8px) / 2);
   }
 
   .radar-form {

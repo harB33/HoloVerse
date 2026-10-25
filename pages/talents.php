@@ -118,7 +118,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         const talentPageStatus = document.querySelector('[data-talent-page-status]');
         const previousPageButton = document.querySelector('[data-talent-page-previous]');
         const nextPageButton = document.querySelector('[data-talent-page-next]');
-        const talentsPerPage = 20;
+        const talentsPerPage = 24;
         let currentPage = 1;
         let selectedGeneration = 'all';
         const updateTalentResults = (resetPage = false) => {
