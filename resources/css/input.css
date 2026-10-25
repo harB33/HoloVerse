@@ -1015,6 +1015,65 @@
     @apply block size-full object-contain;
   }
 
+  .home-banner-carousel {
+    @apply relative z-[1] mx-auto my-7 w-full max-w-[1440px] px-[clamp(20px,4vw,64px)];
+  }
+
+  .home-banner-viewport {
+    @apply relative overflow-hidden rounded-[20px] border border-[#e1edf3] bg-[#f5fbfd] shadow-[0_12px_36px_rgba(18,67,92,0.12)];
+  }
+
+  .home-banner-track {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+  }
+
+  .home-banner-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-banner-slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+  }
+
+  .home-banner-slide img {
+    @apply block aspect-[1250/703] w-full object-cover;
+  }
+
+  .home-banner-arrow {
+    @apply absolute top-1/2 z-[1] grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/70 bg-white/85 text-[#087fa8] shadow-md backdrop-blur transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8];
+  }
+
+  .home-banner-arrow svg {
+    @apply size-5 fill-none stroke-current stroke-2;
+  }
+
+  .home-banner-previous {
+    @apply left-4;
+  }
+
+  .home-banner-next {
+    @apply right-4;
+  }
+
+  .home-banner-pagination {
+    @apply absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/35 px-3 py-2 backdrop-blur;
+  }
+
+  .home-banner-dot {
+    @apply size-2 cursor-pointer rounded-full border-0 bg-white/65 p-0 transition-[width,background-color] hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  }
+
+  .home-banner-dot[aria-current="true"] {
+    @apply w-7 bg-white;
+  }
+
   .limited-drops {
     @apply relative z-[1] bg-transparent px-[clamp(20px,4vw,64px)] pb-16 pt-11;
   }
@@ -4474,6 +4533,30 @@
 
   .hero-symbol {
     @apply mt-[-10px] size-[340px] scale-[0.65];
+  }
+
+  .home-banner-carousel {
+    @apply my-4 px-5;
+  }
+
+  .home-banner-viewport {
+    @apply rounded-[14px];
+  }
+
+  .home-banner-arrow {
+    @apply size-9;
+  }
+
+  .home-banner-previous {
+    @apply left-2;
+  }
+
+  .home-banner-next {
+    @apply right-2;
+  }
+
+  .home-banner-pagination {
+    @apply bottom-2 gap-1.5 px-2 py-1.5;
   }
 
   .limited-drops {

@@ -142,6 +142,19 @@ if ($requestPath !== '/' && $requestPath !== '/home') {
 require_once __DIR__ . '/app/store.php';
 
 $featuredProducts = store_catalog_product_rows($conn, limit: 10, randomize: true);
+$homeBanners = [
+    ['image' => 'supernova.webp', 'alt' => 'hololive SuperNova REBOOT'],
+    ['image' => 'azki_member.webp', 'alt' => 'AZKi members-only banner'],
+    ['image' => 'compas_horizon.webp', 'alt' => 'hololive Compass Horizon'],
+    ['image' => 'dreamspark.webp', 'alt' => 'hololive DreamSpark'],
+    ['image' => 'himemori_luna.webp', 'alt' => 'Himemori Luna banner'],
+    ['image' => 'kyoko_mela.webp', 'alt' => 'Kyoko Mela banner'],
+    ['image' => 'official_card_game.webp', 'alt' => 'hololive Official Card Game'],
+    ['image' => 'ollie.webp', 'alt' => 'Kureiji Ollie banner'],
+    ['image' => 'regloss_ar_live.webp', 'alt' => 'hololive ReGLOSS AR Live'],
+    ['image' => 'seasonaldays.webp', 'alt' => 'hololive Seasonal Days'],
+    ['image' => 'travel_to_indo.webp', 'alt' => 'hololive Travel to Indonesia'],
+];
 
 $pageTitle = 'HoloVerse';
 $siteRoot = '';
@@ -166,6 +179,30 @@ require __DIR__ . '/app/views/layout/head.php';
                 <img src="assets/images/logo.svg" alt="hololive logo" fetchpriority="high">
             </div>
         </div>
+
+        <section class="home-banner-carousel" aria-label="Featured hololive banners" data-banner-carousel>
+            <div class="home-banner-viewport">
+                <div class="home-banner-track" data-banner-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Featured hololive banners">
+                    <?php foreach ($homeBanners as $index => $banner): ?>
+                        <div class="home-banner-slide" role="group" aria-roledescription="slide" aria-label="<?= $index + 1 ?> of <?= count($homeBanners) ?>: <?= store_escape($banner['alt']) ?>">
+                            <img
+                                src="assets/images/banner/<?= store_escape($banner['image']) ?>"
+                                alt="<?= store_escape($banner['alt']) ?>"
+                                <?= $index === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>
+                                decoding="async"
+                            >
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button class="home-banner-arrow home-banner-previous" type="button" data-banner-previous aria-label="Show previous banner">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                </button>
+                <button class="home-banner-arrow home-banner-next" type="button" data-banner-next aria-label="Show next banner">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                </button>
+                <div class="home-banner-pagination" data-banner-pagination aria-label="Choose a banner"></div>
+            </div>
+        </section>
 
         <section class="limited-drops" id="featured" aria-labelledby="limited-drops-title">
             <div class="drops-heading">
@@ -238,6 +275,96 @@ require __DIR__ . '/app/views/layout/head.php';
     </main>
 
     <script>
+        const bannerCarousel = document.querySelector('[data-banner-carousel]');
+        const bannerTrack = document.querySelector('[data-banner-track]');
+        const bannerPrevious = document.querySelector('[data-banner-previous]');
+        const bannerNext = document.querySelector('[data-banner-next]');
+        const bannerPagination = document.querySelector('[data-banner-pagination]');
+        const bannerSlides = bannerTrack ? Array.from(bannerTrack.querySelectorAll('.home-banner-slide')) : [];
+        const bannerReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const shouldReduceBannerMotion = () => (
+            bannerReducedMotion.matches || document.documentElement.dataset.reduceMotion === 'true'
+        );
+
+        if (bannerCarousel && bannerTrack && bannerPrevious && bannerNext && bannerPagination && bannerSlides.length > 1) {
+            let activeBanner = 0;
+            let bannerPaused = false;
+            let bannerScrollFrame = null;
+            const bannerDots = bannerSlides.map((slide, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'home-banner-dot';
+                button.setAttribute('aria-label', `Show banner ${index + 1}`);
+                button.addEventListener('click', () => showBanner(index));
+                bannerPagination.append(button);
+                return button;
+            });
+
+            const updateBannerPagination = () => {
+                activeBanner = Math.max(0, Math.min(
+                    bannerSlides.length - 1,
+                    Math.round(bannerTrack.scrollLeft / bannerTrack.clientWidth),
+                ));
+                bannerDots.forEach((dot, index) => {
+                    if (index === activeBanner) {
+                        dot.setAttribute('aria-current', 'true');
+                    } else {
+                        dot.removeAttribute('aria-current');
+                    }
+                });
+            };
+
+            function showBanner(index) {
+                const nextBanner = (index + bannerSlides.length) % bannerSlides.length;
+                const slide = bannerSlides[nextBanner];
+                const left = bannerTrack.scrollLeft + slide.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left;
+                bannerTrack.scrollTo({
+                    left,
+                    behavior: shouldReduceBannerMotion() ? 'auto' : 'smooth',
+                });
+            }
+
+            bannerPrevious.addEventListener('click', () => showBanner(activeBanner - 1));
+            bannerNext.addEventListener('click', () => showBanner(activeBanner + 1));
+            bannerTrack.addEventListener('scroll', () => {
+                if (bannerScrollFrame !== null) {
+                    window.cancelAnimationFrame(bannerScrollFrame);
+                }
+                bannerScrollFrame = window.requestAnimationFrame(() => {
+                    updateBannerPagination();
+                    bannerScrollFrame = null;
+                });
+            }, { passive: true });
+            window.addEventListener('resize', updateBannerPagination);
+
+            bannerCarousel.addEventListener('mouseenter', () => { bannerPaused = true; });
+            bannerCarousel.addEventListener('mouseleave', () => { bannerPaused = false; });
+            bannerCarousel.addEventListener('focusin', () => { bannerPaused = true; });
+            bannerCarousel.addEventListener('focusout', (event) => {
+                if (!bannerCarousel.contains(event.relatedTarget)) {
+                    bannerPaused = false;
+                }
+            });
+            bannerCarousel.addEventListener('pointerdown', () => { bannerPaused = true; });
+            bannerCarousel.addEventListener('pointerup', (event) => {
+                if (
+                    (event.pointerType === 'touch' || !bannerCarousel.matches(':hover')) &&
+                    !bannerCarousel.contains(document.activeElement)
+                ) {
+                    bannerPaused = false;
+                }
+            });
+            document.addEventListener('visibilitychange', updateBannerPagination);
+
+            window.setInterval(() => {
+                if (bannerPaused || document.hidden || shouldReduceBannerMotion()) {
+                    return;
+                }
+                showBanner(activeBanner + 1);
+            }, 5000);
+            updateBannerPagination();
+        }
+
         document.querySelectorAll('.drop-product-image').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');
             image.nextElementSibling?.classList.remove('hidden');
