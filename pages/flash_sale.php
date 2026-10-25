@@ -68,20 +68,6 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
 
         <main class="flash-sale-main">
-            <div class="flash-status-bar" aria-label="Flash sale system status">
-                <span><i aria-hidden="true"></i> Flash sales: <?= count($flashSaleProducts['live']) ?> live drops</span>
-                <span>5-minute holds on live flash-sale items; stock and CSRF checked</span>
-                <span class="flash-status-right">
-                    <span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="m9 12 2 2 4-4" />
-                        </svg>
-                        Product availability is live
-                    </span>
-                    <?php if (store_has_role('admin')): ?><a href="flash-sale-admin">Manage drops</a><?php endif; ?>
-                </span>
-            </div>
             <?php if (!$flashSaleSchedulingAvailable): ?>
                 <p class="flash-setup-notice" role="status">Flash sale scheduling is temporarily unavailable, so no drops are being shown. The database must include the <code>flash_sale_tbl</code> table from <code>Database/holoverse.sql</code> before an administrator can schedule sales.</p>
             <?php endif; ?>
@@ -93,7 +79,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <span>Official hololive merchandise</span>
                     </div>
                     <h1 id="flash-sale-title">Flash Sales</h1>
-                    <p class="flash-sale-subtitle">Special prices on selected items, available while supplies last.</p>
+                    <p class="flash-sale-subtitle">5-minute holds on live flash-sale items; stock and CSRF checked</p>
+                    <?php if (store_has_role('admin')): ?>
+                        <a class="flash-manage-drops-link" href="flash-sale-admin">Manage drops</a>
+                    <?php endif; ?>
                 </div>
                 <div class="flash-countdown">
                     <?php if ($saleProduct && !empty($saleProduct['ends_at'])): ?>
@@ -145,14 +134,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <img class="flash-product-backdrop" src="<?= store_escape($saleImageUrl) ?>" alt="" aria-hidden="true">
                         <img class="flash-product-main-image" src="<?= store_escape($saleImageUrl) ?>" alt="<?= store_escape($saleImageAlt) ?>" tabindex="0" fetchpriority="high">
                         <div class="flash-image-badges">
-                            <span data-sale-detail="stock-badge"><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M20 10c0 5-8 11-8 11s-8-6-8-11a8 8 0 1 1 16 0Z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                                <span data-sale-detail="category-badge"><?= store_escape($saleProduct['category_name']) ?></span>
-                            </span>
+                            <span class="drop-edition" data-sale-detail="stock-badge"><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
+                            <span class="drop-edition" data-sale-detail="product-badge"><?= store_escape($saleProduct['product_name']) ?></span>
                         </div>
                     </div>
                     <div class="flash-image-caption">
@@ -176,7 +159,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <section class="flash-product-details" aria-labelledby="flash-product-title">
                     <div class="flash-breadcrumb"><span data-sale-detail="category"><?= store_escape($saleProduct['category_name']) ?></span> / <span data-sale-detail="variant"><?= store_escape($saleProduct['variant_name']) ?></span></div>
                     <h2 id="flash-product-title" data-sale-detail="name"><?= store_escape($saleProduct['product_name']) ?></h2>
-                    <p class="flash-product-description" data-sale-detail="description"><?= store_escape($saleProduct['description'] ?? '') ?></p>
+                    <?php $saleDescription = (string) ($saleProduct['description'] ?? ''); ?>
+                    <div class="flash-product-description-block">
+                        <p class="flash-product-description" data-sale-detail="description-preview"><?= store_escape($saleDescription) ?></p>
+                        <p class="flash-product-description-full" id="flash-product-description-full" data-sale-detail="description-full" hidden><?= store_escape($saleDescription) ?></p>
+                        <button class="flash-product-description-toggle" type="button" aria-expanded="false" aria-controls="flash-product-description-full" data-sale-description-toggle<?= strlen($saleDescription) <= 180 ? ' hidden' : '' ?>>View Full Product Description</button>
+                    </div>
 
                     <div class="flash-price-panel">
                         <div class="flash-price-line">
@@ -188,62 +176,62 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <small data-sale-detail="sale-note">While supplies last</small>
                     </div>
 
-                    <div class="flash-stock-panel">
-                        <div class="flash-stock-top">
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="m7.5 4.27 9 5.15" />
-                                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                                    <path d="m3.3 7 8.7 5 8.7-5" />
-                                    <path d="M12 22V12" />
-                                </svg>
-                                <span data-sale-detail="stock-text"><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
-                            </span>
-                            <span data-sale-detail="stock-count"><?= (int) $saleProduct['stock_quantity'] ?> in stock</span>
+                    <div class="flash-product-actions">
+                        <div class="flash-stock-panel">
+                            <div class="flash-stock-top">
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m7.5 4.27 9 5.15" />
+                                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                        <path d="m3.3 7 8.7 5 8.7-5" />
+                                        <path d="M12 22V12" />
+                                    </svg>
+                                    <span data-sale-detail="stock-text"><?= (int) $saleProduct['stock_quantity'] ?> units available</span>
+                                </span>
+                                <span data-sale-detail="stock-count"><?= (int) $saleProduct['stock_quantity'] ?> in stock</span>
+                            </div>
+                            <div class="flash-stock-track" data-sale-detail="stock-progress" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span style="width: <?= min(100, (int) $saleProduct['stock_quantity']) ?>%"></span></div>
+                            <div class="flash-stock-bottom">
+                                <span data-sale-detail="stock-note">Adding a live flash-sale item reserves stock for five minutes.</span>
+                                <span data-sale-detail="availability"><?= (int) $saleProduct['stock_quantity'] > 0 ? 'Available now' : 'Currently sold out' ?></span>
+                            </div>
                         </div>
-                        <div class="flash-stock-track" data-sale-detail="stock-progress" role="progressbar" aria-label="Units available" aria-valuenow="<?= min(100, (int) $saleProduct['stock_quantity']) ?>" aria-valuemin="0" aria-valuemax="100"><span style="width: <?= min(100, (int) $saleProduct['stock_quantity']) ?>%"></span></div>
-                        <div class="flash-stock-bottom">
-                            <span data-sale-detail="stock-note">Adding a live flash-sale item reserves stock for five minutes.</span>
-                            <span data-sale-detail="availability"><?= (int) $saleProduct['stock_quantity'] > 0 ? 'Available now' : 'Currently sold out' ?></span>
-                        </div>
-                    </div>
 
-                    <form action="cart" method="post" data-sale-detail="cart-form">
-                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                        <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>" data-sale-detail="variant-id">
-                        <button class="flash-reserve-button" type="submit" name="action" value="add">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-basket" aria-hidden="true">
-                                    <path d="m15 11-1 9" />
-                                    <path d="m19 11-4-7" />
-                                    <path d="M2 11h20" />
-                                    <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
-                                    <path d="M4.5 15.5h15" />
-                                    <path d="m5 11 4-7" />
-                                    <path d="m9 11 1 9" />
-                                </svg>
-                                Add to cart
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M5 12h14" />
-                                    <path d="m12 5 7 7-7 7" />
-                                </svg>
-                        </button>
-                    </form>
-                    <p data-sale-detail="cart-message" role="status" hidden></p>
-                    <p class="flash-checkout-note">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                            <path d="M3 6h18" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                        </svg>
-                        Your cart is saved to this browser and can be linked to your account. Live flash-sale items are held for five minutes after being added.
-                    </p>
+                        <form action="cart" method="post" data-sale-detail="cart-form">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>" data-sale-detail="variant-id">
+                            <button class="flash-reserve-button" type="submit" name="action" value="add">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-basket" aria-hidden="true">
+                                        <path d="m15 11-1 9" />
+                                        <path d="m19 11-4-7" />
+                                        <path d="M2 11h20" />
+                                        <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
+                                        <path d="M4.5 15.5h15" />
+                                        <path d="m5 11 4-7" />
+                                        <path d="m9 11 1 9" />
+                                    </svg>
+                                    Add to cart
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M5 12h14" />
+                                        <path d="m12 5 7 7-7 7" />
+                                    </svg>
+                            </button>
+                        </form>
+                        <p data-sale-detail="cart-message" role="status" hidden></p>
+                        <p class="flash-checkout-note">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                                <path d="M3 6h18" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                            Your cart is saved to this browser and can be linked to your account. Live flash-sale items are held for five minutes after being added.
+                        </p>
+                    </div>
                 </section>
             </article>
             <?php else: ?>
                 <p class="flash-empty" role="status">There are no discounted products available right now.</p>
             <?php endif; ?>
-
-            <?php require __DIR__ . '/../app/views/components/flash-sale-telemetry.php'; ?>
 
             <?php require __DIR__ . '/../app/views/components/flash-sale-inventory.php'; ?>
 
@@ -252,7 +240,8 @@ require __DIR__ . '/../app/views/layout/head.php';
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 
-    <script src="../assets/js/flash-sale.js?v=<?= filemtime(__DIR__ . '/../assets/js/flash-sale.js') ?>" defer></script>
+    <?php $flashSaleScriptPath = __DIR__ . '/../assets/js/flash-sale.js'; ?>
+    <script src="../assets/js/flash-sale.js?v=<?= filemtime($flashSaleScriptPath) ?>-<?= filesize($flashSaleScriptPath) ?>" defer></script>
 
     <?php
     $cartHref = 'cart';

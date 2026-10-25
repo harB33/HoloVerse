@@ -78,8 +78,8 @@ const saleCarousel = document.querySelector("[data-sale-carousel]");
 const saleCarouselControls = document.querySelector(".flash-sale-carousel-controls");
 const flashSaleCard = document.querySelector(".flash-sale-card");
 const saleEmptyState = document.querySelector("[data-sale-empty]");
-const saleSearch = document.querySelector("#flash-sale-search");
 const saleDetail = (name) => document.querySelector(`[data-sale-detail="${name}"]`);
+const saleDescriptionToggle = document.querySelector("[data-sale-description-toggle]");
 const countdown = document.querySelector("[data-countdown]");
 const countdownText = document.querySelector("[data-sale-countdown-text]");
 let countdownDeadline = countdown ? new Date(countdown.dataset.countdown).getTime() : 0;
@@ -117,15 +117,12 @@ const saleEmptyMessages = {
 };
 
 const updateSaleCards = () => {
-    const query = saleSearch?.value.trim().toLocaleLowerCase() || "";
     let visibleCards = 0;
 
     saleCards.forEach((card) => {
         const matchesState = card.dataset.saleState === selectedSaleState;
-        const matchesSearch = (card.dataset.search || "").toLocaleLowerCase().includes(query);
-        const isVisible = matchesState && matchesSearch;
-        card.hidden = !isVisible;
-        visibleCards += Number(isVisible);
+        card.hidden = !matchesState;
+        visibleCards += Number(matchesState);
     });
 
     if (saleGrid) {
@@ -134,9 +131,7 @@ const updateSaleCards = () => {
     }
 
     if (saleEmptyState) {
-        saleEmptyState.textContent = query
-            ? `No products match "${saleSearch.value.trim()}" in this category.`
-            : saleEmptyMessages[selectedSaleState] || "No sale items are available in this category.";
+        saleEmptyState.textContent = saleEmptyMessages[selectedSaleState] || "No sale items are available in this category.";
         saleEmptyState.hidden = visibleCards > 0;
     }
 };
@@ -156,8 +151,29 @@ const scrollSaleProducts = (direction) => {
 
 salePrevious?.addEventListener("click", () => scrollSaleProducts(-1));
 saleNext?.addEventListener("click", () => scrollSaleProducts(1));
-saleCarousel?.addEventListener("wheel", (event) => {
-    if (!saleGrid || saleGrid.scrollWidth <= saleGrid.clientWidth) {
+saleDescriptionToggle?.addEventListener("click", () => {
+    const expanded = saleDescriptionToggle.getAttribute("aria-expanded") !== "true";
+    const preview = saleDetail("description-preview");
+    const full = saleDetail("description-full");
+    if (!preview || !full) {
+        return;
+    }
+
+    saleDescriptionToggle.setAttribute("aria-expanded", String(expanded));
+    saleDescriptionToggle.textContent = expanded
+        ? "Hide Full Product Description"
+        : "View Full Product Description";
+    preview.hidden = expanded;
+    full.hidden = !expanded;
+});
+document.addEventListener("wheel", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!saleCarousel || !saleGrid || !target?.closest("[data-sale-carousel]") || event.ctrlKey) {
+        return;
+    }
+
+    const maxScrollLeft = saleGrid.scrollWidth - saleGrid.clientWidth;
+    if (maxScrollLeft <= 1) {
         return;
     }
 
@@ -169,14 +185,13 @@ saleCarousel?.addEventListener("wheel", (event) => {
         : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
             ? rawDelta * saleGrid.clientWidth
             : rawDelta;
-    const maxScrollLeft = saleGrid.scrollWidth - saleGrid.clientWidth;
     const canScroll = wheelDelta < 0
         ? saleGrid.scrollLeft > 0
         : saleGrid.scrollLeft < maxScrollLeft;
 
     if (wheelDelta !== 0 && canScroll) {
         event.preventDefault();
-        saleGrid.scrollLeft += wheelDelta;
+        saleGrid.scrollLeft = Math.max(0, Math.min(maxScrollLeft, saleGrid.scrollLeft + wheelDelta));
     }
 }, { capture: true, passive: false });
 saleGrid?.addEventListener("scroll", updateSaleCarouselControls, { passive: true });
@@ -201,13 +216,12 @@ const updateSaleProductDetails = (card) => {
     const textValues = {
         breadcrumb: product.name,
         "stock-badge": `${stock} units available`,
-        "category-badge": product.category,
+        "product-badge": product.name,
         "variant-caption": product.variant,
         "category-caption": product.category,
         category: product.category,
         variant: product.variant,
         name: product.name,
-        description: product.description,
         price: product.price,
         "compare-price": product.comparePrice,
         discount: `${product.discount}% off`,
@@ -228,6 +242,18 @@ const updateSaleProductDetails = (card) => {
             element.textContent = value;
         }
     });
+
+    const descriptionPreview = saleDetail("description-preview");
+    const descriptionFull = saleDetail("description-full");
+    if (descriptionPreview && descriptionFull && saleDescriptionToggle) {
+        descriptionPreview.textContent = product.description;
+        descriptionFull.textContent = product.description;
+        descriptionPreview.hidden = false;
+        descriptionFull.hidden = true;
+        saleDescriptionToggle.hidden = product.description.length <= 180;
+        saleDescriptionToggle.setAttribute("aria-expanded", "false");
+        saleDescriptionToggle.textContent = "View Full Product Description";
+    }
 
     const stockProgress = saleDetail("stock-progress");
     if (stockProgress) {
@@ -380,7 +406,6 @@ saleTabs.forEach((tab, index) => {
 if (saleTabs.length) {
     selectSaleTab(saleTabs.find((tab) => tab.getAttribute("aria-selected") === "true") || saleTabs[0]);
 }
-saleSearch?.addEventListener("input", updateSaleCards);
 
 if (countdown) {
     updateCountdown();

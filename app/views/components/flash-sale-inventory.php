@@ -5,33 +5,32 @@ $flashSaleTabs = [
     'tomorrow' => ['label' => 'Tomorrow', 'products' => $flashSaleProducts['tomorrow']],
     'archive' => ['label' => 'Vault Archive', 'products' => $flashSaleProducts['archive']],
 ];
+$flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', 'tomorrow' => 'Tomorrow', 'archive' => 'Archive'];
 ?>
 <section class="vault-inventory-ration" aria-labelledby="vault-inventory-title">
     <div class="vault-inventory-header">
         <div class="vault-inventory-title-wrap">
-            <span class="vault-inventory-kicker">VAULT INVENTORY RATION</span>
-            <h2 id="vault-inventory-title">CURATED ACTIVE DROPS</h2>
+            <span class="vault-inventory-kicker">Flash sale</span>
+            <h2 id="vault-inventory-title">Offers worth a look</h2>
         </div>
         <div class="vault-filters" role="tablist" aria-label="Flash sale categories">
             <?php foreach ($flashSaleTabs as $key => $tab): ?>
                 <button class="vault-filter<?= $key === 'live' ? ' is-active' : '' ?>" id="flash-tab-<?= store_escape($key) ?>" type="button" role="tab" data-sale-filter="<?= store_escape($key) ?>" aria-controls="flash-sale-products" aria-selected="<?= $key === 'live' ? 'true' : 'false' ?>" tabindex="<?= $key === 'live' ? '0' : '-1' ?>">
-                    <?= store_escape($tab['label']) ?> <span>(<?= count($tab['products']) ?>)</span>
+                    <?= store_escape($flashSaleFilterLabels[$key]) ?> <span><?= count($tab['products']) ?></span>
                 </button>
             <?php endforeach; ?>
         </div>
     </div>
-    <div class="catalog-search flash-sale-search-wrap" role="search">
-        <label class="sr-only" for="flash-sale-search">Search flash sale products</label>
-        <input id="flash-sale-search" type="search" placeholder="Search products, categories, or variants" autocomplete="off">
-    </div>
 
-    <div class="flash-sale-carousel-controls" role="group" aria-label="Flash sale products carousel controls">
-        <button type="button" data-sale-previous aria-label="Show previous flash sale products" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-        </button>
-        <button type="button" data-sale-next aria-label="Show next flash sale products">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-        </button>
+    <div class="flash-sale-toolbar">
+        <div class="flash-sale-carousel-controls" role="group" aria-label="Flash sale products carousel controls">
+            <button type="button" data-sale-previous aria-label="Show previous flash sale products" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <button type="button" data-sale-next aria-label="Show next flash sale products">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+        </div>
     </div>
     <div class="flash-sale-carousel" data-sale-carousel>
         <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live" tabindex="0" data-sale-track>
@@ -72,7 +71,7 @@ $flashSaleTabs = [
                         'images' => $productImages,
                     ];
                     ?>
-                    <article class="drop-card flash-sale-drop-card" data-sale-state="<?= store_escape($state) ?>" data-search="<?= store_escape($product['product_name'] . ' ' . $product['category_name'] . ' ' . $product['variant_name']) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>" data-sale-select tabindex="0" aria-label="View details for <?= store_escape($product['product_name']) ?>" data-sale-product="<?= store_escape(json_encode($saleSelectionData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR)) ?>">
+                    <article class="drop-card flash-sale-drop-card" data-sale-state="<?= store_escape($state) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>" data-sale-select tabindex="0" aria-label="View details for <?= store_escape($product['product_name']) ?>" data-sale-product="<?= store_escape(json_encode($saleSelectionData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR)) ?>">
                     <div class="drop-art">
                         <div class="drop-art-labels<?= $state === 'live' ? ' drop-art-labels-no-status' : '' ?>">
                             <?php if ($state !== 'live'): ?>

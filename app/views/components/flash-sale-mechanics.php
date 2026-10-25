@@ -1,8 +1,8 @@
 <section class="flash-mechanics" aria-labelledby="flash-mechanics-title">
     <div class="flash-mechanics-header">
-        <span class="flash-mechanics-pill">Platform integrity</span>
-        <h2 id="flash-mechanics-title">Flash Sale Mechanics</h2>
-        <p>Flash sale listings use live catalog inventory, scheduled sale windows, session-protected cart actions, and stock validation.</p>
+        <span class="flash-mechanics-pill">Good to know</span>
+        <h2 id="flash-mechanics-title">How flash sales work</h2>
+        <p>A few details about availability, checkout, and scheduled offers.</p>
     </div>
 
     <div class="flash-mechanics-grid">
