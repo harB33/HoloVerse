@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../app/store.php';
 
 $userId = (int) ($_SESSION['user_id'] ?? 0);
+$favoritePageSize = 10;
 $wantsJson = str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
 $respondToFavoriteRequest = static function (array $payload, int $status = 200) use ($wantsJson): never {
     if ($wantsJson) {
@@ -68,6 +69,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     $isFavorite = $action === 'save';
     $respondToFavoriteRequest([
         'is_favorite' => $isFavorite,
+        'favorite_count' => store_collector_favorite_product_count($conn, $userId),
+        'favorite_page_size' => $favoritePageSize,
         'message' => $isFavorite
             ? 'Saved to your Collector Showcase.'
             : 'Removed from your Collector Showcase.',
@@ -79,7 +82,6 @@ $favoriteNotice = is_string($_SESSION['collector_showcase_notice'] ?? null)
     ? $_SESSION['collector_showcase_notice']
     : '';
 unset($_SESSION['collector_showcase_notice']);
-$favoritePageSize = 10;
 $favoriteProductCount = $userId > 0 ? store_collector_favorite_product_count($conn, $userId) : 0;
 $favoritePageCount = max(1, (int) ceil($favoriteProductCount / $favoritePageSize));
 $favoritePageParameter = filter_var(
@@ -138,7 +140,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <h2 id="collector-favorites-title">Your favorites</h2>
                     </div>
                     <?php if ($userId > 0): ?>
-                        <span class="collector-showcase-count"><?= $favoriteProductCount ?> saved</span>
+                        <span class="collector-showcase-count" data-favorite-count><?= $favoriteProductCount ?> saved</span>
                     <?php endif; ?>
                 </div>
                 <?php if ($userId < 1): ?>
@@ -146,10 +148,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p>Sign in to save favorite products and find them here whenever you return.</p>
                     </div>
                 <?php elseif ($favoriteProducts): ?>
-                    <div class="collector-showcase-grid">
+                    <div class="collector-showcase-grid" data-favorite-grid>
                         <?php foreach ($favoriteProducts as $product): ?>
                             <?php $favoriteProductId = (int) $product['product_id']; ?>
-                            <article class="collector-showcase-card">
+                            <article class="collector-showcase-card" data-favorite-product-id="<?= $favoriteProductId ?>">
                                 <a class="collector-showcase-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                                 <div class="collector-showcase-card-art">
                                     <?php if (!empty($product['image_url'])): ?>
@@ -178,8 +180,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </article>
                         <?php endforeach; ?>
                     </div>
+                    <div class="collector-showcase-empty" data-favorite-empty style="display: none">
+                        <span class="collector-showcase-empty-heart" aria-hidden="true">♡</span>
+                        <h3>Your showcase is waiting for a favorite</h3>
+                        <p>Tap the heart on any product to save it here.</p>
+                        <a href="/products">Explore products</a>
+                    </div>
                     <?php if ($favoritePageCount > 1): ?>
-                        <nav class="collector-showcase-pagination" aria-label="Favorite product pages">
+                        <nav class="collector-showcase-pagination" aria-label="Favorite product pages" data-favorite-pagination>
                             <?php if ($favoriteCurrentPage > 1): ?>
                                 <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage - 1 ?>" rel="prev">Previous</a>
                             <?php endif; ?>
@@ -188,6 +196,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage + 1 ?>" rel="next">Next</a>
                             <?php endif; ?>
                         </nav>
+                    <?php else: ?>
+                        <nav class="collector-showcase-pagination" aria-label="Favorite product pages" data-favorite-pagination hidden></nav>
                     <?php endif; ?>
                 <?php else: ?>
                     <div class="collector-showcase-empty">
