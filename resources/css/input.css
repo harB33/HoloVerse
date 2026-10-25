@@ -202,7 +202,7 @@
   }
 
   .catalog-search.site-header-search input[type="search"] {
-    @apply h-[50px] rounded-full border-2 border-[#d9e8f0] bg-[#f1f5f9] px-5 text-[13px] shadow-[0_3px_12px_rgba(21,61,84,0.06)] transition-[border-color,box-shadow] duration-200 placeholder:text-[#8293a7] focus-visible:border-[#078bbd] focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_rgba(7,139,189,0.12)];
+    @apply h-[50px] rounded-full border-2 border-[rgba(99,210,252,0.9)] bg-white/35 px-5 text-[13px] shadow-[0_0_10px_rgba(81,195,245,0.3)] backdrop-blur-md transition-[border-color,box-shadow] duration-200 placeholder:text-[#8293a7] focus-visible:border-[#078bbd] focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_rgba(7,139,189,0.12)];
   }
 
   .catalog-search.site-header-search:focus-within input[type="search"] {
