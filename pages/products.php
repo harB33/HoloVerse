@@ -253,7 +253,28 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </aside>
 
                 <div class="products-catalog-results" aria-busy="false">
-            <?php require __DIR__ . '/../app/views/components/catalog-product-results.php'; ?>
+                    <div class="drops-grid products-loading-skeleton" aria-hidden="true">
+                        <?php for ($skeletonIndex = 0; $skeletonIndex < 8; $skeletonIndex++): ?>
+                            <article class="drop-card products-skeleton-card">
+                                <div class="drop-art">
+                                    <span class="products-skeleton-block products-skeleton-favorite"></span>
+                                    <span class="products-skeleton-block products-skeleton-artwork"></span>
+                                    <span class="products-skeleton-block products-skeleton-edition"></span>
+                                </div>
+                                <div class="drop-details">
+                                    <span class="products-skeleton-block products-skeleton-category"></span>
+                                    <span class="products-skeleton-block products-skeleton-title"></span>
+                                    <span class="products-skeleton-block products-skeleton-description"></span>
+                                    <span class="products-skeleton-block products-skeleton-description"></span>
+                                    <span class="products-skeleton-block products-skeleton-description products-skeleton-description-short"></span>
+                                    <hr class="drop-allocation-divider">
+                                    <span class="products-skeleton-block products-skeleton-price"></span>
+                                    <span class="products-skeleton-block products-skeleton-button"></span>
+                                </div>
+                            </article>
+                        <?php endfor; ?>
+                    </div>
+                    <?php require __DIR__ . '/../app/views/components/catalog-product-results.php'; ?>
                 </div>
             </div>
         </main>
@@ -378,7 +399,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                             if (!nextResults || !nextCount || !catalogResults) {
                                 throw new Error("Product search returned incomplete results.");
                             }
-                            catalogResults.replaceChildren(...nextResults.childNodes);
+                            const loadingSkeleton = catalogResults.querySelector(".products-loading-skeleton");
+                            loadingSkeleton?.remove();
+                            catalogResults.replaceChildren(
+                                ...(loadingSkeleton ? [loadingSkeleton] : []),
+                                ...nextResults.childNodes
+                            );
                             document.querySelector("#all-products-count").textContent = nextCount.textContent;
 
                             const currentUrl = new URL(window.location.href);

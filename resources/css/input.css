@@ -1504,6 +1504,30 @@
     min-height: 170px;
   }
 
+  .products-skeleton-favorite {
+    position: absolute;
+    top: 2%;
+    right: 2%;
+    z-index: 2;
+    width: 1.75rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+
+  .products-skeleton-artwork {
+    width: 52%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+
+  .products-skeleton-edition {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 38%;
+    height: 1.15rem;
+  }
+
   .products-skeleton-card .drop-details {
     display: grid;
     gap: 0.55rem;
@@ -1728,7 +1752,7 @@
 
   .drop-art > .collector-favorite-form {
     top: 8%;
-    right: 9%;
+    right: 8%;
     transform: translate(50%, -50%);
   }
 
