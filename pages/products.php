@@ -263,13 +263,26 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </div>
                                 <div class="drop-details">
                                     <span class="products-skeleton-block products-skeleton-category"></span>
-                                    <span class="products-skeleton-block products-skeleton-title"></span>
-                                    <span class="products-skeleton-block products-skeleton-description"></span>
-                                    <span class="products-skeleton-block products-skeleton-description"></span>
-                                    <span class="products-skeleton-block products-skeleton-description products-skeleton-description-short"></span>
+                                    <div class="products-skeleton-title">
+                                        <span class="products-skeleton-block"></span>
+                                        <span class="products-skeleton-block products-skeleton-title-short"></span>
+                                    </div>
+                                    <div class="products-skeleton-description">
+                                        <span class="products-skeleton-block"></span>
+                                        <span class="products-skeleton-block"></span>
+                                        <span class="products-skeleton-block products-skeleton-description-short"></span>
+                                    </div>
                                     <hr class="drop-allocation-divider">
-                                    <span class="products-skeleton-block products-skeleton-price"></span>
-                                    <span class="products-skeleton-block products-skeleton-button"></span>
+                                    <div class="products-skeleton-purchase">
+                                        <div class="products-skeleton-price-group">
+                                            <span class="products-skeleton-block products-skeleton-price-label"></span>
+                                            <div class="products-skeleton-price-row">
+                                                <span class="products-skeleton-block products-skeleton-price"></span>
+                                                <span class="products-skeleton-block products-skeleton-allocation"></span>
+                                            </div>
+                                        </div>
+                                        <span class="products-skeleton-block products-skeleton-button"></span>
+                                    </div>
                                 </div>
                             </article>
                         <?php endfor; ?>

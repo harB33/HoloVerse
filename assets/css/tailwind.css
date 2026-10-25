@@ -4093,55 +4093,100 @@
   }
   .products-skeleton-favorite {
     position: absolute;
-    top: 2%;
-    right: 2%;
+    top: 8%;
+    right: 9%;
     z-index: 2;
     width: 1.75rem;
     aspect-ratio: 1;
     border-radius: 50%;
+    transform: translate(50%, -50%);
   }
   .products-skeleton-artwork {
-    width: 52%;
+    width: 58%;
     aspect-ratio: 1;
-    border-radius: 50%;
+    border-radius: 0.15rem;
   }
   .products-skeleton-edition {
     position: absolute;
     top: 0.5rem;
     left: 0.5rem;
-    width: 38%;
+    width: 42%;
     height: 1.15rem;
   }
   .products-skeleton-card .drop-details {
-    display: grid;
-    gap: 0.55rem;
+    display: block;
   }
   .products-skeleton-category {
+    margin-bottom: 0.25rem;
     width: 38%;
-    height: 0.65rem;
+    height: 0.7rem;
   }
   .products-skeleton-title {
-    width: 78%;
-    height: 1.1rem;
+    display: grid;
+    align-content: start;
+    gap: 0.2rem;
+    height: 2.3em;
+    font-size: 17px;
+    line-height: 1.15;
+  }
+  .products-skeleton-title-short {
+    width: 75%;
+  }
+  .products-skeleton-title > .products-skeleton-block {
+    height: 0.9rem;
   }
   .products-skeleton-description {
-    width: 100%;
-    height: 0.7rem;
+    display: grid;
+    gap: 0.15rem;
+    margin: 0.3rem 0 0.75rem;
+    font-size: 13px;
+    line-height: 1.2;
+    min-height: 3lh;
+  }
+  .products-skeleton-description > .products-skeleton-block {
+    height: 0.8rem;
   }
   .products-skeleton-description-short {
     width: 62%;
   }
   .products-skeleton-card .drop-allocation-divider {
     width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  .products-skeleton-purchase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    row-gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .products-skeleton-price-group {
+    width: 100%;
+  }
+  .products-skeleton-price-label {
+    width: 18%;
+    height: 0.6rem;
+    margin: 0 0 0.2rem 0.125rem;
+  }
+  .products-skeleton-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
   .products-skeleton-price {
-    width: 42%;
+    width: 36%;
     height: 1.2rem;
+  }
+  .products-skeleton-allocation {
+    width: 28%;
+    height: 1.5rem;
+    border-radius: 9999px;
   }
   .products-skeleton-button {
     width: 100%;
     height: 2.25rem;
-    margin-top: 0.25rem;
   }
   @keyframes products-skeleton-shimmer {
     to {
