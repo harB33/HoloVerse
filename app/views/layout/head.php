@@ -48,7 +48,7 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             left: 50%;
             width: 360px;
             height: 125px;
-            background-image: url("<?= htmlspecialchars($siteRoot, ENT_QUOTES, 'UTF-8') ?>assets/images/hololive.png");
+            background-image: url("<?= htmlspecialchars($siteRoot, ENT_QUOTES, 'UTF-8') ?>assets/images/holoverse-wordmark-dark.png");
             background-position: center;
             background-repeat: no-repeat;
             background-size: 340px auto;
