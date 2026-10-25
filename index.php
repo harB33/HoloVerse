@@ -280,17 +280,28 @@ require __DIR__ . '/app/views/layout/head.php';
         const bannerPrevious = document.querySelector('[data-banner-previous]');
         const bannerNext = document.querySelector('[data-banner-next]');
         const bannerPagination = document.querySelector('[data-banner-pagination]');
-        const bannerSlides = bannerTrack ? Array.from(bannerTrack.querySelectorAll('.home-banner-slide')) : [];
+        const originalBannerSlides = bannerTrack ? Array.from(bannerTrack.querySelectorAll('.home-banner-slide')) : [];
         const bannerReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const shouldReduceBannerMotion = () => (
             bannerReducedMotion.matches || document.documentElement.dataset.reduceMotion === 'true'
         );
 
-        if (bannerCarousel && bannerTrack && bannerPrevious && bannerNext && bannerPagination && bannerSlides.length > 1) {
+        if (bannerCarousel && bannerTrack && bannerPrevious && bannerNext && bannerPagination && originalBannerSlides.length > 1) {
+            const makeBannerClone = (slide) => {
+                const clone = slide.cloneNode(true);
+                clone.setAttribute('aria-hidden', 'true');
+                clone.setAttribute('role', 'presentation');
+                clone.removeAttribute('aria-label');
+                clone.querySelector('img')?.setAttribute('alt', '');
+                return clone;
+            };
+            bannerTrack.prepend(makeBannerClone(originalBannerSlides[originalBannerSlides.length - 1]));
+            bannerTrack.append(makeBannerClone(originalBannerSlides[0]));
+            const bannerSlides = Array.from(bannerTrack.querySelectorAll('.home-banner-slide'));
             let activeBanner = 0;
             let bannerPaused = false;
             let bannerScrollFrame = null;
-            const bannerDots = bannerSlides.map((slide, index) => {
+            const bannerDots = originalBannerSlides.map((slide, index) => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'home-banner-dot';
@@ -300,11 +311,32 @@ require __DIR__ . '/app/views/layout/head.php';
                 return button;
             });
 
+            const centerBanner = (index, behavior = 'smooth') => {
+                const slide = bannerSlides[index];
+                const trackBounds = bannerTrack.getBoundingClientRect();
+                const slideBounds = slide.getBoundingClientRect();
+                const left = bannerTrack.scrollLeft + slideBounds.left - trackBounds.left
+                    - (bannerTrack.clientWidth - slideBounds.width) / 2;
+                bannerTrack.scrollTo({ left, behavior });
+            };
+
             const updateBannerPagination = () => {
-                activeBanner = Math.max(0, Math.min(
-                    bannerSlides.length - 1,
-                    Math.round(bannerTrack.scrollLeft / bannerTrack.clientWidth),
-                ));
+                const trackCenter = bannerTrack.getBoundingClientRect().left + bannerTrack.clientWidth / 2;
+                let centeredIndex = bannerSlides.reduce((closest, slide, index) => {
+                    const distance = Math.abs(
+                        slide.getBoundingClientRect().left + slide.getBoundingClientRect().width / 2 - trackCenter,
+                    );
+                    return distance < closest.distance ? { index, distance } : closest;
+                }, { index: 0, distance: Infinity }).index;
+
+                if (centeredIndex === 0 || centeredIndex === bannerSlides.length - 1) {
+                    centeredIndex = centeredIndex === 0 ? bannerSlides.length - 2 : 1;
+                    centerBanner(centeredIndex, 'instant');
+                }
+                bannerSlides.forEach((slide, index) => {
+                    slide.classList.toggle('is-active-banner', index === centeredIndex);
+                });
+                activeBanner = (centeredIndex - 1 + originalBannerSlides.length) % originalBannerSlides.length;
                 bannerDots.forEach((dot, index) => {
                     if (index === activeBanner) {
                         dot.setAttribute('aria-current', 'true');
@@ -315,13 +347,8 @@ require __DIR__ . '/app/views/layout/head.php';
             };
 
             function showBanner(index) {
-                const nextBanner = (index + bannerSlides.length) % bannerSlides.length;
-                const slide = bannerSlides[nextBanner];
-                const left = bannerTrack.scrollLeft + slide.getBoundingClientRect().left - bannerTrack.getBoundingClientRect().left;
-                bannerTrack.scrollTo({
-                    left,
-                    behavior: shouldReduceBannerMotion() ? 'auto' : 'smooth',
-                });
+                const nextBanner = (index + originalBannerSlides.length) % originalBannerSlides.length;
+                centerBanner(nextBanner + 1, shouldReduceBannerMotion() ? 'instant' : 'smooth');
             }
 
             bannerPrevious.addEventListener('click', () => showBanner(activeBanner - 1));
@@ -362,6 +389,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 }
                 showBanner(activeBanner + 1);
             }, 5000);
+            centerBanner(1, 'instant');
             updateBannerPagination();
         }
 
