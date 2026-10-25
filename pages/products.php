@@ -174,6 +174,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
 <body>
+    <script>document.body.classList.add("products-page-loading");</script>
     <div class="page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
@@ -253,6 +254,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </aside>
 
                 <div class="products-catalog-results" aria-busy="false">
+                    <script>document.currentScript.parentElement.setAttribute("aria-busy", "true");</script>
                     <div class="drops-grid products-loading-skeleton" aria-hidden="true">
                         <?php for ($skeletonIndex = 0; $skeletonIndex < 8; $skeletonIndex++): ?>
                             <article class="drop-card products-skeleton-card">
@@ -371,9 +373,17 @@ require __DIR__ . '/../app/views/layout/head.php';
         const stopCatalogLoading = () => {
             catalogResults?.classList.remove("is-loading");
             catalogResults?.setAttribute("aria-busy", "false");
+            document.body.classList.remove("products-page-loading");
         };
 
-        window.addEventListener("pageshow", stopCatalogLoading);
+        window.addEventListener("load", () => {
+            window.setTimeout(stopCatalogLoading, 300);
+        }, { once: true });
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted) {
+                stopCatalogLoading();
+            }
+        });
 
         document.querySelectorAll(".catalog-search, .category-filter").forEach((form) => {
             if (form.matches(".catalog-search")) {

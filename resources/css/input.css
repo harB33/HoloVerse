@@ -1472,14 +1472,19 @@
     display: none;
   }
 
-  .products-catalog-results.is-loading .products-loading-skeleton {
+  .products-catalog-results.is-loading .products-loading-skeleton,
+  .products-page-loading .products-loading-skeleton {
     display: grid;
   }
 
   .products-catalog-results.is-loading
     > .drops-grid:not(.products-loading-skeleton),
+  .products-page-loading .products-catalog-results
+    > .drops-grid:not(.products-loading-skeleton),
   .products-catalog-results.is-loading > .all-products-pagination,
-  .products-catalog-results.is-loading > .all-products-empty {
+  .products-page-loading .products-catalog-results > .all-products-pagination,
+  .products-catalog-results.is-loading > .all-products-empty,
+  .products-page-loading .products-catalog-results > .all-products-empty {
     display: none;
   }
 
