@@ -141,7 +141,7 @@ if ($requestPath !== '/' && $requestPath !== '/home') {
 
 require_once __DIR__ . '/app/store.php';
 
-$featuredProducts = store_catalog_product_rows($conn, 10);
+$featuredProducts = store_catalog_product_rows($conn, limit: 10, randomize: true);
 $groupOrder = STORE_TALENT_FILTER_GROUP_SLUGS;
 $groupArraySql = "ARRAY['" . implode("','", $groupOrder) . "']::text[]";
 $groupsResult = $conn->query(

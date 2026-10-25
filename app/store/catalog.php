@@ -49,7 +49,7 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0): array
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false): array
 {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
@@ -92,7 +92,7 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                   ){$categoryWhere}{$searchWhere}
                 ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
             ) AS catalog_products
-            ORDER BY (catalog_products.stock_quantity > 0) DESC, catalog_products.product_id DESC";
+            ORDER BY (catalog_products.stock_quantity > 0) DESC, " . ($randomize ? 'RANDOM()' : 'catalog_products.product_id DESC');
     if ($search !== '') {
         $pattern = '%' . $search . '%';
     }
