@@ -108,6 +108,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script src="../assets/js/about-page.js?v=<?= filemtime(__DIR__ . '/../assets/js/about-page.js') ?>" defer></script>
 </body>
 
 </html>
