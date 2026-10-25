@@ -2903,7 +2903,7 @@
   }
 
   .about-principles article {
-    @apply flex gap-4 border-t border-[#dfe4e9] pt-4;
+    @apply flex gap-4 pt-4;
   }
 
   .about-principles article > span {
