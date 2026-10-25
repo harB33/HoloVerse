@@ -13,116 +13,94 @@ require __DIR__ . '/../app/views/layout/head.php';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="info-main">
-            <section class="page-intro">
-                <span class="eyebrow">Our story</span>
-                <h1>Built for fans who collect memories.</h1>
-                <p>holoverse is more than apparel and accessories — it is a celebration of the creators, communities, and moments that make each fan journey unforgettable. Every item is designed to bring a piece of the hololive energy into daily life, from limited-run apparel to display-ready collectibles.</p>
+        <main class="info-main about-main">
+            <section class="about-introduction" aria-labelledby="about-title">
+                <div class="about-intro-copy">
+                    <span class="about-kicker">About HoloVerse</span>
+                    <h1 id="about-title">For the fans who want to <em>keep the moment.</em></h1>
+                    <p>We built HoloVerse to make finding official hololive merchandise feel simple. Browse pieces inspired by the talents and moments you love, whether it’s something to wear or something for your shelf.</p>
+                    <div class="about-intro-links">
+                        <a href="../products">Browse the collection <span aria-hidden="true">↗</span></a>
+                        <a href="#about-team">Meet our team <span aria-hidden="true">↓</span></a>
+                    </div>
+                </div>
+                <figure class="about-feature">
+                    <img src="../assets/images/suisei2.jpg" alt="Illustration of Hoshimachi Suisei floating above Earth beneath a shooting star" fetchpriority="high">
+                    <figcaption><span>HoloVerse favorite</span><strong>Hoshimachi Suisei</strong></figcaption>
+                </figure>
             </section>
 
-            <section class="content-grid">
-                <article class="info-card">
-                    <span class="badge">Mission</span>
-                    <h2>Celebrate creativity</h2>
-                    <p>We curate thoughtful pieces inspired by the talent, culture, and community that define hololive. Our goal is to help fans showcase their love in a way that feels premium, personal, and collectible.</p>
-                </article>
+            <section class="about-story" aria-labelledby="about-story-title">
+                <span class="about-section-index">01 <span aria-hidden="true">/</span> WHY WE’RE HERE</span>
+                <div class="about-story-copy">
+                    <h2 id="about-story-title">A favorite moment deserves a place in your everyday.</h2>
+                    <p>A stream, a song, a character you keep coming back to—being a fan is made up of little moments like these. HoloVerse brings official merchandise into one place, so it’s easier to find the piece that feels like yours.</p>
+                </div>
+            </section>
 
-                <article class="info-card">
-                    <span class="badge">Quality</span>
-                    <h2>Made to stand out</h2>
-                    <p>Each collection balances bold design, comfort, and durable construction. We focus on materials, fit, and attention to detail so your favorite characters are represented with pride.</p>
+            <section class="about-principles" aria-label="How we approach the store">
+                <article>
+                    <span>01</span>
+                    <div>
+                        <h2>Find what you love</h2>
+                        <p>A considered catalog makes it easier to explore merchandise across talents and collections.</p>
+                    </div>
                 </article>
-
-                <article class="info-card">
-                    <span class="badge">Community</span>
-                    <h2>Created with fans</h2>
-                    <ul>
-                        <li>Limited runs and themed drops</li>
-                        <li>Exclusive apparel and accessories</li>
-                        <li>Collector-focused packaging and presentation</li>
-                    </ul>
+                <article>
+                    <span>02</span>
+                    <div>
+                        <h2>Keep it close</h2>
+                        <p>Wear it, display it, or save it for later—collecting is personal, and there’s no one way to do it.</p>
+                    </div>
+                </article>
+                <article>
+                    <span>03</span>
+                    <div>
+                        <h2>Built by fans</h2>
+                        <p>We’re a small team making a storefront for a community we’re glad to be part of.</p>
+                    </div>
                 </article>
             </section>
 
-            <section class="about-team" aria-labelledby="about-team-title">
-                <header class="about-team-header">
-                    <span class="eyebrow">The people behind HoloVerse</span>
-                    <h2 id="about-team-title">Meet the Team</h2>
-                    <p>A team working together to bring the HoloVerse store to life.</p>
+            <section class="about-team" id="about-team" aria-labelledby="about-team-title">
+                <header class="about-section-heading">
+                    <div>
+                        <span class="about-section-index">02 <span aria-hidden="true">/</span> THE PEOPLE</span>
+                        <h2 id="about-team-title">Meet the team.</h2>
+                    </div>
+                    <p>Four people working together to bring the HoloVerse store to life.</p>
                 </header>
-                <article class="about-team-card about-team-lead">
-                    <img class="about-team-photo" src="../assets/images/Wamil.png" alt="Jomari Wamil" loading="lazy" decoding="async">
-                    <h3>Jomari Wamil</h3>
-                    <p>Team Leader</p>
-                </article>
-                <div class="about-team-grid" aria-label="Development team">
+                <div class="about-team-grid">
                     <?php foreach ([
-                        [
-                            'name' => 'Harvy Bautista',
-                            'image' => '../Assets/images/harvy.png',
-                        ],
-                        [
-                            'name' => 'Jhon Rick Parica',
-                            'image' => '../Assets/images/parica.jpg',
-                        ],
-                        [
-                            'name' => 'John Rommel Patriarca',
-                            'image' => '../Assets/images/rommel.jpg',
-                        ],
+                        ['name' => 'Jomari Wamil', 'role' => 'Team lead', 'image' => '../assets/images/Wamil.png'],
+                        ['name' => 'Harvy Bautista', 'role' => 'Developer', 'image' => '../assets/images/harvy.png'],
+                        ['name' => 'Jhon Rick Parica', 'role' => 'Developer', 'image' => '../assets/images/parica.jpg'],
+                        ['name' => 'John Rommel Patriarca', 'role' => 'Developer', 'image' => '../assets/images/rommel.jpg'],
                     ] as $teamMember): ?>
-                        <article class="about-team-card">
-                            <?php if (!empty($teamMember['image'])): ?>
-                                <img class="about-team-photo" src="<?= store_escape($teamMember['image']) ?>" alt="<?= store_escape($teamMember['name']) ?>" loading="lazy" decoding="async">
-                            <?php else: ?>
-                                <div class="about-team-photo">Photo coming soon</div>
-                            <?php endif; ?>
+                        <article class="about-team-member">
+                            <img src="<?= store_escape($teamMember['image']) ?>" alt="<?= store_escape($teamMember['name']) ?>" loading="lazy" decoding="async">
                             <h3><?= store_escape($teamMember['name']) ?></h3>
-                            <p>Developer</p>
+                            <p><?= store_escape($teamMember['role']) ?></p>
                         </article>
                     <?php endforeach; ?>
                 </div>
             </section>
 
-            <section class="about-tech-stack" aria-labelledby="about-tech-stack-title">
-                <header class="about-tech-stack-header">
-                    <span class="eyebrow">Behind the store</span>
-                    <h2 id="about-tech-stack-title">The technology behind HoloVerse</h2>
-                    <p>We use a practical, modern web stack to power the catalog, account experience, and responsive storefront.</p>
-                </header>
-                <div class="about-tech-grid">
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-php.svg" alt="" loading="lazy" decoding="async">
-                        <h3>PHP</h3>
-                        <p>Server-rendered pages and store workflows.</p>
-                    </article>
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-postgresql.svg" alt="" loading="lazy" decoding="async">
-                        <h3>PostgreSQL</h3>
-                        <p>Supabase-hosted data for the catalog, accounts, carts, and orders.</p>
-                    </article>
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-tailwindcss.svg" alt="" loading="lazy" decoding="async">
-                        <h3>Tailwind CSS</h3>
-                        <p>Responsive styling and shared design utilities.</p>
-                    </article>
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-javascript.svg" alt="" loading="lazy" decoding="async">
-                        <h3>JavaScript</h3>
-                        <p>Interactive features in the browser.</p>
-                    </article>
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-html5.svg" alt="" loading="lazy" decoding="async">
-                        <h3>HTML5</h3>
-                        <p>Accessible structure for every page.</p>
-                    </article>
-                    <article class="about-tech-card">
-                        <img src="../assets/images/tech-css3.svg" alt="" loading="lazy" decoding="async">
-                        <h3>CSS3</h3>
-                        <p>Layouts, visual details, and responsive polish.</p>
-                    </article>
+            <section class="about-toolkit" aria-labelledby="about-toolkit-title">
+                <div class="about-toolkit-copy">
+                    <span class="about-section-index">03 <span aria-hidden="true">/</span> UNDER THE HOOD</span>
+                    <h2 id="about-toolkit-title">The tools we build with.</h2>
+                    <p>A practical web stack powers the catalog, accounts, carts, and storefront.</p>
+                </div>
+                <div class="about-tool-list" aria-label="Technologies used">
+                    <span><img src="../assets/images/tech-php.svg" alt="" loading="lazy" decoding="async">PHP</span>
+                    <span><img src="../assets/images/tech-postgresql.svg" alt="" loading="lazy" decoding="async">PostgreSQL</span>
+                    <span><img src="../assets/images/tech-tailwindcss.svg" alt="" loading="lazy" decoding="async">Tailwind CSS</span>
+                    <span><img src="../assets/images/tech-javascript.svg" alt="" loading="lazy" decoding="async">JavaScript</span>
+                    <span><img src="../assets/images/tech-html5.svg" alt="" loading="lazy" decoding="async">HTML5</span>
+                    <span><img src="../assets/images/tech-css3.svg" alt="" loading="lazy" decoding="async">CSS3</span>
                 </div>
             </section>
-
         </main>
     </div>
     <?php
