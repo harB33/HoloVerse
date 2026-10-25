@@ -8246,7 +8246,8 @@
     font-weight: var(--font-weight-semibold);
     color: #383f48;
   }
-  .checkout-address-form input {
+  .checkout-address-form input,
+  .checkout-address-form select {
     min-height: calc(var(--spacing) * 11);
     width: 100%;
     border-radius: var(--radius-lg);
@@ -8273,6 +8274,69 @@
     &:focus {
       --tw-ring-color: var(--color-sky-100);
     }
+  }
+  .checkout-address-form select:disabled {
+    cursor: wait;
+    background-color: #f8fafb;
+    color: #7b858f;
+  }
+  .checkout-location-status {
+    margin: 0px;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    color: #4e5965;
+  }
+  .checkout-location-status:empty {
+    display: none;
+  }
+  .checkout-location-status.is-error {
+    color: var(--color-red-700);
+  }
+  .checkout-location-autocomplete {
+    position: relative;
+    display: block;
+  }
+  .checkout-location-suggestions {
+    position: absolute;
+    top: 100%;
+    right: 0px;
+    left: 0px;
+    z-index: 50;
+    margin-top: calc(var(--spacing) * 1);
+    max-height: calc(var(--spacing) * 60);
+    overflow-y: auto;
+    border-radius: var(--radius-lg);
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+    border-color: #d8e0e7;
+    background-color: var(--color-white);
+    padding: calc(var(--spacing) * 1);
+    --tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .checkout-location-suggestions[hidden] {
+    display: none;
+  }
+  .checkout-location-suggestion {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    border-style: var(--tw-border-style);
+    border-width: 0px;
+    border-radius: var(--radius-md);
+    background-color: var(--color-white);
+    padding-inline: calc(var(--spacing) * 3);
+    padding-block: calc(var(--spacing) * 2);
+    text-align: left;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+    color: #1d2127;
+  }
+  .checkout-location-suggestion:hover,
+  .checkout-location-suggestion.is-active {
+    background-color: var(--color-sky-50);
   }
   .checkout-address-row {
     display: grid;

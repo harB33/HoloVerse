@@ -23,6 +23,7 @@ $shipping = [
     'address_line2' => (string) ($_POST['address_line2'] ?? $savedShipping['address_line2'] ?? ''),
     'city' => (string) ($_POST['city'] ?? $savedShipping['city'] ?? ''),
     'region' => (string) ($_POST['region'] ?? $savedShipping['region'] ?? ''),
+    'barangay' => (string) ($_POST['barangay'] ?? $savedShipping['barangay'] ?? ''),
     'postal_code' => (string) ($_POST['postal_code'] ?? $savedShipping['postal_code'] ?? ''),
     'country_code' => strtoupper((string) ($_POST['country_code'] ?? $savedShipping['country_code'] ?? 'PH')),
 ];
@@ -76,6 +77,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
             'address_line2' => 255,
             'city' => 100,
             'region' => 100,
+            'barangay' => 100,
             'postal_code' => 20,
         ];
         foreach ($limits as $field => $maxLength) {
@@ -89,6 +91,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
             $shipping['recipient_name'] === ''
             || $shipping['address_line1'] === ''
             || $shipping['city'] === ''
+            || $shipping['region'] === ''
+            || $shipping['barangay'] === ''
             || $shipping['postal_code'] === ''
             || !preg_match('/^[A-Z]{2}$/', $shipping['country_code'])
         )) {
@@ -140,6 +144,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                         ],
                         $items
                     );
+                    $receiptShipping = $shipping;
+                    $receiptShipping['address_line2'] = store_checkout_address_line2($shipping);
                     require_once __DIR__ . '/../phpmailer.php';
                     sendOrderReceipt(
                         (string) $account['email'],
@@ -148,7 +154,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                         $paymentMethod,
                         $order['currency'],
                         $receiptItems,
-                        $shipping,
+                        $receiptShipping,
                         0.0,
                         $order['tax']
                     );
@@ -288,22 +294,32 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </label>
                                 <div class="checkout-address-row">
                                     <label>
-                                        City
-                                        <input type="text" name="city" maxlength="100" required autocomplete="address-level2" value="<?= store_escape($shipping['city']) ?>">
+                                        Region / province
+                                        <span class="checkout-location-autocomplete">
+                                            <input type="text" id="checkout-region" name="region" required autocomplete="address-level1" aria-autocomplete="list" aria-controls="checkout-region-suggestions" aria-expanded="false" placeholder="Enter or select a region / province" value="<?= store_escape($shipping['region']) ?>">
+                                            <span id="checkout-region-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
+                                        </span>
                                     </label>
                                     <label>
-                                        Region / province
-                                        <input type="text" name="region" maxlength="100" autocomplete="address-level1" value="<?= store_escape($shipping['region']) ?>">
+                                        City
+                                        <span class="checkout-location-autocomplete">
+                                            <input type="text" id="checkout-city" name="city" required autocomplete="address-level2" aria-autocomplete="list" aria-controls="checkout-city-suggestions" aria-expanded="false" placeholder="Enter or select a city / municipality" value="<?= store_escape($shipping['city']) ?>">
+                                            <span id="checkout-city-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
+                                        </span>
                                     </label>
                                 </div>
+                                <p id="checkout-location-status" class="checkout-location-status" role="status" aria-live="polite"></p>
                                 <div class="checkout-address-row">
+                                    <label>
+                                        Barangay
+                                        <span class="checkout-location-autocomplete">
+                                            <input type="text" id="checkout-barangay" name="barangay" required autocomplete="address-line3" aria-autocomplete="list" aria-controls="checkout-barangay-suggestions" aria-expanded="false" placeholder="Enter or select a barangay" value="<?= store_escape($shipping['barangay']) ?>">
+                                            <span id="checkout-barangay-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
+                                        </span>
+                                    </label>
                                     <label>
                                         Postal code
                                         <input type="text" name="postal_code" maxlength="20" required autocomplete="postal-code" value="<?= store_escape($shipping['postal_code']) ?>">
-                                    </label>
-                                    <label>
-                                        Country code
-                                        <input type="text" name="country_code" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" required autocomplete="country" value="<?= store_escape($shipping['country_code']) ?>">
                                     </label>
                                 </div>
                                 <button class="cart-checkout-button" type="submit">Proceed to payment method</button>
@@ -388,6 +404,15 @@ require __DIR__ . '/../app/views/layout/head.php';
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
     <?php if ($orderNumber === '' && $items): ?>
+        <?php if ($checkoutStep === 'information'): ?>
+            <script
+                src="<?= store_escape($siteRoot) ?>assets/js/checkout-location-selects.js"
+                data-initial-region="<?= store_escape($shipping['region']) ?>"
+                data-initial-city="<?= store_escape($shipping['city']) ?>"
+                data-initial-barangay="<?= store_escape($shipping['barangay']) ?>"
+                defer
+            ></script>
+        <?php endif; ?>
         <script>
             const updateCheckoutHoldTimers = () => {
                 let expired = false;

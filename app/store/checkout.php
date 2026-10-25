@@ -10,6 +10,26 @@ function store_checkout_should_reserve_stock(string $paymentMethod): bool
     return $paymentMethod === 'cash_on_delivery';
 }
 
+function store_checkout_address_line2(array $shipping): string
+{
+    $barangay = trim((string) ($shipping['barangay'] ?? ''));
+    $addressLine2 = trim((string) ($shipping['address_line2'] ?? ''));
+    $barangayLine = $barangay === ''
+        ? ''
+        : (preg_match('/^barangay\b/i', $barangay) ? $barangay : 'Barangay ' . $barangay);
+    $lines = array_filter([
+        $barangayLine,
+        $addressLine2,
+    ]);
+    $formattedAddressLine2 = implode(', ', $lines);
+
+    if (strlen($formattedAddressLine2) > 255) {
+        throw new InvalidArgumentException('The barangay and apartment details exceed the address length limit.');
+    }
+
+    return $formattedAddressLine2;
+}
+
 function store_checkout_place_order(
     DatabaseConnection $conn,
     int $userId,
@@ -128,13 +148,14 @@ function store_checkout_place_order(
                 (order_id, address_type, recipient_name, address_line1, address_line2, city, region, postal_code, country_code)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
+        $addressLine2 = store_checkout_address_line2($shipping);
         $statement->bind_param(
             'issssssss',
             $orderId,
             $addressType,
             $shipping['recipient_name'],
             $shipping['address_line1'],
-            $shipping['address_line2'],
+            $addressLine2,
             $shipping['city'],
             $shipping['region'],
             $shipping['postal_code'],

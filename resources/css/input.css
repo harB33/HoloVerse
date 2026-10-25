@@ -3517,8 +3517,45 @@
     @apply grid gap-2 text-sm font-semibold text-[#383f48];
   }
 
-  .checkout-address-form input {
+  .checkout-address-form input,
+  .checkout-address-form select {
     @apply min-h-11 w-full rounded-lg border border-[#d8e0e7] bg-white px-3 py-2 text-sm font-normal text-[#1d2127] outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100;
+  }
+
+  .checkout-address-form select:disabled {
+    @apply cursor-wait bg-[#f8fafb] text-[#7b858f];
+  }
+
+  .checkout-location-status {
+    @apply m-0 text-sm text-[#4e5965];
+  }
+
+  .checkout-location-status:empty {
+    display: none;
+  }
+
+  .checkout-location-status.is-error {
+    @apply text-red-700;
+  }
+
+  .checkout-location-autocomplete {
+    @apply relative block;
+  }
+
+  .checkout-location-suggestions {
+    @apply absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-[#d8e0e7] bg-white p-1 shadow-lg;
+  }
+
+  .checkout-location-suggestions[hidden] {
+    display: none;
+  }
+
+  .checkout-location-suggestion {
+    @apply block w-full cursor-pointer rounded-md border-0 bg-white px-3 py-2 text-left text-sm font-normal text-[#1d2127] hover:bg-sky-50;
+  }
+
+  .checkout-location-suggestion.is-active {
+    @apply bg-sky-50;
   }
 
   .checkout-address-row {
