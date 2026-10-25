@@ -73,6 +73,52 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
     }, loginUrl ? 9000 : 5000);
 };
 
+const updateFavoritePagination = (count, pageSize) => {
+    const pagination = document.querySelector('[data-favorite-pagination]');
+    if (!pagination) {
+        return;
+    }
+
+    const currentUrl = new URL(window.location.href);
+    const pageCount = Math.max(1, Math.ceil(count / pageSize));
+    const currentPage = Math.min(
+        Number(currentUrl.searchParams.get('favorites_page')) || 1,
+        pageCount,
+    );
+
+    pagination.replaceChildren();
+    if (pageCount <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+
+    pagination.style.removeProperty('display');
+    if (currentPage > 1) {
+        const previous = document.createElement('a');
+        const previousUrl = new URL(currentUrl);
+        previousUrl.searchParams.set('favorites_page', String(currentPage - 1));
+        previous.href = previousUrl.href;
+        previous.rel = 'prev';
+        previous.textContent = 'Previous';
+        pagination.append(previous);
+    }
+
+    const pageLabel = document.createElement('span');
+    pageLabel.setAttribute('aria-current', 'page');
+    pageLabel.textContent = `Page ${currentPage} of ${pageCount}`;
+    pagination.append(pageLabel);
+
+    if (currentPage < pageCount) {
+        const next = document.createElement('a');
+        const nextUrl = new URL(currentUrl);
+        nextUrl.searchParams.set('favorites_page', String(currentPage + 1));
+        next.href = nextUrl.href;
+        next.rel = 'next';
+        next.textContent = 'Next';
+        pagination.append(next);
+    }
+};
+
 document.addEventListener('submit', async (event) => {
     const form = event.target instanceof Element
         ? event.target.closest('[data-favorite-form]')
@@ -116,20 +162,78 @@ document.addEventListener('submit', async (event) => {
         }
 
         const isFavorite = result.is_favorite === true;
-        if (!isFavorite && form.closest('.collector-showcase-card')) {
-            window.location.reload();
-            return;
-        }
         button.classList.toggle('is-favorite', isFavorite);
         button.setAttribute('aria-pressed', String(isFavorite));
         button.setAttribute('aria-label', `${isFavorite ? 'Remove' : 'Add'} ${result.product_name} ${isFavorite ? 'from' : 'to'} your Collector Showcase`);
         button.title = isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase';
         form.querySelector('input[name="action"]').value = isFavorite ? 'remove' : 'save';
+
+        const favoriteCount = Number(result.favorite_count);
+        if (Number.isFinite(favoriteCount)) {
+            const countLabel = document.querySelector('[data-favorite-count]');
+            if (countLabel) {
+                countLabel.textContent = `${favoriteCount} saved`;
+            }
+        }
+
+        const showcaseCard = form.closest('.collector-showcase-card');
+        if (!isFavorite && showcaseCard) {
+            const grid = showcaseCard.closest('[data-favorite-grid]');
+            showcaseCard.remove();
+            if (favoriteCount === 0) {
+                const emptyState = document.querySelector('[data-favorite-empty]');
+                if (grid) {
+                    grid.style.display = 'none';
+                }
+                if (emptyState) {
+                    emptyState.style.removeProperty('display');
+                }
+                const pagination = document.querySelector('[data-favorite-pagination]');
+                if (pagination) {
+                    pagination.style.display = 'none';
+                }
+            } else {
+                const pageSize = Number(result.favorite_page_size) || 10;
+                const pageCount = Math.max(1, Math.ceil(favoriteCount / pageSize));
+                const currentUrl = new URL(window.location.href);
+                const currentPage = Number(currentUrl.searchParams.get('favorites_page')) || 1;
+                if (grid && grid.children.length === 0 && currentPage > pageCount) {
+                    const nextPageUrl = new URL(currentUrl);
+                    if (pageCount > 1) {
+                        nextPageUrl.searchParams.set('favorites_page', String(pageCount));
+                    } else {
+                        nextPageUrl.searchParams.delete('favorites_page');
+                    }
+                    const pageResponse = await fetch(nextPageUrl, {
+                        headers: { Accept: 'text/html' },
+                        credentials: 'same-origin',
+                    });
+                    if (!pageResponse.ok) {
+                        throw new Error(`Unable to load your remaining favorites (HTTP ${pageResponse.status}).`);
+                    }
+                    const pageDocument = new DOMParser().parseFromString(await pageResponse.text(), 'text/html');
+                    const nextSection = pageDocument.querySelector('[aria-labelledby="collector-favorites-title"]');
+                    const currentSection = document.querySelector('[aria-labelledby="collector-favorites-title"]');
+                    if (!nextSection || !currentSection) {
+                        throw new Error('The updated favorites page was incomplete.');
+                    }
+                    currentSection.replaceWith(nextSection);
+                    window.history.replaceState({}, '', nextPageUrl);
+                } else {
+                    updateFavoritePagination(favoriteCount, pageSize);
+                }
+            }
+        }
+
         showCollectorFeedback(
             isFavorite ? 'Added to your Collector Showcase.' : 'Removed from your Collector Showcase.',
         );
     } catch (error) {
-        showCollectorFeedback('Could not reach the save service. Check your connection and try again.', '', 'error');
+        showCollectorFeedback(
+            error instanceof Error ? error.message : 'Could not reach the save service. Check your connection and try again.',
+            '',
+            'error',
+        );
         console.error('Collector Showcase update failed.', error);
     } finally {
         button.disabled = false;

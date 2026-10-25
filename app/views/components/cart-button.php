@@ -99,6 +99,16 @@
         color: #35d981;
     }
 
+    .cart-toast.is-error {
+        border-color: #f5c2c7;
+        background: #fff4f4;
+        color: #9f2634;
+    }
+
+    .cart-toast.is-error > svg {
+        color: #d94352;
+    }
+
     .cart-toast button {
         display: inline-flex;
         width: 28px;
@@ -146,18 +156,24 @@
         }
         const cartToast = document.querySelector('.cart-toast');
         const cartToastCloseButton = cartToast?.querySelector('button');
+        const cartToastMessage = cartToast?.querySelector('span');
         let cartToastTimeout;
 
-        const showCartToast = () => {
+        const showCartToast = (message, isError = false) => {
             if (!cartToast) {
                 return;
             }
 
             window.clearTimeout(cartToastTimeout);
+            cartToast.classList.toggle('is-error', isError);
+            cartToast.setAttribute('role', isError ? 'alert' : 'status');
+            if (cartToastMessage) {
+                cartToastMessage.textContent = message;
+            }
             cartToast.hidden = false;
             cartToastTimeout = window.setTimeout(() => {
                 cartToast.hidden = true;
-            }, 4000);
+            }, isError ? 6000 : 4000);
         };
 
         cartToastCloseButton?.addEventListener('click', () => {
@@ -166,7 +182,11 @@
         });
 
         const cartBaseUrl = (() => {
-            return <?= json_encode($siteRoot . 'cart', JSON_UNESCAPED_SLASHES) ?>;
+            const endpoint = new URL(<?= json_encode($siteRoot . 'cart', JSON_UNESCAPED_SLASHES) ?>, document.baseURI);
+            endpoint.pathname = endpoint.pathname.replace(/\/+$/, '');
+            endpoint.search = '';
+            endpoint.hash = '';
+            return endpoint;
         })();
 
         const formatCount = (count) => {
@@ -176,7 +196,9 @@
 
         const syncCartBadge = async () => {
             try {
-                const response = await fetch(`${cartBaseUrl}?mode=count`, {
+                const countUrl = new URL(cartBaseUrl);
+                countUrl.searchParams.set('mode', 'count');
+                const response = await fetch(countUrl, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                     },
@@ -186,7 +208,7 @@
                     return;
                 }
 
-                const payload = await response.json().catch(() => ({ count: 0 }));
+                const payload = await response.json();
                 const count = Number(payload?.count ?? 0);
                 const isVisible = count > 0;
 
@@ -198,13 +220,9 @@
             }
         };
 
-        document.querySelectorAll('form').forEach((form) => {
-            if (form.dataset.cartAjaxBound === 'true') {
-                return;
-            }
-
+        const matchesAddCartForm = (form) => {
             const formFields = [...form.querySelectorAll('button, input')];
-            const matchesAddCartForm = formFields.some((field) => {
+            return formFields.some((field) => {
                 const fieldName = (field.getAttribute('name') || '').toLowerCase();
                 const fieldValue = (field.getAttribute('value') || '').toLowerCase();
                 const textValue = (field.textContent || '').toLowerCase();
@@ -212,11 +230,9 @@
                     || (field.type === 'submit' && (fieldValue === 'add' || textValue.includes('add to cart')))
                     || (fieldName === 'action' && fieldValue.includes('add'));
             });
+        };
 
-            if (!matchesAddCartForm) {
-                return;
-            }
-
+        const ensureAddCartFields = (form) => {
             const ensureHiddenInput = (name, value) => {
                 let input = form.querySelector(`input[name="${name}"]`);
                 if (!input) {
@@ -235,51 +251,82 @@
                 const clonedToken = csrfToken.cloneNode(true);
                 form.appendChild(clonedToken);
             }
+        };
 
-            form.dataset.cartAjaxBound = 'true';
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
+        const updateCartBadge = (count) => {
+            const numericCount = Number(count) || 0;
+            const isVisible = numericCount > 0;
+            badge.textContent = formatCount(numericCount);
+            badge.hidden = !isVisible;
+            cartButton.classList.toggle('has-count', isVisible);
+        };
 
-                if (form.dataset.cartSubmitting === 'true') {
-                    return;
+        document.addEventListener('submit', async (event) => {
+            const form = event.target instanceof Element ? event.target.closest('form') : null;
+            if (!(form instanceof HTMLFormElement) || !matchesAddCartForm(form)) {
+                return;
+            }
+            event.preventDefault();
+
+            if (form.dataset.cartSubmitting === 'true') {
+                return;
+            }
+
+            ensureAddCartFields(form);
+            const submitButton = event.submitter instanceof HTMLButtonElement
+                ? event.submitter
+                : form.querySelector('button[type="submit"]') || form.querySelector('button');
+            if (!submitButton) {
+                return;
+            }
+
+            form.dataset.cartSubmitting = 'true';
+            const previousLabel = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Adding...';
+
+            try {
+                const formData = new FormData(form);
+                if (submitButton.name) {
+                    formData.set(submitButton.name, submitButton.value);
                 }
-
-                const submitButton = form.querySelector('button[type="submit"]') || form.querySelector('button');
-                if (!submitButton) {
-                    return;
-                }
-
-                form.dataset.cartSubmitting = 'true';
-                const previousLabel = submitButton.textContent;
-                submitButton.disabled = true;
-                submitButton.textContent = 'Adding...';
-
+                const response = await fetch(cartBaseUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                const responseText = await response.text();
+                let payload;
                 try {
-                    const formAction = form.getAttribute('action') || cartBaseUrl;
-                    const response = await fetch(formAction, {
-                        method: 'POST',
-                        body: new FormData(form),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-
-                    const payload = await response.json().catch(() => null);
-
-                    if (!response.ok || !payload?.success) {
-                        throw new Error(payload?.message || 'Unable to add item to cart.');
-                    }
-
-                    await syncCartBadge();
-                    showCartToast();
-                } catch (error) {
-                    console.warn(error.message || 'Unable to add item to cart.', error);
-                } finally {
-                    form.dataset.cartSubmitting = 'false';
-                    submitButton.disabled = false;
-                    submitButton.textContent = previousLabel;
+                    payload = JSON.parse(responseText);
+                } catch {
+                    throw new Error(
+                        response.ok
+                            ? 'The server returned an unexpected response while adding to your cart.'
+                            : `Unable to add item to cart (HTTP ${response.status}). Please try again.`
+                    );
                 }
-            });
+
+                if (!response.ok || !payload?.success) {
+                    throw new Error(payload?.message || 'Unable to add item to cart.');
+                }
+
+                if (payload.count !== undefined) {
+                    updateCartBadge(payload.count);
+                } else {
+                    await syncCartBadge();
+                }
+                showCartToast('Added to cart.');
+            } catch (error) {
+                console.error('Unable to add item to cart.', error);
+                showCartToast(error instanceof Error ? error.message : 'Unable to add item to cart.', true);
+            } finally {
+                form.dataset.cartSubmitting = 'false';
+                submitButton.disabled = false;
+                submitButton.textContent = previousLabel;
+            }
         });
 
         syncCartBadge();

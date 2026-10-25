@@ -83,10 +83,68 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($message === '') {
             if ($isAjaxRequest) {
                 header('Content-Type: application/json; charset=utf-8');
-                echo json_encode([
+                $response = [
                     'success' => true,
                     'count' => store_cart_item_count($conn, store_current_cart_id($conn, false)),
-                ]);
+                ];
+
+                if (in_array($action, ['update', 'remove'], true)) {
+                    $statement = $conn->prepare(
+                        'SELECT ci.cart_item_id, ci.quantity, v.price, v.currency,
+                                GREATEST(v.stock_quantity - COALESCE((
+                                    SELECT SUM(other.quantity)
+                                    FROM cart_items_tbl other
+                                    WHERE other.variant_id = v.variant_id
+                                      AND other.cart_id <> ci.cart_id
+                                      AND other.hold_expires_at > statement_timestamp()
+                                ), 0), 0) AS stock_quantity
+                         FROM cart_items_tbl ci
+                         INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
+                         WHERE ci.cart_id = ?
+                         ORDER BY ci.added_at DESC'
+                    );
+                    $statement->bind_param('i', $cartId);
+                    $statement->execute();
+                    $updatedItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+                    $statement->close();
+
+                    $responseItems = [];
+                    $responseSummaries = [];
+                    $responseQuantitiesByCurrency = [];
+                    $responseTotalQuantity = 0;
+                    foreach ($updatedItems as $item) {
+                        $currency = (string) $item['currency'];
+                        $quantity = (int) $item['quantity'];
+                        $lineSubtotal = round((float) $item['price'] * $quantity, 2);
+                        $responseSummaries[$currency]['subtotal'] = ($responseSummaries[$currency]['subtotal'] ?? 0) + $lineSubtotal;
+                        $responseSummaries[$currency]['tax'] = ($responseSummaries[$currency]['tax'] ?? 0) + store_calculate_sales_tax([$item]);
+                        $responseQuantitiesByCurrency[$currency] = ($responseQuantitiesByCurrency[$currency] ?? 0) + $quantity;
+                        $responseTotalQuantity += $quantity;
+                        $responseItems[] = [
+                            'id' => (int) $item['cart_item_id'],
+                            'quantity' => $quantity,
+                            'stock_quantity' => (int) $item['stock_quantity'],
+                            'line_total' => store_format_price($lineSubtotal),
+                        ];
+                    }
+
+                    $summaries = [];
+                    foreach ($responseSummaries as $currency => $summary) {
+                        $summaries[] = [
+                            'subtotal_label' => count($responseSummaries) > 1
+                                ? 'Subtotal (' . $currency . ') (' . $responseQuantitiesByCurrency[$currency] . ' items)'
+                                : 'Subtotal (' . $responseTotalQuantity . ' items)',
+                            'subtotal' => store_format_price($summary['subtotal']),
+                            'tax' => store_format_price($summary['tax']),
+                            'total' => store_format_price($summary['subtotal'] + $summary['tax']),
+                        ];
+                    }
+
+                    $response['items'] = $responseItems;
+                    $response['summaries'] = $summaries;
+                }
+
+                echo json_encode($response);
                 exit;
             }
             header('Location: cart');
@@ -156,7 +214,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
         <main class="cart-main">
             <?php if ($cartItems): ?>
-                <div class="cart-layout">
+                <div class="cart-layout" data-cart-layout>
                     <section class="cart-list-panel" aria-labelledby="cart-title">
                         <header class="cart-heading">
                             <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -178,7 +236,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                         <div class="cart-items">
                             <?php foreach ($cartItems as $item): ?>
-                                <article class="cart-item">
+                                <article class="cart-item" data-cart-item-id="<?= (int) $item['cart_item_id'] ?>">
                                     <div class="cart-item-image">
                                         <?php if ($item['image_url']): ?>
                                             <img src="<?= store_escape(store_asset_url($item['image_url'], '../')) ?>" alt="" loading="lazy">
@@ -231,7 +289,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                     <aside class="cart-summary-panel" aria-label="Order summary">
                         <h2>Order Summary</h2>
-                        <div class="cart-summary-list">
+                        <div class="cart-summary-list" data-cart-summary-list>
                             <?php foreach ($subtotals as $currency => $subtotal): ?>
                                 <div class="cart-summary-row">
                                     <span><?= count($subtotals) > 1 ? 'Subtotal (' . store_escape((string) $currency) . ') (' . $quantitiesByCurrency[$currency] . ' items)' : 'Subtotal (' . $totalQuantity . ' items)' ?></span>
@@ -247,12 +305,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <strong>Free</strong>
                             </div>
                         </div>
-                        <?php foreach ($subtotals as $currency => $subtotal): ?>
-                            <div class="cart-summary-total">
-                                <span>Total</span>
-                                <strong><?= store_escape(store_format_price($subtotal + $taxes[$currency])) ?></strong>
-                            </div>
-                        <?php endforeach; ?>
+                        <div data-cart-summary-totals>
+                            <?php foreach ($subtotals as $currency => $subtotal): ?>
+                                <div class="cart-summary-total">
+                                    <span>Total</span>
+                                    <strong><?= store_escape(store_format_price($subtotal + $taxes[$currency])) ?></strong>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                         <form action="cart" method="post">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="action" value="checkout">
@@ -261,33 +321,33 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </form>
                     </aside>
                 </div>
-            <?php else: ?>
-                <section class="cart-panel" aria-labelledby="cart-title">
-                    <header class="cart-heading">
-                        <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
-                            <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
-                            <circle cx="18" cy="20" r="2" />
-                            <circle cx="8" cy="20" r="2" />
-                        </svg>
-                        <h1 id="cart-title">Your cart is empty</h1>
-                    </header>
-                    <?php if ($message !== ''): ?>
-                        <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
-                    <?php endif; ?>
-                    <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
-                    <a class="cart-continue-button" href="products">
-                        Browse products
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M5 12h14" />
-                            <path d="m12 5 7 7-7 7" />
-                        </svg>
-                    </a>
-                </section>
             <?php endif; ?>
+            <section class="cart-panel" aria-labelledby="cart-empty-title" data-cart-empty<?= $cartItems ? ' style="display: none"' : '' ?>>
+                <header class="cart-heading">
+                    <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />
+                        <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" />
+                        <circle cx="18" cy="20" r="2" />
+                        <circle cx="8" cy="20" r="2" />
+                    </svg>
+                    <h1 id="cart-empty-title">Your cart is empty</h1>
+                </header>
+                <?php if ($message !== '' && !$cartItems): ?>
+                    <p class="cart-message" role="alert"><?= store_escape($message) ?></p>
+                <?php endif; ?>
+                <p class="cart-empty-message">Browse the current drops to find your next favorite.</p>
+                <a class="cart-continue-button" href="products">
+                    Browse products
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
+                    </svg>
+                </a>
+            </section>
         </main>
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script src="../Assets/js/cart-interactions.js?v=<?= filemtime(__DIR__ . '/../Assets/js/cart-interactions.js') ?>" defer></script>
     <?php if ($cartItems): ?>
         <script>
             const updateCartHoldTimers = () => {

@@ -299,7 +299,6 @@ require __DIR__ . '/../app/views/layout/head.php';
         const categoryFilter = document.querySelector(".category-filter");
         if (categoryFilter) {
             const categoryInput = categoryFilter.querySelector("#catalog-category");
-            const categoryBasePath = categoryFilter.dataset.catalogBasePath;
             const categoryTrigger = categoryFilter.querySelector("[data-category-trigger]");
             const categoryLabel = categoryFilter.querySelector("[data-category-label]");
             const categoryOptions = categoryFilter.querySelector("#catalog-category-options");
@@ -314,6 +313,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
                 option.addEventListener("click", () => {
                     categoryInput.value = option.dataset.categoryValue;
+                    const categoryBasePath = categoryFilter.dataset.catalogBasePath;
                     categoryFilter.action = option.dataset.categorySlug
                         ? `${categoryBasePath}/category/${encodeURIComponent(option.dataset.categorySlug)}`
                         : categoryBasePath;
@@ -365,11 +365,6 @@ require __DIR__ . '/../app/views/layout/head.php';
         }
 
         const catalogResults = document.querySelector(".products-catalog-results");
-        const startCatalogLoading = () => {
-            catalogResults?.classList.add("is-loading");
-            catalogResults?.setAttribute("aria-busy", "true");
-        };
-
         const stopCatalogLoading = () => {
             catalogResults?.classList.remove("is-loading");
             catalogResults?.setAttribute("aria-busy", "false");
@@ -385,6 +380,58 @@ require __DIR__ . '/../app/views/layout/head.php';
             }
         });
 
+        let updateCatalogResults;
+        const syncCatalogFilters = (url, searchTerm) => {
+            const generation = url.pathname.match(/\/generation\/([^/]+)/)?.[1] || "";
+            const categorySlug = url.pathname.match(/\/category\/([^/]+)/)?.[1] || "";
+            const catalogBasePath = `/products${generation ? `/generation/${generation}` : ""}`;
+            const catalogPath = `${catalogBasePath}${categorySlug ? `/category/${categorySlug}` : ""}`;
+            const categoryFilter = document.querySelector(".category-filter");
+            const searchForm = document.querySelector(".filter-panel-search");
+
+            if (categoryFilter) {
+                categoryFilter.dataset.catalogBasePath = catalogBasePath;
+                categoryFilter.action = catalogPath;
+                const selectedOption = [...categoryFilter.querySelectorAll("[data-category-option]")]
+                    .find((option) => (option.dataset.categorySlug || "") === categorySlug);
+                categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
+                    const selected = option === selectedOption || (!categorySlug && !option.dataset.categorySlug);
+                    option.classList.toggle("is-selected", selected);
+                    option.setAttribute("aria-selected", String(selected));
+                });
+                const categoryInput = categoryFilter.querySelector("#catalog-category");
+                if (categoryInput) {
+                    categoryInput.value = selectedOption?.dataset.categoryValue || "";
+                }
+                const categoryLabel = categoryFilter.querySelector("[data-category-label]");
+                if (categoryLabel) {
+                    categoryLabel.textContent = selectedOption?.textContent.trim() || "All Categories";
+                }
+            }
+
+            if (searchForm) {
+                searchForm.action = catalogPath;
+            }
+
+            document.querySelectorAll(".generation-filter-option").forEach((link) => {
+                const linkGeneration = link.dataset.generationSlug || "";
+                const linkBasePath = `/products${linkGeneration ? `/generation/${linkGeneration}` : ""}`;
+                const linkPath = `${linkBasePath}${categorySlug ? `/category/${categorySlug}` : ""}`;
+                const linkUrl = new URL(linkPath, window.location.origin);
+                if (searchTerm) {
+                    linkUrl.searchParams.set("search", searchTerm);
+                }
+                link.href = linkUrl.href;
+                const selected = linkGeneration === generation;
+                link.classList.toggle("is-active", selected);
+                if (selected) {
+                    link.setAttribute("aria-current", "true");
+                } else {
+                    link.removeAttribute("aria-current");
+                }
+            });
+        };
+
         document.querySelectorAll(".catalog-search, .category-filter").forEach((form) => {
             if (form.matches(".catalog-search")) {
                 const searchInput = form.querySelector('input[name="search"]');
@@ -393,18 +440,26 @@ require __DIR__ . '/../app/views/layout/head.php';
                     let activeController;
                     let requestId = 0;
 
-                    const updateCatalogSearch = async (page = 1) => {
+                    const updateCatalogSearch = async (route = form.action, page, historyMode = "replace") => {
                         const request = ++requestId;
                         activeController?.abort();
                         activeController = new AbortController();
                         catalogResults?.classList.add("is-loading");
                         catalogResults?.setAttribute("aria-busy", "true");
 
-                        const searchUrl = new URL(form.action, window.location.href);
-                        const params = new URLSearchParams(new FormData(form));
+                        const searchUrl = new URL(route, window.location.href);
+                        const requestedPage = page || Number(searchUrl.searchParams.get("page")) || 1;
+                        searchUrl.searchParams.delete("ajax");
+                        searchUrl.searchParams.delete("page");
+                        searchUrl.searchParams.delete("search");
+                        searchUrl.searchParams.delete("global_search");
+                        const searchTerm = searchInput.value.trim();
+                        if (searchTerm) {
+                            searchUrl.searchParams.set("search", searchTerm);
+                        }
+                        const params = searchUrl.searchParams;
                         params.set("ajax", "search");
-                        params.set("page", String(page));
-                        searchUrl.search = params.toString();
+                        params.set("page", String(requestedPage));
 
                         try {
                             const response = await fetch(searchUrl, { signal: activeController.signal });
@@ -421,6 +476,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             if (!nextResults || !nextCount || !catalogResults) {
                                 throw new Error("Product search returned incomplete results.");
                             }
+                            document.querySelector("[data-catalog-search-error]")?.remove();
                             const loadingSkeleton = catalogResults.querySelector(".products-loading-skeleton");
                             loadingSkeleton?.remove();
                             catalogResults.replaceChildren(
@@ -429,47 +485,35 @@ require __DIR__ . '/../app/views/layout/head.php';
                             );
                             document.querySelector("#all-products-count").textContent = nextCount.textContent;
 
-                            const currentUrl = new URL(window.location.href);
-                            const globalSearch = params.get("global_search")?.trim() || "";
-                            const searchTerm = searchInput.value.trim() || globalSearch;
+                            const currentUrl = new URL(searchUrl);
                             currentUrl.searchParams.delete("ajax");
-                            currentUrl.searchParams.delete("global_search");
                             currentUrl.searchParams.delete("page");
-                            currentUrl.searchParams.delete("search");
-                            params.delete("ajax");
-                            params.delete("page");
-                            for (const [name, value] of params) {
-                                if (name === "generation" || name === "category" || name === "global_search" || name === "search") {
-                                    continue;
-                                }
-                                if (value) {
-                                    currentUrl.searchParams.set(name, value);
-                                } else {
-                                    currentUrl.searchParams.delete(name);
-                                }
-                            }
-                            const generation = document.querySelector(".generation-filter-option[aria-current='true']")
-                                ?.dataset.generationSlug || "";
-                            const categorySlug = document.querySelector(".category-filter [data-category-option].is-selected")
-                                ?.dataset.categorySlug || "";
-                            currentUrl.pathname = searchTerm && !generation && !categorySlug
-                                ? `/products/${encodeURIComponent(searchTerm)}`
-                                : `/products${generation ? `/generation/${generation}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
-                            if (globalSearch && (generation || categorySlug)) {
-                                currentUrl.searchParams.set("global_search", globalSearch);
-                            } else if (searchTerm && (generation || categorySlug)) {
+                            if (searchTerm && !/\/(?:generation|category)\//.test(currentUrl.pathname)) {
+                                currentUrl.pathname = `/products/${encodeURIComponent(searchTerm)}`;
+                                currentUrl.searchParams.delete("search");
+                            } else if (searchTerm) {
                                 currentUrl.searchParams.set("search", searchTerm);
+                            } else {
+                                currentUrl.searchParams.delete("search");
                             }
-                            currentUrl.searchParams.delete("category");
-                            currentUrl.searchParams.delete("generation");
                             if (data.currentPage > 1) {
                                 currentUrl.searchParams.set("page", String(data.currentPage));
                             }
-                            window.history.replaceState({}, "", currentUrl);
+                            syncCatalogFilters(currentUrl, searchTerm);
+                            window.history[historyMode === "push" ? "pushState" : "replaceState"]({}, "", currentUrl);
                             initializeProductImages();
                         } catch (error) {
                             if (error.name !== "AbortError" && request === requestId) {
                                 console.error(error);
+                                let errorNotice = document.querySelector("[data-catalog-search-error]");
+                                if (!errorNotice) {
+                                    errorNotice = document.createElement("p");
+                                    errorNotice.className = "all-products-empty";
+                                    errorNotice.setAttribute("role", "alert");
+                                    errorNotice.dataset.catalogSearchError = "";
+                                    catalogResults?.before(errorNotice);
+                                }
+                                errorNotice.textContent = "Product results could not be updated. Please try again.";
                                 catalogResults?.setAttribute("aria-busy", "false");
                                 catalogResults?.classList.remove("is-loading");
                             }
@@ -480,6 +524,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             }
                         }
                     };
+                    updateCatalogResults = updateCatalogSearch;
 
                     form.addEventListener("input", (event) => {
                         if (event.target !== searchInput) {
@@ -488,35 +533,47 @@ require __DIR__ . '/../app/views/layout/head.php';
                         activeController?.abort();
                         requestId++;
                         window.clearTimeout(debounceTimer);
-                        debounceTimer = window.setTimeout(() => updateCatalogSearch(), 100);
+                        debounceTimer = window.setTimeout(() => updateCatalogSearch(form.action, 1), 100);
                     });
                     form.addEventListener("submit", (event) => {
                         event.preventDefault();
                         window.clearTimeout(debounceTimer);
-                        updateCatalogSearch();
+                        updateCatalogSearch(form.action, 1, "push");
                     });
                 }
             } else {
-                form.addEventListener("submit", startCatalogLoading);
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    updateCatalogResults?.(form.action, 1, "push");
+                });
             }
         });
 
-        document.querySelectorAll(".generation-filter-option, .all-products-pagination a, .catalog-search a").forEach((link) => {
-            link.addEventListener("click", (event) => {
-                if (
-                    event.defaultPrevented ||
-                    event.button !== 0 ||
-                    event.metaKey ||
-                    event.ctrlKey ||
-                    event.shiftKey ||
-                    event.altKey ||
-                    (link.target && link.target !== "_self")
-                ) {
-                    return;
+        document.addEventListener("click", (event) => {
+            const link = event.target instanceof Element
+                ? event.target.closest(".generation-filter-option, .all-products-pagination a, .filter-panel-search a")
+                : null;
+            if (!link || !updateCatalogResults || event.defaultPrevented
+                || event.button !== 0 || event.metaKey || event.ctrlKey
+                || event.shiftKey || event.altKey || (link.target && link.target !== "_self")) {
+                return;
+            }
+            event.preventDefault();
+            const linkUrl = new URL(link.href, window.location.href);
+            if (link.matches(".filter-panel-search a")) {
+                const searchInput = document.querySelector('.filter-panel-search input[name="search"]');
+                if (searchInput) {
+                    searchInput.value = linkUrl.searchParams.get("search")
+                        || linkUrl.searchParams.get("global_search")
+                        || "";
                 }
+            }
+            updateCatalogResults(linkUrl.href, Number(linkUrl.searchParams.get("page")) || 1, "push");
+        });
 
-                startCatalogLoading();
-            });
+        window.addEventListener("popstate", () => {
+            const currentUrl = new URL(window.location.href);
+            updateCatalogResults?.(currentUrl.href, Number(currentUrl.searchParams.get("page")) || 1);
         });
 
         const initializeProductImages = () => {

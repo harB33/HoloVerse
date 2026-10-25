@@ -338,15 +338,121 @@ require __DIR__ . '/../app/views/layout/head.php';
     </div>
 
     <script>
-        document.querySelectorAll(".drop-product-image").forEach((image) => {
-            const showInitialFallback = () => {
-                image.classList.add("hidden");
-                image.nextElementSibling?.classList.remove("hidden");
-            };
-            image.addEventListener("error", showInitialFallback, { once: true });
-            if (image.complete && image.naturalWidth === 0) {
-                showInitialFallback();
+        const initializeProductImages = (root = document) => {
+            root.querySelectorAll(".drop-product-image:not([data-image-initialized])").forEach((image) => {
+                image.dataset.imageInitialized = "true";
+                const showInitialFallback = () => {
+                    image.classList.add("hidden");
+                    image.nextElementSibling?.classList.remove("hidden");
+                };
+                image.addEventListener("error", showInitialFallback, { once: true });
+                if (image.complete && image.naturalWidth === 0) {
+                    showInitialFallback();
+                }
+            });
+        };
+
+        initializeProductImages();
+
+        let activeCatalogRequest;
+        let catalogRequestId = 0;
+        const updateTalentCatalog = async (url, historyMode = "push") => {
+            const requestId = ++catalogRequestId;
+            activeCatalogRequest?.abort();
+            activeCatalogRequest = new AbortController();
+            const currentLayout = document.querySelector(".talent-merch-layout");
+            currentLayout?.setAttribute("aria-busy", "true");
+
+            try {
+                const response = await fetch(url, {
+                    signal: activeCatalogRequest.signal,
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                });
+                if (!response.ok) {
+                    throw new Error(`Collection update failed with status ${response.status}.`);
+                }
+                const responseDocument = new DOMParser().parseFromString(await response.text(), "text/html");
+                const nextLayout = responseDocument.querySelector(".talent-merch-layout");
+                const nextCount = responseDocument.querySelector(".all-products-intro .all-products-count");
+                const currentCount = document.querySelector(".all-products-intro .all-products-count");
+                const intro = document.querySelector(".all-products-intro");
+                if (!nextLayout || !currentLayout || !intro) {
+                    throw new Error("The collection response was incomplete.");
+                }
+                if (requestId !== catalogRequestId) {
+                    return;
+                }
+
+                currentLayout.replaceWith(nextLayout);
+                if (nextCount) {
+                    if (currentCount) {
+                        currentCount.replaceWith(nextCount);
+                    } else {
+                        intro.insertBefore(nextCount, intro.querySelector(".products-promo-links"));
+                    }
+                } else {
+                    currentCount?.remove();
+                }
+
+                const responseUrl = new URL(response.url);
+                window.history[historyMode === "push" ? "pushState" : "replaceState"]({}, "", responseUrl);
+                initializeProductImages(nextLayout);
+                document.querySelector("[data-talent-catalog-error]")?.remove();
+            } catch (error) {
+                if (error.name === "AbortError" || requestId !== catalogRequestId) {
+                    return;
+                }
+                console.error("Unable to update the talent collection.", error);
+                let errorNotice = document.querySelector("[data-talent-catalog-error]");
+                if (!errorNotice) {
+                    errorNotice = document.createElement("p");
+                    errorNotice.className = "all-products-empty";
+                    errorNotice.setAttribute("role", "alert");
+                    errorNotice.dataset.talentCatalogError = "";
+                    document.querySelector(".talent-merch-layout")?.before(errorNotice);
+                }
+                errorNotice.textContent = "This collection could not be updated. Please try again.";
+            } finally {
+                if (requestId === catalogRequestId) {
+                    document.querySelector(".talent-merch-layout")?.removeAttribute("aria-busy");
+                }
             }
+        };
+
+        const formUrl = (form) => {
+            const url = new URL(form.action, window.location.href);
+            url.search = "";
+            for (const [name, value] of new FormData(form)) {
+                url.searchParams.set(name, value);
+            }
+            return url;
+        };
+
+        document.addEventListener("submit", (event) => {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)
+                || !form.matches(".talent-merch-filter-search, .product-page-size-form")) {
+                return;
+            }
+            event.preventDefault();
+            updateTalentCatalog(formUrl(form));
+        });
+
+        document.addEventListener("click", (event) => {
+            const link = event.target instanceof Element
+                ? event.target.closest(".talent-merch-filter a.generation-filter-option, .talent-merch-layout .all-products-pagination a")
+                : null;
+            if (!link || event.defaultPrevented || event.button !== 0
+                || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+                || (link.target && link.target !== "_self")) {
+                return;
+            }
+            event.preventDefault();
+            updateTalentCatalog(link.href);
+        });
+
+        window.addEventListener("popstate", () => {
+            updateTalentCatalog(window.location.href, "replace");
         });
 
         document.querySelector("#talent-product-limit")?.addEventListener("change", (event) => {
