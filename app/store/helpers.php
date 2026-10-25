@@ -32,7 +32,7 @@ function store_collector_showcase_url(): string
     $requestPath = is_string($requestPath) ? '/' . trim($requestPath, '/') : '';
 
     if (preg_match(
-        '~^(.*?)(?:/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector_showcase)/?$~',
+        '~^(.*?)(?:/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector_showcase|/(?:pages/)?flash[-_]sale(?:\.php)?)/?$~',
         $requestPath,
         $matches
     ) !== 1) {

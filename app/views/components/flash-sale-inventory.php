@@ -25,59 +25,111 @@ $flashSaleTabs = [
         <input id="flash-sale-search" type="search" placeholder="Search products, categories, or variants" autocomplete="off">
     </div>
 
-    <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live">
-        <?php foreach ($flashSaleTabs as $state => $tab): ?>
-            <?php foreach ($tab['products'] as $product): ?>
-                <?php
-                $stock = (int) $product['stock_quantity'];
-                $discountPercent = (int) round((1 - ((float) $product['price'] / (float) $product['compare_at_price'])) * 100);
-                $imageUrl = store_asset_url($product['image_url'] ?? 'assets/images/logo.png', '../');
-                ?>
-                <article class="vault-product-card" data-sale-state="<?= store_escape($state) ?>" data-search="<?= store_escape($product['product_name'] . ' ' . $product['category_name'] . ' ' . $product['variant_name']) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>">
-                    <div class="vault-product-visual">
-                        <span class="vault-series-tag"><?= store_escape($product['category_name']) ?></span>
-                        <span class="vault-product-meta"><?= store_escape($product['variant_name']) ?></span>
-                        <button class="vault-favorite" type="button" data-favorite-button aria-label="Save <?= store_escape($product['product_name']) ?>" aria-pressed="false">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
-                            </svg>
-                        </button>
-                        <img src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
-                        <div class="vault-stock-badge"><?= $stock === 1 ? 'ONLY 1 UNIT LEFT' : $stock . ' UNITS AVAILABLE' ?></div>
-                    </div>
-                    <div class="vault-product-info">
-                        <small><?= store_escape($product['category_name']) ?></small>
-                        <h3><?= store_escape($product['product_name']) ?></h3>
-                        <div class="vault-price-row">
-                            <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
-                            <span><?= store_escape(store_format_price((float) $product['compare_at_price'])) ?></span>
-                            <em><?= $discountPercent ?>% off</em>
+    <div class="flash-sale-carousel-controls" role="group" aria-label="Flash sale products carousel controls">
+        <button type="button" data-sale-previous aria-label="Show previous flash sale products" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+        <button type="button" data-sale-next aria-label="Show next flash sale products">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
+    </div>
+    <div class="flash-sale-carousel" data-sale-carousel>
+        <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live" tabindex="0" data-sale-track>
+            <?php foreach ($flashSaleTabs as $state => $tab): ?>
+                <?php foreach ($tab['products'] as $product): ?>
+                    <?php
+                    $stock = (int) $product['stock_quantity'];
+                    $discountPercent = (int) round((1 - ((float) $product['price'] / (float) $product['compare_at_price'])) * 100);
+                    $productImages = $flashSaleProductImages[(int) $product['product_id']] ?? [];
+                    if (!$productImages) {
+                        $productImages = [[
+                            'image_url' => store_asset_url($product['image_url'] ?? 'assets/images/logo.png', '../'),
+                            'alt_text' => $product['alt_text'] ?? $product['product_name'],
+                        ]];
+                    }
+                    $imageUrl = $productImages[0]['image_url'];
+                    $saleStartLabel = !empty($product['starts_at'])
+                        ? (new DateTimeImmutable($product['starts_at'], $flashSaleTimezone))->format('M j, g:i a')
+                        : '';
+                    $saleSelectionData = [
+                        'name' => $product['product_name'],
+                        'description' => $product['description'] ?? '',
+                        'category' => $product['category_name'],
+                        'variant' => $product['variant_name'],
+                        'stock' => $stock,
+                        'price' => store_format_price((float) $product['price']),
+                        'comparePrice' => store_format_price((float) $product['compare_at_price']),
+                        'discount' => $discountPercent,
+                        'state' => $state,
+                        'variantId' => (int) $product['variant_id'],
+                        'startsLabel' => $saleStartLabel,
+                        'startsAt' => !empty($product['starts_at'])
+                            ? (new DateTimeImmutable($product['starts_at'], $flashSaleTimezone))->format(DateTimeInterface::ATOM)
+                            : '',
+                        'endsAt' => !empty($product['ends_at'])
+                            ? (new DateTimeImmutable($product['ends_at'], $flashSaleTimezone))->format(DateTimeInterface::ATOM)
+                            : '',
+                        'images' => $productImages,
+                    ];
+                    ?>
+                    <article class="drop-card flash-sale-drop-card" data-sale-state="<?= store_escape($state) ?>" data-search="<?= store_escape($product['product_name'] . ' ' . $product['category_name'] . ' ' . $product['variant_name']) ?>" data-variant-id="<?= (int) $product['variant_id'] ?>" data-sale-select tabindex="0" aria-label="View details for <?= store_escape($product['product_name']) ?>" data-sale-product="<?= store_escape(json_encode($saleSelectionData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_THROW_ON_ERROR)) ?>">
+                    <div class="drop-art">
+                        <div class="drop-art-labels<?= $state === 'live' ? ' drop-art-labels-no-status' : '' ?>">
+                            <?php if ($state !== 'live'): ?>
+                                <span class="drop-status"><?= $state === 'archive' ? 'Sale ended' : 'Coming soon' ?></span>
+                            <?php endif; ?>
+                            <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                         </div>
-                        <div class="vault-stats-row">
-                            <span class="vault-stat <?= $stock <= 5 ? 'red' : 'blue' ?>"><?= $stock ?> in stock</span>
-                            <?php if ($state === 'starting' || $state === 'tomorrow'): ?>
-                                <?php $startTime = new DateTimeImmutable($product['starts_at'], new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila')); ?>
-                                <span class="vault-stat blue">Starts <?= store_escape($startTime->format('M j, g:i a')) ?></span>
-                            <?php elseif ($state === 'archive'): ?>
-                                <span class="vault-stat red">Sale ended</span>
+                        <?php require __DIR__ . '/collector-favorite-button.php'; ?>
+                        <img class="drop-product-image-backdrop" src="<?= store_escape($imageUrl) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                        <img class="drop-product-image" src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                        <div class="drop-character hidden"></div>
+                    </div>
+                    <div class="drop-details">
+                        <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
+                        <h3><?= store_escape($product['product_name']) ?></h3>
+                        <?php if (!empty($product['description'])): ?>
+                            <p class="drop-description"><?= store_escape($product['description']) ?></p>
+                        <?php else: ?>
+                            <p class="drop-description"></p>
+                        <?php endif; ?>
+                        <hr class="drop-allocation-divider">
+                        <div class="drop-purchase flash-sale-drop-purchase">
+                            <div>
+                                <span class="drop-price-label">Sale price</span>
+                                <div class="drop-price-row flash-sale-drop-price-row">
+                                    <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                    <del><?= store_escape(store_format_price((float) $product['compare_at_price'])) ?></del>
+                                    <em><?= $discountPercent ?>% off</em>
+                                </div>
+                                <div class="drop-allocation"><strong><?= $stock ?></strong><span>Left</span></div>
+                            </div>
+                            <?php if ($state === 'starting' || $state === 'tomorrow' || $state === 'archive'): ?>
+                                <div class="flash-sale-drop-status">
+                                    <?php if ($state === 'starting' || $state === 'tomorrow'): ?>
+                                        <?php $startTime = new DateTimeImmutable($product['starts_at'], new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila')); ?>
+                                        <span class="vault-stat blue">Starts <?= store_escape($startTime->format('M j, g:i a')) ?></span>
+                                    <?php else: ?>
+                                        <span class="vault-stat red">Sale ended</span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($state === 'live' && $stock > 0): ?>
+                                <form action="cart" method="post">
+                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
+                                    <button type="submit">Add to cart</button>
+                                </form>
                             <?php else: ?>
-                                <span class="vault-stat blue">Live now</span>
+                                <button type="button" disabled><?= $state === 'archive' ? 'Sale ended' : 'Not live yet' ?></button>
                             <?php endif; ?>
                         </div>
-                        <?php if ($state === 'live' && $stock > 0): ?>
-                            <form action="cart" method="post">
-                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="add">
-                                <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                <button class="vault-action-button" type="submit">ADD TO CART</button>
-                            </form>
-                        <?php else: ?>
-                            <button class="vault-action-button" type="button" disabled><?= $state === 'archive' ? 'SALE ENDED' : 'NOT LIVE YET' ?></button>
-                        <?php endif; ?>
                     </div>
-                </article>
+                    </article>
+                <?php endforeach; ?>
             <?php endforeach; ?>
-        <?php endforeach; ?>
+        </div>
     </div>
     <p class="vault-empty-state" data-sale-empty hidden></p>
 </section>

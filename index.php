@@ -18,6 +18,21 @@ if ($requestPath === '/home/') {
     exit;
 }
 
+if ($requestPath === '/flash_sale' || $requestPath === '/flash_sale/') {
+    $query = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+    $location = '/flash-sale' . (is_string($query) && $query !== '' ? '?' . $query : '');
+    header('Location: ' . $location, true, 308);
+    exit;
+}
+
+if ($requestPath === '/flash-sale' || $requestPath === '/flash-sale/') {
+    $_SERVER['SCRIPT_NAME'] = '/pages/flash_sale.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/flash_sale.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if (preg_match('~^/product/([^/]+)$~', $requestPath, $productRoute) === 1) {
     $_GET['slug'] = $productRoute[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/product.php';

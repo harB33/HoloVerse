@@ -37,11 +37,11 @@ $showRadarSignup = $showRadarSignup ?? false;
 
         <nav class="footer-links" aria-label="Merchandise links">
             <h3>Merchandise</h3>
-            <a href="<?= $siteRoot ?>flash_sale">Scale Figures (1/4, 1/7)</a>
-            <a href="<?= $siteRoot ?>flash_sale">Commemorative Box Sets</a>
-            <a href="<?= $siteRoot ?>flash_sale">Apparel &amp; Sukajan</a>
-            <a href="<?= $siteRoot ?>flash_sale">Acrylic Stands &amp; Keychains</a>
-            <a href="<?= $siteRoot ?>flash_sale">Official Plushies &amp; Mochiduru</a>
+            <a href="<?= $siteRoot ?>flash-sale">Scale Figures (1/4, 1/7)</a>
+            <a href="<?= $siteRoot ?>flash-sale">Commemorative Box Sets</a>
+            <a href="<?= $siteRoot ?>flash-sale">Apparel &amp; Sukajan</a>
+            <a href="<?= $siteRoot ?>flash-sale">Acrylic Stands &amp; Keychains</a>
+            <a href="<?= $siteRoot ?>flash-sale">Official Plushies &amp; Mochiduru</a>
         </nav>
 
         <nav class="footer-links" aria-label="Customer care links">

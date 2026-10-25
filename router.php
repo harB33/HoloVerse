@@ -21,6 +21,10 @@ if ($requestPath === '/index.php') {
     $redirectToCleanUrl('/home');
 }
 
+if (preg_match('~^/flash_sale/?$~', $requestPath) === 1) {
+    $redirectToCleanUrl('/flash-sale');
+}
+
 if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath, $matches) === 1
     && is_file(__DIR__ . '/pages/' . $matches[1] . '.php')) {
     $redirectToCleanUrl('/' . $matches[1]);
@@ -36,6 +40,10 @@ if ($requestPath === '/') {
     $scriptPath = __DIR__ . '/index.php';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
     $_SERVER['PHP_SELF'] = '/index.php';
+} elseif ($requestPath === '/flash-sale') {
+    $scriptPath = __DIR__ . '/pages/flash_sale.php';
+    $_SERVER['SCRIPT_NAME'] = '/pages/flash_sale.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/product/([^/]+)$~', $requestPath, $matches) === 1) {
     $scriptPath = __DIR__ . '/pages/product.php';
     $_GET['slug'] = $matches[1];

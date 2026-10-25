@@ -34,7 +34,7 @@ if (!store_flash_sale_table_exists($conn)) {
                         <li>Ask the database administrator to restore the table using the schema in <code>Database/holoverse.sql</code>.</li>
                         <li>Refresh this page after the table has been restored.</li>
                     </ol>
-                    <a class="mt-5 inline-flex rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-slate-900" href="flash_sale">Return to flash sales</a>
+                    <a class="mt-5 inline-flex rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white no-underline hover:bg-slate-900" href="flash-sale">Return to flash sales</a>
                 </section>
             </main>
         </div>
@@ -344,7 +344,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <h2 id="scheduled-drops-title">All flash sales</h2>
                         <p>Review pricing, inventory, timing, and status. Scheduled drops can be cancelled before they end.</p>
                     </div>
-                    <a class="flash-sale-secondary-action" href="flash_sale">View storefront <span aria-hidden="true">↗</span></a>
+                    <a class="flash-sale-secondary-action" href="flash-sale">View storefront <span aria-hidden="true">↗</span></a>
                 </div>
                 <div class="flash-sale-toolbar">
                     <label class="flash-sale-search" for="sale-search">

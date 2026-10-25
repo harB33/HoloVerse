@@ -22,6 +22,8 @@
     RewriteRule ^([A-Za-z0-9_-]+)/$ $1 [R=308,L]
 
     RewriteRule ^home/?$ index.php [L]
+    RewriteRule ^flash_sale/?$ flash-sale [R=308,L]
+    RewriteRule ^flash-sale/?$ pages/flash_sale.php [L,QSA]
 
     RewriteRule ^product/([^/]+)/?$ pages/product.php?slug=$1 [L,QSA]
     RewriteRule ^talent-merch/([^/]+)/([^/]+)/?$ pages/talent-merch.php?talent_slug=$1&category_slug=$2 [L,QSA]
