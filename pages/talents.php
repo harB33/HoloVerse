@@ -96,6 +96,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php endforeach; ?>
                         </div>
                         <p class="explore-empty hidden" role="status">No talents match your search and selected group.</p>
+                        <nav class="talent-pagination hidden" aria-label="Talent pages">
+                            <button type="button" data-talent-page-previous aria-label="Previous page">Previous</button>
+                            <span data-talent-page-status aria-live="polite"></span>
+                            <button type="button" data-talent-page-next aria-label="Next page">Next</button>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -109,31 +114,67 @@ require __DIR__ . '/../app/views/layout/head.php';
         const exploreEmpty = document.querySelector('.explore-empty');
         const talentSearch = document.querySelector('#talent-search');
         const talentSearchForm = document.querySelector('.talent-directory-search');
+        const talentPagination = document.querySelector('.talent-pagination');
+        const talentPageStatus = document.querySelector('[data-talent-page-status]');
+        const previousPageButton = document.querySelector('[data-talent-page-previous]');
+        const nextPageButton = document.querySelector('[data-talent-page-next]');
+        const talentsPerPage = 20;
+        let currentPage = 1;
         let selectedGeneration = 'all';
-        const updateTalentResults = () => {
+        const updateTalentResults = (resetPage = false) => {
+            if (resetPage) {
+                currentPage = 1;
+            }
+
             const query = talentSearch.value.trim().toLocaleLowerCase();
-            let visible = 0;
+            const matchingTalents = [];
             talentCards.forEach((link) => {
                 const card = link.querySelector('.talent-card');
                 const groups = card.dataset.generations.split(' ');
                 const matchesGeneration = selectedGeneration === 'all' || groups.includes(selectedGeneration);
                 const matchesSearch = card.textContent.toLocaleLowerCase().includes(query);
-                const show = matchesGeneration && matchesSearch;
-                link.classList.toggle('hidden', !show);
-                visible += Number(show);
+                if (matchesGeneration && matchesSearch) {
+                    matchingTalents.push(link);
+                }
+                link.classList.add('hidden');
             });
-            exploreEmpty.classList.toggle('hidden', visible > 0);
+
+            const pageCount = Math.ceil(matchingTalents.length / talentsPerPage);
+            currentPage = Math.min(currentPage, Math.max(pageCount, 1));
+            const pageStart = (currentPage - 1) * talentsPerPage;
+            matchingTalents.slice(pageStart, pageStart + talentsPerPage).forEach((link) => {
+                link.classList.remove('hidden');
+            });
+
+            exploreEmpty.classList.toggle('hidden', matchingTalents.length > 0);
+            talentPagination.classList.toggle('hidden', pageCount <= 1);
+            talentPageStatus.textContent = matchingTalents.length > 0
+                ? `Page ${currentPage} of ${pageCount}`
+                : '';
+            previousPageButton.disabled = currentPage <= 1;
+            nextPageButton.disabled = currentPage >= pageCount;
         };
         exploreFilters.forEach((filter) => filter.addEventListener('click', () => {
             selectedGeneration = filter.dataset.exploreFilter;
             exploreFilters.forEach((button) => button.setAttribute('aria-pressed', String(button === filter)));
-            updateTalentResults();
+            updateTalentResults(true);
         }));
-        talentSearch.addEventListener('input', updateTalentResults);
+        talentSearch.addEventListener('input', () => updateTalentResults(true));
         talentSearchForm.addEventListener('submit', (event) => {
             event.preventDefault();
+            updateTalentResults(true);
+        });
+        previousPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                updateTalentResults();
+            }
+        });
+        nextPageButton.addEventListener('click', () => {
+            currentPage += 1;
             updateTalentResults();
         });
+        updateTalentResults();
 
         document.querySelectorAll('.talent-photo').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');

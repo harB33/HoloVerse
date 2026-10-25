@@ -1233,6 +1233,14 @@
     @apply justify-start;
   }
 
+  .talent-pagination {
+    @apply mx-auto mt-8 flex max-w-[1440px] items-center justify-center gap-5 text-[12px] text-[#617184];
+  }
+
+  .talent-pagination button {
+    @apply rounded-md border border-[#d6e1ea] bg-white px-3 py-2 font-semibold text-[#087fa8] transition hover:border-[#1da3d8] hover:bg-[#f0faff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
   .talent-merch-filter-search {
     @apply mb-0 mt-0 max-w-none gap-1.5;
   }
@@ -1975,7 +1983,7 @@
   }
 
   .talent-grid {
-    @apply grid grid-cols-6 gap-[14px];
+    @apply grid grid-cols-4 gap-[14px];
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -1983,7 +1991,8 @@
 
   .talent-card-link {
     @apply block text-inherit no-underline;
-    flex: 0 1 calc((100% - 70px) / 6);
+    flex: 0 1 calc((100% - 42px) / 4);
+    max-width: 280px;
   }
 
   .talent-card-link:hover .talent-card,
