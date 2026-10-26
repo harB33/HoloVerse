@@ -1,29 +1,7 @@
 <?php
 $siteRoot = $siteRoot ?? '';
-$showRadarSignup = $showRadarSignup ?? false;
 ?>
 <footer class="footer">
-    <?php if ($showRadarSignup): ?>
-        <section class="radar-signup" aria-labelledby="radar-title">
-            <span class="radar-eyebrow">Holographic restock radar</span>
-            <h2 id="radar-title">Never Miss a 15-Minute Sold-Out Drop</h2>
-            <p>Sign up to receive 15-minute SMS &amp; email alerts prior to secret drops, anniversary commemoration<br class="radar-desktop-break"> merchandise releases, and warehouse clearance extras.</p>
-            <p class="radar-summary" id="radar-summary">Alerts are ready when you save your email.</p>
-            <form class="radar-form" id="radar-form">
-                <label class="sr-only" for="radar-email">Collector email address</label>
-                <input id="radar-email" name="email" type="email" autocomplete="email" placeholder="Enter your collector email address..." required>
-                <button type="submit">Join Radar Free</button>
-            </form>
-            <fieldset class="radar-preferences">
-                <legend class="sr-only">Choose drop alert categories</legend>
-                <label><input type="checkbox" name="branches[]" value="jp" checked> Hololive JP Drops</label>
-                <label><input type="checkbox" name="branches[]" value="en" checked> Hololive EN Drops</label>
-                <label><input type="checkbox" name="branches[]" value="dev-is"> DEV_IS Drops</label>
-            </fieldset>
-            <p class="radar-feedback" id="radar-feedback" role="status" aria-live="polite"></p>
-        </section>
-    <?php endif; ?>
-
     <div class="footer-main">
         <div class="footer-about">
             <a class="footer-brand" href="<?= $siteRoot ?>home#top" aria-label="HoloVerse Store home">

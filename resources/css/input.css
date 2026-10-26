@@ -2121,26 +2121,6 @@
     @apply relative z-10 bg-transparent px-6 pb-5 pt-12;
   }
 
-  .radar-signup {
-    @apply mx-auto mb-12 max-w-[1440px] rounded-[20px] border border-[#27364d] bg-[linear-gradient(115deg,#101829_0%,#07344d_56%,#101829_100%)] px-10 py-10 text-white;
-  }
-
-  .radar-eyebrow {
-    @apply mb-2 block font-montserrat text-[9px] font-bold uppercase tracking-[0.08em] text-[#13c5ed];
-  }
-
-  .radar-signup h2 {
-    @apply mb-1 mt-0 text-[clamp(24px,3vw,34px)] font-bold leading-tight;
-  }
-
-  .radar-signup > p:not(.radar-feedback) {
-    @apply mb-5 mt-0 max-w-[700px] text-[13px] leading-relaxed text-[#e3edf6];
-  }
-
-  .radar-summary {
-    @apply mb-3 mt-0 max-w-[700px] text-[11px] font-medium text-[#a7e9ff];
-  }
-
   .product-input-page {
     @apply min-h-screen bg-[#f4f7fb] text-[#172033];
   }
@@ -3645,38 +3625,6 @@
 
   .admin-status--draft {
     @apply bg-[#fef3c7] text-[#b45309];
-  }
-
-  .radar-desktop-break {
-    @apply inline;
-  }
-
-  .radar-form {
-    @apply flex max-w-[560px] gap-2;
-  }
-
-  .radar-form input[type="email"] {
-    @apply min-w-0 flex-1 rounded-xl border border-[#34445a] bg-[#1b293d] px-3 py-[10px] text-[12px] text-white placeholder:text-[#9aabc0] focus:border-[#10bde4] focus:outline-none focus:ring-2 focus:ring-[#10bde4]/30;
-  }
-
-  .radar-form button {
-    @apply flex-none cursor-pointer rounded-xl bg-[#06b9dc] px-4 py-[10px] text-[12px] font-bold text-white transition-colors hover:bg-[#089fbe] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67e5ff];
-  }
-
-  .radar-preferences {
-    @apply mt-3 flex flex-wrap gap-x-3 gap-y-2 border-0 p-0;
-  }
-
-  .radar-preferences label {
-    @apply flex cursor-pointer items-center gap-1.5 font-montserrat text-[9px] text-[#d4e0ed];
-  }
-
-  .radar-preferences input {
-    @apply size-3 accent-[#08bce9];
-  }
-
-  .radar-feedback {
-    @apply m-0 mt-2 min-h-4 text-[11px] text-[#9feaff];
   }
 
   .footer-main {
@@ -5497,14 +5445,6 @@
     @apply px-5 pt-8;
   }
 
-  .radar-signup {
-    @apply mb-8 rounded-2xl px-6 py-7;
-  }
-
-  .radar-desktop-break {
-    @apply hidden;
-  }
-
   .footer-bottom {
     @apply items-start flex-col;
   }
@@ -5550,14 +5490,6 @@
 
   .talent-card-link {
     flex-basis: calc((100% - 8px) / 2);
-  }
-
-  .radar-form {
-    @apply flex-col;
-  }
-
-  .radar-form button {
-    @apply self-start;
   }
 
   .footer-main {

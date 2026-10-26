@@ -286,7 +286,7 @@ require __DIR__ . '/app/views/layout/head.php';
             </div>
         </section>
 
-        <?php $showRadarSignup = true; require __DIR__ . '/app/views/components/site-footer.php'; ?>
+        <?php require __DIR__ . '/app/views/components/site-footer.php'; ?>
     </main>
 
     <script>
