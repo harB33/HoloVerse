@@ -6569,6 +6569,8 @@
 
   .collector-showcase-card {
     position: relative;
+    display: flex;
+    flex-direction: column;
     border: 1px solid #e1e8ed;
     border-radius: 12px;
     background: rgb(255 255 255 / 55%);
@@ -6665,6 +6667,9 @@
   }
 
   .collector-showcase-card-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     padding: 15px 3px 1px;
   }
 
@@ -6678,11 +6683,16 @@
   }
 
   .collector-showcase-card-copy h3 {
+    display: -webkit-box;
+    min-height: 2lh;
+    overflow: hidden;
     margin: 7px 0 5px;
     color: #111827;
     font:
       700 16px/1.35 "Montserrat",
       sans-serif;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .collector-showcase-card-copy p {
@@ -6698,14 +6708,19 @@
   }
 
   .collector-showcase-card-copy hr {
-    margin: 0 0 8px;
+    margin: auto 0 8px;
     border: 0;
     border-top: 1px solid #e4eaf0;
   }
 
+  .collector-showcase-card-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
   .collector-showcase-card-copy .collector-showcase-card-price-label {
-    display: block;
-    margin-bottom: 2px;
     color: #8394a7;
     font-size: 11px;
     letter-spacing: 0.05em;

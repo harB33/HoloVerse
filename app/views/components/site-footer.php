@@ -27,8 +27,8 @@ $siteRoot = $siteRoot ?? '';
             <a href="<?= $siteRoot ?>pre_order">Pre-Order Batch ETA Tracker</a>
             <a href="<?= $siteRoot ?>personalized">Shipping Rates &amp; Customs Info</a>
             <a href="<?= $siteRoot ?>personalized">Mint Condition Box Guarantee</a>
-            <a href="<?= $siteRoot ?>collector_showcase">Anti-Scalper Verification</a>
-            <a href="<?= $siteRoot ?>collector_showcase">NFC Chip Mobile Tap Support</a>
+            <a href="<?= $siteRoot ?>collector-showcase">Anti-Scalper Verification</a>
+            <a href="<?= $siteRoot ?>collector-showcase">NFC Chip Mobile Tap Support</a>
         </nav>
 
         <nav class="footer-links" aria-label="Corporate links">

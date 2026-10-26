@@ -119,6 +119,67 @@ const updateFavoritePagination = (count, pageSize) => {
     }
 };
 
+const loadFavoritePage = async (pageUrl, updateHistory = false) => {
+    const currentSection = document.querySelector('[aria-labelledby="collector-favorites-title"]');
+    if (!currentSection) {
+        return;
+    }
+
+    currentSection.setAttribute('aria-busy', 'true');
+    try {
+        const response = await fetch(pageUrl, {
+            headers: { Accept: 'text/html' },
+            credentials: 'same-origin',
+        });
+        if (!response.ok) {
+            throw new Error(`Unable to load favorites (HTTP ${response.status}).`);
+        }
+
+        const pageDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const nextSection = pageDocument.querySelector('[aria-labelledby="collector-favorites-title"]');
+        if (!nextSection) {
+            throw new Error('The requested favorites page was incomplete.');
+        }
+
+        currentSection.replaceWith(nextSection);
+        if (updateHistory) {
+            window.history.pushState({}, '', response.url);
+        }
+    } catch (error) {
+        showCollectorFeedback(
+            error instanceof Error ? error.message : 'Could not load favorites. Check your connection and try again.',
+            '',
+            'error',
+        );
+    } finally {
+        document.querySelector('[aria-labelledby="collector-favorites-title"]')?.removeAttribute('aria-busy');
+    }
+};
+
+document.addEventListener('click', (event) => {
+    const link = event.target instanceof Element
+        ? event.target.closest('[data-favorite-pagination] a[href]')
+        : null;
+    if (
+        !link ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        (link.target && link.target !== '_self')
+    ) {
+        return;
+    }
+
+    event.preventDefault();
+    loadFavoritePage(link.href, true);
+});
+
+window.addEventListener('popstate', () => {
+    loadFavoritePage(window.location.href);
+});
+
 document.addEventListener('submit', async (event) => {
     const form = event.target instanceof Element
         ? event.target.closest('[data-favorite-form]')

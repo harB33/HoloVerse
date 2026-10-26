@@ -25,6 +25,10 @@ if (preg_match('~^/flash_sale/?$~', $requestPath) === 1) {
     $redirectToCleanUrl('/flash-sale');
 }
 
+if (preg_match('~^/collector_showcase/?$~', $requestPath) === 1) {
+    $redirectToCleanUrl('/collector-showcase');
+}
+
 if (preg_match('~^/(?:pages/|Functions/)?([A-Za-z0-9_-]+)\.php$~i', $requestPath, $matches) === 1
     && is_file(__DIR__ . '/pages/' . $matches[1] . '.php')) {
     $redirectToCleanUrl('/' . $matches[1]);
@@ -43,6 +47,10 @@ if ($requestPath === '/') {
 } elseif ($requestPath === '/flash-sale') {
     $scriptPath = __DIR__ . '/pages/flash_sale.php';
     $_SERVER['SCRIPT_NAME'] = '/pages/flash_sale.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif ($requestPath === '/collector-showcase') {
+    $scriptPath = __DIR__ . '/pages/collector_showcase.php';
+    $_SERVER['SCRIPT_NAME'] = '/pages/collector_showcase.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/product/([^/]+)$~', $requestPath, $matches) === 1) {
     $scriptPath = __DIR__ . '/pages/product.php';

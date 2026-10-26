@@ -33,6 +33,21 @@ if ($requestPath === '/flash-sale' || $requestPath === '/flash-sale/') {
     exit;
 }
 
+if ($requestPath === '/collector_showcase' || $requestPath === '/collector_showcase/') {
+    $query = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+    $location = '/collector-showcase' . (is_string($query) && $query !== '' ? '?' . $query : '');
+    header('Location: ' . $location, true, 308);
+    exit;
+}
+
+if ($requestPath === '/collector-showcase' || $requestPath === '/collector-showcase/') {
+    $_SERVER['SCRIPT_NAME'] = '/pages/collector_showcase.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/collector_showcase.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if (preg_match('~^/product/([^/]+)$~', $requestPath, $productRoute) === 1) {
     $_GET['slug'] = $productRoute[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/product.php';

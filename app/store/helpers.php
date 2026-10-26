@@ -32,14 +32,14 @@ function store_collector_showcase_url(): string
     $requestPath = is_string($requestPath) ? '/' . trim($requestPath, '/') : '';
 
     if (preg_match(
-        '~^(.*?)(?:/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector_showcase|/(?:pages/)?flash[-_]sale(?:\.php)?)/?$~',
+        '~^(.*?)(?:/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector[-_]showcase|/(?:pages/)?flash[-_]sale(?:\.php)?)/?$~',
         $requestPath,
         $matches
     ) !== 1) {
         throw new RuntimeException('Unable to determine the Collector Showcase URL for this page.');
     }
 
-    return rtrim($matches[1], '/') . '/collector_showcase';
+    return rtrim($matches[1], '/') . '/collector-showcase';
 }
 
 function store_csrf_token(): string

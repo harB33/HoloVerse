@@ -13,7 +13,7 @@ $respondToFavoriteRequest = static function (array $payload, int $status = 200) 
     }
 
     $_SESSION['collector_showcase_notice'] = (string) ($payload['message'] ?? 'Your Collector Showcase was updated.');
-    header('Location: ' . ($status === 401 ? '/login' : '/collector_showcase'), true, 303);
+    header('Location: ' . ($status === 401 ? '/login' : '/collector-showcase'), true, 303);
     exit;
 };
 
@@ -174,8 +174,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <h3><?= store_escape($product['product_name']) ?></h3>
                                     <p><?= store_escape($product['description'] ?? '') ?></p>
                                     <hr>
-                                    <span class="collector-showcase-card-price-label">Price</span>
-                                    <strong class="collector-showcase-card-price"><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                    <div class="collector-showcase-card-price-row">
+                                        <span class="collector-showcase-card-price-label">Price</span>
+                                        <strong class="collector-showcase-card-price"><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
+                                    </div>
                                 </div>
                             </article>
                         <?php endforeach; ?>
@@ -189,11 +191,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <?php if ($favoritePageCount > 1): ?>
                         <nav class="collector-showcase-pagination" aria-label="Favorite product pages" data-favorite-pagination>
                             <?php if ($favoriteCurrentPage > 1): ?>
-                                <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage - 1 ?>" rel="prev">Previous</a>
+                                <a href="/collector-showcase?favorites_page=<?= $favoriteCurrentPage - 1 ?>" rel="prev">Previous</a>
                             <?php endif; ?>
                             <span aria-current="page">Page <?= $favoriteCurrentPage ?> of <?= $favoritePageCount ?></span>
                             <?php if ($favoriteCurrentPage < $favoritePageCount): ?>
-                                <a href="/collector_showcase?favorites_page=<?= $favoriteCurrentPage + 1 ?>" rel="next">Next</a>
+                                <a href="/collector-showcase?favorites_page=<?= $favoriteCurrentPage + 1 ?>" rel="next">Next</a>
                             <?php endif; ?>
                         </nav>
                     <?php else: ?>
