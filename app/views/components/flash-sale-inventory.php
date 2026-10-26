@@ -81,7 +81,7 @@ $flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', '
                         </div>
                         <?php require __DIR__ . '/collector-favorite-button.php'; ?>
                         <img class="drop-product-image-backdrop" src="<?= store_escape($imageUrl) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                        <img class="drop-product-image" src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                        <img class="drop-product-image is-active" src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                         <div class="drop-character hidden"></div>
                     </div>
                     <div class="drop-details">
