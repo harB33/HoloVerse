@@ -156,7 +156,7 @@ if ($requestPath !== '/' && $requestPath !== '/home') {
 
 require_once __DIR__ . '/app/store.php';
 
-$featuredProducts = store_catalog_product_rows($conn, limit: 10, randomize: true);
+$featuredProducts = store_catalog_product_rows($conn, limit: 10, randomize: true, includeImageGallery: true);
 $homeBanners = [
     ['image' => 'supernova.webp', 'alt' => 'hololive SuperNova REBOOT'],
     ['image' => 'azki_member.webp', 'alt' => 'AZKi members-only banner'],
@@ -241,6 +241,15 @@ require __DIR__ . '/app/views/layout/head.php';
               <div class="drops-grid drops-carousel-track" data-featured-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Featured products">
                 <?php foreach ($featuredProducts as $product): ?>
                     <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
+                    <?php
+                    $galleryImages = json_decode((string) ($product['gallery_images'] ?? '[]'), true);
+                    $galleryImages = is_array($galleryImages)
+                        ? array_values(array_filter($galleryImages, static fn ($image): bool => is_array($image) && !empty($image['image_url'])))
+                        : [];
+                    if ($galleryImages === [] && !empty($product['image_url'])) {
+                        $galleryImages[] = ['image_url' => $product['image_url'], 'alt_text' => $product['alt_text'] ?? $product['product_name']];
+                    }
+                    ?>
                     <article class="drop-card">
                         <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
                         <div class="drop-art">
@@ -250,11 +259,22 @@ require __DIR__ . '/app/views/layout/head.php';
                                 <?php endif; ?>
                                 <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
                             </div>
-                            <?php if (!empty($product['image_url'])): ?>
-                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'])) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'])) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                            <?php if ($galleryImages !== []): ?>
+                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url((string) $galleryImages[0]['image_url'])) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                <div class="drop-image-slideshow" data-drop-slideshow>
+                                    <?php foreach ($galleryImages as $imageIndex => $image): ?>
+                                        <img
+                                            class="drop-product-image<?= $imageIndex === 0 ? ' is-active' : '' ?>"
+                                            src="<?= store_escape(store_asset_url((string) $image['image_url'])) ?>"
+                                            alt="<?= store_escape((string) ($image['alt_text'] ?: $product['product_name'])) ?>"
+                                            <?= $imageIndex === 0 ? 'aria-hidden="false"' : 'aria-hidden="true"' ?>
+                                            loading="lazy"
+                                            decoding="async"
+                                        >
+                                    <?php endforeach; ?>
+                                </div>
                             <?php endif; ?>
-                            <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
+                            <div class="drop-character<?= $galleryImages !== [] ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                         </div>
                         <div class="drop-details">
                             <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
@@ -408,10 +428,71 @@ require __DIR__ . '/app/views/layout/head.php';
             updateBannerPagination();
         }
 
-        document.querySelectorAll('.drop-product-image').forEach((image) => image.addEventListener('error', () => {
-            image.classList.add('hidden');
-            image.nextElementSibling?.classList.remove('hidden');
-        }, { once: true }));
+        const reduceSlideshowMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        document.querySelectorAll('[data-drop-slideshow]').forEach((slideshow) => {
+            const images = Array.from(slideshow.querySelectorAll('.drop-product-image'));
+            const card = slideshow.closest('.drop-card');
+            const fallback = slideshow.closest('.drop-art')?.querySelector('.drop-character');
+            if (!card || images.length < 2) {
+                return;
+            }
+
+            let activeIndex = 0;
+            let cycleTimer = null;
+            const showNextImage = () => {
+                const availableImages = images.filter((image) => !image.classList.contains('hidden'));
+                if (availableImages.length === 0) {
+                    fallback?.classList.remove('hidden');
+                    return;
+                }
+                const activeImage = images[activeIndex];
+                const nextImage = availableImages.find((image) => images.indexOf(image) > activeIndex) ?? availableImages[0];
+                activeImage.classList.remove('is-active');
+                activeImage.setAttribute('aria-hidden', 'true');
+                activeIndex = images.indexOf(nextImage);
+                nextImage.classList.add('is-active');
+                nextImage.setAttribute('aria-hidden', 'false');
+            };
+            const startCycling = () => {
+                if (cycleTimer !== null || reduceSlideshowMotion.matches || document.hidden) {
+                    return;
+                }
+                cycleTimer = window.setInterval(showNextImage, 1600);
+            };
+            const stopCycling = () => {
+                if (cycleTimer !== null) {
+                    window.clearInterval(cycleTimer);
+                    cycleTimer = null;
+                }
+                images[activeIndex].classList.remove('is-active');
+                images[activeIndex].setAttribute('aria-hidden', 'true');
+                activeIndex = 0;
+                images[activeIndex].classList.add('is-active');
+                images[activeIndex].setAttribute('aria-hidden', 'false');
+            };
+
+            images.forEach((image, imageIndex) => image.addEventListener('error', () => {
+                image.classList.add('hidden');
+                if (imageIndex === activeIndex) {
+                    showNextImage();
+                }
+            }, { once: true }));
+            card.addEventListener('mouseenter', startCycling);
+            card.addEventListener('mouseleave', stopCycling);
+            card.addEventListener('focusin', startCycling);
+            card.addEventListener('focusout', (event) => {
+                if (!card.contains(event.relatedTarget)) {
+                    stopCycling();
+                }
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopCycling();
+                } else if (card.matches(':hover') || card.contains(document.activeElement)) {
+                    startCycling();
+                }
+            });
+        });
 
         const featuredTrack = document.querySelector('[data-featured-track]');
         const featuredPrevious = document.querySelector('[data-featured-previous]');

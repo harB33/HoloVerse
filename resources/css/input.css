@@ -1910,8 +1910,16 @@
     max-width: none;
   }
 
+  .drop-image-slideshow {
+    @apply absolute inset-0 z-[1];
+  }
+
   .drop-product-image {
-    @apply absolute inset-0 z-[1] size-full object-contain p-10;
+    @apply absolute inset-0 size-full object-contain p-10 opacity-0 transition-opacity duration-300;
+  }
+
+  .drop-product-image.is-active {
+    @apply opacity-100;
   }
 
   .drop-product-image-backdrop {

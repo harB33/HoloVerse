@@ -49,10 +49,15 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false): array
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false, bool $includeImageGallery = false): array
 {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
+    $imageGallerySelect = $includeImageGallery
+        ? ", (SELECT json_agg(json_build_object('image_url', gallery.image_url, 'alt_text', gallery.alt_text) ORDER BY gallery.sort_order, gallery.image_id)
+            FROM product_image_tbl gallery
+            WHERE gallery.product_id = p.product_id) AS gallery_images"
+        : '';
     $groupWhere = in_array($groupSlug, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
         : '';
@@ -77,7 +82,7 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                 SELECT DISTINCT ON (p.product_id)
                        p.product_id, p.product_name, p.description, p.is_preorder,
                        c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                       v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
+                       v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text{$imageGallerySelect}
                 FROM product_tbl p
                 INNER JOIN category_tbl c ON c.category_id = p.category_id
                 INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
