@@ -282,4 +282,21 @@ $headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
     </div>
 </header>
 </div>
+<script>
+    (() => {
+        const accountMenus = document.querySelectorAll(".account-menu");
+
+        document.addEventListener("click", (event) => {
+            if (!(event.target instanceof Node)) {
+                return;
+            }
+
+            accountMenus.forEach((menu) => {
+                if (menu.open && !menu.contains(event.target)) {
+                    menu.removeAttribute("open");
+                }
+            });
+        });
+    })();
+</script>
 <script src="<?= $siteRoot ?>Assets/js/live-flash-notice.js" defer></script>
