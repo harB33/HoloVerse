@@ -49,7 +49,7 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false, bool $includeImageGallery = false): array
+function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false, bool $includeImageGallery = false, int $relatedProductId = 0): array
 {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
@@ -62,6 +62,15 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
         : '';
     $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
+    $relatedProductWhere = $relatedProductId > 0
+        ? " AND EXISTS (
+            SELECT 1
+            FROM product_talents_tbl related_pt
+            INNER JOIN product_talents_tbl current_pt ON current_pt.talent_id = related_pt.talent_id
+            WHERE related_pt.product_id = p.product_id
+              AND current_pt.product_id = {$relatedProductId}
+        )"
+        : '';
     $searchWhere = '';
     if ($search !== '') {
         $searchWhere = " AND (
@@ -94,7 +103,7 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                       INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                       INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                       WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
-                  ){$categoryWhere}{$searchWhere}
+                  ){$categoryWhere}{$relatedProductWhere}{$searchWhere}
                 ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
             ) AS catalog_products
             ORDER BY (catalog_products.stock_quantity > 0) DESC, " . ($randomize ? 'RANDOM()' : 'catalog_products.product_id DESC');

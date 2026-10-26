@@ -6,11 +6,11 @@ $productSlug = is_string($productSlugInput) ? strtolower(trim($productSlugInput)
 $productId = $productSlug === '' ? filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) : null;
 $product = null;
 $variants = [];
-$talents = [];
 $images = [];
+$recommendedProducts = [];
 
 if ($productSlug !== '' || ($productId !== false && $productId !== null && $productId > 0)) {
-    $productQuery = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+    $productQuery = "SELECT p.product_id, p.product_name, p.description,
                             c.category_name
                      FROM product_tbl p
                      INNER JOIN category_tbl c ON c.category_id = p.category_id
@@ -104,18 +104,23 @@ if ($productSlug !== '' || ($productId !== false && $productId !== null && $prod
         $variants = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
         $statement->close();
 
-        $statement = $conn->prepare(
-            'SELECT t.talent_name, t.talent_slug
-             FROM talent_tbl t
-             INNER JOIN product_talents_tbl pt ON pt.talent_id = t.talent_id
-             WHERE pt.product_id = ?
-             ORDER BY t.talent_name'
-        );
-        $statement->bind_param('i', $productId);
-        $statement->execute();
-        $talents = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
-        $statement->close();
     }
+}
+
+if ($product) {
+    $currentProductId = (int) $product['product_id'];
+    $recommendedProducts = store_catalog_product_rows(
+        $conn,
+        limit: 20,
+        randomize: true,
+        includeImageGallery: true,
+        relatedProductId: $currentProductId
+    );
+    $recommendedProducts = array_values(array_filter(
+        $recommendedProducts,
+        static fn (array $recommendedProduct): bool => (int) $recommendedProduct['product_id'] !== $currentProductId
+    ));
+    $recommendedProducts = array_slice($recommendedProducts, 0, 8);
 }
 
 if (!$product || !$variants) {
@@ -212,7 +217,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-layout {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1.03fr);
-            align-items: start;
+            align-items: stretch;
             gap: clamp(36px, 6.8vw, 100px);
             border: 1px solid #e1e5e9;
             border-radius: 10px;
@@ -220,6 +225,21 @@ require __DIR__ . '/../app/views/layout/head.php';
             padding: clamp(18px, 2.2vw, 32px);
             box-shadow: 0 12px 34px rgba(25, 39, 52, 0.06);
         }
+
+        .product-recommendations { margin-top: 40px; }
+        .product-recommendations-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+        .product-recommendations-heading h2 { margin: 0; color: #111820; font-size: clamp(22px, 2.4vw, 30px); font-weight: 700; }
+        .product-recommendations-controls { display: flex; flex: 0 0 auto; gap: 8px; }
+        .product-recommendations-controls button { display: grid; width: 36px; height: 36px; cursor: pointer; place-items: center; border: 1px solid #d6e1ea; border-radius: 50%; background: #fff; color: #172033; transition: border-color .18s, color .18s; }
+        .product-recommendations-controls button:hover:not(:disabled) { border-color: #1da3d8; color: #087fa8; }
+        .product-recommendations-controls button:disabled { cursor: not-allowed; opacity: .4; }
+        .product-recommendations-controls button:focus-visible { outline: 2px solid #087fa8; outline-offset: 2px; }
+        .product-recommendations-controls svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+        .product-recommendations-track { display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .product-recommendations-track::-webkit-scrollbar { display: none; }
+        .product-recommendations-track > .drop-card { display: flex; flex: 0 0 calc((100% - 54px) / 4); min-width: 0; flex-direction: column; scroll-snap-align: start; }
+        .product-recommendations-track .drop-details { display: flex; flex: 1; flex-direction: column; }
+        .product-recommendations-track .drop-purchase { margin-top: auto; }
 
         .product-gallery { min-width: 0; }
 
@@ -329,7 +349,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         .product-gallery-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
 
-        .product-info { min-width: 0; padding: 12px 0 0; }
+        .product-info { display: flex; min-width: 0; flex-direction: column; padding: 12px 0 0; }
 
         .product-info-category {
             display: block;
@@ -337,18 +357,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             color: #718096;
             font: 700 10px/1.4 "Montserrat", sans-serif;
             letter-spacing: .11em;
-            text-transform: uppercase;
-        }
-
-        .product-preorder-badge {
-            display: inline-flex;
-            margin: 0 0 12px;
-            border-radius: 999px;
-            background: #e7f7fc;
-            padding: 6px 11px;
-            color: #087fa8;
-            font: 700 10px/1.2 "Montserrat", sans-serif;
-            letter-spacing: .08em;
             text-transform: uppercase;
         }
 
@@ -367,23 +375,6 @@ require __DIR__ . '/../app/views/layout/head.php';
             padding-bottom: 15px;
         }
 
-        .product-description-preview {
-            position: relative;
-            display: -webkit-box;
-            overflow: hidden;
-            margin: 0;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 3;
-            color: #303943;
-            font-size: 14px;
-            line-height: 1.7;
-            mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
-        }
-
-        .product-description-preview[hidden] {
-            display: none;
-        }
-
         .product-description-full {
             margin: 0 0 12px;
             color: #66717d;
@@ -391,33 +382,43 @@ require __DIR__ . '/../app/views/layout/head.php';
             line-height: 1.7;
         }
 
+        .product-description-full.is-collapsed {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+        }
+
         .product-description-toggle {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 4px;
             border: 0;
             background: transparent;
             padding: 0;
             cursor: pointer;
-            color: #303943;
-            font-size: 14px;
+            color: #526476;
+            font: 600 13px "Kanit", "Noto Sans JP", sans-serif;
         }
 
         .product-description-toggle::after {
-            content: "";
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            margin-bottom: 4px;
-            transform: rotate(45deg);
+            width: 6px;
+            height: 6px;
             border-right: 1.5px solid currentColor;
             border-bottom: 1.5px solid currentColor;
+            content: "";
+            transform: translateY(-2px) rotate(45deg);
             transition: transform .18s ease;
         }
-        .product-description-toggle[aria-expanded="true"]::after { transform: translateY(4px) rotate(225deg); }
+
+        .product-description-toggle[aria-expanded="true"]::after {
+            transform: translateY(2px) rotate(225deg);
+        }
+
         .product-description-toggle:hover { color: #087fa8; }
-        .product-description-toggle:focus-visible { outline: 2px solid #0ba9d0; outline-offset: 4px; }
+        .product-description-toggle:focus-visible { outline: 2px solid #087fa8; outline-offset: 3px; }
 
         .product-price-block {
             display: flex;
@@ -430,7 +431,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-current-price { color: #14191f; font: 700 clamp(26px, 2.2vw, 34px)/1.2 "Montserrat", sans-serif; }
         .product-compare-price { color: #9299a1; font: 500 15px "Montserrat", sans-serif; }
 
-        .product-purchase-form { display: grid; gap: 17px; padding-top: 16px; }
+        .product-purchase-form { display: flex; flex: 1; flex-direction: column; gap: 17px; padding-top: 16px; }
         .product-variant-picker { min-width: 0; margin: 0; border: 0; padding: 0; }
         .product-variant-picker legend { margin-bottom: 10px; color: #344253; font-size: 14px; font-weight: 500; }
         .product-variant-options {
@@ -472,23 +473,19 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-stock-status.is-sold-out { color: #b23a48; }
         .product-stock-status.is-sold-out span { background: #d74a58; }
 
-        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: 0; color: #12a9ce; }
+        .product-trust-note { display: flex; align-items: center; gap: 15px; margin: auto 0 0; color: #12a9ce; }
         .product-trust-note svg { flex: 0 0 38px; width: 38px; height: 38px; }
         .product-trust-note p { margin: 0; color: #425064; font-size: 14px; line-height: 1.45; }
 
         .product-purchase-actions { display: grid; grid-template-columns: 145px minmax(0, 1fr); gap: 16px; margin-top: 2px; }
-        .product-quantity-picker { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; min-height: 50px; overflow: hidden; border: 1px solid #cfd5db; border-radius: 999px; }
+        .product-quantity-picker { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; min-height: 50px; overflow: hidden; border: 1px solid #cfd5db; border-radius: 8px; }
         .product-quantity-picker button { cursor: pointer; color: #0b9fc5; font-size: 22px; }
         .product-quantity-picker input { width: 100%; min-width: 0; border: 0; outline: 0; text-align: center; color: #1c2530; font: 600 15px "Montserrat", sans-serif; -moz-appearance: textfield; }
         .product-quantity-picker input::-webkit-inner-spin-button,
         .product-quantity-picker input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
-        .product-add-button { display: flex; min-height: 52px; cursor: pointer; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 999px; background: #12a9ce; padding: 10px 18px; color: #fff; font: 700 14px "Montserrat", sans-serif; transition: background .18s, transform .18s; }
-        .product-add-button:hover:not(:disabled) { transform: translateY(-1px); background: #078cad; }
+        .product-add-button { display: flex; min-height: 48px; cursor: pointer; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: #19232d; padding: 10px 18px; color: #fff; font: 700 14px "Montserrat", sans-serif; box-shadow: none; transition: background-color 150ms ease; }
+        .product-add-button:hover:not(:disabled) { background: #087fa8; }
         .product-add-button:disabled { cursor: not-allowed; background: #aab5bd; }
-        .product-shipping-note, .product-talent-links { margin: 16px 0 0; color: #647386; font-size: 13px; line-height: 1.6; }
-        .product-talent-links.is-collapsed { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); }
-        .product-talent-links.is-expanded { display: block; mask-image: none; }
-        .product-talent-links a { color: #087fa8; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
         .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin: 0; color: #526476; font-size: 13px; line-height: 1.5; text-decoration: none; }
         .product-back-link svg { display: block; width: 14px; height: 14px; flex: 0 0 14px; }
         .product-back-link:hover { color: #087fa8; }
@@ -501,6 +498,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             .product-gallery-stage { height: clamp(320px, 42vw, 400px); }
             .product-gallery-thumbnail { flex-basis: 88px; height: 88px; }
             .product-purchase-actions { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
+            .product-recommendations-track > .drop-card { flex-basis: calc((100% - 18px) / 2); }
         }
 
         @media (max-width: 680px) {
@@ -515,9 +513,12 @@ require __DIR__ . '/../app/views/layout/head.php';
             .product-info-heading h1 { font-size: 27px; }
             .product-purchase-actions { grid-template-columns: 120px minmax(0, 1fr); }
             .product-trust-note p { font-size: 13px; }
+            .product-recommendations { margin-top: 40px; }
+            .product-recommendations-heading { margin-bottom: 14px; }
+            .product-recommendations-track > .drop-card { flex-basis: min(84%, 340px); }
         }
     </style>
-    <div class="page-shell preorder-page">
+    <div class="page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
@@ -566,6 +567,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 alt=""
                                 aria-hidden="true">
                             <span class="product-category-tag"><?= store_escape($product['category_name']) ?></span>
+                            <?php require __DIR__ . '/../app/views/components/collector-favorite-button.php'; ?>
                             <img
                                 class="product-gallery-main"
                                 src="<?= store_escape($defaultImageUrl) ?>"
@@ -593,24 +595,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <div class="product-info">
                         <div class="product-info-heading">
                             <span class="product-info-category"><?= store_escape($product['category_name']) ?></span>
-                            <?php if ((int) $product['is_preorder'] === 1): ?>
-                                <span class="product-preorder-badge">Pre-order</span>
-                            <?php endif; ?>
                             <div class="product-title-row">
                                 <h1 id="product-title"><?= store_escape($product['product_name']) ?></h1>
-                                <?php
-                                $favoriteFormModifier = 'collector-favorite-form--inline';
-                                require __DIR__ . '/../app/views/components/collector-favorite-button.php';
-                                unset($favoriteFormModifier);
-                                ?>
                             </div>
                         </div>
 
                         <?php if (!empty($product['description'])): ?>
                             <div class="product-description">
-                                <p class="product-description-preview" data-description-preview><?= nl2br(store_escape($product['description'])) ?></p>
-                                <p class="product-description-full" id="product-description-full" data-description-full hidden><?= nl2br(store_escape($product['description'])) ?></p>
-                                <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-description-full" data-description-toggle>View Full Product Description</button>
+                                <p class="product-description-full" id="product-description-full" data-product-description><?= nl2br(store_escape($product['description'])) ?></p>
+                                <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-description-full" data-description-toggle hidden>View Full Product Description</button>
                             </div>
                         <?php endif; ?>
 
@@ -676,33 +669,84 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <input type="number" name="quantity" value="1" min="1" max="<?= max(1, (int) $defaultVariant['stock_quantity']) ?>" inputmode="numeric" aria-label="Quantity" data-quantity-input>
                                     <button type="button" data-quantity-change="1" aria-label="Increase quantity">+</button>
                                 </div>
-                                <button class="product-add-button" type="submit" <?= (int) $defaultVariant['stock_quantity'] < 1 ? 'disabled' : '' ?> data-add-button data-in-stock-label="<?= (int) $product['is_preorder'] === 1 ? 'Add pre-order' : 'Add to cart' ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="m2 2 2 2 2.4 11.5a2 2 0 0 0 2 1.5h8.8a2 2 0 0 0 2-1.6L21 8H6" />
-                                        <circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" />
-                                    </svg>
-                                    <?= (int) $defaultVariant['stock_quantity'] > 0 ? ((int) $product['is_preorder'] === 1 ? 'Add pre-order' : 'Add to cart') : 'Sold out' ?>
+                                <button class="product-add-button" type="submit" <?= (int) $defaultVariant['stock_quantity'] < 1 ? 'disabled' : '' ?> data-add-button data-in-stock-label="Add to cart">
+                                    <?= (int) $defaultVariant['stock_quantity'] > 0 ? 'Add to cart' : 'Sold out' ?>
                                 </button>
                             </div>
                         </form>
 
-                        <?php if ((int) $product['is_preorder'] === 1): ?>
-                            <p class="product-shipping-note">
-                                <?= !empty($product['expected_ship_date']) ? 'Estimated dispatch: ' . store_escape(date('F Y', strtotime($product['expected_ship_date']))) : 'Estimated dispatch date to be announced' ?>
-                            </p>
-                        <?php endif; ?>
-                        <?php if ($talents): ?>
-                            <p class="product-talent-links is-collapsed" id="product-featured-talents" data-featured-talents>
-                                Featuring:
-                                <?php foreach ($talents as $index => $talent): ?>
-                                    <?php if ($index > 0): ?>, <?php endif; ?>
-                                    <a href="/talent-merch/<?= rawurlencode($talent['talent_slug']) ?>"><?= store_escape($talent['talent_name']) ?></a>
-                                <?php endforeach; ?>
-                            </p>
-                            <button class="product-description-toggle" type="button" aria-expanded="false" aria-controls="product-featured-talents" data-featured-talents-toggle>View All Featured Talents</button>
-                        <?php endif; ?>
                     </div>
                 </section>
+                <?php if ($recommendedProducts): ?>
+                    <section class="product-recommendations" aria-labelledby="product-recommendations-title">
+                        <div class="product-recommendations-heading">
+                            <h2 id="product-recommendations-title">You may also like</h2>
+                            <div class="product-recommendations-controls" role="group" aria-label="Recommended products carousel controls">
+                                <button type="button" data-recommendations-previous aria-label="Show previous recommended products" disabled>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                                </button>
+                                <button type="button" data-recommendations-next aria-label="Show next recommended products">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-recommendations-track" data-recommendations-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Recommended products">
+                            <?php foreach ($recommendedProducts as $recommendedProduct): ?>
+                                <?php
+                                $recommendationImages = json_decode((string) ($recommendedProduct['gallery_images'] ?? '[]'), true);
+                                $recommendationImage = is_array($recommendationImages) && isset($recommendationImages[0])
+                                    ? $recommendationImages[0]
+                                    : null;
+                                if (!$recommendationImage && !empty($recommendedProduct['image_url'])) {
+                                    $recommendationImage = [
+                                        'image_url' => $recommendedProduct['image_url'],
+                                        'alt_text' => $recommendedProduct['alt_text'] ?? $recommendedProduct['product_name'],
+                                    ];
+                                }
+                                $recommendationInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $recommendedProduct['product_name']), 0, 1));
+                                ?>
+                                <article class="drop-card">
+                                    <a class="drop-card-link" href="<?= store_escape(store_product_url($recommendedProduct['product_name'])) ?>" aria-label="View <?= store_escape($recommendedProduct['product_name']) ?>"></a>
+                                    <div class="drop-art">
+                                        <div class="drop-art-labels<?= (int) $recommendedProduct['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
+                                            <?php if ((int) $recommendedProduct['stock_quantity'] <= 0): ?>
+                                                <span class="drop-status">Sold out</span>
+                                            <?php endif; ?>
+                                            <span class="drop-edition"><?= store_escape($recommendedProduct['variant_name']) ?></span>
+                                        </div>
+                                        <?php
+                                        $favoriteButtonProduct = $recommendedProduct;
+                                        require __DIR__ . '/../app/views/components/collector-favorite-button.php';
+                                        unset($favoriteButtonProduct);
+                                        ?>
+                                        <?php if ($recommendationImage): ?>
+                                            <?php $recommendationImageUrl = store_asset_url((string) $recommendationImage['image_url'], '../'); ?>
+                                            <img class="drop-product-image-backdrop" src="<?= store_escape($recommendationImageUrl) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                                            <img class="drop-product-image is-active" src="<?= store_escape($recommendationImageUrl) ?>" alt="<?= store_escape((string) ($recommendationImage['alt_text'] ?: $recommendedProduct['product_name'])) ?>" loading="lazy" decoding="async">
+                                        <?php else: ?>
+                                            <div class="drop-character"><?= store_escape($recommendationInitial) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="drop-details">
+                                        <span class="drop-category"><?= store_escape($recommendedProduct['category_name']) ?></span>
+                                        <h3><?= store_escape($recommendedProduct['product_name']) ?></h3>
+                                        <p class="drop-description"><?= store_escape($recommendedProduct['description'] ?? '') ?></p>
+                                        <hr class="drop-allocation-divider">
+                                        <div class="drop-purchase">
+                                            <div>
+                                                <span class="drop-price-label">Price</span>
+                                                <div class="drop-price-row">
+                                                    <strong><?= store_escape(store_format_price((float) $recommendedProduct['price'])) ?></strong>
+                                                    <div class="drop-allocation"><strong><?= (int) $recommendedProduct['stock_quantity'] ?></strong><span>Left</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
             <?php else: ?>
                 <section class="product-not-found">
                     <h1>Product not found</h1>
@@ -787,28 +831,24 @@ require __DIR__ . '/../app/views/layout/head.php';
                     }
                 });
 
+                const productDescription = document.querySelector('[data-product-description]');
                 const descriptionToggle = document.querySelector('[data-description-toggle]');
-                const descriptionPreview = document.querySelector('[data-description-preview]');
-                const descriptionFull = document.querySelector('[data-description-full]');
-                descriptionToggle?.addEventListener('click', () => {
-                    const expanded = descriptionToggle.getAttribute('aria-expanded') !== 'true';
-                    descriptionToggle.setAttribute('aria-expanded', String(expanded));
-                    descriptionToggle.textContent = expanded
-                        ? 'Hide Full Product Description'
-                        : 'View Full Product Description';
-                    descriptionPreview.hidden = expanded;
-                    descriptionFull.hidden = !expanded;
-                });
-
-                const featuredTalents = document.querySelector('[data-featured-talents]');
-                const featuredTalentsToggle = document.querySelector('[data-featured-talents-toggle]');
-                featuredTalentsToggle?.addEventListener('click', () => {
-                    const expanded = featuredTalentsToggle.getAttribute('aria-expanded') !== 'true';
-                    featuredTalentsToggle.setAttribute('aria-expanded', String(expanded));
-                    featuredTalentsToggle.textContent = expanded ? 'Show Less' : 'View All Featured Talents';
-                    featuredTalents?.classList.toggle('is-collapsed', !expanded);
-                    featuredTalents?.classList.toggle('is-expanded', expanded);
-                });
+                if (productDescription && descriptionToggle) {
+                    productDescription.classList.add('is-collapsed');
+                    if (productDescription.scrollHeight > productDescription.clientHeight + 1) {
+                        descriptionToggle.hidden = false;
+                        descriptionToggle.addEventListener('click', () => {
+                            const expanded = descriptionToggle.getAttribute('aria-expanded') !== 'true';
+                            productDescription.classList.toggle('is-collapsed', !expanded);
+                            descriptionToggle.setAttribute('aria-expanded', String(expanded));
+                            descriptionToggle.textContent = expanded
+                                ? 'Hide Full Product Description'
+                                : 'View Full Product Description';
+                        });
+                    } else {
+                        productDescription.classList.remove('is-collapsed');
+                    }
+                }
 
                 const form = document.querySelector('[data-product-form]');
                 const variantInput = form.querySelector('[data-variant-input]');
@@ -854,6 +894,53 @@ require __DIR__ . '/../app/views/layout/head.php';
                     const maximum = Number(quantityInput.max) || 1;
                     quantityInput.value = String(Math.min(maximum, Math.max(1, Number(quantityInput.value) || 1)));
                 });
+
+                const recommendationsTrack = document.querySelector('[data-recommendations-track]');
+                const recommendationsPrevious = document.querySelector('[data-recommendations-previous]');
+                const recommendationsNext = document.querySelector('[data-recommendations-next]');
+                if (recommendationsTrack && recommendationsPrevious && recommendationsNext) {
+                    const updateRecommendationsControls = () => {
+                        const maxScroll = recommendationsTrack.scrollWidth - recommendationsTrack.clientWidth;
+                        recommendationsPrevious.disabled = recommendationsTrack.scrollLeft <= 1;
+                        recommendationsNext.disabled = recommendationsTrack.scrollLeft >= maxScroll - 1;
+                    };
+                    const scrollRecommendations = (direction) => {
+                        const card = recommendationsTrack.querySelector('.drop-card');
+                        if (!card) {
+                            return;
+                        }
+                        const gap = Number.parseFloat(getComputedStyle(recommendationsTrack).columnGap) || 0;
+                        recommendationsTrack.scrollBy({
+                            left: direction * (card.getBoundingClientRect().width + gap),
+                            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                        });
+                    };
+
+                    recommendationsPrevious.addEventListener('click', () => scrollRecommendations(-1));
+                    recommendationsNext.addEventListener('click', () => scrollRecommendations(1));
+                    recommendationsTrack.addEventListener('scroll', updateRecommendationsControls, { passive: true });
+                    recommendationsTrack.addEventListener('wheel', (event) => {
+                        let delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
+                            ? event.deltaY
+                            : event.deltaX;
+                        if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+                            delta *= 16;
+                        } else if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+                            delta *= recommendationsTrack.clientWidth;
+                        }
+                        const maxScroll = recommendationsTrack.scrollWidth - recommendationsTrack.clientWidth;
+                        const canScroll = delta > 0
+                            ? recommendationsTrack.scrollLeft < maxScroll - 1
+                            : recommendationsTrack.scrollLeft > 1;
+                        if (maxScroll <= 1 || delta === 0 || !canScroll) {
+                            return;
+                        }
+                        recommendationsTrack.scrollBy({ left: delta, behavior: 'smooth' });
+                        event.preventDefault();
+                    }, { passive: false });
+                    window.addEventListener('resize', updateRecommendationsControls);
+                    updateRecommendationsControls();
+                }
             })();
         </script>
     <?php endif; ?>
