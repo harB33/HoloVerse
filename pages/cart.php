@@ -322,7 +322,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </aside>
                 </div>
             <?php endif; ?>
-            <section class="cart-panel" aria-labelledby="cart-empty-title" data-cart-empty<?= $cartItems ? ' style="display: none"' : '' ?>>
+            <section class="cart-panel<?= $cartItems ? '' : ' cart-panel--empty' ?>" aria-labelledby="cart-empty-title" data-cart-empty<?= $cartItems ? ' style="display: none"' : '' ?>>
                 <header class="cart-heading">
                     <svg class="cart-panel-icon lucide lucide-shopping-cart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" />

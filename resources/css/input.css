@@ -4463,6 +4463,10 @@
     @apply flex w-full max-w-[900px] flex-col rounded-[18px] border border-[#edf0f2] bg-white px-6 py-7 shadow-[0_18px_38px_rgba(19,29,38,0.06)];
   }
 
+  .cart-panel--empty {
+    @apply mx-auto;
+  }
+
   .cart-list-panel {
     @apply rounded-[18px] border border-[#edf0f2] bg-white px-8 pb-2 pt-8 shadow-[0_18px_38px_rgba(19,29,38,0.06)];
   }
