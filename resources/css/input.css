@@ -1088,7 +1088,7 @@
   }
 
   .home-categories {
-    @apply mx-auto my-8 max-w-[1600px] px-[clamp(16px,3vw,48px)];
+    @apply mx-auto mt-20 mb-8 max-w-[1600px] px-[clamp(16px,3vw,48px)];
   }
 
   .home-categories-heading {
@@ -1104,7 +1104,7 @@
   }
 
   .home-categories-controls button {
-    @apply grid size-9 cursor-pointer place-items-center rounded-full border border-[#d6e1ea] bg-white text-[#172033] transition hover:border-[#1da3d8] hover:text-[#087fa8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-40;
+    @apply grid size-9 aspect-square cursor-pointer place-items-center rounded-full border border-[#d6e1ea] bg-white text-[#172033] transition hover:border-[#1da3d8] hover:text-[#087fa8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .home-categories-controls svg {

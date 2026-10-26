@@ -242,15 +242,11 @@ require __DIR__ . '/app/views/layout/head.php';
         <section class="home-categories" aria-labelledby="home-categories-title">
             <div class="home-categories-heading">
                 <h2 id="home-categories-title">Shop by category</h2>
-                <div class="home-categories-controls" aria-label="Category carousel controls">
-                    <button type="button" data-categories-previous aria-label="Show previous categories" disabled>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                    <button type="button" data-categories-next aria-label="Show next categories">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-                    </button>
-                </div>
             </div>
+            <div class="home-categories-controls" aria-label="Category carousel controls">
+                <button type="button" data-categories-previous aria-label="Show previous categories" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                </button>
             <div class="home-categories-track" data-categories-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Shop by category">
                 <?php foreach ($homeCategories as $category): ?>
                     <?php
@@ -301,6 +297,10 @@ require __DIR__ . '/app/views/layout/head.php';
                         <span><?= store_escape((string) $category['category_name']) ?></span>
                     </a>
                 <?php endforeach; ?>
+            </div>
+                <button type="button" data-categories-next aria-label="Show next categories">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                </button>
             </div>
         </section>
 
