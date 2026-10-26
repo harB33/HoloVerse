@@ -212,7 +212,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php foreach ($activeSearchQuery as $name => $value): ?>
                             <input type="hidden" name="<?= store_escape($name) ?>" value="<?= store_escape((string) $value) ?>">
                         <?php endforeach; ?>
-                        <input id="catalog-category" type="hidden" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
+                        <input id="catalog-category" type="hidden" name="category" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
                         <div class="category-filter-dropdown" data-category-dropdown>
                             <button class="category-filter-trigger" id="catalog-category-trigger" type="button" aria-expanded="false" aria-controls="catalog-category-options" data-category-trigger>
                                 <span data-category-label><?= $selectedCategory > 0

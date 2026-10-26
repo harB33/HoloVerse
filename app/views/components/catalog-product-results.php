@@ -14,7 +14,7 @@
                     </div>
                     <?php if (!empty($product['image_url'])): ?>
                         <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                        <img class="drop-product-image is-loading" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
+                        <img class="drop-product-image is-active is-loading" src="<?= store_escape(store_asset_url($product['image_url'], $siteRoot)) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
                     <?php endif; ?>
                     <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
                 </div>
