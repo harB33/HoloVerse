@@ -712,8 +712,27 @@ require __DIR__ . '/app/views/layout/head.php';
             featuredPrevious.addEventListener('click', () => scrollFeatured(-1));
             featuredNext.addEventListener('click', () => scrollFeatured(1));
             featuredTrack.addEventListener('scroll', updateFeaturedControls, { passive: true });
-            window.addEventListener('resize', updateFeaturedControls);
             const featuredCarousel = featuredTrack.closest('[data-featured-carousel]');
+            featuredCarousel?.addEventListener('wheel', (event) => {
+                let delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
+                    ? event.deltaY
+                    : event.deltaX;
+                if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+                    delta *= 16;
+                } else if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+                    delta *= featuredTrack.clientWidth;
+                }
+                const maxScroll = featuredTrack.scrollWidth - featuredTrack.clientWidth;
+                const canScroll = delta > 0
+                    ? featuredTrack.scrollLeft < maxScroll - 1
+                    : featuredTrack.scrollLeft > 1;
+                if (maxScroll <= 1 || delta === 0 || !canScroll) {
+                    return;
+                }
+                featuredTrack.scrollBy({ left: delta, behavior: 'smooth' });
+                event.preventDefault();
+            }, { passive: false });
+            window.addEventListener('resize', updateFeaturedControls);
             const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
             let carouselPaused = false;
             const pauseCarousel = () => {

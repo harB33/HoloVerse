@@ -1218,8 +1218,11 @@
     overscroll-behavior-x: contain;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: #aab8c4 transparent;
+    scrollbar-width: none;
+  }
+
+  .drops-carousel-track::-webkit-scrollbar {
+    display: none;
   }
 
   .drops-carousel-track > .drop-card {
