@@ -2674,6 +2674,67 @@
     padding: 12px;
 }
 
+.flash-sale-page .flash-stock-panel {
+    display: grid;
+    gap: 18px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+
+.flash-sale-page .flash-stock-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: #328260;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.flash-sale-page .flash-stock-status.is-unavailable {
+    color: #657a89;
+}
+
+.flash-sale-page .flash-stock-indicator {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: #35a879;
+}
+
+.flash-sale-page .flash-stock-status.is-unavailable .flash-stock-indicator {
+    background: #9aa8b2;
+}
+
+.flash-sale-page .flash-trust-note {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.flash-sale-page .flash-trust-note svg {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    color: #00a8d1;
+}
+
+.flash-sale-page .flash-trust-note p {
+    margin: 0;
+    color: #526476;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.flash-sale-page .flash-checkout-note {
+    margin-top: 14px;
+    font-size: 13px;
+}
+
 .flash-stock-top,
 .flash-stock-bottom {
     gap: 10px;
