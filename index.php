@@ -172,26 +172,19 @@ if ($requestPath !== '/' && $requestPath !== '/home') {
 require_once __DIR__ . '/app/store.php';
 
 $featuredProducts = store_catalog_product_rows($conn, limit: 10, randomize: true, includeImageGallery: true);
-$homeCategories = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name')->fetch_all(PDO::FETCH_ASSOC);
-$homeCategoryIcons = [
-    'figure' => 'figure',
-    'apparel' => 'apparel',
-    'box-set' => 'box-set',
-    'album-cd' => 'album-cd',
-    'plush' => 'plush',
-    'acrylic' => 'acrylic',
-    'blanket' => 'blanket',
-    'curtain' => 'curtain',
-    'blu-ray-dvd' => 'disc',
-    'digital-content' => 'digital',
-    'other' => 'other',
-    'badge' => 'badge',
-    'coaster' => 'coaster',
-    'book-pamphlet' => 'book',
-    'keychain' => 'keychain',
-    'mug' => 'mug',
-    'poster-print' => 'poster',
-];
+$homeCategories = $conn->query(
+    "SELECT c.category_id, c.category_name, sample.image_url
+     FROM category_tbl c
+     LEFT JOIN LATERAL (
+         SELECT i.image_url
+         FROM product_tbl p
+         INNER JOIN product_image_tbl i ON i.product_id = p.product_id
+         WHERE p.category_id = c.category_id AND p.status = 'active'
+         ORDER BY i.sort_order, p.created_at DESC, i.image_id
+         LIMIT 1
+     ) sample ON TRUE
+     ORDER BY c.category_name"
+)->fetch_all(PDO::FETCH_ASSOC);
 $homeBanners = [
     ['image' => 'supernova.webp', 'alt' => 'hololive SuperNova REBOOT'],
     ['image' => 'azki_member.webp', 'alt' => 'AZKi members-only banner'],
@@ -264,51 +257,12 @@ require __DIR__ . '/app/views/layout/head.php';
                 </button>
             <div class="home-categories-track" data-categories-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Shop by category">
                 <?php foreach ($homeCategories as $category): ?>
-                    <?php
-                    $categorySlug = store_category_slug((string) $category['category_name']);
-                    $categoryIcon = $homeCategoryIcons[$categorySlug] ?? 'other';
-                    ?>
                     <a class="home-category-card" href="/products?category=<?= (int) $category['category_id'] ?>">
-                        <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-                            <?php if ($categoryIcon === 'figure'): ?>
-                                <path d="M24 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z" /><path d="M15 24a9 9 0 0 1 18 0v3h-5l-1 13h-6l-1-13h-5v-3Z" />
-                            <?php elseif ($categoryIcon === 'apparel'): ?>
-                                <g transform="scale(2)">
-                                    <path vector-effect="non-scaling-stroke" d="M20.76 18.68H3.24A1.74 1.74 0 0 1 1.5 16.94a1.76 1.76 0 0 1 1-1.59L12 11.05l9.48 4.3a1.76 1.76 0 0 1 1 1.59 1.74 1.74 0 0 1-1.72 1.74Z" />
-                                    <path vector-effect="non-scaling-stroke" d="M12 11.05v-.26a2.53 2.53 0 0 1 1.13-2 1.91 1.91 0 1 0-3-1.54" />
-                                </g>
-                            <?php elseif ($categoryIcon === 'box-set'): ?>
-                                <path d="M7 15 24 7l17 8-17 9-17-9Z" /><path d="M7 15v19l17 8 17-8V15M24 24v18M15 11l17 8" />
-                            <?php elseif ($categoryIcon === 'album-cd'): ?>
-                                <circle cx="24" cy="24" r="18" /><circle cx="24" cy="24" r="5" /><circle cx="24" cy="24" r="1" /><path d="m27.5 21 8-8M20 28l-7 7" />
-                            <?php elseif ($categoryIcon === 'plush'): ?>
-                                <circle cx="15" cy="14" r="5" /><circle cx="33" cy="14" r="5" /><circle cx="24" cy="23" r="13" /><ellipse cx="24" cy="35" rx="11" ry="7" /><circle cx="20" cy="22" r="1" /><circle cx="28" cy="22" r="1" /><ellipse cx="24" cy="27" rx="3" ry="2" />
-                            <?php elseif ($categoryIcon === 'acrylic'): ?>
-                                <path d="M14 7h20l5 5v22l-5 5H14l-5-5V12l5-5Z" /><path d="M19 34V21a5 5 0 0 1 10 0v13m-5-18v3m-9 16h18" /><path d="m34 7 5 5" />
-                            <?php elseif ($categoryIcon === 'blanket'): ?>
-                                <path d="M9 12a5 5 0 0 1 5-5h25v28H14a5 5 0 0 0-5 5V12Z" /><path d="M9 17h30M9 24h30m-25 11v4m7-4v4m7-4v4m7-4v4" />
-                            <?php elseif ($categoryIcon === 'curtain'): ?>
-                                <path d="M6 10h36M10 12v29l14-8 14 8V12M14 13v23m20-23v23" /><circle cx="12" cy="9" r="1" /><circle cx="20" cy="9" r="1" /><circle cx="28" cy="9" r="1" /><circle cx="36" cy="9" r="1" />
-                            <?php elseif ($categoryIcon === 'disc'): ?>
-                                <rect x="7" y="8" width="23" height="32" rx="2" /><path d="M12 13h13v9H12z" /><circle cx="34" cy="29" r="10" /><circle cx="34" cy="29" r="2" /><path d="M34 19v8" />
-                            <?php elseif ($categoryIcon === 'digital'): ?>
-                                <rect x="7" y="10" width="34" height="26" rx="3" /><path d="M18 42h12m-6-6v6" /><path d="m21 17 10 6-10 6V17Z" />
-                            <?php elseif ($categoryIcon === 'badge'): ?>
-                                <circle cx="24" cy="19" r="12" /><circle cx="24" cy="19" r="7" /><path d="m16 29-3 14 11-6 11 6-3-14M24 14v10m-5-5h10" />
-                            <?php elseif ($categoryIcon === 'coaster'): ?>
-                                <circle cx="24" cy="24" r="18" /><path d="M17 18h11v9a6 6 0 0 1-12 0v-9Zm11 3h3a4 4 0 0 1 0 8h-4" /><path d="M19 14h9" />
-                            <?php elseif ($categoryIcon === 'book'): ?>
-                                <path d="M7 9a4 4 0 0 1 4-4h12v34H11a4 4 0 0 0-4 4V9Zm34 0a4 4 0 0 0-4-4H25v34h12a4 4 0 0 1 4 4V9Z" /><path d="M12 13h5m-5 6h5m11-6h8m-8 6h8" />
-                            <?php elseif ($categoryIcon === 'keychain'): ?>
-                                <circle cx="18" cy="14" r="9" /><circle cx="18" cy="14" r="4" /><path d="m24 20 13 13-7 7-13-13m7-7 5-5 7 7-5 5" />
-                            <?php elseif ($categoryIcon === 'mug'): ?>
-                                <path d="M8 17h27v15a9 9 0 0 1-9 9h-9a9 9 0 0 1-9-9V17Zm27 4h4a5 5 0 0 1 0 10h-4M15 8c-2 3 2 4 0 7m8-9c-2 3 2 4 0 7m8-5c-2 3 2 4 0 7" />
-                            <?php elseif ($categoryIcon === 'poster'): ?>
-                                <path d="M10 6h28v36H10z" /><path d="M15 34h18M16 30l7-8 5 5 4-6 3 9H16Z" /><circle cx="21" cy="17" r="2" />
-                            <?php else: ?>
-                                <path d="m24 5 4.5 10 11 1.5-8 7.5 2 11-9.5-5.5-9.5 5.5 2-11-8-7.5 11-1.5L24 5Z" /><path d="M8 42h32" />
+                        <span class="home-category-image<?= empty($category['image_url']) ? ' is-unavailable' : '' ?>" aria-hidden="true">
+                            <?php if (!empty($category['image_url'])): ?>
+                                <img src="<?= store_escape(store_asset_url((string) $category['image_url'])) ?>" alt="" loading="lazy" decoding="async">
                             <?php endif; ?>
-                        </svg>
+                        </span>
                         <span><?= store_escape((string) $category['category_name']) ?></span>
                     </a>
                 <?php endforeach; ?>
@@ -414,6 +368,18 @@ require __DIR__ . '/app/views/layout/head.php';
         const categoriesPrevious = document.querySelector('[data-categories-previous]');
         const categoriesNext = document.querySelector('[data-categories-next]');
         if (categoriesTrack && categoriesPrevious && categoriesNext) {
+            categoriesTrack.addEventListener('error', (event) => {
+                if (!(event.target instanceof HTMLImageElement) || !event.target.matches('.home-category-image img')) {
+                    return;
+                }
+
+                const imageContainer = event.target.closest('.home-category-image');
+                if (imageContainer) {
+                    imageContainer.classList.add('is-unavailable');
+                }
+                event.target.remove();
+            }, true);
+
             const updateCategoryControls = () => {
                 const maxScroll = categoriesTrack.scrollWidth - categoriesTrack.clientWidth;
                 categoriesPrevious.disabled = categoriesTrack.scrollLeft <= 1;

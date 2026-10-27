@@ -116,16 +116,71 @@ require __DIR__ . '/../app/views/layout/head.php';
             <?php else: ?>
                 <div class="order-history-list">
                     <?php foreach ($orders as $order): ?>
+                        <?php
+                        $statusKey = strtolower($order['status']);
+                        $progressSteps = ['Order placed', 'Processing', 'Shipped', 'Delivered'];
+                        $statusSteps = [
+                            'pending_payment' => 0,
+                            'pending' => 0,
+                            'processing' => 1,
+                            'shipped' => 2,
+                            'in_transit' => 2,
+                            'delivered' => 3,
+                        ];
+                        $isOrderClosed = in_array($statusKey, ['cancelled', 'canceled', 'refunded'], true);
+                        $activeStep = $statusSteps[$statusKey] ?? 0;
+                        ?>
                         <article class="order-history-card">
                             <header class="order-history-card-heading">
                                 <div>
-                                    <span class="order-history-label">Order</span>
+                                    <span class="order-history-label">Order placed</span>
                                     <h2><?= store_escape($order['order_number']) ?></h2>
                                     <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($order['created_at']))) ?>"><?= store_escape(date('M j, Y', strtotime($order['created_at']))) ?></time>
                                 </div>
                                 <span class="order-history-status"><?= store_escape(ucwords(str_replace('_', ' ', $order['status']))) ?></span>
                             </header>
 
+                            <div class="order-history-delivery">
+                                <section class="order-history-address">
+                                    <h3>Delivery address</h3>
+                                    <?php if ($order['recipient_name'] !== ''): ?>
+                                        <p>
+                                            <strong><?= store_escape($order['recipient_name']) ?></strong><br>
+                                            <?= store_escape($order['address_line1']) ?>
+                                            <?= $order['address_line2'] !== '' ? '<br>' . store_escape($order['address_line2']) : '' ?><br>
+                                            <?= store_escape(implode(', ', array_filter([$order['city'], $order['region'], $order['postal_code']]))) ?><br>
+                                            <?= store_escape($order['country_code']) ?>
+                                        </p>
+                                    <?php else: ?>
+                                        <p>Shipping address unavailable.</p>
+                                    <?php endif; ?>
+                                </section>
+                                <section class="order-history-progress" aria-label="Order progress">
+                                    <h3>Delivery status</h3>
+                                    <?php if ($isOrderClosed): ?>
+                                        <p class="order-history-progress-closed">This order is <?= store_escape(str_replace('_', ' ', $statusKey)) ?>.</p>
+                                    <?php else: ?>
+                                        <ol class="order-history-timeline">
+                                            <?php foreach ($progressSteps as $stepIndex => $stepLabel): ?>
+                                                <?php $stepClass = $stepIndex < $activeStep ? 'is-complete' : ($stepIndex === $activeStep ? 'is-current' : ''); ?>
+                                                <li class="<?= $stepClass ?>"<?= $stepIndex === $activeStep ? ' aria-current="step"' : '' ?>>
+                                                    <span class="order-history-timeline-marker" aria-hidden="true"></span>
+                                                    <span class="order-history-timeline-copy">
+                                                        <strong><?= store_escape($stepLabel) ?></strong>
+                                                        <?php if ($stepIndex === 0): ?>
+                                                            <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($order['created_at']))) ?>"><?= store_escape(date('M j, Y · g:i A', strtotime($order['created_at']))) ?></time>
+                                                        <?php elseif ($stepIndex === $activeStep && $statusKey === 'pending_payment'): ?>
+                                                            <span>Waiting for payment confirmation</span>
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ol>
+                                    <?php endif; ?>
+                                </section>
+                            </div>
+
+                            <div class="order-history-store">HoloVerse Store</div>
                             <div class="order-history-items">
                                 <?php foreach ($order['items'] as $item): ?>
                                     <div class="order-history-item">
@@ -159,35 +214,27 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <?php endforeach; ?>
                             </div>
 
-                            <div class="order-history-details">
-                                <section>
-                                    <h3>Delivery address</h3>
-                                    <?php if ($order['recipient_name'] !== ''): ?>
-                                        <p>
-                                            <?= store_escape($order['recipient_name']) ?><br>
-                                            <?= store_escape($order['address_line1']) ?>
-                                            <?= $order['address_line2'] !== '' ? '<br>' . store_escape($order['address_line2']) : '' ?><br>
-                                            <?= store_escape(implode(', ', array_filter([$order['city'], $order['region'], $order['postal_code']]))) ?><br>
-                                            <?= store_escape($order['country_code']) ?>
-                                        </p>
-                                    <?php else: ?>
-                                        <p>Shipping address unavailable.</p>
-                                    <?php endif; ?>
-                                </section>
-                                <section>
-                                    <h3>Payment</h3>
-                                    <p><?= store_escape(ucwords(str_replace('_', ' ', $order['payment_method'] ?: 'Not specified'))) ?></p>
-                                </section>
-                                <section class="order-history-total">
-                                    <h3>Order total</h3>
-                                    <p><?= store_escape(store_format_price($order['subtotal'] + $order['tax'] + $order['shipping_fee'])) ?></p>
-                                    <small>
-                                        Includes <?= store_escape(store_format_price($order['tax'])) ?> tax
-                                        <?php if ($order['shipping_fee'] > 0): ?>
-                                            and <?= store_escape(store_format_price($order['shipping_fee'])) ?> shipping
-                                        <?php endif; ?>
-                                    </small>
-                                </section>
+                            <div class="order-history-summary">
+                                <div class="order-history-summary-row">
+                                    <span>Merchandise subtotal</span>
+                                    <strong><?= store_escape(store_format_price($order['subtotal'])) ?></strong>
+                                </div>
+                                <div class="order-history-summary-row">
+                                    <span>Shipping fee</span>
+                                    <strong><?= store_escape(store_format_price($order['shipping_fee'])) ?></strong>
+                                </div>
+                                <div class="order-history-summary-row">
+                                    <span>Tax</span>
+                                    <strong><?= store_escape(store_format_price($order['tax'])) ?></strong>
+                                </div>
+                                <div class="order-history-summary-total">
+                                    <span>Order total</span>
+                                    <strong><?= store_escape(store_format_price($order['subtotal'] + $order['tax'] + $order['shipping_fee'])) ?></strong>
+                                </div>
+                                <div class="order-history-payment">
+                                    <span>Payment method</span>
+                                    <strong><?= store_escape(ucwords(str_replace('_', ' ', $order['payment_method'] ?: 'Not specified'))) ?></strong>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
