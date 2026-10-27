@@ -257,10 +257,19 @@ require __DIR__ . '/app/views/layout/head.php';
                 </button>
             <div class="home-categories-track" data-categories-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="Shop by category">
                 <?php foreach ($homeCategories as $category): ?>
+                    <?php
+                    $categorySlug = store_category_slug((string) $category['category_name']);
+                    $categoryImageUrl = match ($categorySlug) {
+                        'acrylic' => 'assets/images/category/acrylic.jpg',
+                        'album-cd' => 'assets/images/category/album.jpg',
+                        'badge' => 'assets/images/category/badge.webp',
+                        default => (string) ($category['image_url'] ?? ''),
+                    };
+                    ?>
                     <a class="home-category-card" href="/products?category=<?= (int) $category['category_id'] ?>">
-                        <span class="home-category-image<?= empty($category['image_url']) ? ' is-unavailable' : '' ?>" aria-hidden="true">
-                            <?php if (!empty($category['image_url'])): ?>
-                                <img src="<?= store_escape(store_asset_url((string) $category['image_url'])) ?>" alt="" loading="lazy" decoding="async">
+                        <span class="home-category-image<?= $categoryImageUrl === '' ? ' is-unavailable' : '' ?><?= $categorySlug === 'acrylic' ? ' home-category-image-acrylic' : '' ?>" aria-hidden="true">
+                            <?php if ($categoryImageUrl !== ''): ?>
+                                <img src="<?= store_escape(store_asset_url($categoryImageUrl)) ?>" alt="" loading="lazy" decoding="async">
                             <?php endif; ?>
                         </span>
                         <span><?= store_escape((string) $category['category_name']) ?></span>

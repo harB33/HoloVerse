@@ -1156,6 +1156,10 @@
     @apply size-full object-contain;
   }
 
+  .home-category-image-acrylic img {
+    @apply scale-125;
+  }
+
   .home-category-card > span:last-child {
     @apply line-clamp-2 min-h-[2.5em] leading-6;
   }
