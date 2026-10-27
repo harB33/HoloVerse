@@ -3669,48 +3669,52 @@
 }
 
 .flash-sale-page .vault-filters {
-    flex-wrap: nowrap;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
     justify-content: flex-end;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
 }
 
-.flash-sale-page .vault-filters::-webkit-scrollbar {
-    display: none;
+.flash-sale-page .vault-filter-control {
+    position: relative;
+    display: block;
+    width: 155px;
+    min-width: 0;
+}
+
+.flash-sale-page .vault-filter-icon {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 13px;
+    width: 18px;
+    height: 18px;
+    color: #536477;
+    pointer-events: none;
+    transform: translateY(-50%);
 }
 
 .flash-sale-page .vault-filter {
-    position: relative;
-    flex: 0 0 auto;
+    width: 100%;
+    min-height: 44px;
+    appearance: none;
     border: 1px solid #dce5ef;
     border-radius: 10px;
-    background: #fff;
-    padding: 9px 12px;
-    color: #536579;
-    font-size: 12px;
+    background-color: #fff;
+    padding: 0 38px 0 42px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23536477' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    color: #26384a;
+    font: inherit;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.flash-sale-page .vault-filter:hover,
-.flash-sale-page .vault-filter.is-active {
-    border-color: #163d6b;
-    background: #163d6b;
-    color: #fff;
-    box-shadow: 0 3px 8px rgb(22 61 107 / 12%);
-}
-
-.flash-sale-page .vault-filter span {
-    margin-left: 3px;
-    color: #8293a7;
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-}
-
-.flash-sale-page .vault-filter.is-active span {
-    color: #67d8f1;
+.flash-sale-page .vault-filter:hover {
+    border-color: #0ea5d6;
 }
 
 .flash-sale-page .vault-filter:focus-visible {
@@ -3759,8 +3763,12 @@
     .flash-sale-page .vault-filters {
         width: 100%;
         justify-content: flex-start;
-        gap: 18px;
     }
+
+    .flash-sale-page .vault-filter {
+        width: 100%;
+    }
+
 }
 
 @media (max-width: 520px) {
@@ -3771,15 +3779,6 @@
 
     .flash-sale-page .vault-inventory-title-wrap h2 {
         font-size: 28px;
-    }
-
-    .flash-sale-page .vault-filters {
-        gap: 7px;
-    }
-
-    .flash-sale-page .vault-filter {
-        padding: 8px 10px;
-        font-size: 11px;
     }
 
     .flash-sale-page .flash-sale-toolbar {

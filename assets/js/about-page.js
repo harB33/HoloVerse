@@ -11,7 +11,7 @@
   }
 
   const targets = page.querySelectorAll(
-    ".about-story, .about-principles article, .about-section-heading, .about-team-member, .about-toolkit"
+    ".about-story, .about-interlude, .about-principles article, .about-section-heading, .about-team-member, .about-toolkit"
   );
 
   if (targets.length === 0) {
@@ -33,9 +33,5 @@
   );
 
   page.classList.add("about-reveal-ready");
-  window.setTimeout(() => {
-    targets.forEach((target) => target.classList.add("is-visible"));
-    observer.disconnect();
-  }, 1500);
   targets.forEach((target) => observer.observe(target));
 })();
