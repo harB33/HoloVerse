@@ -262,7 +262,9 @@ require __DIR__ . '/app/views/layout/head.php';
                     $categoryImageUrl = match ($categorySlug) {
                         'acrylic' => 'assets/images/category/acrylic.jpg',
                         'album-cd' => 'assets/images/category/album.jpg',
+                        'apparel' => 'assets/images/category/apparel-transparent.webp',
                         'badge' => 'assets/images/category/badge.webp',
+                        'blanket' => 'assets/images/category/blanket-transparent.webp',
                         default => (string) ($category['image_url'] ?? ''),
                     };
                     ?>
