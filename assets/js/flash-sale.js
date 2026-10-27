@@ -79,6 +79,13 @@ const saleCarouselControls = document.querySelector(".flash-sale-carousel-contro
 const flashSaleCard = document.querySelector(".flash-sale-card");
 const saleEmptyState = document.querySelector("[data-sale-empty]");
 const saleDetail = (name) => document.querySelector(`[data-sale-detail="${name}"]`);
+const syncProductBadgeWidth = () => {
+    const stockBadge = saleDetail("stock-badge");
+    const productBadge = saleDetail("product-badge");
+    if (stockBadge && productBadge) {
+        productBadge.style.width = `${stockBadge.getBoundingClientRect().width + 16}px`;
+    }
+};
 const saleDescriptionToggle = document.querySelector("[data-sale-description-toggle]");
 const countdown = document.querySelector("[data-countdown]");
 const countdownText = document.querySelector("[data-sale-countdown-text]");
@@ -97,6 +104,8 @@ let selectedSaleState = saleFilter?.value || "live";
 const initialSaleCard = saleCards.find((card) => card.dataset.variantId === saleDetail("variant-id")?.value);
 initialSaleCard?.classList.add("is-selected");
 initialSaleCard?.setAttribute("aria-current", "true");
+syncProductBadgeWidth();
+window.addEventListener("resize", syncProductBadgeWidth, { passive: true });
 const updateSaleCarouselControls = () => {
     if (!saleGrid || !salePrevious || !saleNext) {
         return;
@@ -205,13 +214,12 @@ const updateSaleProductDetails = (card) => {
 
     const product = JSON.parse(card.dataset.saleProduct);
     const stock = Number(product.stock) || 0;
-    const stockPercent = Math.min(100, stock);
     const live = product.state === "live" && stock > 0;
     const startStatus = product.startsLabel ? `Starts ${product.startsLabel}` : "Sale starts soon";
-    const status = product.state === "archive"
+    const stockStatus = product.state === "archive"
         ? "Sale ended"
         : product.state === "live"
-            ? stock > 0 ? "Available now" : "Currently sold out"
+            ? stock > 0 ? `${stock} available` : "Currently sold out"
             : startStatus;
     const textValues = {
         breadcrumb: product.name,
@@ -226,14 +234,7 @@ const updateSaleProductDetails = (card) => {
         "compare-price": product.comparePrice,
         discount: `${product.discount}% off`,
         "sale-note": product.state === "archive" ? "This flash sale has ended" : product.state === "live" ? "While supplies last" : startStatus,
-        "stock-text": `${stock} units available`,
-        "stock-count": `${stock} in stock`,
-        "stock-note": live
-            ? "Adding a live flash-sale item reserves stock for five minutes."
-            : product.state === "archive"
-                ? "This item is no longer available at the flash-sale price."
-                : "This item is not available until its sale starts.",
-        availability: status,
+        "stock-text": stockStatus,
     };
 
     Object.entries(textValues).forEach(([name, value]) => {
@@ -242,6 +243,7 @@ const updateSaleProductDetails = (card) => {
             element.textContent = value;
         }
     });
+    syncProductBadgeWidth();
 
     const descriptionPreview = saleDetail("description-preview");
     const descriptionFull = saleDetail("description-full");
@@ -255,10 +257,9 @@ const updateSaleProductDetails = (card) => {
         saleDescriptionToggle.textContent = "View Full Product Description";
     }
 
-    const stockProgress = saleDetail("stock-progress");
-    if (stockProgress) {
-        stockProgress.setAttribute("aria-valuenow", String(stockPercent));
-        stockProgress.firstElementChild.style.width = `${stockPercent}%`;
+    const stockStatusElement = saleDetail("stock-status");
+    if (stockStatusElement) {
+        stockStatusElement.classList.toggle("is-unavailable", !live);
     }
 
     const cartForm = saleDetail("cart-form");
