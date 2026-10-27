@@ -201,20 +201,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>" data-sale-detail="variant-id">
                             <button class="flash-reserve-button" type="submit" name="action" value="add">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-basket" aria-hidden="true">
-                                        <path d="m15 11-1 9" />
-                                        <path d="m19 11-4-7" />
-                                        <path d="M2 11h20" />
-                                        <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
-                                        <path d="M4.5 15.5h15" />
-                                        <path d="m5 11 4-7" />
-                                        <path d="m9 11 1 9" />
-                                    </svg>
                                     Add to cart
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M5 12h14" />
-                                        <path d="m12 5 7 7-7 7" />
-                                    </svg>
                             </button>
                         </form>
                         <p data-sale-detail="cart-message" role="status" hidden></p>

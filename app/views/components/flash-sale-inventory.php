@@ -13,13 +13,21 @@ $flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', '
             <span class="vault-inventory-kicker">Flash sale</span>
             <h2 id="vault-inventory-title">Offers worth a look</h2>
         </div>
-        <div class="vault-filters" role="tablist" aria-label="Flash sale categories">
-            <?php foreach ($flashSaleTabs as $key => $tab): ?>
-                <button class="vault-filter<?= $key === 'live' ? ' is-active' : '' ?>" id="flash-tab-<?= store_escape($key) ?>" type="button" role="tab" data-sale-filter="<?= store_escape($key) ?>" aria-controls="flash-sale-products" aria-selected="<?= $key === 'live' ? 'true' : 'false' ?>" tabindex="<?= $key === 'live' ? '0' : '-1' ?>">
-                    <?= store_escape($flashSaleFilterLabels[$key]) ?> <span><?= count($tab['products']) ?></span>
-                </button>
-            <?php endforeach; ?>
-        </div>
+        <label class="vault-filters">
+            <span class="sr-only">Flash sale category</span>
+            <span class="vault-filter-control">
+                <svg class="vault-filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path>
+                </svg>
+                <select class="vault-filter" id="flash-sale-filter" data-sale-filter>
+                    <?php foreach ($flashSaleTabs as $key => $tab): ?>
+                        <option value="<?= store_escape($key) ?>"<?= $key === 'live' ? ' selected' : '' ?>>
+                            <?= store_escape($flashSaleFilterLabels[$key]) ?> (<?= count($tab['products']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </span>
+        </label>
     </div>
 
     <div class="flash-sale-toolbar">
@@ -33,7 +41,7 @@ $flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', '
         </div>
     </div>
     <div class="flash-sale-carousel" data-sale-carousel>
-        <div class="vault-product-grid" id="flash-sale-products" role="tabpanel" aria-labelledby="flash-tab-live" tabindex="0" data-sale-track>
+        <div class="vault-product-grid" id="flash-sale-products" aria-label="Flash sale products" tabindex="0" data-sale-track>
             <?php foreach ($flashSaleTabs as $state => $tab): ?>
                 <?php foreach ($tab['products'] as $product): ?>
                     <?php

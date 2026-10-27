@@ -69,7 +69,7 @@ galleryImage?.addEventListener("keydown", (event) => {
     }
 });
 
-const saleTabs = [...document.querySelectorAll("[data-sale-filter]")];
+const saleFilter = document.querySelector("[data-sale-filter]");
 const saleCards = [...document.querySelectorAll(".flash-sale-drop-card[data-sale-state]")];
 const saleGrid = document.querySelector("#flash-sale-products");
 const salePrevious = document.querySelector("[data-sale-previous]");
@@ -93,7 +93,7 @@ const updateCountdown = () => {
     countdown.querySelector("[data-countdown-minutes]").textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, "0");
     countdown.querySelector("[data-countdown-seconds]").textContent = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
 };
-let selectedSaleState = saleTabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.dataset.saleFilter || "live";
+let selectedSaleState = saleFilter?.value || "live";
 const initialSaleCard = saleCards.find((card) => card.dataset.variantId === saleDetail("variant-id")?.value);
 initialSaleCard?.classList.add("is-selected");
 initialSaleCard?.setAttribute("aria-current", "true");
@@ -365,46 +365,17 @@ saleCards.forEach((card) => {
     });
 });
 
-const selectSaleTab = (selectedTab, moveFocus = false) => {
-    selectedSaleState = selectedTab.dataset.saleFilter;
-    saleTabs.forEach((tab) => {
-        const isSelected = tab === selectedTab;
-        tab.classList.toggle("is-active", isSelected);
-        tab.setAttribute("aria-selected", String(isSelected));
-        tab.tabIndex = isSelected ? 0 : -1;
-    });
-
-    if (saleGrid) {
-        saleGrid.setAttribute("aria-labelledby", selectedTab.id);
-    }
+const selectSaleFilter = (state) => {
+    selectedSaleState = state;
     updateSaleCards();
-    if (moveFocus) {
-        selectedTab.focus();
-    }
 };
 
-saleTabs.forEach((tab, index) => {
-    tab.addEventListener("click", () => selectSaleTab(tab));
-    tab.addEventListener("keydown", (event) => {
-        let nextIndex = index;
-        if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-            nextIndex = (index + 1) % saleTabs.length;
-        } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-            nextIndex = (index - 1 + saleTabs.length) % saleTabs.length;
-        } else if (event.key === "Home") {
-            nextIndex = 0;
-        } else if (event.key === "End") {
-            nextIndex = saleTabs.length - 1;
-        } else {
-            return;
-        }
-        event.preventDefault();
-        selectSaleTab(saleTabs[nextIndex], true);
-    });
+saleFilter?.addEventListener("change", () => {
+    selectSaleFilter(saleFilter.value);
 });
 
-if (saleTabs.length) {
-    selectSaleTab(saleTabs.find((tab) => tab.getAttribute("aria-selected") === "true") || saleTabs[0]);
+if (saleFilter) {
+    selectSaleFilter(saleFilter.value);
 }
 
 if (countdown) {
