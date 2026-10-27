@@ -265,11 +265,17 @@ require __DIR__ . '/app/views/layout/head.php';
                         'apparel' => 'assets/images/category/apparel-transparent.webp',
                         'badge' => 'assets/images/category/badge.webp',
                         'blanket' => 'assets/images/category/blanket-transparent.webp',
+                        'curtain' => 'assets/images/category/curtain.webp',
+                        'figure' => 'assets/images/category/figure-transparent.webp',
+                        'keychain' => 'assets/images/category/keychain-transparent.webp',
+                        'mug' => 'assets/images/category/mug-transparent.webp',
+                        'plush' => 'assets/images/category/plush-transparent.webp',
+                        'poster-print' => 'assets/images/category/poster.jpg',
                         default => (string) ($category['image_url'] ?? ''),
                     };
                     ?>
                     <a class="home-category-card" href="/products?category=<?= (int) $category['category_id'] ?>">
-                        <span class="home-category-image<?= $categoryImageUrl === '' ? ' is-unavailable' : '' ?><?= $categorySlug === 'acrylic' ? ' home-category-image-acrylic' : '' ?>" aria-hidden="true">
+                        <span class="home-category-image<?= $categoryImageUrl === '' ? ' is-unavailable' : '' ?><?= $categorySlug === 'acrylic' ? ' home-category-image-acrylic' : '' ?><?= in_array($categorySlug, ['curtain', 'figure', 'keychain'], true) ? ' home-category-image-full-fit' : '' ?><?= $categorySlug === 'curtain' ? ' home-category-image-curtain' : '' ?><?= in_array($categorySlug, ['keychain', 'mug', 'plush'], true) ? ' home-category-image-product-cutout' : '' ?><?= $categorySlug === 'mug' ? ' home-category-image-mug' : '' ?>" aria-hidden="true">
                             <?php if ($categoryImageUrl !== ''): ?>
                                 <img src="<?= store_escape(store_asset_url($categoryImageUrl)) ?>" alt="" loading="lazy" decoding="async">
                             <?php endif; ?>
