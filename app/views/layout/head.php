@@ -85,7 +85,11 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             }
         }
 
-        <?php if ($pageLayout !== 'home'): ?>
+        <?php if (in_array($pageLayout, ['purchase', 'purchase-detail'], true)): ?>
+        @view-transition {
+            navigation: none;
+        }
+        <?php elseif ($pageLayout !== 'home'): ?>
         @view-transition {
             navigation: auto;
         }
@@ -153,9 +157,10 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             const hasHomeLoader = pageRoot.dataset.pageLayout === "home";
             const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             const supportsPageTransitions = CSS.supports("view-transition-name: root");
+            const disablePageTransitions = ["purchase", "purchase-detail"].includes(pageRoot.dataset.pageLayout);
             const cameFromSameOrigin = document.referrer !== "" &&
                 new URL(document.referrer).origin === window.location.origin;
-            const shouldAnimateOpening = !cameFromSameOrigin || !supportsPageTransitions;
+            const shouldAnimateOpening = !disablePageTransitions && (!cameFromSameOrigin || !supportsPageTransitions);
 
             const startOpening = () => {
                 if (

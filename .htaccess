@@ -22,6 +22,7 @@
     RewriteRule ^([A-Za-z0-9_-]+)/$ $1 [R=308,L]
 
     RewriteRule ^home/?$ index.php [L]
+    RewriteRule ^purchase/orders/?$ pages/orders.php [L,QSA]
     RewriteRule ^flash_sale/?$ flash-sale [R=308,L]
     RewriteRule ^flash-sale/?$ pages/flash_sale.php [L,QSA]
 

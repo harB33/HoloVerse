@@ -4749,6 +4749,10 @@
     @apply overflow-hidden rounded-xl border border-[#ccecf5] bg-white shadow-[0_12px_30px_rgba(22,61,107,0.08)];
   }
 
+  .purchase-detail-card {
+    @apply block text-inherit no-underline transition hover:border-[#9adbea] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#087fa8];
+  }
+
   .order-history-card-heading {
     @apply flex flex-wrap items-center justify-between gap-4 border-b border-[#e2f2f7] bg-[#fbfeff] px-5 py-4 md:px-6;
   }
@@ -4763,6 +4767,14 @@
 
   .order-history-status {
     @apply rounded-full border border-[#bcecf7] bg-[#eafaff] px-3 py-1.5 text-xs font-bold capitalize text-[#087fa8];
+  }
+
+  .purchase-detail-status {
+    @apply flex flex-wrap items-center justify-end gap-3 text-sm text-[#087fa8];
+  }
+
+  .purchase-detail-status strong {
+    @apply border-l border-[#dceaf0] pl-3 font-semibold uppercase tracking-wide text-[#087fa8];
   }
 
   .order-history-delivery {
@@ -4908,7 +4920,7 @@
   }
 
   .order-history-summary-total {
-    @apply text-sm text-[#596775];
+    @apply items-center text-sm text-[#596775];
   }
 
   .order-history-summary-total strong {

@@ -9,6 +9,13 @@ if (!isset($_SESSION['user_id'])) {
 $userId = (int) $_SESSION['user_id'];
 $orders = [];
 $ordersLoadError = false;
+$requestedOrder = isset($_GET['order']) && is_string($_GET['order'])
+    ? trim($_GET['order'])
+    : '';
+$hasRequestedItem = array_key_exists('item', $_GET);
+$requestedItemId = $hasRequestedItem
+    ? filter_var($_GET['item'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+    : null;
 
 try {
     $statement = $conn->prepare(
@@ -64,6 +71,7 @@ try {
             $quantity = (int) $row['quantity'];
             $unitPrice = (float) $row['unit_price'];
             $orders[$orderId]['items'][] = [
+                'order_item_id' => (int) $row['order_item_id'],
                 'product_name' => (string) $row['product_name_snapshot'],
                 'product_url' => is_string($row['current_product_name']) && $row['current_product_name'] !== ''
                     ? store_product_url((string) $row['current_product_name'])
@@ -84,8 +92,42 @@ try {
     http_response_code(500);
 }
 
+if ($requestedOrder !== '' || $hasRequestedItem) {
+    $orders = array_filter($orders, static function (array $order) use ($requestedOrder, $hasRequestedItem, $requestedItemId): bool {
+        if ($requestedOrder !== '' && $order['order_number'] !== $requestedOrder) {
+            return false;
+        }
+        if (!$hasRequestedItem) {
+            return true;
+        }
+        if (!is_int($requestedItemId)) {
+            return false;
+        }
+
+        return count(array_filter(
+            $order['items'],
+            static fn (array $item): bool => $item['order_item_id'] === $requestedItemId
+        )) > 0;
+    });
+
+    if ($hasRequestedItem && is_int($requestedItemId)) {
+        foreach ($orders as &$order) {
+            $order['items'] = array_values(array_filter(
+                $order['items'],
+                static fn (array $item): bool => $item['order_item_id'] === $requestedItemId
+            ));
+        }
+        unset($order);
+    }
+}
+
 $pageTitle = 'Your Orders | HoloVerse';
-$siteRoot = '../';
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$isPurchaseOrderDetails = is_string($requestPath) && preg_match('~^/purchase/orders/?$~', $requestPath);
+$pageLayout = $isPurchaseOrderDetails ? 'purchase-detail' : 'content';
+$siteRoot = $isPurchaseOrderDetails
+    ? '../../'
+    : '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
@@ -100,8 +142,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         <main class="order-history-main">
             <header class="order-history-heading">
-                <p class="order-history-eyebrow">Your account</p>
-                <h1>Your Orders</h1>
+                <h1>My Orders</h1>
                 <p>Review the items, payment details, and delivery address for your orders.</p>
             </header>
 
