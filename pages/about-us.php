@@ -39,7 +39,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <section class="about-interlude" aria-label="Hoshimachi Suisei artwork">
-                <img src="../assets/images/suisei-about.png" alt="Blue-haired anime performer reaching toward the viewer among stars and bright light" loading="lazy" decoding="async">
+                <img src="../assets/images/suisei-about.png" alt="Blue-haired anime performer reaching toward the viewer among stars and bright light" loading="eager" decoding="async">
             </section>
 
             <section class="about-principles" aria-label="How we approach the store">
