@@ -70,6 +70,9 @@ galleryImage?.addEventListener("keydown", (event) => {
 });
 
 const saleFilter = document.querySelector("[data-sale-filter]");
+const saleFilterTrigger = document.querySelector("[data-sale-filter-trigger]");
+const saleFilterOptions = document.querySelector("[data-sale-filter-options]");
+const saleFilterCurrent = document.querySelector("[data-sale-filter-current]");
 const saleCards = [...document.querySelectorAll(".flash-sale-drop-card[data-sale-state]")];
 const saleGrid = document.querySelector("#flash-sale-products");
 const salePrevious = document.querySelector("[data-sale-previous]");
@@ -371,8 +374,87 @@ const selectSaleFilter = (state) => {
     updateSaleCards();
 };
 
+if (saleFilter && saleFilterTrigger && saleFilterOptions && saleFilterCurrent) {
+    const filterOptionButtons = [...saleFilterOptions.querySelectorAll("[data-sale-filter-option]")];
+    const setFilterMenuOpen = (open, focusSelected = false) => {
+        saleFilterTrigger.setAttribute("aria-expanded", String(open));
+        saleFilterOptions.hidden = !open;
+        if (open && focusSelected) {
+            filterOptionButtons.find((option) => option.dataset.saleFilterOption === saleFilter.value)?.focus();
+        }
+    };
+
+    const syncFilterSelection = () => {
+        const selectedOption = saleFilter.selectedOptions[0];
+        saleFilterCurrent.textContent = selectedOption.textContent.trim();
+        filterOptionButtons.forEach((option) => {
+            option.setAttribute("aria-selected", String(option.dataset.saleFilterOption === saleFilter.value));
+        });
+    };
+
+    saleFilter.hidden = true;
+    saleFilterTrigger.hidden = false;
+    syncFilterSelection();
+
+    saleFilterTrigger.addEventListener("click", () => {
+        setFilterMenuOpen(saleFilterOptions.hidden, saleFilterOptions.hidden);
+    });
+
+    saleFilterTrigger.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setFilterMenuOpen(true, true);
+        }
+    });
+
+    filterOptionButtons.forEach((option, index) => {
+        option.addEventListener("click", () => {
+            saleFilter.value = option.dataset.saleFilterOption;
+            saleFilter.dispatchEvent(new Event("change", { bubbles: true }));
+            syncFilterSelection();
+            setFilterMenuOpen(false);
+            saleFilterTrigger.focus();
+        });
+
+        option.addEventListener("keydown", (event) => {
+            let nextIndex;
+            if (event.key === "ArrowDown") {
+                nextIndex = (index + 1) % filterOptionButtons.length;
+            } else if (event.key === "ArrowUp") {
+                nextIndex = (index - 1 + filterOptionButtons.length) % filterOptionButtons.length;
+            } else if (event.key === "Home") {
+                nextIndex = 0;
+            } else if (event.key === "End") {
+                nextIndex = filterOptionButtons.length - 1;
+            } else if (event.key === "Escape") {
+                event.preventDefault();
+                setFilterMenuOpen(false);
+                saleFilterTrigger.focus();
+                return;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            filterOptionButtons[nextIndex].focus();
+        });
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(".vault-filter-control")) {
+            setFilterMenuOpen(false);
+        }
+    });
+}
+
 saleFilter?.addEventListener("change", () => {
     selectSaleFilter(saleFilter.value);
+    if (saleFilterTrigger && saleFilterCurrent) {
+        saleFilterCurrent.textContent = saleFilter.selectedOptions[0].textContent.trim();
+        saleFilterOptions?.querySelectorAll("[data-sale-filter-option]").forEach((option) => {
+            option.setAttribute("aria-selected", String(option.dataset.saleFilterOption === saleFilter.value));
+        });
+    }
 });
 
 if (saleFilter) {

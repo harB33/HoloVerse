@@ -3739,8 +3739,7 @@
 .flash-sale-page .vault-filter-control {
     position: relative;
     display: block;
-    width: 155px;
-    min-width: 0;
+    width: 190px;
 }
 
 .flash-sale-page .vault-filter-icon {
@@ -3772,6 +3771,94 @@
     font-weight: 700;
     cursor: pointer;
     transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.flash-sale-page .vault-filter[hidden],
+.flash-sale-page .vault-filter-trigger[hidden],
+.flash-sale-page .vault-filter-options[hidden] {
+    display: none;
+}
+
+.flash-sale-page .vault-filter-trigger {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid #dce5ef;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0 13px 0 42px;
+    color: #26384a;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.flash-sale-page .vault-filter-trigger:hover,
+.flash-sale-page .vault-filter-trigger[aria-expanded="true"] {
+    border-color: #0ea5d6;
+}
+
+.flash-sale-page .vault-filter-trigger:focus-visible,
+.flash-sale-page .vault-filter-option:focus-visible {
+    outline: 2px solid #0ea5d6;
+    outline-offset: 2px;
+}
+
+.flash-sale-page .vault-filter-trigger > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flash-sale-page .vault-filter-trigger > svg {
+    flex: 0 0 auto;
+    color: #536477;
+    transition: transform 150ms ease;
+}
+
+.flash-sale-page .vault-filter-trigger[aria-expanded="true"] > svg {
+    transform: rotate(180deg);
+}
+
+.flash-sale-page .vault-filter-options {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    display: grid;
+    width: 100%;
+    gap: 2px;
+    border: 1px solid #dce5ef;
+    border-radius: 10px;
+    background: #fff;
+    padding: 5px;
+    box-shadow: 0 10px 24px rgb(16 24 41 / 14%);
+}
+
+.flash-sale-page .vault-filter-option {
+    width: 100%;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    padding: 9px 10px;
+    color: #26384a;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.flash-sale-page .vault-filter-option:hover,
+.flash-sale-page .vault-filter-option[aria-selected="true"] {
+    background: #e7f7fc;
+    color: #087fa8;
 }
 
 .flash-sale-page .vault-filter:hover {

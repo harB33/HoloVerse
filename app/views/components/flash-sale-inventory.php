@@ -13,8 +13,8 @@ $flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', '
             <span class="vault-inventory-kicker">Flash sale</span>
             <h2 id="vault-inventory-title">Offers worth a look</h2>
         </div>
-        <label class="vault-filters">
-            <span class="sr-only">Flash sale category</span>
+        <div class="vault-filters">
+            <span class="sr-only" id="flash-sale-filter-label">Flash sale category</span>
             <span class="vault-filter-control">
                 <svg class="vault-filter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path>
@@ -26,8 +26,26 @@ $flashSaleFilterLabels = ['live' => 'Live now', 'starting' => 'Starting soon', '
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <button class="vault-filter-trigger" type="button" data-sale-filter-trigger hidden
+                    role="combobox" aria-labelledby="flash-sale-filter-label" aria-haspopup="listbox"
+                    aria-expanded="false" aria-controls="flash-sale-filter-options">
+                    <span data-sale-filter-current>Live now (<?= count($flashSaleTabs['live']['products']) ?>)</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
+                <div class="vault-filter-options" id="flash-sale-filter-options" data-sale-filter-options role="listbox"
+                    aria-labelledby="flash-sale-filter-label" hidden>
+                    <?php foreach ($flashSaleTabs as $key => $tab): ?>
+                        <button class="vault-filter-option" type="button" role="option"
+                            data-sale-filter-option="<?= store_escape($key) ?>"
+                            aria-selected="<?= $key === 'live' ? 'true' : 'false' ?>">
+                            <?= store_escape($flashSaleFilterLabels[$key]) ?> (<?= count($tab['products']) ?>)
+                        </button>
+                    <?php endforeach; ?>
+                </div>
             </span>
-        </label>
+        </div>
     </div>
 
     <div class="flash-sale-toolbar">
