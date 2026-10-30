@@ -116,6 +116,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             <?php else: ?>
                 <div class="order-history-list">
                     <?php foreach ($orders as $order): ?>
+                        <?php foreach ($order['items'] ?: [null] as $item): ?>
                         <?php
                         $statusKey = strtolower($order['status']);
                         $progressSteps = ['Order placed', 'Processing', 'Shipped', 'Delivered'];
@@ -125,6 +126,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             'processing' => 1,
                             'shipped' => 2,
                             'in_transit' => 2,
+                            'confirmed' => 3,
                             'delivered' => 3,
                         ];
                         $isOrderClosed = in_array($statusKey, ['cancelled', 'canceled', 'refunded'], true);
@@ -182,7 +184,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                             <div class="order-history-store">HoloVerse Store</div>
                             <div class="order-history-items">
-                                <?php foreach ($order['items'] as $item): ?>
+                                <?php if ($item !== null): ?>
                                     <div class="order-history-item">
                                         <?php if ($item['product_url'] !== null): ?>
                                             <a class="order-history-item-image" href="<?= store_escape($item['product_url']) ?>" aria-label="View product: <?= store_escape($item['product_name']) ?>">
@@ -211,7 +213,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         </div>
                                         <strong><?= store_escape(store_format_price($item['unit_price'] * $item['quantity'])) ?></strong>
                                     </div>
-                                <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="order-history-no-items">Product details are unavailable for this order.</p>
+                                <?php endif; ?>
                             </div>
 
                             <div class="order-history-summary">
@@ -237,6 +241,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </div>
                             </div>
                         </article>
+                        <?php endforeach; ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

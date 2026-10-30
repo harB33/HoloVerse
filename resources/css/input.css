@@ -4846,6 +4846,10 @@
     @apply divide-y divide-[#edf1f6] px-5 md:px-6;
   }
 
+  .order-history-no-items {
+    @apply mb-0 py-4 text-sm text-[#707d8b];
+  }
+
   .order-history-item {
     @apply grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 py-4 md:grid-cols-[80px_minmax(0,1fr)_auto] md:gap-4;
   }
@@ -4895,7 +4899,7 @@
   .order-history-summary-row > span,
   .order-history-summary-total > span,
   .order-history-payment > span {
-    @apply px-3 py-3 text-right md:px-6;
+    @apply px-3 py-3 text-left md:px-6;
   }
 
   .order-history-summary-row strong,
