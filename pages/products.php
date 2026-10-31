@@ -1,14 +1,39 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$favoriteProductIds = store_collector_favorite_ids($conn, $userId);
 $pageSize = 20;
+
+$flashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+$flashSaleNow = new DateTimeImmutable('now', $flashSaleTimezone);
+$flashSaleAvailable = store_flash_sale_table_exists($conn);
+$liveFlashSales = $flashSaleAvailable ? store_flash_sale_rows($conn, 'live', $flashSaleNow) : [];
+$liveFlashProductIds = [];
+foreach ($liveFlashSales as $saleRow) {
+    $liveFlashProductIds[(int) $saleRow['product_id']] = $saleRow;
+}
+$flashProductIds = array_keys($liveFlashProductIds);
+
 $searchParameter = $_GET['search'] ?? '';
 $filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
 $generalSearchParameter = $_GET['global_search'] ?? '';
 $generalProductSearch = is_string($generalSearchParameter) ? trim($generalSearchParameter) : '';
 $isCatalogSearchRequest = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
     && ($_GET['ajax'] ?? '') === 'search';
+
+$validAvailabilities = ['all', 'ready', 'preorder', 'flash', 'saved'];
+$availabilityParam = $_GET['availability'] ?? 'all';
+$selectedAvailability = is_string($availabilityParam) && in_array($availabilityParam, $validAvailabilities, true)
+    ? $availabilityParam
+    : 'all';
+
+$validSorts = ['featured', 'price-low', 'price-high', 'name'];
+$sortParam = $_GET['sort'] ?? 'featured';
+$selectedSort = is_string($sortParam) && in_array($sortParam, $validSorts, true)
+    ? $sortParam
+    : 'featured';
+
 $generationParameter = $_GET['generation'] ?? '';
 $routeSegment = $_GET['route_segment'] ?? '';
 $routeSegment = is_string($routeSegment) ? rawurldecode($routeSegment) : '';
@@ -20,11 +45,25 @@ $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH)
 $requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '';
 $routeSegments = array_filter(explode('/', trim($requestPath, '/')), static fn (string $segment): bool => $segment !== '');
 $siteRoot = str_repeat('../', max(1, count($routeSegments) - 1));
-$categories = [];
-$categoryIds = [];
+
 $categoryResult = $conn->query('SELECT category_id, category_name FROM category_tbl ORDER BY category_name');
 $categories = $categoryResult->fetch_all(PDO::FETCH_ASSOC);
 $categoryIds = array_map(static fn (array $category): int => (int) $category['category_id'], $categories);
+
+$groupOrderSql = "ARRAY[" . implode(
+    ', ',
+    array_map(static fn (string $slug): string => "'" . str_replace("'", "''", $slug) . "'", STORE_TALENT_FILTER_GROUP_SLUGS)
+) . "]::text[]";
+$generationResult = $conn->query(
+    "SELECT group_slug, group_name
+     FROM talent_group_tbl
+     WHERE group_slug IN (" . store_talent_filter_group_slugs_sql() . ")
+     ORDER BY array_position({$groupOrderSql}, group_slug)"
+);
+$generations = $generationResult->fetch_all(PDO::FETCH_ASSOC);
+
+$preorderCatalogCount = store_catalog_product_count($conn, availability: 'preorder');
+
 if (
     $generalProductSearch === ''
     && $routeSegment !== ''
@@ -74,9 +113,11 @@ $catalogBasePath = $selectedGeneration !== ''
 $catalogPath = $selectedCategorySlug !== ''
     ? $catalogBasePath . '/category/' . rawurlencode($selectedCategorySlug)
     : $catalogBasePath;
+
 $hasQueryFilters = array_key_exists('generation', $_GET)
     || array_key_exists('category', $_GET)
     || array_key_exists('category_slug', $_GET);
+
 if (
     !$isCatalogSearchRequest
     && $routeSegment !== ''
@@ -110,23 +151,18 @@ if (
     exit;
 }
 
-if (!$isCatalogSearchRequest) {
-    $groupOrderSql = "ARRAY[" . implode(
-        ', ',
-        array_map(static fn (string $slug): string => "'" . str_replace("'", "''", $slug) . "'", STORE_TALENT_FILTER_GROUP_SLUGS)
-    ) . "]::text[]";
-    $generationResult = $conn->query(
-        "SELECT group_slug, group_name
-         FROM talent_group_tbl
-         WHERE group_slug IN (" . store_talent_filter_group_slugs_sql() . ")
-         ORDER BY array_position({$groupOrderSql}, group_slug)"
-    );
-    $generations = $generationResult->fetch_all(PDO::FETCH_ASSOC);
-}
 
 if ($isCatalogSearchRequest) {
-    $searchPageSize = 20;
-    $searchTotalCount = store_catalog_product_count($conn, $productSearch, $selectedGeneration, $selectedCategory);
+    $searchPageSize = $pageSize;
+    $searchTotalCount = store_catalog_product_count(
+        $conn,
+        $productSearch,
+        $selectedGeneration,
+        $selectedCategory,
+        $selectedAvailability,
+        $flashProductIds,
+        $favoriteProductIds
+    );
     $searchPageCount = max(1, (int) ceil($searchTotalCount / $searchPageSize));
     $searchRequestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
     $searchCurrentPage = min(max(1, $searchRequestedPage), $searchPageCount);
@@ -136,18 +172,24 @@ if ($isCatalogSearchRequest) {
         ($searchCurrentPage - 1) * $searchPageSize,
         $productSearch,
         $selectedGeneration,
-        $selectedCategory
+        $selectedCategory,
+        randomize: false,
+        includeImageGallery: false,
+        relatedProductId: 0,
+        availability: $selectedAvailability,
+        sort: $selectedSort,
+        flashProductIds: $flashProductIds,
+        favoriteProductIds: $favoriteProductIds
     );
     ob_start();
     $products = $searchProducts;
     $totalProductCount = $searchTotalCount;
     $pageCount = $searchPageCount;
     $currentPage = $searchCurrentPage;
-    $activeSearchQuery = $productSearch !== '' ? ['search' => $productSearch] : [];
     $catalogPaginationBasePath = $catalogPath;
     echo '<div class="catalog-product-results-fragment"><span id="all-products-count">'
         . number_format($totalProductCount)
-        . ' products'
+        . ' ' . ($totalProductCount === 1 ? 'product' : 'products')
         . ($productSearch !== '' ? ' found' : '')
         . '</span>';
     require __DIR__ . '/../app/views/components/catalog-product-results.php';
@@ -162,37 +204,104 @@ if ($isCatalogSearchRequest) {
     exit;
 }
 
-$totalProductCount = store_catalog_product_count($conn, $productSearch, $selectedGeneration, $selectedCategory);
+$totalProductCount = store_catalog_product_count(
+    $conn,
+    $productSearch,
+    $selectedGeneration,
+    $selectedCategory,
+    $selectedAvailability,
+    $flashProductIds,
+    $favoriteProductIds
+);
 $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $currentPage = min(max(1, $currentPage), $pageCount);
-$products = store_catalog_product_rows($conn, $pageSize, ($currentPage - 1) * $pageSize, $productSearch, $selectedGeneration, $selectedCategory);
-$catalogSearchHiddenFields = [];
+$products = store_catalog_product_rows(
+    $conn,
+    $pageSize,
+    ($currentPage - 1) * $pageSize,
+    $productSearch,
+    $selectedGeneration,
+    $selectedCategory,
+    randomize: false,
+    includeImageGallery: false,
+    relatedProductId: 0,
+    availability: $selectedAvailability,
+    sort: $selectedSort,
+    flashProductIds: $flashProductIds,
+    favoriteProductIds: $favoriteProductIds
+);
 $catalogPaginationBasePath = $catalogPath;
 $pageTitle = 'All Products | HoloVerse';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="all-products-page home-landing">
     <script>document.body.classList.add("products-page-loading");</script>
     <div class="page-shell">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'products';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="all-products-main" aria-labelledby="all-products-title">
-            <section class="all-products-intro">
-                <span class="drops-eyebrow">Official hololive production merchandise</span>
-                <h1 id="all-products-title">Shop all products</h1>
-                <p>Browse the full collection of available talent merchandise.</p>
-                <span class="all-products-count" id="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
-                <nav class="products-promo-links" aria-label="Shop product collections">
-                    <a href="<?= $siteRoot ?>flash-sale"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap preview-icon" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>Flash Sale</a>
-                    <a href="<?= $siteRoot ?>pre_order"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-arrow-up preview-icon" aria-hidden="true"><path d="m14 17 4-4 4 4"/><path d="M16 2v3"/><path d="M18 21v-8"/><path d="M21 10.343V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h9"/><path d="M3 9h18"/><path d="M8 2v3"/></svg>Pre-order</a>
-                </nav>
+        <main class="all-products-main landing-shell" aria-labelledby="all-products-title">
+            <section class="section-heading all-products-heading">
+                <div>
+                    <p class="eyebrow">Official hololive production merchandise</p>
+                    <h1 id="all-products-title">Shop all products</h1>
+                    <p>Browse the full collection of official character apparel, plushies, scale figures, and collectibles.</p>
+                </div>
+                <div class="section-heading-aside">
+                    <span class="all-products-count" id="all-products-count"><?= number_format($totalProductCount) ?> <?= $totalProductCount === 1 ? 'product' : 'products' ?><?= $productSearch !== '' ? ' found' : '' ?></span>
+                    <nav class="products-promo-links" aria-label="Shop product collections">
+                        <a href="<?= $siteRoot ?>flash-sale">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                            <span>Flash drop</span>
+                        </a>
+                        <a href="<?= $siteRoot ?>pre_order">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                            <span>Pre-order</span>
+                        </a>
+                    </nav>
+                </div>
             </section>
+
+            <div class="availability-toolbar">
+                <div class="availability-filters" role="group" aria-label="Filter by availability">
+                    <span class="filter-hint">Availability</span>
+                    <button type="button" class="<?= $selectedAvailability === 'all' ? 'active' : '' ?>" data-availability-filter="all" aria-pressed="<?= $selectedAvailability === 'all' ? 'true' : 'false' ?>">
+                        Everything
+                    </button>
+                    <button type="button" class="<?= $selectedAvailability === 'ready' ? 'active' : '' ?>" data-availability-filter="ready" aria-pressed="<?= $selectedAvailability === 'ready' ? 'true' : 'false' ?>">
+                        In stock
+                    </button>
+                    <button type="button" class="<?= $selectedAvailability === 'preorder' ? 'active' : '' ?>" data-availability-filter="preorder" aria-pressed="<?= $selectedAvailability === 'preorder' ? 'true' : 'false' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                        Pre-order
+                        <?php if ($preorderCatalogCount > 0): ?>
+                            <span class="filter-count"><?= $preorderCatalogCount ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <button type="button" class="<?= $selectedAvailability === 'flash' ? 'active' : '' ?>" data-availability-filter="flash" aria-pressed="<?= $selectedAvailability === 'flash' ? 'true' : 'false' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                        Flash drop
+                    </button>
+                    <button type="button" class="saved-filter<?= $selectedAvailability === 'saved' ? ' active' : '' ?>" data-availability-filter="saved" data-saved-filter aria-pressed="<?= $selectedAvailability === 'saved' ? 'true' : 'false' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        Saved <span class="filter-count" data-saved-filter-count><?= count($favoriteProductIds) ?></span>
+                    </button>
+                </div>
+                <label class="sort-control">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                    <span>Sort</span>
+                    <select data-shop-sort name="sort" aria-label="Sort products">
+                        <option value="featured"<?= $selectedSort === 'featured' ? ' selected' : '' ?>>Featured</option>
+                        <option value="price-low"<?= $selectedSort === 'price-low' ? ' selected' : '' ?>>Price: low to high</option>
+                        <option value="price-high"<?= $selectedSort === 'price-high' ? ' selected' : '' ?>>Price: high to low</option>
+                        <option value="name"<?= $selectedSort === 'name' ? ' selected' : '' ?>>Name: A to Z</option>
+                    </select>
+                </label>
+            </div>
 
             <div class="products-catalog-layout">
                 <aside class="generation-filter" aria-labelledby="generation-filter-title">
@@ -205,13 +314,26 @@ require __DIR__ . '/../app/views/layout/head.php';
                     $catalogSearchInputName = 'search';
                     $catalogSearchValue = $filterSearch;
                     $catalogSearchShowClear = false;
+                    $catalogSearchHiddenFields = [];
+                    if ($selectedAvailability !== 'all') {
+                        $catalogSearchHiddenFields['availability'] = $selectedAvailability;
+                    }
+                    if ($selectedSort !== 'featured') {
+                        $catalogSearchHiddenFields['sort'] = $selectedSort;
+                    }
                     require __DIR__ . '/../app/views/components/catalog-search.php';
                     ?>
                     <form class="category-filter" method="get" action="<?= store_escape($catalogBasePath) ?>" data-catalog-base-path="<?= store_escape($catalogBasePath) ?>">
-                        <label for="catalog-category-trigger">Filter by category</label>
+                        <label class="category-filter-label" for="catalog-category-trigger">Category</label>
                         <?php foreach ($activeSearchQuery as $name => $value): ?>
                             <input type="hidden" name="<?= store_escape($name) ?>" value="<?= store_escape((string) $value) ?>">
                         <?php endforeach; ?>
+                        <?php if ($selectedAvailability !== 'all'): ?>
+                            <input type="hidden" name="availability" value="<?= store_escape($selectedAvailability) ?>">
+                        <?php endif; ?>
+                        <?php if ($selectedSort !== 'featured'): ?>
+                            <input type="hidden" name="sort" value="<?= store_escape($selectedSort) ?>">
+                        <?php endif; ?>
                         <input id="catalog-category" type="hidden" name="category" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
                         <div class="category-filter-dropdown" data-category-dropdown>
                             <button class="category-filter-trigger" id="catalog-category-trigger" type="button" aria-expanded="false" aria-controls="catalog-category-options" data-category-trigger>
@@ -229,24 +351,23 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                         </div>
                     </form>
-                    <h2 id="generation-filter-title">Filter by generation</h2>
-                    <nav aria-label="Product generations">
+                    <h2 class="generation-filter-title" id="generation-filter-title">Generation</h2>
+                    <nav class="generation-filter-list" aria-label="Product generations">
                         <?php
-                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '');
-                        if ($activeSearchQuery) {
-                            $allGenerationsHref .= '?' . http_build_query($activeSearchQuery);
-                        }
+                        $genParams = [];
+                        if ($selectedAvailability !== 'all') { $genParams['availability'] = $selectedAvailability; }
+                        if ($selectedSort !== 'featured') { $genParams['sort'] = $selectedSort; }
+                        if ($productSearch !== '') { $genParams['search'] = $productSearch; }
+                        $genQuery = $genParams ? '?' . http_build_query($genParams) : '';
+
+                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '') . $genQuery;
                         ?>
                         <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="<?= store_escape($allGenerationsHref) ?>" data-generation-slug=""<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
                         <?php foreach ($generations as $generation): ?>
                             <?php
-                            $generationHref = '/products/generation/' . rawurlencode($generation['group_slug']);
-                            if ($selectedCategorySlug !== '') {
-                                $generationHref .= '/category/' . rawurlencode($selectedCategorySlug);
-                            }
-                            if ($activeSearchQuery) {
-                                $generationHref .= '?' . http_build_query($activeSearchQuery);
-                            }
+                            $generationHref = '/products/generation/' . rawurlencode($generation['group_slug'])
+                                . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '')
+                                . $genQuery;
                             ?>
                             <a class="generation-filter-option<?= $selectedGeneration === $generation['group_slug'] ? ' is-active' : '' ?>" href="<?= store_escape($generationHref) ?>" data-generation-slug="<?= store_escape($generation['group_slug']) ?>"<?= $selectedGeneration === $generation['group_slug'] ? ' aria-current="true"' : '' ?>><?= store_escape($generation['group_name']) ?></a>
                         <?php endforeach; ?>
@@ -255,36 +376,19 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                 <div class="products-catalog-results" aria-busy="false">
                     <script>document.currentScript.parentElement.setAttribute("aria-busy", "true");</script>
-                    <div class="drops-grid products-loading-skeleton" aria-hidden="true">
-                        <?php for ($skeletonIndex = 0; $skeletonIndex < 8; $skeletonIndex++): ?>
-                            <article class="drop-card products-skeleton-card">
-                                <div class="drop-art">
-                                    <span class="products-skeleton-block products-skeleton-favorite"></span>
+                    <div class="product-grid products-loading-skeleton" aria-hidden="true">
+                        <?php for ($skeletonIndex = 0; $skeletonIndex < 6; $skeletonIndex++): ?>
+                            <article class="product-card products-skeleton-card">
+                                <div class="product-image-wrap">
                                     <span class="products-skeleton-block products-skeleton-artwork"></span>
-                                    <span class="products-skeleton-block products-skeleton-edition"></span>
                                 </div>
-                                <div class="drop-details">
+                                <div class="product-info">
                                     <span class="products-skeleton-block products-skeleton-category"></span>
                                     <div class="products-skeleton-title">
                                         <span class="products-skeleton-block"></span>
                                         <span class="products-skeleton-block products-skeleton-title-short"></span>
                                     </div>
-                                    <div class="products-skeleton-description">
-                                        <span class="products-skeleton-block"></span>
-                                        <span class="products-skeleton-block"></span>
-                                        <span class="products-skeleton-block products-skeleton-description-short"></span>
-                                    </div>
-                                    <hr class="drop-allocation-divider">
-                                    <div class="products-skeleton-purchase">
-                                        <div class="products-skeleton-price-group">
-                                            <span class="products-skeleton-block products-skeleton-price-label"></span>
-                                            <div class="products-skeleton-price-row">
-                                                <span class="products-skeleton-block products-skeleton-price"></span>
-                                                <span class="products-skeleton-block products-skeleton-allocation"></span>
-                                            </div>
-                                        </div>
-                                        <span class="products-skeleton-block products-skeleton-button"></span>
-                                    </div>
+                                    <span class="products-skeleton-block products-skeleton-button"></span>
                                 </div>
                             </article>
                         <?php endfor; ?>
@@ -298,65 +402,35 @@ require __DIR__ . '/../app/views/layout/head.php';
     <script>
         const categoryFilter = document.querySelector(".category-filter");
         if (categoryFilter) {
-            const categoryInput = categoryFilter.querySelector("#catalog-category");
             const categoryTrigger = categoryFilter.querySelector("[data-category-trigger]");
-            const categoryLabel = categoryFilter.querySelector("[data-category-label]");
             const categoryOptions = categoryFilter.querySelector("#catalog-category-options");
             const setCategoryMenuOpen = (open) => {
-                categoryTrigger.setAttribute("aria-expanded", String(open));
-                categoryOptions.hidden = !open;
+                categoryTrigger?.setAttribute("aria-expanded", String(open));
+                if (categoryOptions) categoryOptions.hidden = !open;
             };
 
-            categoryTrigger.addEventListener("click", () => {
+            categoryTrigger?.addEventListener("click", () => {
                 setCategoryMenuOpen(categoryTrigger.getAttribute("aria-expanded") !== "true");
             });
+
             categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
                 option.addEventListener("click", () => {
-                    categoryInput.value = option.dataset.categoryValue;
-                    const categoryBasePath = categoryFilter.dataset.catalogBasePath;
-                    categoryFilter.action = option.dataset.categorySlug
-                        ? `${categoryBasePath}/category/${encodeURIComponent(option.dataset.categorySlug)}`
-                        : categoryBasePath;
-                    categoryLabel.textContent = option.textContent.trim();
-                    categoryFilter.querySelectorAll("[data-category-option]").forEach((item) => {
-                        const selected = item === option;
-                        item.classList.toggle("is-selected", selected);
-                        item.setAttribute("aria-selected", String(selected));
-                    });
                     setCategoryMenuOpen(false);
-                    categoryFilter.requestSubmit();
-                });
-                option.addEventListener("keydown", (event) => {
-                    const options = [...categoryFilter.querySelectorAll("[data-category-option]")];
-                    const index = options.indexOf(option);
-                    const nextIndex = event.key === "ArrowDown"
-                        ? Math.min(index + 1, options.length - 1)
-                        : event.key === "ArrowUp"
-                            ? Math.max(index - 1, 0)
-                            : event.key === "Home"
-                                ? 0
-                                : event.key === "End"
-                                    ? options.length - 1
-                                    : -1;
-                    if (nextIndex >= 0) {
-                        event.preventDefault();
-                        options[nextIndex].focus();
-                    } else if (event.key === "Escape") {
-                        event.preventDefault();
-                        setCategoryMenuOpen(false);
-                        categoryTrigger.focus();
-                    }
+                    const categorySlug = option.dataset.categorySlug || "";
+                    const currentUrl = new URL(window.location.href);
+                    const generation = currentUrl.pathname.match(/\/generation\/([^/]+)/)?.[1] || "";
+                    const newPath = `/products${generation ? `/generation/${encodeURIComponent(generation)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
+                    const newUrl = new URL(newPath, window.location.origin);
+                    const avail = currentUrl.searchParams.get("availability");
+                    const sort = currentUrl.searchParams.get("sort");
+                    const search = currentUrl.searchParams.get("search") || currentUrl.searchParams.get("global_search");
+                    if (avail && avail !== "all") newUrl.searchParams.set("availability", avail);
+                    if (sort && sort !== "featured") newUrl.searchParams.set("sort", sort);
+                    if (search) newUrl.searchParams.set("search", search);
+                    updateCatalogResults?.(newUrl.href, 1, "push");
                 });
             });
-            categoryTrigger.addEventListener("keydown", (event) => {
-                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                    event.preventDefault();
-                    setCategoryMenuOpen(true);
-                    categoryFilter.querySelector('[data-category-option][aria-selected="true"]')?.focus();
-                } else if (event.key === "Escape") {
-                    setCategoryMenuOpen(false);
-                }
-            });
+
             document.addEventListener("click", (event) => {
                 if (!categoryFilter.contains(event.target)) {
                     setCategoryMenuOpen(false);
@@ -380,223 +454,266 @@ require __DIR__ . '/../app/views/layout/head.php';
             }
         });
 
+        let debounceTimer;
+        let activeController;
+        let requestId = 0;
         let updateCatalogResults;
-        const syncCatalogFilters = (url, searchTerm) => {
+
+        const getActiveStateFromUrl = (url) => {
             const generation = url.pathname.match(/\/generation\/([^/]+)/)?.[1] || "";
             const categorySlug = url.pathname.match(/\/category\/([^/]+)/)?.[1] || "";
-            const catalogBasePath = `/products${generation ? `/generation/${generation}` : ""}`;
-            const catalogPath = `${catalogBasePath}${categorySlug ? `/category/${categorySlug}` : ""}`;
-            const categoryFilter = document.querySelector(".category-filter");
-            const searchForm = document.querySelector(".filter-panel-search");
+            const availability = url.searchParams.get("availability") || "all";
+            const sort = url.searchParams.get("sort") || "featured";
+            const search = url.searchParams.get("search") || url.searchParams.get("global_search") || "";
+            const page = Number(url.searchParams.get("page")) || 1;
+            return { generation, categorySlug, availability, sort, search, page };
+        };
 
-            if (categoryFilter) {
-                categoryFilter.dataset.catalogBasePath = catalogBasePath;
-                categoryFilter.action = catalogPath;
-                const selectedOption = [...categoryFilter.querySelectorAll("[data-category-option]")]
-                    .find((option) => (option.dataset.categorySlug || "") === categorySlug);
-                categoryFilter.querySelectorAll("[data-category-option]").forEach((option) => {
-                    const selected = option === selectedOption || (!categorySlug && !option.dataset.categorySlug);
-                    option.classList.toggle("is-selected", selected);
-                    option.setAttribute("aria-selected", String(selected));
+        const syncAllCatalogControls = (url) => {
+            const { generation, categorySlug, availability, sort, search } = getActiveStateFromUrl(url);
+
+            // 1. Sync Availability Buttons
+            document.querySelectorAll("[data-availability-filter]").forEach((btn) => {
+                const filterVal = btn.dataset.availabilityFilter || "all";
+                const isActive = filterVal === availability;
+                btn.classList.toggle("active", isActive);
+                btn.setAttribute("aria-pressed", String(isActive));
+            });
+
+            // 3. Sync Sort Select
+            const sortSelect = document.querySelector("select[data-shop-sort]");
+            if (sortSelect && sortSelect.value !== sort) {
+                sortSelect.value = sort;
+            }
+
+            // 4. Sync Left Sidebar Category Dropdown
+            const categoryForm = document.querySelector(".category-filter");
+            if (categoryForm) {
+                const selectedOption = [...categoryForm.querySelectorAll("[data-category-option]")]
+                    .find((opt) => (opt.dataset.categorySlug || "") === categorySlug);
+                categoryForm.querySelectorAll("[data-category-option]").forEach((opt) => {
+                    const selected = opt === selectedOption || (!categorySlug && !opt.dataset.categorySlug);
+                    opt.classList.toggle("is-selected", selected);
+                    opt.setAttribute("aria-selected", String(selected));
                 });
-                const categoryInput = categoryFilter.querySelector("#catalog-category");
+                const categoryInput = categoryForm.querySelector("#catalog-category");
                 if (categoryInput) {
                     categoryInput.value = selectedOption?.dataset.categoryValue || "";
                 }
-                const categoryLabel = categoryFilter.querySelector("[data-category-label]");
+                const categoryLabel = categoryForm.querySelector("[data-category-label]");
                 if (categoryLabel) {
                     categoryLabel.textContent = selectedOption?.textContent.trim() || "All Categories";
                 }
             }
 
-            if (searchForm) {
-                searchForm.action = catalogPath;
-            }
-
+            // 5. Sync Generation Links & preserve active query params
             document.querySelectorAll(".generation-filter-option").forEach((link) => {
-                const linkGeneration = link.dataset.generationSlug || "";
-                const linkBasePath = `/products${linkGeneration ? `/generation/${linkGeneration}` : ""}`;
-                const linkPath = `${linkBasePath}${categorySlug ? `/category/${categorySlug}` : ""}`;
+                const linkGen = link.dataset.generationSlug || "";
+                const linkPath = `/products${linkGen ? `/generation/${encodeURIComponent(linkGen)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
                 const linkUrl = new URL(linkPath, window.location.origin);
-                if (searchTerm) {
-                    linkUrl.searchParams.set("search", searchTerm);
-                }
+                if (availability !== "all") { linkUrl.searchParams.set("availability", availability); }
+                if (sort !== "featured") { linkUrl.searchParams.set("sort", sort); }
+                if (search) { linkUrl.searchParams.set("search", search); }
                 link.href = linkUrl.href;
-                const selected = linkGeneration === generation;
-                link.classList.toggle("is-active", selected);
-                if (selected) {
+                const isActive = linkGen === generation;
+                link.classList.toggle("is-active", isActive);
+                if (isActive) {
                     link.setAttribute("aria-current", "true");
                 } else {
                     link.removeAttribute("aria-current");
                 }
             });
-        };
 
-        document.querySelectorAll(".catalog-search, .category-filter").forEach((form) => {
-            if (form.matches(".catalog-search")) {
-                const searchInput = form.querySelector('input[name="search"]');
-                if (searchInput) {
-                    let debounceTimer;
-                    let activeController;
-                    let requestId = 0;
-
-                    const updateCatalogSearch = async (route = form.action, page, historyMode = "replace") => {
-                        const request = ++requestId;
-                        activeController?.abort();
-                        activeController = new AbortController();
-                        catalogResults?.classList.add("is-loading");
-                        catalogResults?.setAttribute("aria-busy", "true");
-
-                        const searchUrl = new URL(route, window.location.href);
-                        const requestedPage = page || Number(searchUrl.searchParams.get("page")) || 1;
-                        searchUrl.searchParams.delete("ajax");
-                        searchUrl.searchParams.delete("page");
-                        searchUrl.searchParams.delete("search");
-                        searchUrl.searchParams.delete("global_search");
-                        const searchTerm = searchInput.value.trim();
-                        if (searchTerm) {
-                            searchUrl.searchParams.set("search", searchTerm);
-                        }
-                        const params = searchUrl.searchParams;
-                        params.set("ajax", "search");
-                        params.set("page", String(requestedPage));
-
-                        try {
-                            const response = await fetch(searchUrl, { signal: activeController.signal });
-                            if (!response.ok) {
-                                throw new Error(`Product search failed with status ${response.status}.`);
-                            }
-                            const data = await response.json();
-                            if (request !== requestId) {
-                                return;
-                            }
-                            const resultDocument = new DOMParser().parseFromString(data.html, "text/html");
-                            const nextResults = resultDocument.querySelector(".catalog-product-results-fragment");
-                            const nextCount = resultDocument.querySelector("#all-products-count");
-                            if (!nextResults || !nextCount || !catalogResults) {
-                                throw new Error("Product search returned incomplete results.");
-                            }
-                            document.querySelector("[data-catalog-search-error]")?.remove();
-                            const loadingSkeleton = catalogResults.querySelector(".products-loading-skeleton");
-                            loadingSkeleton?.remove();
-                            catalogResults.replaceChildren(
-                                ...(loadingSkeleton ? [loadingSkeleton] : []),
-                                ...nextResults.childNodes
-                            );
-                            document.querySelector("#all-products-count").textContent = nextCount.textContent;
-
-                            const currentUrl = new URL(searchUrl);
-                            currentUrl.searchParams.delete("ajax");
-                            currentUrl.searchParams.delete("page");
-                            if (searchTerm && !/\/(?:generation|category)\//.test(currentUrl.pathname)) {
-                                currentUrl.pathname = `/products/${encodeURIComponent(searchTerm)}`;
-                                currentUrl.searchParams.delete("search");
-                            } else if (searchTerm) {
-                                currentUrl.searchParams.set("search", searchTerm);
-                            } else {
-                                currentUrl.searchParams.delete("search");
-                            }
-                            if (data.currentPage > 1) {
-                                currentUrl.searchParams.set("page", String(data.currentPage));
-                            }
-                            syncCatalogFilters(currentUrl, searchTerm);
-                            window.history[historyMode === "push" ? "pushState" : "replaceState"]({}, "", currentUrl);
-                            initializeProductImages();
-                        } catch (error) {
-                            if (error.name !== "AbortError" && request === requestId) {
-                                console.error(error);
-                                let errorNotice = document.querySelector("[data-catalog-search-error]");
-                                if (!errorNotice) {
-                                    errorNotice = document.createElement("p");
-                                    errorNotice.className = "all-products-empty";
-                                    errorNotice.setAttribute("role", "alert");
-                                    errorNotice.dataset.catalogSearchError = "";
-                                    catalogResults?.before(errorNotice);
-                                }
-                                errorNotice.textContent = "Product results could not be updated. Please try again.";
-                                catalogResults?.setAttribute("aria-busy", "false");
-                                catalogResults?.classList.remove("is-loading");
-                            }
-                        } finally {
-                            if (request === requestId) {
-                                catalogResults?.setAttribute("aria-busy", "false");
-                                catalogResults?.classList.remove("is-loading");
-                            }
-                        }
-                    };
-                    updateCatalogResults = updateCatalogSearch;
-
-                    form.addEventListener("input", (event) => {
-                        if (event.target !== searchInput) {
-                            return;
-                        }
-                        activeController?.abort();
-                        requestId++;
-                        window.clearTimeout(debounceTimer);
-                        debounceTimer = window.setTimeout(() => updateCatalogSearch(form.action, 1), 100);
-                    });
-                    form.addEventListener("submit", (event) => {
-                        event.preventDefault();
-                        window.clearTimeout(debounceTimer);
-                        updateCatalogSearch(form.action, 1, "push");
-                    });
-                }
-            } else {
-                form.addEventListener("submit", (event) => {
-                    event.preventDefault();
-                    updateCatalogResults?.(form.action, 1, "push");
-                });
-            }
-        });
-
-        document.addEventListener("click", (event) => {
-            const link = event.target instanceof Element
-                ? event.target.closest(".generation-filter-option, .all-products-pagination a, .filter-panel-search a")
-                : null;
-            if (!link || !updateCatalogResults || event.defaultPrevented
-                || event.button !== 0 || event.metaKey || event.ctrlKey
-                || event.shiftKey || event.altKey || (link.target && link.target !== "_self")) {
-                return;
-            }
-            event.preventDefault();
-            const linkUrl = new URL(link.href, window.location.href);
-            if (link.matches(".filter-panel-search a")) {
-                const searchInput = document.querySelector('.filter-panel-search input[name="search"]');
-                if (searchInput) {
-                    searchInput.value = linkUrl.searchParams.get("search")
-                        || linkUrl.searchParams.get("global_search")
-                        || "";
-                }
-            }
-            updateCatalogResults(linkUrl.href, Number(linkUrl.searchParams.get("page")) || 1, "push");
-        });
-
-        window.addEventListener("popstate", () => {
-            const currentUrl = new URL(window.location.href);
-            updateCatalogResults?.(currentUrl.href, Number(currentUrl.searchParams.get("page")) || 1);
-        });
-
-        const initializeProductImages = () => {
-            document.querySelectorAll(".drop-product-image:not([data-image-initialized])").forEach((image) => {
-                image.dataset.imageInitialized = "true";
-                const showLoadedImage = () => image.classList.remove("is-loading");
-                const showInitialFallback = () => {
-                    showLoadedImage();
-                    image.classList.add("hidden");
-                    image.nextElementSibling?.classList.remove("hidden");
-                };
-                image.addEventListener("load", showLoadedImage, { once: true });
-                image.addEventListener("error", showInitialFallback, { once: true });
-                if (image.complete) {
-                    if (image.naturalWidth === 0) {
-                        showInitialFallback();
-                    } else {
-                        showLoadedImage();
-                    }
+            // 6. Sync Search Input if present
+            const searchInputs = document.querySelectorAll('.filter-panel-search input[name="search"]');
+            searchInputs.forEach((input) => {
+                if (document.activeElement !== input) {
+                    input.value = search;
                 }
             });
         };
-        initializeProductImages();
+
+        updateCatalogResults = async (targetUrl, targetPage = 1, historyMode = "push") => {
+            const request = ++requestId;
+            activeController?.abort();
+            activeController = new AbortController();
+
+            catalogResults?.classList.add("is-loading");
+            catalogResults?.setAttribute("aria-busy", "true");
+
+            const fetchUrl = new URL(targetUrl, window.location.origin);
+            const requestedPage = targetPage || Number(fetchUrl.searchParams.get("page")) || 1;
+            fetchUrl.searchParams.set("ajax", "search");
+            fetchUrl.searchParams.set("page", String(requestedPage));
+
+            try {
+                const response = await fetch(fetchUrl, { credentials: "same-origin", signal: activeController.signal });
+                if (!response.ok) {
+                    throw new Error(`Product search failed with status ${response.status}.`);
+                }
+                const data = await response.json();
+                if (request !== requestId) {
+                    return;
+                }
+                const resultDocument = new DOMParser().parseFromString(data.html, "text/html");
+                const nextResults = resultDocument.querySelector(".catalog-product-results-fragment");
+                const nextCount = resultDocument.querySelector("#all-products-count");
+                if (!nextResults || !catalogResults) {
+                    throw new Error("Product catalog returned incomplete results.");
+                }
+
+                document.querySelector("[data-catalog-search-error]")?.remove();
+                const loadingSkeleton = catalogResults.querySelector(".products-loading-skeleton");
+                catalogResults.replaceChildren(
+                    ...(loadingSkeleton ? [loadingSkeleton] : []),
+                    ...nextResults.childNodes
+                );
+
+                const countEl = document.querySelector("#all-products-count");
+                if (countEl && nextCount) {
+                    countEl.textContent = nextCount.textContent;
+                }
+
+                const nextUrl = new URL(fetchUrl);
+                nextUrl.searchParams.delete("ajax");
+                if (data.currentPage <= 1) {
+                    nextUrl.searchParams.delete("page");
+                } else {
+                    nextUrl.searchParams.set("page", String(data.currentPage));
+                }
+
+                syncAllCatalogControls(nextUrl);
+                window.history[historyMode === "push" ? "pushState" : "replaceState"]({}, "", nextUrl);
+            } catch (error) {
+                if (error.name !== "AbortError" && request === requestId) {
+                    console.error(error);
+                    let errorNotice = document.querySelector("[data-catalog-search-error]");
+                    if (!errorNotice) {
+                        errorNotice = document.createElement("p");
+                        errorNotice.className = "all-products-empty";
+                        errorNotice.setAttribute("role", "alert");
+                        errorNotice.dataset.catalogSearchError = "";
+                        catalogResults?.before(errorNotice);
+                    }
+                    errorNotice.textContent = "Product results could not be updated. Please try again.";
+                }
+            } finally {
+                if (request === requestId) {
+                    catalogResults?.setAttribute("aria-busy", "false");
+                    catalogResults?.classList.remove("is-loading");
+                }
+            }
+        };
+
+        // Delegated clicks
+        document.addEventListener("click", (event) => {
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                return;
+            }
+
+
+            // Availability buttons
+            const availBtn = event.target instanceof Element ? event.target.closest("[data-availability-filter]") : null;
+            if (availBtn) {
+                event.preventDefault();
+                const currentUrl = new URL(window.location.href);
+                const filter = availBtn.dataset.availabilityFilter || "all";
+                if (filter === "all") {
+                    currentUrl.searchParams.delete("availability");
+                } else {
+                    currentUrl.searchParams.set("availability", filter);
+                }
+                updateCatalogResults(currentUrl.href, 1, "push");
+                return;
+            }
+
+            // Generation links
+            const genLink = event.target instanceof Element ? event.target.closest(".generation-filter-option") : null;
+            if (genLink) {
+                event.preventDefault();
+                updateCatalogResults(genLink.href, 1, "push");
+                return;
+            }
+
+            // Filter removal chips & clear/reset
+            const removeFilter = event.target instanceof Element ? event.target.closest("[data-remove-filter], [data-clear-all-filters], [data-reset-catalog-filters]") : null;
+            if (removeFilter) {
+                event.preventDefault();
+                if (removeFilter.matches("[data-remove-filter='search']") || removeFilter.matches("[data-clear-all-filters]") || removeFilter.matches("[data-reset-catalog-filters]")) {
+                    document.querySelectorAll('.filter-panel-search input[name="search"]').forEach(i => i.value = "");
+                }
+                updateCatalogResults(removeFilter.href, 1, "push");
+                return;
+            }
+
+            // Pagination buttons
+            const pageLink = event.target instanceof Element ? event.target.closest(".all-products-pagination a") : null;
+            if (pageLink) {
+                event.preventDefault();
+                const linkUrl = new URL(pageLink.href, window.location.origin);
+                const page = Number(linkUrl.searchParams.get("page")) || 1;
+                updateCatalogResults(pageLink.href, page, "push");
+                const catalogTop = document.querySelector(".products-catalog-layout");
+                if (catalogTop) {
+                    window.scrollTo({ top: catalogTop.offsetTop - 120, behavior: "smooth" });
+                }
+                return;
+            }
+        });
+
+        // Sort control changes
+        document.addEventListener("change", (event) => {
+            const select = event.target instanceof Element ? event.target.closest("select[data-shop-sort]") : null;
+            if (select) {
+                const currentUrl = new URL(window.location.href);
+                const sort = select.value || "featured";
+                if (sort === "featured") {
+                    currentUrl.searchParams.delete("sort");
+                } else {
+                    currentUrl.searchParams.set("sort", sort);
+                }
+                updateCatalogResults(currentUrl.href, 1, "push");
+            }
+        });
+
+        // Search inputs
+        document.addEventListener("input", (event) => {
+            const searchInput = event.target instanceof Element ? event.target.closest('.filter-panel-search input[name="search"]') : null;
+            if (!searchInput) return;
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(() => {
+                const currentUrl = new URL(window.location.href);
+                const term = searchInput.value.trim();
+                if (term) {
+                    currentUrl.searchParams.set("search", term);
+                } else {
+                    currentUrl.searchParams.delete("search");
+                }
+                updateCatalogResults(currentUrl.href, 1, "replace");
+            }, 150);
+        });
+
+        document.addEventListener("submit", (event) => {
+            const form = event.target instanceof Element ? event.target.closest(".filter-panel-search") : null;
+            if (!form) return;
+            event.preventDefault();
+            window.clearTimeout(debounceTimer);
+            const searchInput = form.querySelector('input[name="search"]');
+            const currentUrl = new URL(window.location.href);
+            const term = searchInput ? searchInput.value.trim() : "";
+            if (term) {
+                currentUrl.searchParams.set("search", term);
+            } else {
+                currentUrl.searchParams.delete("search");
+            }
+            updateCatalogResults(currentUrl.href, 1, "push");
+        });
+
+        // Browser history navigation
+        window.addEventListener("popstate", () => {
+            const currentUrl = new URL(window.location.href);
+            updateCatalogResults?.(currentUrl.href, Number(currentUrl.searchParams.get("page")) || 1, "replace");
+        });
     </script>
 
     <?php

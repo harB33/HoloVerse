@@ -48,17 +48,25 @@ function store_collector_favorite_products(DatabaseConnection $conn, int $userId
         return [];
     }
 
+    $availableStock = store_available_stock_sql();
     $statement = $conn->prepare(
         "SELECT DISTINCT ON (p.product_id)
-                p.product_id, p.product_name, p.description, p.is_preorder,
-                c.category_name, v.variant_name, v.price, v.currency, i.image_url, i.alt_text
+                p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+                c.category_id, c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
+                {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
+                (SELECT t.talent_name
+                 FROM product_talents_tbl pt
+                 INNER JOIN talent_tbl t ON t.talent_id = pt.talent_id
+                 WHERE pt.product_id = p.product_id
+                 ORDER BY t.talent_id
+                 LIMIT 1) AS talent_name
          FROM collector_favorites_tbl f
          INNER JOIN product_tbl p ON p.product_id = f.product_id
          INNER JOIN category_tbl c ON c.category_id = p.category_id
          INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
          LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
          WHERE f.user_id = ? AND p.status = 'active'
-         ORDER BY p.product_id, v.variant_id, i.image_id
+         ORDER BY p.product_id, ({$availableStock} > 0) DESC, v.variant_id, i.image_id
          LIMIT ? OFFSET ?"
     );
     $statement->bind_param('iii', $userId, $limit, $offset);

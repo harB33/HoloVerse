@@ -144,13 +144,12 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell cart-page">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
         $showLogin = true;
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
-        <main class="cart-main">
+        <main class="cart-main landing-shell">
             <?php if ($cartItems): ?>
                 <div class="cart-layout" data-cart-layout>
                     <section class="cart-list-panel" aria-labelledby="cart-title">

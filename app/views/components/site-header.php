@@ -7,35 +7,12 @@ $pageUrlPrefix = $siteRoot;
 $catalogSearchValue = $activePage === 'products' && isset($generalProductSearch) && is_string($generalProductSearch)
     ? $generalProductSearch
     : '';
-$headerFlashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
-$headerFlashSaleNow = new DateTimeImmutable('now', $headerFlashSaleTimezone);
-$headerLiveFlashSaleProducts = isset($flashSaleProducts['live']) && is_array($flashSaleProducts['live'])
-    ? $flashSaleProducts['live']
-    : (store_flash_sale_table_exists($conn)
-        ? store_flash_sale_rows($conn, 'live', $headerFlashSaleNow)
-        : []);
-$headerLiveFlashSaleCount = count($headerLiveFlashSaleProducts);
 $headerCartId = store_current_cart_id($conn, false);
 $headerCartPayload = store_cart_drawer_payload($conn, $headerCartId);
 $headerCartCount = (int) ($headerCartPayload['count'] ?? 0);
 $headerCsrfToken = store_csrf_token();
 ?>
 <div class="site-header-wrap">
-    <div class="announcement-bar">
-        <span>Official hololive production merchandise</span>
-        <span class="announcement-separator" aria-hidden="true"></span>
-        <a class="announcement-link" href="<?= $activePage === 'home' ? '#flash-drop' : store_escape($pageUrlPrefix . 'flash-sale') ?>">
-            <span class="announcement-live-badge<?= $headerLiveFlashSaleCount > 0 ? '' : ' hidden' ?>" role="status" aria-hidden="<?= $headerLiveFlashSaleCount > 0 ? 'false' : 'true' ?>" data-live-flash-notice data-status-url="<?= store_escape($pageUrlPrefix . 'flash-sale-status') ?>">
-                <strong>Flash sale live</strong> · <span data-live-flash-count><?= $headerLiveFlashSaleCount ?> discounted <?= $headerLiveFlashSaleCount === 1 ? 'deal' : 'deals' ?> available now</span> ·
-            </span>
-            <span>Flash drop preview · Pre-orders now open</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-            </svg>
-        </a>
-    </div>
-
     <header class="site-header">
         <button class="mobile-icon-button" type="button" data-mobile-menu-open aria-label="Open menu" aria-expanded="false" aria-controls="site-mobile-menu">
             <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -52,11 +29,8 @@ $headerCsrfToken = store_csrf_token();
 
         <nav class="main-nav" aria-label="Main navigation">
             <a href="<?= store_escape($siteRoot . 'home') ?>"<?= $activePage === 'home' ? ' aria-current="page"' : '' ?>>Home</a>
-            <a href="<?= $activePage === 'home' ? '#shop' : store_escape($pageUrlPrefix . 'products') ?>" data-home-jump="All merch|all">New arrivals</a>
-            <a href="<?= store_escape($pageUrlPrefix . 'flash-sale') ?>"<?= $activePage === 'flash_sale' ? ' aria-current="page"' : '' ?>>Flash drop</a>
-            <a href="<?= store_escape($pageUrlPrefix . 'pre_order') ?>"<?= $activePage === 'pre_order' ? ' aria-current="page"' : '' ?>>Pre-orders</a>
-            <a href="<?= store_escape($pageUrlPrefix . 'products') ?>"<?= $activePage === 'products' ? ' aria-current="page"' : '' ?>>Merch</a>
-            <a href="<?= store_escape($pageUrlPrefix . 'talents') ?>"<?= $activePage === 'talents' ? ' aria-current="page"' : '' ?>>Talents</a>
+            <a href="<?= store_escape($pageUrlPrefix . 'products') ?>"<?= $activePage === 'products' ? ' aria-current="page"' : '' ?>>Product</a>
+            <a href="<?= store_escape($pageUrlPrefix . 'talents') ?>"<?= $activePage === 'talents' ? ' aria-current="page"' : '' ?>>Talent</a>
             <a href="<?= store_escape($pageUrlPrefix . 'about-us') ?>"<?= $activePage === 'about-us' ? ' aria-current="page"' : '' ?>>About Us</a>
         </nav>
 
@@ -326,18 +300,9 @@ $headerCsrfToken = store_csrf_token();
     </div>
     <nav aria-label="Mobile menu links">
         <a href="<?= store_escape($siteRoot . 'home') ?>">Home <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= $activePage === 'home' ? '#shop' : store_escape($pageUrlPrefix . 'products') ?>" data-home-jump="All merch|all">New arrivals <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= store_escape($pageUrlPrefix . 'flash-sale') ?>">Flash drop <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= store_escape($pageUrlPrefix . 'pre_order') ?>">Pre-orders <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= store_escape($pageUrlPrefix . 'products') ?>">All Merch <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= store_escape($pageUrlPrefix . 'talents') ?>">Talents <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <a href="<?= store_escape($pageUrlPrefix . 'collector-showcase') ?>">Collector Showcase <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="<?= store_escape($pageUrlPrefix . 'products') ?>">Product <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <a href="<?= store_escape($pageUrlPrefix . 'talents') ?>">Talent <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
         <a href="<?= store_escape($pageUrlPrefix . 'about-us') ?>">About Us <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="<?= store_escape($pageUrlPrefix . 'purchase') ?>">My Purchases <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <?php else: ?>
-            <a href="<?= store_escape($pageUrlPrefix . 'login') ?>">Log in / Register <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-        <?php endif; ?>
     </nav>
     <p>Authentic hololive production merchandise, shipped worldwide.</p>
 </aside>

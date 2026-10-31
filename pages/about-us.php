@@ -7,13 +7,12 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell info-page about-page">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'about-us';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="info-main about-main">
+        <main class="info-main about-main landing-shell">
             <section class="about-introduction" aria-labelledby="about-title">
                 <div class="about-intro-copy">
                     <span class="about-kicker">About HoloVerse</span>

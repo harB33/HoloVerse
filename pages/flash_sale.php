@@ -60,14 +60,12 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell info-page flash-sale-page">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
-
         <?php
         $activePage = 'flash_sale';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="flash-sale-main">
+        <main class="flash-sale-main landing-shell">
             <?php if (!$flashSaleSchedulingAvailable): ?>
                 <p class="flash-setup-notice" role="status">Flash sale scheduling is temporarily unavailable, so no drops are being shown. The database must include the <code>flash_sale_tbl</code> table from <code>Database/holoverse.sql</code> before an administrator can schedule sales.</p>
             <?php endif; ?>
@@ -80,12 +78,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                     <h1 id="flash-sale-title">Flash Sales</h1>
                     <p class="flash-checkout-note">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                             <path d="M3 6h18" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                         </svg>
-                        Your cart is saved to this browser and can be linked to your account. Live flash-sale items are held for five minutes after being added.
+                        Your bag is saved to this browser and can be linked to your account. Live flash-sale items are held for five minutes after being added.
                     </p>
                 </div>
 
@@ -192,7 +190,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
                                     <path d="m9 12 2 2 4-4" />
                                 </svg>
-                                <p>Shop with confidence. Your order is protected throughout checkout and fulfillment, carefully packed, and shipped securely to your door. We take care to handle every order with attention from checkout to delivery. Keep your order confirmation handy for reference, and reach out if you need help.</p>
+                                <p>Shop with confidence. Your order is protected throughout checkout and fulfillment, carefully packed, and shipped securely to your door. Keep your order confirmation handy for reference, and reach out if you need help.</p>
                             </aside>
                         </div>
 
@@ -200,7 +198,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>" data-sale-detail="variant-id">
                             <button class="flash-reserve-button" type="submit" name="action" value="add">
-                                    Add to cart
+                                Claim flash price
                             </button>
                         </form>
                         <p data-sale-detail="cart-message" role="status" hidden></p>

@@ -269,7 +269,7 @@ document.addEventListener('submit', async (event) => {
             },
         }));
 
-        const showcaseCard = form.closest('.collector-showcase-card');
+        const showcaseCard = form.closest('.collector-showcase-card, [data-favorite-grid] > .product-card');
         if (!isFavorite && showcaseCard) {
             const grid = showcaseCard.closest('[data-favorite-grid]');
             showcaseCard.remove();

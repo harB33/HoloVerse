@@ -133,14 +133,13 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'orders';
         $showLogin = true;
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="order-history-main">
+        <main class="order-history-main landing-shell">
             <header class="order-history-heading">
                 <h1>My Orders</h1>
                 <p>Review the items, payment details, and delivery address for your orders.</p>

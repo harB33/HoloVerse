@@ -57,8 +57,21 @@ function store_talent_filter_group_slugs_sql(): string
     );
 }
 
-function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, int $offset = 0, string $search = '', string $groupSlug = '', int $categoryId = 0, bool $randomize = false, bool $includeImageGallery = false, int $relatedProductId = 0): array
-{
+function store_catalog_product_rows(
+    DatabaseConnection $conn,
+    int $limit = 0,
+    int $offset = 0,
+    string $search = '',
+    string $groupSlug = '',
+    int $categoryId = 0,
+    bool $randomize = false,
+    bool $includeImageGallery = false,
+    int $relatedProductId = 0,
+    string $availability = 'all',
+    string $sort = 'featured',
+    array $flashProductIds = [],
+    array $favoriteProductIds = []
+): array {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
     $imageGallerySelect = $includeImageGallery
@@ -79,6 +92,22 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
               AND current_pt.product_id = {$relatedProductId}
         )"
         : '';
+    $availabilityWhere = '';
+    if ($availability === 'ready') {
+        $availabilityWhere = " AND p.is_preorder = 0 AND ({$availableStock}) > 0";
+    } elseif ($availability === 'preorder') {
+        $availabilityWhere = ' AND p.is_preorder = 1';
+    } elseif ($availability === 'flash') {
+        $cleanFlashIds = array_values(array_filter(array_map('intval', $flashProductIds), static fn (int $id): bool => $id > 0));
+        $availabilityWhere = $cleanFlashIds !== []
+            ? ' AND p.product_id IN (' . implode(',', $cleanFlashIds) . ')'
+            : ' AND 1 = 0';
+    } elseif ($availability === 'saved') {
+        $cleanFavIds = array_values(array_filter(array_map('intval', $favoriteProductIds), static fn (int $id): bool => $id > 0));
+        $availabilityWhere = $cleanFavIds !== []
+            ? ' AND p.product_id IN (' . implode(',', $cleanFavIds) . ')'
+            : ' AND 1 = 0';
+    }
     $searchWhere = '';
     if ($search !== '') {
         $searchWhere = " AND (
@@ -94,6 +123,14 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
             )
         )";
     }
+    $outerOrder = match ($sort) {
+        'price-low' => '(catalog_products.stock_quantity > 0) DESC, catalog_products.price ASC, catalog_products.product_id DESC',
+        'price-high' => '(catalog_products.stock_quantity > 0) DESC, catalog_products.price DESC, catalog_products.product_id DESC',
+        'name' => '(catalog_products.stock_quantity > 0) DESC, LOWER(catalog_products.product_name) ASC, catalog_products.product_id DESC',
+        default => '(catalog_products.stock_quantity > 0) DESC, catalog_products.product_id DESC',
+    };
+    $orderClause = $randomize ? 'RANDOM()' : $outerOrder;
+
     $sql = "SELECT catalog_products.*
             FROM (
                 SELECT DISTINCT ON (p.product_id)
@@ -119,10 +156,10 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
                       INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                       INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                       WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
-                  ){$categoryWhere}{$relatedProductWhere}{$searchWhere}
+                  ){$categoryWhere}{$relatedProductWhere}{$availabilityWhere}{$searchWhere}
                 ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
             ) AS catalog_products
-            ORDER BY (catalog_products.stock_quantity > 0) DESC, " . ($randomize ? 'RANDOM()' : 'catalog_products.product_id DESC');
+            ORDER BY {$orderClause}";
     if ($search !== '') {
         $pattern = '%' . $search . '%';
     }
@@ -142,13 +179,37 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
     return $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 
-function store_catalog_product_count(DatabaseConnection $conn, string $search = '', string $groupSlug = '', int $categoryId = 0): int
-{
+function store_catalog_product_count(
+    DatabaseConnection $conn,
+    string $search = '',
+    string $groupSlug = '',
+    int $categoryId = 0,
+    string $availability = 'all',
+    array $flashProductIds = [],
+    array $favoriteProductIds = []
+): int {
+    $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
     $groupWhere = in_array($groupSlug, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
         : '';
     $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
+    $availabilityWhere = '';
+    if ($availability === 'ready') {
+        $availabilityWhere = " AND p.is_preorder = 0 AND ({$availableStock}) > 0";
+    } elseif ($availability === 'preorder') {
+        $availabilityWhere = ' AND p.is_preorder = 1';
+    } elseif ($availability === 'flash') {
+        $cleanFlashIds = array_values(array_filter(array_map('intval', $flashProductIds), static fn (int $id): bool => $id > 0));
+        $availabilityWhere = $cleanFlashIds !== []
+            ? ' AND p.product_id IN (' . implode(',', $cleanFlashIds) . ')'
+            : ' AND 1 = 0';
+    } elseif ($availability === 'saved') {
+        $cleanFavIds = array_values(array_filter(array_map('intval', $favoriteProductIds), static fn (int $id): bool => $id > 0));
+        $availabilityWhere = $cleanFavIds !== []
+            ? ' AND p.product_id IN (' . implode(',', $cleanFavIds) . ')'
+            : ' AND 1 = 0';
+    }
     $searchWhere = '';
     if ($search !== '') {
         $searchWhere = " AND (
@@ -175,7 +236,7 @@ function store_catalog_product_count(DatabaseConnection $conn, string $search = 
                   INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                   INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                   WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
-              ){$categoryWhere}{$searchWhere}";
+              ){$categoryWhere}{$availabilityWhere}{$searchWhere}";
     if ($search !== '') {
         $pattern = '%' . $search . '%';
         $statement = $conn->prepare($sql);

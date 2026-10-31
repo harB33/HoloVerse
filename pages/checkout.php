@@ -216,12 +216,11 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell checkout-page">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
-        <main class="checkout-main">
+        <main class="checkout-main landing-shell">
             <?php if ($orderNumber !== ''): ?>
                 <section class="checkout-panel checkout-confirmation" aria-labelledby="checkout-title">
                     <span class="drops-eyebrow">Order placed</span>

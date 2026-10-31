@@ -141,7 +141,7 @@ if ($talent) {
         "SELECT collection_products.*
          FROM (
              SELECT DISTINCT ON (p.product_id)
-                    p.product_id, p.product_name, p.description, p.is_preorder,
+                    p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                     c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
                     {$availableStock} AS stock_quantity, i.image_url, i.alt_text
              FROM product_tbl p
@@ -181,6 +181,10 @@ if ($talent) {
     $statement->execute();
     $products = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
     $statement->close();
+    foreach ($products as &$productRow) {
+        $productRow['talent_name'] = $talent['talent_name'];
+    }
+    unset($productRow);
 }
 
 $pageTitle = $talent ? $talent['talent_name'] . ' Merchandise | HoloVerse' : 'Talent Not Found | HoloVerse';
@@ -190,27 +194,36 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body>
     <div class="page-shell">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
-        $activePage = '';
+        $activePage = 'talents';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="all-products-main" aria-labelledby="talent-merch-title">
+        <main class="all-products-main landing-shell" aria-labelledby="talent-merch-title">
             <section class="all-products-intro">
-                <span class="drops-eyebrow">Talent collection</span>
-                <?php if ($talent): ?>
-                    <h1 id="talent-merch-title"><?= store_escape($talent['talent_name']) ?> merchandise</h1>
-                    <p>Browse all available merchandise associated with <?= store_escape($talent['talent_name']) ?>.</p>
-                <?php else: ?>
-                    <h1 id="talent-merch-title">Talent not found</h1>
-                    <p>This talent collection could not be found. Return to the directory to choose a talent.</p>
-                <?php endif; ?>
-                <?php if ($talent): ?>
-                    <?php if ($products): ?>
-                        <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
+                <div class="all-products-intro-top">
+                    <div>
+                        <p class="eyebrow">Talent collection</p>
+                        <?php if ($talent): ?>
+                            <h1 id="talent-merch-title"><?= store_escape($talent['talent_name']) ?> merchandise</h1>
+                            <p>Browse all official character goods, apparel, and collectibles associated with <?= store_escape($talent['talent_name']) ?>.</p>
+                        <?php else: ?>
+                            <h1 id="talent-merch-title">Talent not found</h1>
+                            <p>This talent collection could not be found. Return to the directory to choose a talent.</p>
+                        <?php endif; ?>
+                    </div>
+                    <?php if ($talent): ?>
+                        <div class="all-products-intro-actions">
+                            <?php if ($products): ?>
+                                <span class="all-products-count"><?= number_format($totalProductCount) ?> products<?= $productSearch !== '' ? ' found' : '' ?></span>
+                            <?php endif; ?>
+                            <a class="button-text" href="/talents">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                                All talents
+                            </a>
+                        </div>
                     <?php endif; ?>
-                <?php endif; ?>
+                </div>
             </section>
 
             <?php if ($talent): ?>
@@ -264,50 +277,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </form>
                         <?php endif; ?>
                         <?php if ($products): ?>
-                            <section class="drops-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
+                            <section class="product-grid all-products-grid" aria-label="<?= store_escape($talent['talent_name']) ?> merchandise">
                                 <?php foreach ($products as $product): ?>
-                                    <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
-                                    <article class="drop-card">
-                                        <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
-                                        <div class="drop-art">
-                                            <?php require __DIR__ . '/../app/views/components/collector-favorite-button.php'; ?>
-                                            <div class="drop-art-labels<?= (int) $product['stock_quantity'] > 0 ? ' drop-art-labels-no-status' : '' ?>">
-                                                <?php if ((int) $product['stock_quantity'] <= 0): ?>
-                                                    <span class="drop-status">Sold out</span>
-                                                <?php endif; ?>
-                                                <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
-                                            </div>
-                                            <?php if (!empty($product['image_url'])): ?>
-                                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '/')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '/')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
-                                            <?php endif; ?>
-                                            <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
-                                        </div>
-                                        <div class="drop-details">
-                                            <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
-                                            <h2><?= store_escape($product['product_name']) ?></h2>
-                                            <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
-                                            <hr class="drop-allocation-divider">
-                                            <div class="drop-purchase">
-                                                <div>
-                                                    <span class="drop-price-label"><?= (int) $product['is_preorder'] === 1 ? 'Pre-order price' : 'Price' ?></span>
-                                                    <div class="drop-price-row">
-                                                        <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
-                                                        <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Left</span></div>
-                                                    </div>
-                                                </div>
-                                                <?php if ((int) $product['stock_quantity'] > 0): ?>
-                                                    <form action="cart" method="post">
-                                                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                                        <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                                        <button type="submit" name="action" value="add">Add to cart</button>
-                                                    </form>
-                                                <?php else: ?>
-                                                    <span>Sold out</span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <?php require __DIR__ . '/../app/views/components/product-card.php'; ?>
                                 <?php endforeach; ?>
                             </section>
                             <?php if ($pageCount > 1): ?>
@@ -333,27 +305,16 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                 </div>
             <?php endif; ?>
-            <a class="talent-directory-back-link" href="/talents">Back to the talent directory</a>
+            <div class="talent-directory-back-wrap">
+                <a class="button-primary dark" href="/talents">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Back to the talent directory</span>
+                </a>
+            </div>
         </main>
     </div>
 
     <script>
-        const initializeProductImages = (root = document) => {
-            root.querySelectorAll(".drop-product-image:not([data-image-initialized])").forEach((image) => {
-                image.dataset.imageInitialized = "true";
-                const showInitialFallback = () => {
-                    image.classList.add("hidden");
-                    image.nextElementSibling?.classList.remove("hidden");
-                };
-                image.addEventListener("error", showInitialFallback, { once: true });
-                if (image.complete && image.naturalWidth === 0) {
-                    showInitialFallback();
-                }
-            });
-        };
-
-        initializeProductImages();
-
         let activeCatalogRequest;
         let catalogRequestId = 0;
         const updateTalentCatalog = async (url, historyMode = "push") => {
@@ -375,8 +336,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                 const nextLayout = responseDocument.querySelector(".talent-merch-layout");
                 const nextCount = responseDocument.querySelector(".all-products-intro .all-products-count");
                 const currentCount = document.querySelector(".all-products-intro .all-products-count");
-                const intro = document.querySelector(".all-products-intro");
-                if (!nextLayout || !currentLayout || !intro) {
+                const introActions = document.querySelector(".all-products-intro-actions");
+                if (!nextLayout || !currentLayout) {
                     throw new Error("The collection response was incomplete.");
                 }
                 if (requestId !== catalogRequestId) {
@@ -387,8 +348,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                 if (nextCount) {
                     if (currentCount) {
                         currentCount.replaceWith(nextCount);
-                    } else {
-                        intro.insertBefore(nextCount, intro.querySelector(".products-promo-links"));
+                    } else if (introActions) {
+                        introActions.prepend(nextCount);
                     }
                 } else {
                     currentCount?.remove();
@@ -396,7 +357,6 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                 const responseUrl = new URL(response.url);
                 window.history[historyMode === "push" ? "pushState" : "replaceState"]({}, "", responseUrl);
-                initializeProductImages(nextLayout);
                 document.querySelector("[data-talent-catalog-error]")?.remove();
             } catch (error) {
                 if (error.name === "AbortError" || requestId !== catalogRequestId) {
@@ -455,8 +415,11 @@ require __DIR__ . '/../app/views/layout/head.php';
             updateTalentCatalog(window.location.href, "replace");
         });
 
-        document.querySelector("#talent-product-limit")?.addEventListener("change", (event) => {
-            event.currentTarget.form.requestSubmit();
+        document.addEventListener("change", (event) => {
+            const target = event.target;
+            if (target instanceof HTMLSelectElement && target.id === "talent-product-limit") {
+                target.form?.requestSubmit();
+            }
         });
     </script>
     <?php

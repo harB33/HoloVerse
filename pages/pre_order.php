@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
+$favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
 $talentParameter = $_GET['talent'] ?? '';
 $selectedTalent = is_string($talentParameter) ? trim($talentParameter) : '';
 $searchParameter = $_GET['search'] ?? '';
@@ -74,9 +75,15 @@ $offset = ($currentPage - 1) * $pageSize;
 $sql = "SELECT preorder_products.*
         FROM (
             SELECT DISTINCT ON (p.product_id)
-                   p.product_id, p.product_name, p.description, p.expected_ship_date, c.category_name,
+                   p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date, c.category_name,
                    v.variant_id, v.variant_name, v.price, v.currency, {$availableStock} AS stock_quantity,
-                   i.image_url, i.alt_text
+                   i.image_url, i.alt_text,
+                   (SELECT t.talent_name
+                    FROM product_talents_tbl pt
+                    INNER JOIN talent_tbl t ON t.talent_id = pt.talent_id
+                    WHERE pt.product_id = p.product_id
+                    ORDER BY t.talent_id
+                    LIMIT 1) AS talent_name
             {$fromSql}
             LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
             {$whereSql}
@@ -94,90 +101,56 @@ if ($productSearch !== '' || $selectedTalent !== '') {
     $products = $conn->query($sql)->fetch_all(PDO::FETCH_ASSOC);
 }
 
-$pageTitle = 'Pre-Order | hololive merchandise';
+$pageTitle = 'Pre-Order | HoloVerse';
 $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
 <body>
     <div class="page-shell preorder-page">
-        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
-
         <?php
         $activePage = 'pre_order';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="preorder-main">
-            <section class="preorder-intro">
-                <span class="preorder-eyebrow">Pre-order window open</span>
-                <?php if ($talentName !== ''): ?>
-                    <h1><?= store_escape($talentName) ?> merchandise</h1>
-                    <p>Browse the official merch collection for <?= store_escape($talentName) ?> and reserve your favorite pieces before they sell out.</p>
-                <?php else: ?>
-                    <h1>Get your next favorite before it arrives.</h1>
-                    <p>Reserve limited-run collectibles and apparel while they're still in production. Browse the current preview, then check the order guide for what to expect.</p>
-                <?php endif; ?>
+        <main class="all-products-main landing-shell preorder-main">
+            <section class="preorder-hero-banner" aria-labelledby="preorder-page-title">
+                <div class="preorder-hero-copy">
+                    <p class="eyebrow">Made to order &middot; Pre-order window open</p>
+                    <?php if ($talentName !== ''): ?>
+                        <h1 id="preorder-page-title"><?= store_escape($talentName) ?> pre-orders</h1>
+                        <p>Browse official made-to-order merchandise for <?= store_escape($talentName) ?> and reserve your pieces before the window closes.</p>
+                    <?php else: ?>
+                        <h1 id="preorder-page-title">Worth the wait.</h1>
+                        <p>Reserve limited-run collectibles, scale figures, and anniversary sets while they are in production. Every order is produced to your reservation.</p>
+                    <?php endif; ?>
+                </div>
+                <div class="preorder-hero-meta">
+                    <span class="all-products-count"><?= number_format($productCount) ?> <?= $productCount === 1 ? 'pre-order' : 'pre-orders' ?></span>
+                    <?php
+                    $catalogSearchAction = 'pre_order';
+                    $catalogSearchId = 'preorder-search';
+                    $catalogSearchLabel = 'Search pre-order products';
+                    $catalogSearchPlaceholder = 'Search pre-orders...';
+                    $catalogSearchValue = $productSearch;
+                    $catalogSearchHiddenFields = $selectedTalent !== '' ? ['talent' => $selectedTalent] : [];
+                    require __DIR__ . '/../app/views/components/catalog-search.php';
+                    ?>
+                </div>
             </section>
 
-            <?php
-            $catalogSearchAction = 'pre_order';
-            $catalogSearchId = 'preorder-search';
-            $catalogSearchLabel = 'Search pre-order products';
-            $catalogSearchPlaceholder = 'Search pre-orders';
-            $catalogSearchValue = $productSearch;
-            $catalogSearchHiddenFields = $selectedTalent !== '' ? ['talent' => $selectedTalent] : [];
-            require __DIR__ . '/../app/views/components/catalog-search.php';
-            ?>
-            <section class="drops-grid all-products-grid preorder-grid" aria-label="Pre-order items">
-                <?php foreach ($products as $product): ?>
-                    <?php $productInitial = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $product['product_name']), 0, 1)); ?>
-                    <article class="drop-card">
-                        <a class="drop-card-link" href="<?= store_escape(store_product_url($product['product_name'])) ?>" aria-label="View <?= store_escape($product['product_name']) ?>"></a>
-                        <div class="drop-art">
-                            <div class="drop-art-labels">
-                                <span class="drop-status"><?= (int) $product['stock_quantity'] > 0 ? 'Pre-order' : 'Sold out' ?></span>
-                                <span class="drop-edition"><?= store_escape($product['variant_name']) ?></span>
-                            </div>
-                            <?php if (!empty($product['image_url'])): ?>
-                                <img class="drop-product-image-backdrop" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                <img class="drop-product-image" src="<?= store_escape(store_asset_url($product['image_url'], '../')) ?>" alt="<?= store_escape($product['alt_text'] ?? $product['product_name']) ?>" loading="lazy" decoding="async">
-                            <?php endif; ?>
-                            <div class="drop-character<?= !empty($product['image_url']) ? ' hidden' : '' ?>"><?= store_escape($productInitial) ?></div>
-                        </div>
-                        <div class="drop-details">
-                            <span class="drop-category"><?= store_escape($product['category_name']) ?></span>
-                            <h2><?= store_escape($product['product_name']) ?></h2>
-                            <p class="drop-description"><?= store_escape($product['description'] ?? '') ?></p>
-                            <p class="drop-preorder-shipping"><?= !empty($product['expected_ship_date']) ? 'Estimated dispatch: ' . store_escape(date('F Y', strtotime($product['expected_ship_date']))) : 'Estimated dispatch date to be announced' ?></p>
-                            <hr class="drop-allocation-divider">
-                            <div class="drop-purchase">
-                                <div>
-                                    <span class="drop-price-label">Pre-order price</span>
-                                    <div class="drop-price-row">
-                                        <strong><?= store_escape(store_format_price((float) $product['price'])) ?></strong>
-                                        <div class="drop-allocation"><strong><?= (int) $product['stock_quantity'] ?></strong><span>Available</span></div>
-                                    </div>
-                                </div>
-                                <?php if ((int) $product['stock_quantity'] > 0): ?>
-                                    <form action="cart" method="post">
-                                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                        <input type="hidden" name="variant_id" value="<?= (int) $product['variant_id'] ?>">
-                                        <button type="submit" name="action" value="add">Add pre-order</button>
-                                    </form>
-                                <?php else: ?>
-                                    <span>Sold out</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </article>
-                <?php endforeach; ?>
-                <?php if (!$products): ?>
-                    <p role="status"><?= $productSearch !== '' ? 'No pre-orders match your search' : 'There are no available pre-orders' ?><?= $talentName !== '' ? ' for ' . store_escape($talentName) : '' ?> right now.</p>
-                <?php endif; ?>
-            </section>
+            <?php if ($products): ?>
+                <section class="product-grid all-products-grid" aria-label="Pre-order items">
+                    <?php foreach ($products as $product): ?>
+                        <?php require __DIR__ . '/../app/views/components/product-card.php'; ?>
+                    <?php endforeach; ?>
+                </section>
+            <?php else: ?>
+                <p class="all-products-empty" role="status"><?= $productSearch !== '' ? 'No pre-orders match your search' : 'There are no available pre-orders' ?><?= $talentName !== '' ? ' for ' . store_escape($talentName) : '' ?> right now.</p>
+            <?php endif; ?>
+
             <?php if ($pageCount > 1): ?>
-                <nav class="preorder-pagination" aria-label="Pre-order product pages">
+                <nav class="all-products-pagination preorder-pagination" aria-label="Pre-order product pages">
                     <?php
                     $paginationQuery = array_filter([
                         'search' => $productSearch,
@@ -196,11 +169,12 @@ require __DIR__ . '/../app/views/layout/head.php';
 
             <aside class="preorder-guide">
                 <div>
+                    <p class="eyebrow">Fulfillment &amp; dispatch guide</p>
                     <h2>How pre-orders work</h2>
-                    <p>Add an available item to your cart and complete checkout to place your pre-order. The estimated dispatch date is shown on each item; dates are estimates and may change.</p>
+                    <p>Add an available item to your bag and complete checkout to lock in your reservation. Each item lists its estimated dispatch window; mixed carts with in-stock items ship together when your pre-order arrives unless ordered separately.</p>
                 </div>
-                <a href="collector-showcase">
-                    Explore the order process
+                <a class="button-primary" href="collector-showcase">
+                    <span>Collector Showcase</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14" />
                         <path d="m12 5 7 7-7 7" />
@@ -213,18 +187,6 @@ require __DIR__ . '/../app/views/layout/head.php';
     $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
-    <script>
-        document.querySelectorAll(".drop-product-image").forEach((image) => {
-            const showInitialFallback = () => {
-                image.classList.add("hidden");
-                image.nextElementSibling?.classList.remove("hidden");
-            };
-            image.addEventListener("error", showInitialFallback, { once: true });
-            if (image.complete && image.naturalWidth === 0) {
-                showInitialFallback();
-            }
-        });
-    </script>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
 </body>
 
