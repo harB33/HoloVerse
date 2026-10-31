@@ -349,3 +349,127 @@ function store_update_cart_item(DatabaseConnection $conn, int $cartId, int $item
         throw $error;
     }
 }
+
+
+function store_cart_drawer_payload(DatabaseConnection $conn, int $cartId): array
+{
+    if ($cartId < 1) {
+        return [
+            'success' => true,
+            'count' => 0,
+            'items' => [],
+            'summaries' => [],
+            'subtotal' => store_format_price(0),
+            'has_preorder' => false,
+            'has_non_preorder' => false,
+        ];
+    }
+
+    store_clear_expired_cart_items($conn, $cartId);
+
+    $statement = $conn->prepare(
+        "SELECT ci.cart_item_id, ci.quantity, p.product_id, p.product_name, p.is_preorder, p.expected_ship_date,
+                c.category_name, v.variant_id, v.variant_name, v.price, v.currency,
+                (
+                    SELECT t.talent_name
+                    FROM product_talents_tbl pt
+                    INNER JOIN talent_tbl t ON t.talent_id = pt.talent_id
+                    WHERE pt.product_id = p.product_id
+                    ORDER BY t.talent_id ASC
+                    LIMIT 1
+                ) AS talent_name,
+                GREATEST(v.stock_quantity - COALESCE((
+                    SELECT SUM(other.quantity)
+                    FROM cart_items_tbl other
+                    WHERE other.variant_id = v.variant_id
+                      AND other.cart_id <> ci.cart_id
+                      AND other.hold_expires_at > statement_timestamp()
+                ), 0), 0) AS stock_quantity,
+                EXTRACT(EPOCH FROM ci.hold_expires_at)::bigint AS hold_expires_at_epoch,
+                i.image_url
+         FROM cart_items_tbl ci
+         INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
+         INNER JOIN product_tbl p ON p.product_id = v.product_id
+         INNER JOIN category_tbl c ON c.category_id = p.category_id
+         LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
+         WHERE ci.cart_id = ?
+         ORDER BY ci.added_at DESC"
+    );
+    $statement->bind_param('i', $cartId);
+    $statement->execute();
+    $updatedItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+    $statement->close();
+
+    $responseItems = [];
+    $responseSummaries = [];
+    $responseQuantitiesByCurrency = [];
+    $responseTotalQuantity = 0;
+    $totalSubtotal = 0.0;
+    $hasPreorder = false;
+    $hasNonPreorder = false;
+
+    foreach ($updatedItems as $item) {
+        $currency = (string) $item['currency'];
+        $quantity = (int) $item['quantity'];
+        $price = (float) $item['price'];
+        $lineSubtotal = round($price * $quantity, 2);
+        $totalSubtotal += $lineSubtotal;
+        $responseSummaries[$currency]['subtotal'] = ($responseSummaries[$currency]['subtotal'] ?? 0) + $lineSubtotal;
+        $responseSummaries[$currency]['tax'] = ($responseSummaries[$currency]['tax'] ?? 0) + store_calculate_sales_tax([$item]);
+        $responseQuantitiesByCurrency[$currency] = ($responseQuantitiesByCurrency[$currency] ?? 0) + $quantity;
+        $responseTotalQuantity += $quantity;
+
+        $isPreorder = (int) $item['is_preorder'] === 1;
+        $isFlash = $item['hold_expires_at_epoch'] !== null;
+        if ($isPreorder) {
+            $hasPreorder = true;
+        } else {
+            $hasNonPreorder = true;
+        }
+        $status = $isFlash ? 'flash' : ($isPreorder ? 'preorder' : 'ready');
+        $statusLabel = $isFlash ? 'Flash drop' : ($isPreorder ? 'Pre-order' : 'Ready to ship');
+        $shipWindow = $isPreorder && !empty($item['expected_ship_date'])
+            ? 'Estimated ' . date('F Y', strtotime((string) $item['expected_ship_date']))
+            : '';
+
+        $responseItems[] = [
+            'id' => (int) $item['cart_item_id'],
+            'variant_id' => (int) $item['variant_id'],
+            'product_name' => (string) $item['product_name'],
+            'product_url' => store_product_url((string) $item['product_name']),
+            'variant_name' => (string) $item['variant_name'],
+            'talent' => (string) ($item['talent_name'] ?: $item['category_name']),
+            'category_name' => (string) $item['category_name'],
+            'quantity' => $quantity,
+            'stock_quantity' => (int) $item['stock_quantity'],
+            'unit_price' => store_format_price($price),
+            'line_total' => store_format_price($lineSubtotal),
+            'image_url' => (string) ($item['image_url'] ?: 'assets/images/logo.png'),
+            'status' => $status,
+            'status_label' => $statusLabel,
+            'ship_window' => $shipWindow,
+        ];
+    }
+
+    $summaries = [];
+    foreach ($responseSummaries as $currency => $summary) {
+        $summaries[] = [
+            'subtotal_label' => count($responseSummaries) > 1
+                ? 'Subtotal (' . $currency . ') (' . $responseQuantitiesByCurrency[$currency] . ' items)'
+                : 'Subtotal (' . $responseTotalQuantity . ' items)',
+            'subtotal' => store_format_price($summary['subtotal']),
+            'tax' => store_format_price($summary['tax']),
+            'total' => store_format_price($summary['subtotal'] + $summary['tax']),
+        ];
+    }
+
+    return [
+        'success' => true,
+        'count' => $responseTotalQuantity,
+        'items' => $responseItems,
+        'summaries' => $summaries,
+        'subtotal' => store_format_price($totalSubtotal),
+        'has_preorder' => $hasPreorder,
+        'has_non_preorder' => $hasNonPreorder,
+    ];
+}

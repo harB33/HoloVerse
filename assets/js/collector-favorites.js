@@ -190,7 +190,9 @@ document.addEventListener('submit', async (event) => {
 
     event.preventDefault();
     const button = form.querySelector('.collector-favorite-button');
-    button.disabled = true;
+    if (button) {
+        button.disabled = true;
+    }
 
     try {
         const response = await fetch(form.getAttribute('action'), {
@@ -223,11 +225,32 @@ document.addEventListener('submit', async (event) => {
         }
 
         const isFavorite = result.is_favorite === true;
-        button.classList.toggle('is-favorite', isFavorite);
-        button.setAttribute('aria-pressed', String(isFavorite));
-        button.setAttribute('aria-label', `${isFavorite ? 'Remove' : 'Add'} ${result.product_name} ${isFavorite ? 'from' : 'to'} your Collector Showcase`);
-        button.title = isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase';
-        form.querySelector('input[name="action"]').value = isFavorite ? 'remove' : 'save';
+        const productId = Number(form.querySelector('input[name="product_id"]')?.value || 0);
+        const matchingForms = productId > 0
+            ? document.querySelectorAll(`[data-favorite-form] input[name="product_id"][value="${productId}"]`)
+            : [];
+        const formsToUpdate = matchingForms.length > 0
+            ? Array.from(matchingForms, (input) => input.closest('[data-favorite-form]')).filter(Boolean)
+            : [form];
+
+        formsToUpdate.forEach((targetForm) => {
+            const targetButton = targetForm.querySelector('.collector-favorite-button');
+            if (targetButton) {
+                targetButton.classList.toggle('is-favorite', isFavorite);
+                targetButton.classList.toggle('active', isFavorite);
+                targetButton.setAttribute('aria-pressed', String(isFavorite));
+                targetButton.setAttribute('aria-label', `${isFavorite ? 'Remove' : 'Add'} ${result.product_name} ${isFavorite ? 'from' : 'to'} your Collector Showcase`);
+                targetButton.title = isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase';
+                const svg = targetButton.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('fill', isFavorite ? 'currentColor' : 'none');
+                }
+            }
+            const actionInput = targetForm.querySelector('input[name="action"]');
+            if (actionInput) {
+                actionInput.value = isFavorite ? 'remove' : 'save';
+            }
+        });
 
         const favoriteCount = Number(result.favorite_count);
         if (Number.isFinite(favoriteCount)) {
@@ -236,6 +259,15 @@ document.addEventListener('submit', async (event) => {
                 countLabel.textContent = `${favoriteCount} saved`;
             }
         }
+
+        window.dispatchEvent(new CustomEvent('holoverse:favorite-updated', {
+            detail: {
+                productId,
+                isFavorite,
+                favoriteCount: Number.isFinite(favoriteCount) ? favoriteCount : undefined,
+                productName: result.product_name,
+            },
+        }));
 
         const showcaseCard = form.closest('.collector-showcase-card');
         if (!isFavorite && showcaseCard) {
@@ -297,6 +329,8 @@ document.addEventListener('submit', async (event) => {
         );
         console.error('Collector Showcase update failed.', error);
     } finally {
-        button.disabled = false;
+        if (button) {
+            button.disabled = false;
+        }
     }
 });

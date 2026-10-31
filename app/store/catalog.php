@@ -29,7 +29,15 @@ function store_product_rows(DatabaseConnection $conn, string $where = '', string
     $availableStock = store_available_stock_sql();
     $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
                    c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text
+                   v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
+                   (
+                       SELECT t.talent_name
+                       FROM product_talents_tbl pt_name
+                       INNER JOIN talent_tbl t ON t.talent_id = pt_name.talent_id
+                       WHERE pt_name.product_id = p.product_id
+                       ORDER BY t.talent_id ASC
+                       LIMIT 1
+                   ) AS talent_name
             FROM product_tbl p
             INNER JOIN category_tbl c ON c.category_id = p.category_id
             INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
@@ -89,9 +97,17 @@ function store_catalog_product_rows(DatabaseConnection $conn, int $limit = 0, in
     $sql = "SELECT catalog_products.*
             FROM (
                 SELECT DISTINCT ON (p.product_id)
-                       p.product_id, p.product_name, p.description, p.is_preorder,
-                       c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                       v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text{$imageGallerySelect}
+                       p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+                       c.category_id, c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
+                       v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
+                       (
+                           SELECT t.talent_name
+                           FROM product_talents_tbl pt_name
+                           INNER JOIN talent_tbl t ON t.talent_id = pt_name.talent_id
+                           WHERE pt_name.product_id = p.product_id
+                           ORDER BY t.talent_id ASC
+                           LIMIT 1
+                       ) AS talent_name{$imageGallerySelect}
                 FROM product_tbl p
                 INNER JOIN category_tbl c ON c.category_id = p.category_id
                 INNER JOIN product_variants_tbl v ON v.product_id = p.product_id

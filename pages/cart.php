@@ -3,18 +3,17 @@ require_once __DIR__ . '/../app/store.php';
 
 $message = '';
 $cartId = store_current_cart_id($conn, false);
-$isAjaxRequest = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== '' && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || (($_GET['mode'] ?? '') === 'count');
+$requestMode = (string) ($_GET['mode'] ?? '');
+$isAjaxRequest = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== '' && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || in_array($requestMode, ['count', 'drawer'], true);
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     store_clear_expired_cart_items($conn, $cartId);
 }
 
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && ($_GET['mode'] ?? '') === 'count') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && in_array($requestMode, ['count', 'drawer'], true)) {
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode([
-        'success' => true,
-        'count' => store_cart_item_count($conn, store_current_cart_id($conn, false)),
-    ]);
+    echo json_encode(store_cart_drawer_payload($conn, store_current_cart_id($conn, false)));
     exit;
 }
 
@@ -83,68 +82,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($message === '') {
             if ($isAjaxRequest) {
                 header('Content-Type: application/json; charset=utf-8');
-                $response = [
-                    'success' => true,
-                    'count' => store_cart_item_count($conn, store_current_cart_id($conn, false)),
-                ];
-
-                if (in_array($action, ['update', 'remove'], true)) {
-                    $statement = $conn->prepare(
-                        'SELECT ci.cart_item_id, ci.quantity, v.price, v.currency,
-                                GREATEST(v.stock_quantity - COALESCE((
-                                    SELECT SUM(other.quantity)
-                                    FROM cart_items_tbl other
-                                    WHERE other.variant_id = v.variant_id
-                                      AND other.cart_id <> ci.cart_id
-                                      AND other.hold_expires_at > statement_timestamp()
-                                ), 0), 0) AS stock_quantity
-                         FROM cart_items_tbl ci
-                         INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
-                         WHERE ci.cart_id = ?
-                         ORDER BY ci.added_at DESC'
-                    );
-                    $statement->bind_param('i', $cartId);
-                    $statement->execute();
-                    $updatedItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
-                    $statement->close();
-
-                    $responseItems = [];
-                    $responseSummaries = [];
-                    $responseQuantitiesByCurrency = [];
-                    $responseTotalQuantity = 0;
-                    foreach ($updatedItems as $item) {
-                        $currency = (string) $item['currency'];
-                        $quantity = (int) $item['quantity'];
-                        $lineSubtotal = round((float) $item['price'] * $quantity, 2);
-                        $responseSummaries[$currency]['subtotal'] = ($responseSummaries[$currency]['subtotal'] ?? 0) + $lineSubtotal;
-                        $responseSummaries[$currency]['tax'] = ($responseSummaries[$currency]['tax'] ?? 0) + store_calculate_sales_tax([$item]);
-                        $responseQuantitiesByCurrency[$currency] = ($responseQuantitiesByCurrency[$currency] ?? 0) + $quantity;
-                        $responseTotalQuantity += $quantity;
-                        $responseItems[] = [
-                            'id' => (int) $item['cart_item_id'],
-                            'quantity' => $quantity,
-                            'stock_quantity' => (int) $item['stock_quantity'],
-                            'line_total' => store_format_price($lineSubtotal),
-                        ];
-                    }
-
-                    $summaries = [];
-                    foreach ($responseSummaries as $currency => $summary) {
-                        $summaries[] = [
-                            'subtotal_label' => count($responseSummaries) > 1
-                                ? 'Subtotal (' . $currency . ') (' . $responseQuantitiesByCurrency[$currency] . ' items)'
-                                : 'Subtotal (' . $responseTotalQuantity . ' items)',
-                            'subtotal' => store_format_price($summary['subtotal']),
-                            'tax' => store_format_price($summary['tax']),
-                            'total' => store_format_price($summary['subtotal'] + $summary['tax']),
-                        ];
-                    }
-
-                    $response['items'] = $responseItems;
-                    $response['summaries'] = $summaries;
-                }
-
-                echo json_encode($response);
+                echo json_encode(store_cart_drawer_payload($conn, store_current_cart_id($conn, false)));
                 exit;
             }
             header('Location: cart');

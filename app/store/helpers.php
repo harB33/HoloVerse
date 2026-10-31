@@ -31,12 +31,16 @@ function store_collector_showcase_url(): string
     $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
     $requestPath = is_string($requestPath) ? '/' . trim($requestPath, '/') : '';
 
+    if ($requestPath === '/' || $requestPath === '') {
+        return '/collector-showcase';
+    }
+
     if (preg_match(
-        '~^(.*?)(?:/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector[-_]showcase|/(?:pages/)?flash[-_]sale(?:\.php)?)/?$~',
+        '~^(.*?)(?:/home|/index\.php|/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector[-_]showcase|/(?:pages/)?flash[-_]sale(?:\.php)?|/(?:pages/)?pre[-_]order(?:\.php)?)/?$~',
         $requestPath,
         $matches
     ) !== 1) {
-        throw new RuntimeException('Unable to determine the Collector Showcase URL for this page.');
+        return '/collector-showcase';
     }
 
     return rtrim($matches[1], '/') . '/collector-showcase';

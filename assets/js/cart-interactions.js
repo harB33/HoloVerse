@@ -81,6 +81,7 @@
         if (!Array.isArray(payload.items) || !Array.isArray(payload.summaries)) {
             throw new Error('The cart response was incomplete. Please try again.');
         }
+        window.dispatchEvent(new CustomEvent('holoverse:cart-updated', { detail: payload }));
         if (payload.items.length === 0) {
             showEmptyCart();
             return;
