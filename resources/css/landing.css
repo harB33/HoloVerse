@@ -1997,7 +1997,8 @@ footer.site-footer {
   text-transform: uppercase;
 }
 
-.availability-filters button {
+.availability-filters button,
+.availability-filters a {
   min-height: 32px;
   padding: 0 0 2px;
   display: inline-flex;
@@ -2011,15 +2012,24 @@ footer.site-footer {
   font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
+  text-decoration: none;
+}
+
+.availability-filters a {
+  display: flex;
 }
 
 .availability-filters button:hover,
-.availability-filters button.active {
+.availability-filters button.active,
+.availability-filters a.active,
+.availability-filters a:hover,
+.availability-filters a:focus-visible {
   border-color: var(--cyan-dark);
   color: var(--ink);
 }
 
-.availability-filters button svg {
+.availability-filters button svg,
+.availability-filters a svg {
   color: var(--cyan-dark);
 }
 
@@ -2530,6 +2540,9 @@ html[data-theme="dark"] .availability-toolbar {
 html[data-theme="dark"] .filter-tabs button.active,
 html[data-theme="dark"] .availability-filters button:hover,
 html[data-theme="dark"] .availability-filters button.active,
+html[data-theme="dark"] .availability-filters a.active,
+html[data-theme="dark"] .availability-filters a:hover,
+html[data-theme="dark"] .availability-filters a:focus-visible,
 html[data-theme="dark"] .sort-control select,
 html[data-theme="dark"] .product-info > .product-title-link,
 html[data-theme="dark"] .product-meta strong,
@@ -2654,6 +2667,9 @@ html[data-theme="dark"] .talent-art::before {
   html[data-theme="system"] .filter-tabs button.active,
   html[data-theme="system"] .availability-filters button:hover,
   html[data-theme="system"] .availability-filters button.active,
+  html[data-theme="system"] .availability-filters a.active,
+  html[data-theme="system"] .availability-filters a:hover,
+  html[data-theme="system"] .availability-filters a:focus-visible,
   html[data-theme="system"] .sort-control select,
   html[data-theme="system"] .product-info > .product-title-link,
   html[data-theme="system"] .product-meta strong,
@@ -3270,7 +3286,8 @@ html[data-theme="dark"] .talent-art::before {
     display: none;
   }
 
-  .availability-filters button {
+  .availability-filters button,
+  .availability-filters a {
     font-size: 9px;
   }
 
@@ -3471,46 +3488,6 @@ body.about-page {
   text-transform: uppercase;
 }
 
-.products-promo-links {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.products-promo-link {
-  min-height: 38px;
-  padding: 0 15px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--ink);
-  background: var(--ink);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
-}
-
-.products-promo-link:hover {
-  background: var(--cyan-dark);
-  border-color: var(--cyan-dark);
-}
-
-.products-promo-link--flash {
-  background: #fff;
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.products-promo-link--flash:hover {
-  border-color: var(--ink);
-  background: #f4f8fb;
-  color: var(--ink);
-}
-
 .talent-directory-back-wrap {
   margin-bottom: 18px;
 }
@@ -3584,17 +3561,21 @@ body.about-page {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--ink);
   font-size: 11px;
   font-weight: 850;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   text-decoration: none;
   transition: color 160ms ease;
 }
 
-.all-products-heading .products-promo-links a:hover {
+.all-products-heading .products-promo-links a:hover,
+.all-products-heading .products-promo-links a:focus-visible {
   color: var(--cyan-dark);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .all-products-heading .products-promo-links a svg {
