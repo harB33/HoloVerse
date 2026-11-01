@@ -1,10 +1,5 @@
 <?php
 
-function store_checkout_order_status_for_payment(string $paymentMethod): string
-{
-    return $paymentMethod === 'cash_on_delivery' ? 'pending' : 'pending_payment';
-}
-
 function store_checkout_should_reserve_stock(string $paymentMethod): bool
 {
     return $paymentMethod === 'cash_on_delivery';
@@ -44,7 +39,7 @@ function store_checkout_place_order(
         throw new InvalidArgumentException('Choose a valid payment method before placing your order.');
     }
 
-    $orderStatus = store_checkout_order_status_for_payment($paymentMethod);
+    $orderStatus = 'confirmed';
     $shouldReserveStock = store_checkout_should_reserve_stock($paymentMethod);
     $orderNumber = 'HV' . date('ymd') . strtoupper(bin2hex(random_bytes(4)));
 

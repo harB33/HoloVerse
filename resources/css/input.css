@@ -4921,7 +4921,15 @@
   }
 
   .order-history-store {
-    @apply border-b border-[#ccecf5] bg-[#f0fbfe] px-5 py-3 text-sm font-semibold text-[#163d6b] md:px-6;
+    @apply flex items-center justify-between border-b border-[#ccecf5] bg-[#f0fbfe] px-5 py-3 text-sm font-semibold text-[#163d6b] md:px-6;
+  }
+
+  .order-history-store a {
+    @apply inline-flex items-center gap-1.5 font-semibold text-[#087fa8] underline-offset-4 transition-colors hover:text-[#163d6b] hover:underline;
+  }
+
+  .order-history-store a svg {
+    @apply size-4 shrink-0;
   }
 
   .order-history-items {

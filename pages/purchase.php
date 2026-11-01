@@ -10,10 +10,39 @@ $userId = (int) $_SESSION['user_id'];
 $requestedOrder = isset($_GET['order']) && is_string($_GET['order'])
     ? trim($_GET['order'])
     : '';
+$pageSize = 5;
+$requestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+$currentPage = $requestedPage === false || $requestedPage === null ? 1 : max(1, $requestedPage);
 $purchases = [];
+$purchaseProductCount = 0;
+$pageCount = 1;
 $purchaseLoadError = false;
 
 try {
+    $whereSql = ' WHERE o.user_id = ?';
+    if ($requestedOrder !== '') {
+        $whereSql .= ' AND o.order_number = ?';
+    }
+
+    $countSql =
+        'SELECT COUNT(*) AS product_count
+         FROM order_tbl o
+         INNER JOIN order_items_tbl oi ON oi.order_id = o.order_id' . $whereSql;
+    $countStatement = $conn->prepare($countSql);
+    if ($requestedOrder !== '') {
+        $countStatement->bind_param('is', $userId, $requestedOrder);
+    } else {
+        $countStatement->bind_param('i', $userId);
+    }
+    $countStatement->execute();
+    $purchaseCounts = $countStatement->get_result()->fetch_assoc();
+    $countStatement->close();
+    $purchaseProductCount = (int) $purchaseCounts['product_count'];
+
+    $pageCount = max(1, (int) ceil($purchaseProductCount / $pageSize));
+    $currentPage = min($currentPage, $pageCount);
+    $offset = ($currentPage - 1) * $pageSize;
+
     $sql =
         'SELECT o.order_number, o.status, o.created_at, oi.order_item_id,
                 oi.product_name_snapshot, oi.variant_name_snapshot,
@@ -27,18 +56,14 @@ try {
          FROM order_tbl o
          INNER JOIN order_items_tbl oi ON oi.order_id = o.order_id
          LEFT JOIN product_variants_tbl v ON v.variant_id = oi.variant_id
-         LEFT JOIN product_tbl p ON p.product_id = v.product_id
-         WHERE o.user_id = ?';
-    if ($requestedOrder !== '') {
-        $sql .= ' AND o.order_number = ?';
-    }
-    $sql .= ' ORDER BY o.created_at DESC, oi.order_item_id ASC';
-
+         LEFT JOIN product_tbl p ON p.product_id = v.product_id' . $whereSql .
+        ' ORDER BY o.created_at DESC, oi.order_item_id ASC
+         LIMIT ? OFFSET ?';
     $statement = $conn->prepare($sql);
     if ($requestedOrder !== '') {
-        $statement->bind_param('is', $userId, $requestedOrder);
+        $statement->bind_param('isii', $userId, $requestedOrder, $pageSize, $offset);
     } else {
-        $statement->bind_param('i', $userId);
+        $statement->bind_param('iii', $userId, $pageSize, $offset);
     }
     $statement->execute();
     $purchases = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
@@ -49,6 +74,15 @@ try {
     http_response_code(500);
 }
 
+$buildPurchasePageUrl = static function (int $page) use ($requestedOrder): string {
+    $query = ['page' => $page];
+    if ($requestedOrder !== '') {
+        $query['order'] = $requestedOrder;
+    }
+
+    return '?' . http_build_query($query);
+};
+
 $pageTitle = 'Your Purchases | HoloVerse';
 $pageLayout = 'purchase';
 $siteRoot = '../';
@@ -57,6 +91,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body class="order-history-page home-landing">
     <div class="page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'orders';
         $showLogin = true;
@@ -64,9 +99,17 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
 
         <main class="order-history-main landing-shell">
-            <header class="order-history-heading">
-                <h1>My Purchases</h1>
-                <p>Review each product you’ve purchased and its order status.</p>
+            <header class="section-heading all-products-heading order-history-heading">
+                <div>
+                    <p class="eyebrow">Purchase history</p>
+                    <h1>My purchases</h1>
+                    <p>Review the products you’ve purchased and check each order’s status.</p>
+                </div>
+                <?php if (!$purchaseLoadError && $purchases !== []): ?>
+                    <div class="section-heading-aside">
+                        <span class="all-products-count"><?= $purchaseProductCount ?> <?= $purchaseProductCount === 1 ? 'product' : 'products' ?> purchased · <?= $pageSize ?> per page</span>
+                    </div>
+                <?php endif; ?>
             </header>
 
             <?php if ($purchaseLoadError): ?>
@@ -84,7 +127,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                         $statusKey = strtolower((string) $purchase['status']);
                         $statusLabel = ucwords(str_replace('_', ' ', $statusKey));
                         $statusMessage = match ($statusKey) {
-                            'delivered', 'confirmed' => 'Your order has been delivered',
+                            'confirmed' => 'Your order is confirmed',
+                            'delivered' => 'Your order has been delivered',
                             'shipped', 'in_transit' => 'Your order is on its way',
                             'cancelled', 'canceled', 'refunded' => 'This order is ' . strtolower($statusLabel),
                             default => 'Your order is being processed',
@@ -140,6 +184,50 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </a>
                     <?php endforeach; ?>
                 </div>
+                <?php if ($pageCount > 1): ?>
+                    <?php
+                    $pageNumbers = [];
+                    for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
+                        if ($pageNumber === 1 || $pageNumber === $pageCount || abs($pageNumber - $currentPage) <= 1) {
+                            $pageNumbers[] = $pageNumber;
+                        }
+                    }
+                    $pagesWithEllipses = [];
+                    $lastPageNumber = 0;
+                    foreach ($pageNumbers as $pageNumber) {
+                        if ($lastPageNumber > 0 && $pageNumber - $lastPageNumber > 1) {
+                            $pagesWithEllipses[] = '...';
+                        }
+                        $pagesWithEllipses[] = $pageNumber;
+                        $lastPageNumber = $pageNumber;
+                    }
+                    ?>
+                    <nav class="all-products-pagination" aria-label="Purchase history pages">
+                        <?php if ($currentPage > 1): ?>
+                            <a class="all-products-page-button" href="<?= store_escape($buildPurchasePageUrl($currentPage - 1)) ?>" aria-label="Previous page">Prev</a>
+                        <?php else: ?>
+                            <span class="all-products-page-button is-disabled" aria-hidden="true">Prev</span>
+                        <?php endif; ?>
+
+                        <div class="all-products-page-list">
+                            <?php foreach ($pagesWithEllipses as $pageNumber): ?>
+                                <?php if ($pageNumber === '...'): ?>
+                                    <span class="all-products-page-ellipsis" aria-hidden="true">&hellip;</span>
+                                <?php elseif ($pageNumber === $currentPage): ?>
+                                    <span class="all-products-page-number is-active" aria-current="page"><?= $pageNumber ?></span>
+                                <?php else: ?>
+                                    <a class="all-products-page-number" href="<?= store_escape($buildPurchasePageUrl((int) $pageNumber)) ?>" aria-label="Page <?= $pageNumber ?>"><?= $pageNumber ?></a>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <?php if ($currentPage < $pageCount): ?>
+                            <a class="all-products-page-button" href="<?= store_escape($buildPurchasePageUrl($currentPage + 1)) ?>" aria-label="Next page">Next</a>
+                        <?php else: ?>
+                            <span class="all-products-page-button is-disabled" aria-hidden="true">Next</span>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
             <?php endif; ?>
         </main>
     </div>

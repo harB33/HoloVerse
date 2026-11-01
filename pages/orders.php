@@ -141,8 +141,18 @@ require __DIR__ . '/../app/views/layout/head.php';
 
         <main class="order-history-main landing-shell">
             <header class="order-history-heading">
-                <h1>My Orders</h1>
-                <p>Review the items, payment details, and delivery address for your orders.</p>
+                <div class="order-history-heading-copy">
+                    <h1>My Orders</h1>
+                    <p>Review the items, payment details, and delivery address for your orders.</p>
+                </div>
+                <?php if ($isPurchaseOrderDetails): ?>
+                    <a class="order-history-back-link" href="/purchase">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m15 18-6-6 6-6" />
+                        </svg>
+                        Back to purchases
+                    </a>
+                <?php endif; ?>
             </header>
 
             <?php if ($ordersLoadError): ?>
@@ -166,21 +176,93 @@ require __DIR__ . '/../app/views/layout/head.php';
                             'processing' => 1,
                             'shipped' => 2,
                             'in_transit' => 2,
-                            'confirmed' => 3,
+                            'confirmed' => 1,
                             'delivered' => 3,
                         ];
                         $isOrderClosed = in_array($statusKey, ['cancelled', 'canceled', 'refunded'], true);
                         $activeStep = $statusSteps[$statusKey] ?? 0;
+                        $trackingActiveStep = match ($statusKey) {
+                            'confirmed' => 1,
+                            'delivered' => 4,
+                            'shipped', 'in_transit' => 2,
+                            'processing' => 1,
+                            'cancelled', 'canceled', 'refunded' => -1,
+                            default => 0,
+                        };
+                        $statusLabel = ucwords(str_replace('_', ' ', $order['status']));
+                        $statusMessage = match ($statusKey) {
+                            'confirmed' => 'Your order is confirmed',
+                            'delivered' => 'Your order has been delivered',
+                            'shipped', 'in_transit' => 'Your order is on its way',
+                            'cancelled', 'canceled', 'refunded' => 'This order is ' . strtolower($statusLabel),
+                            default => 'Your order is being processed',
+                        };
                         ?>
                         <article class="order-history-card">
                             <header class="order-history-card-heading">
                                 <div>
                                     <span class="order-history-label">Order placed</span>
                                     <h2><?= store_escape($order['order_number']) ?></h2>
-                                    <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($order['created_at']))) ?>"><?= store_escape(date('M j, Y', strtotime($order['created_at']))) ?></time>
+                                    <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($order['created_at']))) ?>"><?= store_escape(date('M j, Y · g:i A', strtotime($order['created_at']))) ?></time>
                                 </div>
-                                <span class="order-history-status"><?= store_escape(ucwords(str_replace('_', ' ', $order['status']))) ?></span>
+                                <div class="purchase-detail-status">
+                                    <span><?= store_escape($statusMessage) ?></span>
+                                    <strong><?= store_escape($statusLabel) ?></strong>
+                                </div>
                             </header>
+
+                            <div class="order-tracking-scroll" tabindex="0" aria-label="Order tracking steps">
+                                <ol class="order-tracking" aria-label="Order tracking" style="--order-tracking-progress: <?= $trackingActiveStep > 0 ? (int) (($trackingActiveStep / 4) * 80) : 0 ?>%">
+                                    <?php
+                                    $trackingSteps = [
+                                        ['label' => 'Order Placed', 'icon' => 'receipt'],
+                                        [
+                                            'label' => $order['payment_method'] === 'cash_on_delivery'
+                                                ? 'Payment Info Confirmed'
+                                                : 'Order Paid',
+                                            'icon' => 'payment',
+                                        ],
+                                        ['label' => 'Order Shipped Out', 'icon' => 'shipping'],
+                                        ['label' => 'Order Received', 'icon' => 'received'],
+                                        ['label' => 'To Rate', 'icon' => 'rating'],
+                                    ];
+                                    ?>
+                                    <?php foreach ($trackingSteps as $stepIndex => $trackingStep): ?>
+                                        <?php
+                                        $trackingStepClass = $stepIndex < $trackingActiveStep
+                                            ? 'is-complete'
+                                            : ($stepIndex === $trackingActiveStep ? 'is-current' : '');
+                                        $trackingStepLabel = $trackingStep['label'];
+                                        if ($stepIndex === 1 && $trackingActiveStep >= 1) {
+                                            $trackingStepLabel .= ' (' . store_format_price(
+                                                $order['subtotal'] + $order['shipping_fee'] + $order['tax']
+                                            ) . ')';
+                                        }
+                                        ?>
+                                        <li class="order-tracking-step <?= $trackingStepClass ?>"<?= $stepIndex === $trackingActiveStep ? ' aria-current="step"' : '' ?>>
+                                            <span class="order-tracking-icon" aria-hidden="true">
+                                                <?php if ($trackingStep['icon'] === 'receipt'): ?>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-1.8-3 1.8-3-1.8L6 21z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+                                                <?php elseif ($trackingStep['icon'] === 'payment'): ?>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="15" height="14" rx="1"/><path d="M8 9h7M8 12h7M8 15h3"/><path d="M19 8h2v13H7v-2"/></svg>
+                                                <?php elseif ($trackingStep['icon'] === 'shipping'): ?>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7.5" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+                                                <?php elseif ($trackingStep['icon'] === 'received'): ?>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 14v6h14v-6"/></svg>
+                                                <?php else: ?>
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/></svg>
+                                                <?php endif; ?>
+                                            </span>
+                                            <span class="order-tracking-label"><?= store_escape($trackingStepLabel) ?></span>
+                                            <?php if ($stepIndex === 0 || $stepIndex === 1): ?>
+                                                <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($order['created_at']))) ?>"><?= store_escape(date('m/d/Y H:i', strtotime($order['created_at']))) ?></time>
+                                            <?php else: ?>
+                                                <span class="order-tracking-date" aria-hidden="true"></span>
+                                            <?php endif; ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ol>
+                            </div>
 
                             <div class="order-history-delivery">
                                 <section class="order-history-address">
@@ -222,7 +304,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </section>
                             </div>
 
-                            <div class="order-history-store">HoloVerse Store</div>
+                            <div class="order-history-store">
+                                <span>HoloVerse Store</span>
+                                <a href="/products">
+                                    Products
+                                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 10h12M10 4l6 6-6 6" />
+                                    </svg>
+                                </a>
+                            </div>
                             <div class="order-history-items">
                                 <?php if ($item !== null): ?>
                                     <div class="order-history-item">
