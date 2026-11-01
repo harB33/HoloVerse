@@ -15,6 +15,9 @@ $paymentMethod = '';
 $orderSubtotal = 0.0;
 $orderTax = 0.0;
 $orderShippingFee = 0.0;
+$orderCurrency = 'PHP';
+$confirmationItems = [];
+$confirmationAddress = [];
 $checkoutStep = $_SESSION['checkout_step'] ?? 'information';
 $savedShipping = $_SESSION['checkout_shipping'] ?? [];
 $shipping = [
@@ -41,6 +44,7 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
     if ($completedOrder) {
         $orderNumber = $completedOrder['order_number'];
         $paymentMethod = (string) ($completedOrder['payment_method'] ?? '');
+        $orderCurrency = (string) $completedOrder['currency'];
         $orderTax = (float) $completedOrder['tax'];
         $orderShippingFee = (float) $completedOrder['shipping_fee'];
         $orderId = (int) $completedOrder['order_id'];
@@ -52,6 +56,28 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
         $subtotalStatement->execute();
         $orderSubtotal = (float) $subtotalStatement->get_result()->fetch_assoc()['subtotal'];
         $subtotalStatement->close();
+
+        $itemsStatement = $conn->prepare(
+            'SELECT product_name_snapshot, variant_name_snapshot, sku_snapshot, unit_price, quantity
+             FROM order_items_tbl
+             WHERE order_id = ?
+             ORDER BY order_item_id'
+        );
+        $itemsStatement->bind_param('i', $orderId);
+        $itemsStatement->execute();
+        $confirmationItems = $itemsStatement->get_result()->fetch_all(PDO::FETCH_ASSOC);
+        $itemsStatement->close();
+
+        $addressStatement = $conn->prepare(
+            "SELECT recipient_name, address_line1, address_line2, city, region, postal_code, country_code
+             FROM order_address_tbl
+             WHERE order_id = ? AND address_type = 'shipping'
+             LIMIT 1"
+        );
+        $addressStatement->bind_param('i', $orderId);
+        $addressStatement->execute();
+        $confirmationAddress = $addressStatement->get_result()->fetch_assoc() ?: [];
+        $addressStatement->close();
     }
 }
 
@@ -222,38 +248,77 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
         <main class="checkout-main landing-shell">
             <?php if ($orderNumber !== ''): ?>
+                <?php
+                $confirmationCustomerName = (string) ($confirmationAddress['recipient_name'] ?? $_SESSION['username'] ?? 'there');
+                $confirmationPaymentLabel = match ($paymentMethod) {
+                    'card' => 'Card',
+                    'e_wallet' => 'E-wallet',
+                    'cash_on_delivery' => 'Cash on delivery',
+                    default => 'Not specified',
+                };
+                $formatConfirmationAmount = static fn (float $amount): string => $orderCurrency . ' ' . number_format($amount, 2);
+                $confirmationCityLine = implode(', ', array_filter([
+                    (string) ($confirmationAddress['city'] ?? ''),
+                    (string) ($confirmationAddress['region'] ?? ''),
+                    (string) ($confirmationAddress['postal_code'] ?? ''),
+                ], static fn (string $part): bool => trim($part) !== ''));
+                $confirmationAddressLines = array_values(array_filter([
+                    $confirmationAddress['recipient_name'] ?? '',
+                    $confirmationAddress['address_line1'] ?? '',
+                    $confirmationAddress['address_line2'] ?? '',
+                    $confirmationCityLine,
+                    $confirmationAddress['country_code'] ?? '',
+                ], static fn (string $line): bool => trim($line) !== ''));
+                ?>
                 <section class="checkout-panel checkout-confirmation" aria-labelledby="checkout-title">
-                    <span class="drops-eyebrow">Order placed</span>
-                    <h1 id="checkout-title">Thank you for your order</h1>
-                    <nav class="checkout-progress" aria-label="Checkout progress">
-                        <span class="checkout-progress-step is-complete">Information</span>
-                        <span class="checkout-progress-step is-complete">Payment Method</span>
-                        <span class="checkout-progress-step is-current" aria-current="step">Confirmation</span>
-                    </nav>
-                    <?php $confirmationMessage = match ($paymentMethod) {
-                        'card', 'e_wallet' => 'Your order has been received and is awaiting payment confirmation before fulfillment.',
-                        'cash_on_delivery' => 'Your order has been confirmed and is ready for delivery processing.',
-                        default => 'Your order has been received and is ready for processing.',
-                    }; ?>
-                    <p><?= store_escape($confirmationMessage) ?> Order number: <strong><?= store_escape($orderNumber) ?></strong></p>
-                    <div class="checkout-totals">
-                        <div><span>Subtotal</span><span><?= store_escape(store_format_price($orderSubtotal)) ?></span></div>
-                        <div><span>Tax (12%)</span><span><?= store_escape(store_format_price($orderTax)) ?></span></div>
-                        <div><span>Shipping fee</span><span><?= store_escape(store_format_price($orderShippingFee)) ?></span></div>
-                        <div class="checkout-total"><strong>Total</strong><strong><?= store_escape(store_format_price($orderSubtotal + $orderTax + $orderShippingFee)) ?></strong></div>
+                    <p class="checkout-receipt-eyebrow">Order confirmed</p>
+                    <h1 id="checkout-title">Thanks for your order, <?= store_escape($confirmationCustomerName) ?>!</h1>
+                    <p class="checkout-receipt-meta">
+                        Receipt for order <strong><?= store_escape($orderNumber) ?></strong><br>
+                        Payment method: <?= store_escape($confirmationPaymentLabel) ?>
+                    </p>
+                    <div class="checkout-receipt-items">
+                        <table>
+                            <thead>
+                                <tr><th scope="col">Item</th><th scope="col">Qty</th><th scope="col">Amount</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($confirmationItems as $confirmationItem): ?>
+                                    <?php
+                                    $itemDetails = trim(implode(' · ', array_filter([
+                                        (string) ($confirmationItem['variant_name_snapshot'] ?? ''),
+                                        (string) ($confirmationItem['sku_snapshot'] ?? ''),
+                                    ], static fn (string $part): bool => trim($part) !== '')));
+                                    $itemAmount = (float) $confirmationItem['unit_price'] * (int) $confirmationItem['quantity'];
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?= store_escape((string) $confirmationItem['product_name_snapshot']) ?></strong>
+                                            <?php if ($itemDetails !== ''): ?>
+                                                <span><?= store_escape($itemDetails) ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= (int) $confirmationItem['quantity'] ?></td>
+                                        <td><?= store_escape($formatConfirmationAmount($itemAmount)) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                    <?php if ($paymentMethod !== ''): ?>
-                        <p>Payment method: <strong><?= store_escape(match ($paymentMethod) {
-                            'card' => 'Card',
-                            'e_wallet' => 'E-wallet',
-                            'cash_on_delivery' => 'Cash on delivery',
-                            default => 'Not specified',
-                        }) ?></strong>. <?= store_escape(match ($paymentMethod) {
-                            'card', 'e_wallet' => 'Payment verification is still pending before the order is fulfilled.',
-                            'cash_on_delivery' => 'The order will be processed for delivery.',
-                            default => 'Your order is being processed.',
-                        }) ?></p>
-                    <?php endif; ?>
+                    <div class="checkout-receipt-totals">
+                        <div><span>Subtotal</span><span><?= store_escape($formatConfirmationAmount($orderSubtotal)) ?></span></div>
+                        <div><span>Shipping</span><span><?= store_escape($formatConfirmationAmount($orderShippingFee)) ?></span></div>
+                        <div><span>Tax</span><span><?= store_escape($formatConfirmationAmount($orderTax)) ?></span></div>
+                        <div class="checkout-receipt-total"><strong>Total</strong><strong><?= store_escape($formatConfirmationAmount($orderSubtotal + $orderTax + $orderShippingFee)) ?></strong></div>
+                    </div>
+                    <div class="checkout-receipt-address">
+                        <h2>Shipping address</h2>
+                        <p>
+                            <?php foreach ($confirmationAddressLines as $addressIndex => $addressLine): ?>
+                                <?= $addressIndex > 0 ? '<br>' : '' ?><?= store_escape((string) $addressLine) ?>
+                            <?php endforeach; ?>
+                        </p>
+                    </div>
                     <a class="cart-continue-button" href="products">Continue shopping</a>
                 </section>
             <?php elseif (!$items): ?>
@@ -270,7 +335,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <nav class="checkout-progress" aria-label="Checkout progress">
                             <span class="checkout-progress-step<?= $checkoutStep === 'information' ? ' is-current' : ' is-complete' ?>"<?= $checkoutStep === 'information' ? ' aria-current="step"' : '' ?>>Information</span>
                             <span class="checkout-progress-step<?= $checkoutStep === 'payment_method' ? ' is-current' : '' ?>"<?= $checkoutStep === 'payment_method' ? ' aria-current="step"' : '' ?>>Payment Method</span>
-                            <span class="checkout-progress-step">Confirmation</span>
                         </nav>
                         <?php if ($message !== ''): ?>
                             <p class="cart-message" role="alert"><?= store_escape($message) ?></p>

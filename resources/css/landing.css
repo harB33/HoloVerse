@@ -3670,6 +3670,12 @@ body.about-page {
   margin-right: 0 !important;
 }
 
+.landing-shell .checkout-confirmation {
+  width: min(100%, 600px) !important;
+  max-width: 600px !important;
+  margin-inline: auto !important;
+}
+
 .all-products-intro,
 .talents-intro,
 .preorder-intro {
