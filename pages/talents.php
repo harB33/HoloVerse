@@ -113,7 +113,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                     <p class="all-products-empty explore-empty hidden" role="status">No talents match your search and selected group.</p>
                     <?php
-                    $talentsPerPage = 24;
+                    $talentsPerPage = 20;
                     $totalTalentsCount = count($talents);
                     $initialPageCount = max(1, (int) ceil($totalTalentsCount / $talentsPerPage));
                     $initialPage = min($initialPageCount, max(1, (int) ($_GET['page'] ?? 1)));
@@ -175,7 +175,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         const talentSearchForm = document.querySelector('.talent-directory-search');
         const talentPagination = document.querySelector('.talent-pagination');
         const talentTotalCount = document.querySelector('[data-talent-total-count]');
-        const talentsPerPage = 24;
+        const talentsPerPage = 20;
         let currentPage = <?= (int) $initialPage ?>;
         let selectedGeneration = 'all';
 
