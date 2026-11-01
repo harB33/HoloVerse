@@ -1261,6 +1261,10 @@ footer.site-footer {
   cursor: pointer;
 }
 
+.drawer-backdrop[data-cart-drawer-backdrop] {
+  background: rgba(4, 10, 20, 0.28);
+}
+
 .cart-drawer,
 .mobile-menu {
   position: fixed;
@@ -1276,6 +1280,26 @@ footer.site-footer {
 .cart-drawer {
   right: 0;
   width: min(500px, 100vw);
+}
+
+@keyframes cart-drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.cart-drawer:not([hidden]) {
+  animation: cart-drawer-slide-in 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-drawer:not([hidden]) {
+    animation: none;
+  }
 }
 
 .cart-head {
