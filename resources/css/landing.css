@@ -191,6 +191,7 @@ body.home-landing main.landing-shell,
   gap: 16px;
   border-bottom: 1px solid rgba(210, 224, 233, 0.9);
   background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 8px rgb(16 24 40 / 8%);
   backdrop-filter: blur(18px);
 }
 
