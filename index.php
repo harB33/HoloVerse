@@ -33,6 +33,21 @@ if ($requestPath === '/flash-sale' || $requestPath === '/flash-sale/') {
     exit;
 }
 
+if ($requestPath === '/pre_order' || $requestPath === '/pre_order/') {
+    $query = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+    $location = '/pre-order' . (is_string($query) && $query !== '' ? '?' . $query : '');
+    header('Location: ' . $location, true, 308);
+    exit;
+}
+
+if ($requestPath === '/pre-order' || $requestPath === '/pre-order/') {
+    $_SERVER['SCRIPT_NAME'] = '/pages/pre_order.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/pre_order.php';
+    require $_SERVER['SCRIPT_FILENAME'];
+    exit;
+}
+
 if ($requestPath === '/collector_showcase' || $requestPath === '/collector_showcase/') {
     $query = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
     $location = '/collector-showcase' . (is_string($query) && $query !== '' ? '?' . $query : '');
@@ -760,7 +775,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         </div>
                         <div class="preorder-heading-aside">
                             <p>Lock in a favorite before the order window closes. Shipping estimates are shown before you reserve.</p>
-                            <a class="button-text" href="pre_order">
+                            <a class="button-text" href="pre-order">
                                 <span>Browse all pre-orders</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                             </a>

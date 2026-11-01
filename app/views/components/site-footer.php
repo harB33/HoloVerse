@@ -20,7 +20,7 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
             <h3>Shop</h3>
             <a href="<?= store_escape($footerProductsUrl) ?>">New arrivals</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/flash-sale' : $siteRoot . 'flash-sale') ?>">Flash drop</a>
-            <a href="<?= store_escape($siteRoot === '/' ? '/pre_order' : $siteRoot . 'pre_order') ?>">Pre-orders</a>
+            <a href="<?= store_escape($siteRoot === '/' ? '/pre-order' : $siteRoot . 'pre-order') ?>">Pre-orders</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/products/category/plush' : $siteRoot . 'products/category/plush') ?>">Plushies</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/products/category/apparel' : $siteRoot . 'products/category/apparel') ?>">Apparel</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/products/category/acrylic' : $siteRoot . 'products/category/acrylic') ?>">Acrylics</a>
@@ -28,7 +28,7 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
 
         <div>
             <h3>Customer care</h3>
-            <a href="<?= store_escape($siteRoot === '/' ? '/pre_order' : $siteRoot . 'pre_order') ?>">Pre-Order Batch ETA Tracker</a>
+            <a href="<?= store_escape($siteRoot === '/' ? '/pre-order' : $siteRoot . 'pre-order') ?>">Pre-Order Batch ETA Tracker</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/personalized' : $siteRoot . 'personalized') ?>">International shipping &amp; customs</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/collector-showcase' : $siteRoot . 'collector-showcase') ?>">Collector Showcase</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/purchase' : $siteRoot . 'purchase') ?>">My Purchases</a>

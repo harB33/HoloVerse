@@ -22,9 +22,17 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
     $nowValue = $now->format('Y-m-d H:i:s');
     $availableStock = store_available_stock_sql();
 
-    $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder,
-                   c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
+    $sql = "SELECT p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
+                   c.category_id, c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
                    v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
+                   (
+                       SELECT t.talent_name
+                       FROM product_talents_tbl pt_name
+                       INNER JOIN talent_tbl t ON t.talent_id = pt_name.talent_id
+                       WHERE pt_name.product_id = p.product_id
+                       ORDER BY t.talent_id ASC
+                       LIMIT 1
+                   ) AS talent_name,
                    fs.flash_sale_id, fs.starts_at, fs.ends_at
             FROM product_tbl p
             INNER JOIN category_tbl c ON c.category_id = p.category_id

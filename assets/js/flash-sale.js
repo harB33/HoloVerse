@@ -70,6 +70,7 @@ galleryImage?.addEventListener("keydown", (event) => {
 });
 
 const saleFilter = document.querySelector("[data-sale-filter]");
+const saleTabs = [...document.querySelectorAll("[data-sale-tab]")];
 const saleFilterTrigger = document.querySelector("[data-sale-filter-trigger]");
 const saleFilterOptions = document.querySelector("[data-sale-filter-options]");
 const saleFilterCurrent = document.querySelector("[data-sale-filter-current]");
@@ -79,36 +80,53 @@ const salePrevious = document.querySelector("[data-sale-previous]");
 const saleNext = document.querySelector("[data-sale-next]");
 const saleCarousel = document.querySelector("[data-sale-carousel]");
 const saleCarouselControls = document.querySelector(".flash-sale-carousel-controls");
-const flashSaleCard = document.querySelector(".flash-sale-card");
+const flashSaleCard = document.querySelector("#flash-drop-spotlight, .flash-spotlight-card, .flash-sale-card");
 const saleEmptyState = document.querySelector("[data-sale-empty]");
 const saleDetail = (name) => document.querySelector(`[data-sale-detail="${name}"]`);
+
 const syncProductBadgeWidth = () => {
-    const stockBadge = saleDetail("stock-badge");
-    const productBadge = saleDetail("product-badge");
-    if (stockBadge && productBadge) {
-        productBadge.style.width = `${stockBadge.getBoundingClientRect().width + 16}px`;
-    }
+    // Badges size naturally with max-width and ellipsis in CSS
 };
+
 const saleDescriptionToggle = document.querySelector("[data-sale-description-toggle]");
+const countdownWrap = document.querySelector("[data-sale-countdown-wrap]");
 const countdown = document.querySelector("[data-countdown]");
 const countdownText = document.querySelector("[data-sale-countdown-text]");
 let countdownDeadline = countdown ? new Date(countdown.dataset.countdown).getTime() : 0;
+
 const updateCountdown = () => {
     if (!countdown) {
         return;
     }
-    const remaining = Math.max(0, countdownDeadline - Date.now());
-    countdown.querySelector("[data-countdown-days]").textContent = String(Math.floor(remaining / 86400000)).padStart(2, "0");
-    countdown.querySelector("[data-countdown-hours]").textContent = String(Math.floor((remaining % 86400000) / 3600000)).padStart(2, "0");
-    countdown.querySelector("[data-countdown-minutes]").textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, "0");
-    countdown.querySelector("[data-countdown-seconds]").textContent = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
+    const rawDeadline = countdown.dataset.countdown;
+    const deadlineTime = rawDeadline ? new Date(rawDeadline).getTime() : 0;
+    const daysEl = countdown.querySelector("[data-countdown-days]");
+    const hoursEl = countdown.querySelector("[data-countdown-hours]");
+    const minutesEl = countdown.querySelector("[data-countdown-minutes]");
+    const secondsEl = countdown.querySelector("[data-countdown-seconds]");
+
+    if (!deadlineTime || isNaN(deadlineTime)) {
+        if (daysEl) daysEl.textContent = "00";
+        if (hoursEl) hoursEl.textContent = "00";
+        if (minutesEl) minutesEl.textContent = "00";
+        if (secondsEl) secondsEl.textContent = "00";
+        return;
+    }
+
+    const remaining = Math.max(0, deadlineTime - Date.now());
+    if (daysEl) daysEl.textContent = String(Math.floor(remaining / 86400000)).padStart(2, "0");
+    if (hoursEl) hoursEl.textContent = String(Math.floor((remaining % 86400000) / 3600000)).padStart(2, "0");
+    if (minutesEl) minutesEl.textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, "0");
+    if (secondsEl) secondsEl.textContent = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
 };
+
 let selectedSaleState = saleFilter?.value || "live";
 const initialSaleCard = saleCards.find((card) => card.dataset.variantId === saleDetail("variant-id")?.value);
 initialSaleCard?.classList.add("is-selected");
 initialSaleCard?.setAttribute("aria-current", "true");
 syncProductBadgeWidth();
 window.addEventListener("resize", syncProductBadgeWidth, { passive: true });
+
 const updateSaleCarouselControls = () => {
     if (!saleGrid || !salePrevious || !saleNext) {
         return;
@@ -121,6 +139,7 @@ const updateSaleCarouselControls = () => {
     salePrevious.disabled = saleGrid.scrollLeft <= 1;
     saleNext.disabled = maxScroll <= 1 || saleGrid.scrollLeft >= maxScroll - 1;
 };
+
 const saleEmptyMessages = {
     live: "There are no discounted products available right now.",
     starting: "No flash sales are scheduled to start within the next hour.",
@@ -143,7 +162,9 @@ const updateSaleCards = () => {
     }
 
     if (saleEmptyState) {
-        saleEmptyState.textContent = saleEmptyMessages[selectedSaleState] || "No sale items are available in this category.";
+        const message = saleEmptyMessages[selectedSaleState] || "No sale items are available in this category.";
+        const msgEl = saleEmptyState.querySelector("[data-sale-empty-message]") || saleEmptyState;
+        msgEl.textContent = message;
         saleEmptyState.hidden = visibleCards > 0;
     }
 };
@@ -163,21 +184,22 @@ const scrollSaleProducts = (direction) => {
 
 salePrevious?.addEventListener("click", () => scrollSaleProducts(-1));
 saleNext?.addEventListener("click", () => scrollSaleProducts(1));
+
 saleDescriptionToggle?.addEventListener("click", () => {
     const expanded = saleDescriptionToggle.getAttribute("aria-expanded") !== "true";
-    const preview = saleDetail("description-preview");
     const full = saleDetail("description-full");
-    if (!preview || !full) {
+    if (!full) {
         return;
     }
 
     saleDescriptionToggle.setAttribute("aria-expanded", String(expanded));
-    saleDescriptionToggle.textContent = expanded
-        ? "Hide Full Product Description"
-        : "View Full Product Description";
-    preview.hidden = expanded;
+    const label = saleDescriptionToggle.querySelector("span") || saleDescriptionToggle;
+    label.textContent = expanded
+        ? "Hide full product details"
+        : "Read full product details";
     full.hidden = !expanded;
 });
+
 document.addEventListener("wheel", (event) => {
     const target = event.target instanceof Element ? event.target : null;
     if (!saleCarousel || !saleGrid || !target?.closest("[data-sale-carousel]") || event.ctrlKey) {
@@ -206,6 +228,7 @@ document.addEventListener("wheel", (event) => {
         saleGrid.scrollLeft = Math.max(0, Math.min(maxScrollLeft, saleGrid.scrollLeft + wheelDelta));
     }
 }, { capture: true, passive: false });
+
 saleGrid?.addEventListener("scroll", updateSaleCarouselControls, { passive: true });
 saleCarousel && window.addEventListener("resize", updateSaleCarouselControls);
 saleCarousel && updateSaleCarouselControls();
@@ -224,6 +247,11 @@ const updateSaleProductDetails = (card) => {
         : product.state === "live"
             ? stock > 0 ? `${stock} available` : "Currently sold out"
             : startStatus;
+    const talent = product.talent || product.category || "hololive production";
+    const stateLabel = product.state === "live"
+        ? "Live flash sale drop"
+        : (product.state === "archive" ? "Vault Archive drop" : "Upcoming drop");
+
     const textValues = {
         breadcrumb: product.name,
         "stock-badge": `${stock} units available`,
@@ -238,6 +266,8 @@ const updateSaleProductDetails = (card) => {
         discount: `${product.discount}% off`,
         "sale-note": product.state === "archive" ? "This flash sale has ended" : product.state === "live" ? "While supplies last" : startStatus,
         "stock-text": stockStatus,
+        talent: talent,
+        "state-label": stateLabel,
     };
 
     Object.entries(textValues).forEach(([name, value]) => {
@@ -248,16 +278,38 @@ const updateSaleProductDetails = (card) => {
     });
     syncProductBadgeWidth();
 
+    const productLink = saleDetail("product-link");
+    if (productLink && product.productUrl) {
+        productLink.href = product.productUrl;
+    }
+
+    const capacity = Math.max(24, stock + 6);
+    const claimedPercent = Math.min(100, Math.max(12, Math.round(((capacity - stock) / capacity) * 100)));
+    const stockBar = saleDetail("stock-bar");
+    if (stockBar) {
+        stockBar.style.width = `${claimedPercent}%`;
+    }
+    const stockClaimedLabel = saleDetail("stock-claimed-label");
+    if (stockClaimedLabel) {
+        stockClaimedLabel.textContent = `${claimedPercent}% claimed`;
+    }
+    const stockTrack = document.querySelector(".flash-stock-track");
+    if (stockTrack) {
+        stockTrack.setAttribute("aria-valuenow", String(claimedPercent));
+    }
+
     const descriptionPreview = saleDetail("description-preview");
     const descriptionFull = saleDetail("description-full");
     if (descriptionPreview && descriptionFull && saleDescriptionToggle) {
         descriptionPreview.textContent = product.description;
-        descriptionFull.textContent = product.description;
+        const fullInner = descriptionFull.querySelector(".description-full-text") || descriptionFull;
+        fullInner.textContent = product.description;
         descriptionPreview.hidden = false;
         descriptionFull.hidden = true;
-        saleDescriptionToggle.hidden = product.description.length <= 180;
+        saleDescriptionToggle.hidden = product.description.length <= 160;
         saleDescriptionToggle.setAttribute("aria-expanded", "false");
-        saleDescriptionToggle.textContent = "View Full Product Description";
+        const label = saleDescriptionToggle.querySelector("span") || saleDescriptionToggle;
+        label.textContent = "Read full product details";
     }
 
     const stockStatusElement = saleDetail("stock-status");
@@ -266,26 +318,37 @@ const updateSaleProductDetails = (card) => {
     }
 
     const cartForm = saleDetail("cart-form");
+    const cartDisabled = saleDetail("cart-disabled");
     const cartMessage = saleDetail("cart-message");
-    if (cartForm && cartMessage) {
+    if (cartForm) {
         cartForm.hidden = !live;
-        cartMessage.hidden = live;
-        cartMessage.textContent = product.state === "archive"
-            ? "This flash sale has ended."
-            : product.state === "live"
-                ? "Sorry, this product is sold out."
-                : `${startStatus}.`;
+        cartForm.dataset.toastMessage = `${product.name} added to your bag`;
     }
+    if (cartDisabled) {
+        cartDisabled.hidden = live;
+        cartDisabled.textContent = product.state === "archive"
+            ? "Sale ended"
+            : (product.state === "live" ? "Sold out" : (startStatus || "Upcoming"));
+    }
+    if (cartMessage) {
+        cartMessage.hidden = true;
+    }
+
     const variantInput = saleDetail("variant-id");
     if (variantInput) {
         variantInput.value = String(product.variantId);
     }
 
+    const defaultMidnightIso = new Date();
+    defaultMidnightIso.setHours(23, 59, 59, 999);
     const nextDeadline = product.state === "live"
-        ? product.endsAt
+        ? (product.endsAt || defaultMidnightIso.toISOString())
         : product.state === "archive"
             ? ""
-            : product.startsAt;
+            : (product.startsAt || defaultMidnightIso.toISOString());
+    if (countdownWrap) {
+        countdownWrap.hidden = !nextDeadline;
+    }
     if (countdown) {
         countdown.hidden = !nextDeadline;
         if (nextDeadline) {
@@ -296,15 +359,15 @@ const updateSaleProductDetails = (card) => {
     }
     if (countdownText) {
         countdownText.textContent = product.state === "live"
-            ? "Drop ends in:"
+            ? "Drop window ends in"
             : product.state === "archive"
                 ? "Sale ended"
-                : "Sale starts in:";
+                : "Drop window starts in";
     }
 
     const images = product.images?.length
         ? product.images
-        : [{ image_url: "", alt_text: product.name }];
+        : [{ image_url: "../assets/images/logo.png", alt_text: product.name }];
     galleryThumbnailStrip?.replaceChildren();
     images.forEach((image, index) => {
         const thumbnail = document.createElement("button");
@@ -369,10 +432,44 @@ saleCards.forEach((card) => {
     });
 });
 
+document.addEventListener("click", (event) => {
+    const trigger = event.target instanceof Element ? event.target.closest("[data-sale-select-trigger]") : null;
+    if (trigger) {
+        const card = trigger.closest(".flash-sale-drop-card");
+        if (card) {
+            updateSaleProductDetails(card);
+            flashSaleCard?.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                block: "start",
+            });
+        }
+    }
+});
+
 const selectSaleFilter = (state) => {
     selectedSaleState = state;
+    if (saleFilter && saleFilter.value !== state) {
+        saleFilter.value = state;
+    }
+    saleTabs.forEach((tab) => {
+        const matches = tab.dataset.saleTab === state;
+        tab.classList.toggle("active", matches);
+        tab.setAttribute("aria-selected", String(matches));
+    });
+    if (saleFilterTrigger && saleFilterCurrent && saleFilter) {
+        saleFilterCurrent.textContent = saleFilter.selectedOptions[0]?.textContent.trim() || "";
+        saleFilterOptions?.querySelectorAll("[data-sale-filter-option]").forEach((option) => {
+            option.setAttribute("aria-selected", String(option.dataset.saleFilterOption === state));
+        });
+    }
     updateSaleCards();
 };
+
+saleTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+        selectSaleFilter(tab.dataset.saleTab);
+    });
+});
 
 if (saleFilter && saleFilterTrigger && saleFilterOptions && saleFilterCurrent) {
     const filterOptionButtons = [...saleFilterOptions.querySelectorAll("[data-sale-filter-option]")];
@@ -386,7 +483,9 @@ if (saleFilter && saleFilterTrigger && saleFilterOptions && saleFilterCurrent) {
 
     const syncFilterSelection = () => {
         const selectedOption = saleFilter.selectedOptions[0];
-        saleFilterCurrent.textContent = selectedOption.textContent.trim();
+        if (selectedOption) {
+            saleFilterCurrent.textContent = selectedOption.textContent.trim();
+        }
         filterOptionButtons.forEach((option) => {
             option.setAttribute("aria-selected", String(option.dataset.saleFilterOption === saleFilter.value));
         });
@@ -449,12 +548,6 @@ if (saleFilter && saleFilterTrigger && saleFilterOptions && saleFilterCurrent) {
 
 saleFilter?.addEventListener("change", () => {
     selectSaleFilter(saleFilter.value);
-    if (saleFilterTrigger && saleFilterCurrent) {
-        saleFilterCurrent.textContent = saleFilter.selectedOptions[0].textContent.trim();
-        saleFilterOptions?.querySelectorAll("[data-sale-filter-option]").forEach((option) => {
-            option.setAttribute("aria-selected", String(option.dataset.saleFilterOption === saleFilter.value));
-        });
-    }
 });
 
 if (saleFilter) {
@@ -464,6 +557,42 @@ if (saleFilter) {
 if (countdown) {
     updateCountdown();
     window.setInterval(updateCountdown, 1000);
+}
+
+// Drop reminder button
+const reminderBtn = document.querySelector("[data-drop-reminder-btn]");
+if (reminderBtn) {
+    const reminderBell = reminderBtn.querySelector("[data-reminder-icon-bell]");
+    const reminderCheck = reminderBtn.querySelector("[data-reminder-icon-check]");
+    const reminderLabel = reminderBtn.querySelector("[data-reminder-label]");
+    const alertStorageKey = "holoverse.drop-alert";
+    let dropAlertSaved = false;
+    try {
+        dropAlertSaved = JSON.parse(window.localStorage.getItem(alertStorageKey) || "false") === true;
+    } catch {
+        dropAlertSaved = false;
+    }
+
+    const syncReminderState = () => {
+        reminderBtn.classList.toggle("is-saved", dropAlertSaved);
+        if (reminderBell) reminderBell.hidden = dropAlertSaved;
+        if (reminderCheck) reminderCheck.hidden = !dropAlertSaved;
+        if (reminderLabel) reminderLabel.textContent = dropAlertSaved ? "Alert saved" : "Remind me";
+    };
+    syncReminderState();
+
+    reminderBtn.addEventListener("click", () => {
+        dropAlertSaved = !dropAlertSaved;
+        try {
+            window.localStorage.setItem(alertStorageKey, JSON.stringify(dropAlertSaved));
+        } catch {}
+        syncReminderState();
+        if (typeof window.showHoloVerseToast === "function") {
+            window.showHoloVerseToast(
+                dropAlertSaved ? "Flash drop alert saved in this browser." : "Flash drop alert removed."
+            );
+        }
+    });
 }
 
 const systemClock = document.querySelector("[data-system-clock]");

@@ -25,6 +25,10 @@ if (preg_match('~^/flash_sale/?$~', $requestPath) === 1) {
     $redirectToCleanUrl('/flash-sale');
 }
 
+if (preg_match('~^/pre_order/?$~', $requestPath) === 1) {
+    $redirectToCleanUrl('/pre-order');
+}
+
 if (preg_match('~^/collector_showcase/?$~', $requestPath) === 1) {
     $redirectToCleanUrl('/collector-showcase');
 }
@@ -47,6 +51,10 @@ if ($requestPath === '/') {
 } elseif ($requestPath === '/flash-sale') {
     $scriptPath = __DIR__ . '/pages/flash_sale.php';
     $_SERVER['SCRIPT_NAME'] = '/pages/flash_sale.php';
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
+} elseif ($requestPath === '/pre-order') {
+    $scriptPath = __DIR__ . '/pages/pre_order.php';
+    $_SERVER['SCRIPT_NAME'] = '/pages/pre_order.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif ($requestPath === '/collector-showcase') {
     $scriptPath = __DIR__ . '/pages/collector_showcase.php';
