@@ -4011,7 +4011,7 @@
   }
 
   .about-interlude {
-    @apply my-10 overflow-hidden border-b border-[#dfe4e9] pb-10 sm:my-14 sm:pb-14;
+    @apply my-8 overflow-hidden border-b border-[#dfe4e9] pb-8 sm:my-10 sm:pb-10;
   }
 
   .about-interlude img {
@@ -4020,7 +4020,7 @@
   }
 
   .about-principles {
-    @apply mb-24 grid grid-cols-1 gap-7 py-9 sm:grid-cols-3 sm:gap-6 sm:py-12;
+    @apply mt-6 mb-14 grid grid-cols-1 gap-7 py-6 sm:mt-8 sm:mb-16 sm:grid-cols-3 sm:gap-6 sm:py-8;
   }
 
   .about-principles article {
@@ -4243,7 +4243,7 @@
     }
 
     .about-principles {
-      @apply mb-16;
+      @apply mt-5 mb-10;
     }
 
     .about-team {

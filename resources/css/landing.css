@@ -5848,6 +5848,10 @@ body.flash-sale-page.home-landing .flash-mechanics-card p {
   background: #ffffff;
 }
 
+.about-page .about-principles {
+  border: 0;
+}
+
 /* Responsive Media Queries for Inner Pages */
 @media (max-width: 1180px) {
   body.order-history-page .order-history-main.landing-shell {
