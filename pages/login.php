@@ -1,8 +1,16 @@
 <?php
 require_once __DIR__ . '/../app/store.php';
 
-$requestMode = $_GET['mode'] ?? $_POST['mode'] ?? '';
-$requestMode = is_string($requestMode) ? $requestMode : '';
+$isPostRequest = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
+$getMode = is_string($_GET['mode'] ?? null) ? $_GET['mode'] : '';
+$postMode = is_string($_POST['mode'] ?? null) ? $_POST['mode'] : '';
+
+if ($isPostRequest && $getMode === 'resend_reset_otp') {
+    $requestMode = 'resend_reset_otp';
+} else {
+    $requestMode = $isPostRequest ? ($postMode !== '' ? $postMode : $getMode) : ($getMode !== '' ? $getMode : $postMode);
+}
+
 $isRegistration = $requestMode === 'register';
 $isPasswordResetRequest = $requestMode === 'forgot_password';
 $isPasswordResetResend = $requestMode === 'resend_reset_otp';
@@ -12,7 +20,9 @@ $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? '
 $message = '';
 $loginRateLimitSeconds = 0;
 $notice = is_string($_SESSION['auth_notice'] ?? null) ? $_SESSION['auth_notice'] : '';
+$noticeType = ($_SESSION['auth_notice_type'] ?? '') === 'error' ? 'error' : 'success';
 unset($_SESSION['auth_notice']);
+unset($_SESSION['auth_notice_type']);
 $registrationName = '';
 $registrationEmail = '';
 $resetRequestEmail = '';
@@ -87,10 +97,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             );
             $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $otpHash = password_hash($otp, PASSWORD_DEFAULT);
-            $expiresAt = (new DateTimeImmutable('+10 minutes', new DateTimeZone('UTC')))->format('Y-m-d H:i:sP');
             $resetStatement = $conn->prepare(
                 "INSERT INTO password_reset_codes (email_hash, user_id, otp_hash, expires_at)
-                 VALUES (?, ?, ?, ?)
+                 VALUES (?, ?, ?, CURRENT_TIMESTAMP + INTERVAL '10 minutes')
                  ON CONFLICT (email_hash) DO UPDATE
                  SET user_id = EXCLUDED.user_id,
                      otp_hash = EXCLUDED.otp_hash,
@@ -101,7 +110,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                  WHERE password_reset_codes.requested_at <= CURRENT_TIMESTAMP - INTERVAL '1 minute'
                  RETURNING email_hash"
             );
-            $resetStatement->bind_param('siss', $emailHash, $resetUserId, $otpHash, $expiresAt);
+            $resetStatement->bind_param('sis', $emailHash, $resetUserId, $otpHash);
             $resetStatement->execute();
             $codeIssued = $resetStatement->get_result()->fetch_assoc() !== null;
             $resetStatement->close();
@@ -122,13 +131,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
 
             $_SESSION['password_reset_email'] = $email;
-            if ($codeIssued || !$isPasswordResetResend || !isset($_SESSION['password_reset_expires_at'])) {
+            if ($codeIssued || !isset($_SESSION['password_reset_expires_at'])) {
                 $_SESSION['password_reset_expires_at'] = time() + 600;
             }
             unset($_SESSION['password_reset_verified']);
-            $_SESSION['auth_notice'] = $isPasswordResetResend && !$codeIssued
-                ? 'Please wait a minute before requesting another code.'
+            $_SESSION['auth_notice'] = !$codeIssued
+                ? 'A code was not issued because a request was made recently. Wait one minute before requesting another code, and use the code from the previous request if it is still valid.'
                 : 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
+            $_SESSION['auth_notice_type'] = !$codeIssued ? 'error' : 'success';
             header('Location: login?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
             exit;
         }
@@ -147,27 +157,33 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $conn->begin_transaction();
             try {
                 $resetStatement = $conn->prepare(
-                    'SELECT user_id, otp_hash, attempt_count, used_at, expires_at > CURRENT_TIMESTAMP AS is_unexpired
+                    "SELECT user_id, otp_hash, attempt_count, used_at,
+                            CASE WHEN expires_at > CURRENT_TIMESTAMP THEN 'valid' ELSE 'expired' END AS expiry_status
                      FROM password_reset_codes
                      WHERE email_hash = ?
-                     FOR UPDATE'
+                     FOR UPDATE"
                 );
                 $resetStatement->bind_param('s', $emailHash);
                 $resetStatement->execute();
                 $reset = $resetStatement->get_result()->fetch_assoc();
                 $resetStatement->close();
 
-                $isUnexpired = in_array($reset['is_unexpired'] ?? false, [true, 't', 1, '1'], true);
-                if (
-                    !$reset
-                    || $reset['user_id'] === null
-                    || $reset['used_at'] !== null
-                    || !$isUnexpired
-                    || (int) $reset['attempt_count'] >= 5
-                ) {
+                $isUnexpired = ($reset['expiry_status'] ?? null) === 'valid';
+                $otpFailureReason = !$reset
+                    ? 'missing_record'
+                    : ($reset['user_id'] === null
+                        ? 'missing_user'
+                        : ($reset['used_at'] !== null
+                            ? 'already_used'
+                            : (!$isUnexpired
+                                ? 'expired'
+                                : ((int) $reset['attempt_count'] >= 5 ? 'attempt_limit' : null))));
+                if ($otpFailureReason !== null) {
+                    error_log('HoloVerse password reset OTP rejected: ' . $otpFailureReason);
                     $conn->commit();
                     $message = 'Invalid or expired code.';
                 } elseif (!password_verify($otp, $reset['otp_hash'])) {
+                    error_log('HoloVerse password reset OTP rejected: hash_mismatch');
                     $attemptStatement = $conn->prepare(
                         'UPDATE password_reset_codes SET attempt_count = attempt_count + 1 WHERE email_hash = ?'
                     );
@@ -211,17 +227,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $conn->begin_transaction();
             try {
                 $resetStatement = $conn->prepare(
-                    'SELECT user_id, otp_hash, attempt_count, used_at, expires_at > CURRENT_TIMESTAMP AS is_unexpired
+                    "SELECT user_id, otp_hash, attempt_count, used_at,
+                            CASE WHEN expires_at > CURRENT_TIMESTAMP THEN 'valid' ELSE 'expired' END AS expiry_status
                      FROM password_reset_codes
                      WHERE email_hash = ?
-                     FOR UPDATE'
+                     FOR UPDATE"
                 );
                 $resetStatement->bind_param('s', $emailHash);
                 $resetStatement->execute();
                 $reset = $resetStatement->get_result()->fetch_assoc();
                 $resetStatement->close();
 
-                $isUnexpired = in_array($reset['is_unexpired'] ?? false, [true, 't', 1, '1'], true);
+                $isUnexpired = ($reset['expiry_status'] ?? null) === 'valid';
                 $verifiedCodeMatches = $reset
                     && is_string($verifiedReset['otp_hash'] ?? null)
                     && hash_equals($verifiedReset['otp_hash'], $reset['otp_hash']);
@@ -257,6 +274,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
                     unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified'], $_SESSION['password_reset_expires_at']);
                     $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
+                    $_SESSION['auth_notice_type'] = 'success';
                     header('Location: login' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
                     exit;
                 }
@@ -364,11 +382,6 @@ require __DIR__ . '/../app/views/layout/head.php';
 <body class="auth-page home-landing">
     <div class="page-shell auth-page-shell">
         <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
-        <?php
-        $activePage = '';
-        $showLogin = true;
-        require __DIR__ . '/../app/views/components/site-header.php';
-        ?>
         <main class="auth-main landing-shell">
             <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?>" data-auth-layout>
                 <section class="auth-login-panel<?= $isPasswordResetRequest ? ' reset-request-panel' : '' ?>" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
@@ -376,7 +389,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
                         <div class="otp-verification">
                         <?php endif; ?>
-                        <a class="brand auth-card-brand" href="/home" aria-label="HoloVerse home">
+                        <a class="brand auth-card-brand" href="../index.php" aria-label="HoloVerse home">
                             <img class="brand-logo" src="<?= store_escape($siteRoot . 'assets/images/logo.png') ?>" alt="" draggable="false">
                             <span class="brand-wordmark">holo<span>verse</span></span>
                         </a>
@@ -417,6 +430,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <?php endif; ?>
                                 </p>
                             </header>
+                            <?php if ($notice !== ''): ?>
+                                <p role="<?= $noticeType === 'error' ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
+                            <?php endif; ?>
                             <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
                                 <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
                             <?php endif; ?>
@@ -428,8 +444,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
                                     <div class="auth-field">
                                         <label for="reset-password" class="auth-label">New password</label>
-                                        <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
-                                            class="auth-input">
+                                        <div class="auth-password-control">
+                                            <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
+                                                class="auth-input">
+                                            <button class="auth-password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                                                <svg class="preview-icon preview-icon-show" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <svg class="preview-icon preview-icon-hide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="password-strength" aria-live="polite">
                                         <div class="mb-2 flex items-center justify-between text-xs">
@@ -442,8 +464,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </div>
                                     <div class="auth-field">
                                         <label for="reset-password-confirmation" class="auth-label">Confirm password</label>
-                                        <input id="reset-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="72" placeholder="Re-enter your password" required aria-describedby="reset-password-confirmation-message"
-                                            class="auth-input">
+                                        <div class="auth-password-control">
+                                            <input id="reset-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="72" placeholder="Re-enter your password" required aria-describedby="reset-password-confirmation-message"
+                                                class="auth-input">
+                                            <button class="auth-password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                                                <svg class="preview-icon preview-icon-show" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <svg class="preview-icon preview-icon-hide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                                            </button>
+                                        </div>
                                         <p id="reset-password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
                                     </div>
                                     <button id="reset-password-submit" type="submit" class="auth-submit-button disabled:cursor-not-allowed disabled:opacity-50">
@@ -500,7 +528,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </header>
 
                         <?php if ($notice !== ''): ?>
-                            <p class="auth-alert auth-alert-success" role="status"><?= store_escape($notice) ?></p>
+                            <p role="<?= $noticeType === 'error' ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
                         <?php endif; ?>
                         <form action="login" method="post" class="login-form space-y-5 auth-form">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
@@ -513,8 +541,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                             <div class="auth-field">
                                 <label for="login-password" class="auth-label">Password</label>
-                                <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
-                                    class="auth-input">
+                                <div class="auth-password-control">
+                                    <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
+                                        class="auth-input">
+                                    <button class="auth-password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                                        <svg class="preview-icon preview-icon-show" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <svg class="preview-icon preview-icon-hide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div class="login-feedback-row">
                                 <?php if ($message !== '' && !$isRegistration): ?>
@@ -540,14 +574,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                     </div>
                 </section>
 
-                <aside class="auth-artwork-panel" aria-label="Official Collector Access">
+                <figure class="auth-artwork-panel" aria-label="HoloVerse featured talent">
                     <img src="<?= store_escape($siteRoot . 'assets/images/suisei2.jpg') ?>" alt="Featured Talent Hoshimachi Suisei" draggable="false" class="auth-artwork-image">
-                    <div class="auth-artwork-body">
-                    </div>
-                </aside>
+                </figure>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
                     <div class="auth-register-content">
-                        <a class="brand auth-card-brand" href="/home" aria-label="HoloVerse home">
+                        <a class="brand auth-card-brand" href="../index.php" aria-label="HoloVerse home">
                             <img class="brand-logo" src="<?= store_escape($siteRoot . 'assets/images/logo.png') ?>" alt="" draggable="false">
                             <span class="brand-wordmark">holo<span>verse</span></span>
                         </a>
@@ -577,8 +609,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                             <div class="auth-field">
                                 <label for="register-password" class="auth-label">Password</label>
-                                <input id="register-password" type="password" name="password" autocomplete="new-password" placeholder="At least 12 characters" minlength="12" maxlength="72" required aria-describedby="password-strength-help password-strength-label"
-                                    class="auth-input">
+                                <div class="auth-password-control">
+                                    <input id="register-password" type="password" name="password" autocomplete="new-password" placeholder="At least 12 characters" minlength="12" maxlength="72" required aria-describedby="password-strength-help password-strength-label"
+                                        class="auth-input">
+                                    <button class="auth-password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                                        <svg class="preview-icon preview-icon-show" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <svg class="preview-icon preview-icon-hide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div class="password-strength" aria-live="polite">
                                 <div class="mb-2 flex items-center justify-between text-xs">
@@ -591,8 +629,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                             <div class="auth-field">
                                 <label for="register-password-confirmation" class="auth-label">Confirm password</label>
-                                <input id="register-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Re-enter your password" required aria-describedby="password-confirmation-message"
-                                    class="auth-input">
+                                <div class="auth-password-control">
+                                    <input id="register-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Re-enter your password" required aria-describedby="password-confirmation-message"
+                                        class="auth-input">
+                                    <button class="auth-password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                                        <svg class="preview-icon preview-icon-show" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <svg class="preview-icon preview-icon-hide" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                                    </button>
+                                </div>
                                 <p id="password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
                             </div>
                             <button id="register-submit" type="submit" class="auth-submit-button disabled:cursor-not-allowed disabled:opacity-50">
@@ -611,6 +655,23 @@ require __DIR__ . '/../app/views/layout/head.php';
         const authShell = document.querySelector(".auth-layout");
         const loginPanel = document.querySelector(".auth-login-panel");
         const registerPanel = document.querySelector(".auth-register-surface");
+        const setupPasswordToggles = (root = document) => {
+            root.querySelectorAll("[data-password-toggle]").forEach((toggle) => {
+                if (toggle.dataset.toggleBound === "true") {
+                    return;
+                }
+                toggle.dataset.toggleBound = "true";
+                toggle.addEventListener("click", () => {
+                    const password = toggle.parentElement.querySelector("input");
+                    const showPassword = password.type === "password";
+                    password.type = showPassword ? "text" : "password";
+                    toggle.setAttribute("aria-label", `${showPassword ? "Hide" : "Show"} password`);
+                    toggle.setAttribute("aria-pressed", String(showPassword));
+                });
+            });
+        };
+        setupPasswordToggles();
+
         const registerForm = registerPanel.querySelector("form");
         const passwordInput = registerPanel.querySelector("#register-password");
         const confirmationInput = registerPanel.querySelector("#register-password-confirmation");
@@ -793,6 +854,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         };
 
         const setupResetPasswordControls = (panel) => {
+            setupPasswordToggles(panel);
             const passwordInput = panel.querySelector("#reset-password");
             if (!passwordInput) {
                 return;
@@ -828,7 +890,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             const isResetRequest = form.matches(".reset-request-form");
             const isLogin = form.matches(".login-form");
             const isResendRequest = submitter instanceof HTMLButtonElement
-                && submitter.formAction.includes("mode=resend_reset_otp");
+                && (submitter.getAttribute("formaction") || "").includes("mode=resend_reset_otp");
             const isOtpVerification = form.matches(".otp-verify-form");
             const isOtpAction = isOtpVerification || isResendRequest;
             if (!isLogin && !isResetRequest && !isOtpAction) {
@@ -846,9 +908,20 @@ require __DIR__ . '/../app/views/layout/head.php';
                 const formData = new FormData(form);
                 if (isResendRequest) {
                     formData.delete("otp");
+                    formData.set("mode", "resend_reset_otp");
+                } else if (isOtpVerification) {
+                    const otpInput = form.querySelector("#reset-otp");
+                    if (!(otpInput instanceof HTMLInputElement)) {
+                        throw new Error("The verification code field is unavailable. Please refresh and try again.");
+                    }
+                    const otp = otpInput.value.replace(/[^0-9]/g, "").slice(0, 6);
+                    otpInput.value = otp;
+                    formData.set("otp", otp);
                 }
-                const response = await fetch(submitter?.formAction || form.action, {
-                    method: submitter?.formMethod || form.method,
+                const requestUrl = submitter?.getAttribute("formaction") || form.getAttribute("action") || form.action;
+                const requestMethod = submitter?.getAttribute("formmethod") || form.getAttribute("method") || form.method;
+                const response = await fetch(requestUrl, {
+                    method: requestMethod,
                     body: formData,
                     headers: { "X-Requested-With": "XMLHttpRequest" },
                     redirect: "follow",
@@ -1019,7 +1092,6 @@ require __DIR__ . '/../app/views/layout/head.php';
         });
         window.addEventListener("popstate", () => setAuthMode(new URLSearchParams(window.location.search).get("mode") === "register"));
     </script>
-    <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
     </div>
 </body>
 
