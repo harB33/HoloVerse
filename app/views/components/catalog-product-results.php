@@ -141,7 +141,9 @@ $buildFilterUrl = static function (array $overrides) use (
 <?php if (!empty($products)): ?>
     <section class="product-grid all-products-grid" aria-label="All available products">
         <?php foreach ($products as $product): ?>
+            <?php $catalogProductCardDesign = true; ?>
             <?php require __DIR__ . '/product-card.php'; ?>
+            <?php unset($catalogProductCardDesign); ?>
         <?php endforeach; ?>
     </section>
 

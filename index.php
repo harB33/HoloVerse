@@ -766,7 +766,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         ];
                         ?>
                         <article
-                            class="product-card"
+                            class="product-card home-product-card"
                             data-product-card
                             data-product-id="<?= $productId ?>"
                             data-category="<?= store_escape($categoryName) ?>"
@@ -778,68 +778,72 @@ require __DIR__ . '/app/views/layout/head.php';
                             data-featured-index="<?= $index ?>"
                             data-quick-view="<?= store_escape((string) json_encode($quickViewPayload, JSON_UNESCAPED_SLASHES)) ?>"
                         >
-                            <button class="product-image-wrap" type="button" data-quick-view-open aria-label="Quick view <?= store_escape($productName) ?>">
+                            <div class="product-image-wrap">
                                 <img src="<?= store_escape($imageUrl) ?>" alt="<?= store_escape((string) ($product['alt_text'] ?: $productName)) ?>" loading="lazy">
+                                <button class="home-product-quickview" type="button" data-quick-view-open aria-label="Quick view <?= store_escape($productName) ?>">
+                                    <span class="quick-view">Quick view</span>
+                                </button>
                                 <?php if ($badge !== ''): ?>
                                     <span class="product-badge"><?= store_escape($badge) ?></span>
                                 <?php endif; ?>
-                                <span class="quick-view">Quick view</span>
-                            </button>
 
-                            <form class="collector-favorite-form" action="<?= store_escape($favoriteShowcaseUrl) ?>" method="post" data-favorite-form>
-                                <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
-                                <input type="hidden" name="product_id" value="<?= $productId ?>">
-                                <input type="hidden" name="action" value="<?= $isFavorite ? 'remove' : 'save' ?>">
-                                <button
-                                    class="collector-favorite-button favorite-button<?= $isFavorite ? ' is-favorite active' : '' ?>"
-                                    type="submit"
-                                    aria-label="<?= $isFavorite ? 'Remove ' : 'Add ' ?><?= store_escape($productName) ?> <?= $isFavorite ? 'from' : 'to' ?> your Collector Showcase"
-                                    aria-pressed="<?= $isFavorite ? 'true' : 'false' ?>"
-                                    title="<?= $isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase' ?>"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="<?= $isFavorite ? 'currentColor' : 'none' ?>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                    </svg>
-                                </button>
-                            </form>
-
-                            <div class="product-info">
-                                <p><?= store_escape($talentName) ?></p>
-                                <a class="product-title-link" href="<?= store_escape($productUrl) ?>"><?= store_escape($productName) ?></a>
-                                <span class="merch-status status-<?= store_escape($status) ?>">
-                                    <?php if ($status === 'flash'): ?>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                                    <?php elseif ($status === 'preorder'): ?>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                                    <?php endif; ?>
-                                    <?= store_escape($statusLabel) ?>
-                                </span>
-                                <div class="product-meta">
-                                    <strong><?= store_escape(store_format_price($price)) ?></strong>
-                                    <?php if ($compareAtPrice > 0): ?>
-                                        <del><?= store_escape(store_format_price($compareAtPrice)) ?></del>
-                                    <?php endif; ?>
-                                    <span><?= store_escape($variantNote) ?></span>
-                                </div>
+                                <form class="collector-favorite-form home-product-favorite-form" action="<?= store_escape($favoriteShowcaseUrl) ?>" method="post" data-favorite-form>
+                                    <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
+                                    <input type="hidden" name="product_id" value="<?= $productId ?>">
+                                    <input type="hidden" name="action" value="<?= $isFavorite ? 'remove' : 'save' ?>">
+                                    <button
+                                        class="collector-favorite-button favorite-button<?= $isFavorite ? ' is-favorite active' : '' ?>"
+                                        type="submit"
+                                        aria-label="<?= $isFavorite ? 'Remove ' : 'Add ' ?><?= store_escape($productName) ?> <?= $isFavorite ? 'from' : 'to' ?> your Collector Showcase"
+                                        aria-pressed="<?= $isFavorite ? 'true' : 'false' ?>"
+                                        title="<?= $isFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase' ?>"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="<?= $isFavorite ? 'currentColor' : 'none' ?>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                                        </svg>
+                                    </button>
+                                </form>
 
                                 <?php if ($stockQuantity > 0): ?>
-                                    <form action="cart" method="post" data-toast-message="<?= store_escape($productName . ($status === 'preorder' ? ' reserved in your bag' : ' added to your bag')) ?>">
+                                    <form class="home-product-cart-form" action="cart" method="post" data-toast-message="<?= store_escape($productName . ($status === 'preorder' ? ' reserved in your bag' : ' added to your bag')) ?>">
                                         <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
                                         <input type="hidden" name="variant_id" value="<?= $variantId ?>">
                                         <button class="add-button<?= $status === 'preorder' ? ' preorder-add' : '' ?>" type="submit" name="action" value="add">
                                             <span><?= $status === 'preorder' ? 'Reserve pre-order' : ($status === 'flash' ? 'Claim flash price' : 'Add to bag') ?></span>
-                                            <?php if ($status === 'preorder'): ?>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                            <?php else: ?>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                            <?php endif; ?>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                         </button>
                                     </form>
                                 <?php else: ?>
-                                    <button class="add-button" type="button" disabled>
-                                        <span>Sold out</span>
-                                    </button>
+                                    <div class="home-product-cart-form">
+                                        <button class="add-button" type="button" disabled>
+                                            <span>Sold out</span>
+                                        </button>
+                                    </div>
                                 <?php endif; ?>
+                            </div>
+
+                            <div class="product-info">
+                                <p><?= store_escape($categoryName) ?></p>
+                                <div class="home-product-title-row">
+                                    <a class="product-title-link" href="<?= store_escape($productUrl) ?>"><?= store_escape($productName) ?></a>
+                                    <div class="home-product-price">
+                                        <strong><?= store_escape(store_format_price($price)) ?></strong>
+                                        <?php if ($compareAtPrice > 0): ?>
+                                            <del><?= store_escape(store_format_price($compareAtPrice)) ?></del>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="product-meta">
+                                    <span class="merch-status status-<?= store_escape($status) ?>">
+                                        <?php if ($status === 'flash'): ?>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 1 11 14z"/></svg>
+                                        <?php elseif ($status === 'preorder'): ?>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                        <?php endif; ?>
+                                        <?= store_escape($statusLabel) ?>
+                                    </span>
+                                    <span><?= store_escape($variantNote) ?></span>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
