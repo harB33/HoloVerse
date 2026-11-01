@@ -542,7 +542,6 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                 <aside class="auth-artwork-panel" aria-label="Official Collector Access">
                     <img src="<?= store_escape($siteRoot . 'assets/images/suisei2.jpg') ?>" alt="Featured Talent Hoshimachi Suisei" draggable="false" class="auth-artwork-image">
-                    <div class="auth-artwork-shade"></div>
                     <div class="auth-artwork-body">
                     </div>
                 </aside>

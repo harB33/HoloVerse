@@ -65,8 +65,8 @@ require __DIR__ . '/../app/views/layout/head.php';
             </section>
 
             <div class="products-catalog-layout talent-directory-layout">
-                <aside class="generation-filter talent-directory-filter" aria-label="Filter talents">
-                    <form class="catalog-search talent-search-wrap talent-directory-search" role="search">
+                <aside class="generation-filter talent-directory-filter" aria-labelledby="generation-filter-title">
+                    <form class="catalog-search filter-panel-search talent-search-wrap talent-directory-search" role="search">
                         <label class="sr-only" for="talent-search">Search talents or groups</label>
                         <input class="talent-search-input" id="talent-search" type="search" placeholder="Search talents or groups..." autocomplete="off">
                         <button type="submit" aria-label="Search talents">
@@ -76,8 +76,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </svg>
                         </button>
                     </form>
-                    <h2>Filter by generation</h2>
-                    <div class="explore-filters" role="group" aria-label="Filter talents by generation or group">
+                    <h2 class="generation-filter-title" id="generation-filter-title">Generation</h2>
+                    <div class="generation-filter-list explore-filters" role="group" aria-label="Filter talents by generation or group">
                         <button class="generation-filter-option explore-filter is-active" type="button" data-explore-filter="all" aria-pressed="true">All Generations</button>
                         <?php foreach ($generationLabels as $slug => $label): ?>
                             <button class="generation-filter-option explore-filter" type="button" data-explore-filter="<?= store_escape($slug) ?>" aria-pressed="false"><?= store_escape($label) ?></button>
@@ -114,10 +114,53 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endforeach; ?>
                     </div>
                     <p class="all-products-empty explore-empty hidden" role="status">No talents match your search and selected group.</p>
-                    <nav class="all-products-pagination talent-pagination hidden" aria-label="Talent pages">
-                        <button type="button" data-talent-page-previous aria-label="Previous page">Previous</button>
-                        <span data-talent-page-status aria-live="polite"></span>
-                        <button type="button" data-talent-page-next aria-label="Next page">Next</button>
+                    <?php
+                    $talentsPerPage = 24;
+                    $totalTalentsCount = count($talents);
+                    $initialPageCount = max(1, (int) ceil($totalTalentsCount / $talentsPerPage));
+                    $initialPage = min($initialPageCount, max(1, (int) ($_GET['page'] ?? 1)));
+                    $delta = 1;
+                    $range = [];
+                    $rangeWithDots = [];
+                    for ($i = 1; $i <= $initialPageCount; $i++) {
+                        if ($i === 1 || $i === $initialPageCount || ($i >= $initialPage - $delta && $i <= $initialPage + $delta)) {
+                            $range[] = $i;
+                        }
+                    }
+                    $lastPageNum = 0;
+                    foreach ($range as $pageItem) {
+                        if ($lastPageNum > 0 && $pageItem - $lastPageNum > 1) {
+                            $rangeWithDots[] = '...';
+                        }
+                        $rangeWithDots[] = $pageItem;
+                        $lastPageNum = $pageItem;
+                    }
+                    $buildTalentPageUrl = static fn (int $pageNum): string => '/talents' . ($pageNum > 1 ? '?page=' . $pageNum : '');
+                    ?>
+                    <nav class="all-products-pagination talent-pagination<?= $initialPageCount <= 1 ? ' hidden' : '' ?>" aria-label="Talent pages">
+                        <?php if ($initialPage > 1): ?>
+                            <a class="all-products-page-button" href="<?= store_escape($buildTalentPageUrl($initialPage - 1)) ?>" data-talent-page="<?= $initialPage - 1 ?>" aria-label="Previous page">Prev</a>
+                        <?php else: ?>
+                            <span class="all-products-page-button is-disabled" aria-hidden="true">Prev</span>
+                        <?php endif; ?>
+
+                        <div class="all-products-page-list">
+                            <?php foreach ($rangeWithDots as $pageDot): ?>
+                                <?php if ($pageDot === '...'): ?>
+                                    <span class="all-products-page-ellipsis" aria-hidden="true">&hellip;</span>
+                                <?php elseif ((int) $pageDot === $initialPage): ?>
+                                    <span class="all-products-page-number is-active" aria-current="page"><?= $pageDot ?></span>
+                                <?php else: ?>
+                                    <a class="all-products-page-number" href="<?= store_escape($buildTalentPageUrl((int) $pageDot)) ?>" data-talent-page="<?= (int) $pageDot ?>" aria-label="Page <?= $pageDot ?>"><?= $pageDot ?></a>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <?php if ($initialPage < $initialPageCount): ?>
+                            <a class="all-products-page-button" href="<?= store_escape($buildTalentPageUrl($initialPage + 1)) ?>" data-talent-page="<?= $initialPage + 1 ?>" aria-label="Next page">Next</a>
+                        <?php else: ?>
+                            <span class="all-products-page-button is-disabled" aria-hidden="true">Next</span>
+                        <?php endif; ?>
                     </nav>
                 </div>
             </div>
@@ -133,14 +176,70 @@ require __DIR__ . '/../app/views/layout/head.php';
         const talentSearch = document.querySelector('#talent-search');
         const talentSearchForm = document.querySelector('.talent-directory-search');
         const talentPagination = document.querySelector('.talent-pagination');
-        const talentPageStatus = document.querySelector('[data-talent-page-status]');
-        const previousPageButton = document.querySelector('[data-talent-page-previous]');
-        const nextPageButton = document.querySelector('[data-talent-page-next]');
         const talentTotalCount = document.querySelector('[data-talent-total-count]');
         const talentsPerPage = 24;
-        let currentPage = 1;
+        let currentPage = <?= (int) $initialPage ?>;
         let selectedGeneration = 'all';
-        const updateTalentResults = (resetPage = false) => {
+
+        const buildTalentPageHref = (pageNum) => {
+            const url = new URL(window.location.href);
+            if (pageNum <= 1) {
+                url.searchParams.delete('page');
+            } else {
+                url.searchParams.set('page', String(pageNum));
+            }
+            return `${url.pathname}${url.search}`;
+        };
+
+        const renderTalentPagination = (page, pageCount) => {
+            if (!talentPagination) {
+                return;
+            }
+            talentPagination.classList.toggle('hidden', pageCount <= 1);
+            if (pageCount <= 1) {
+                talentPagination.innerHTML = '';
+                return;
+            }
+
+            const delta = 1;
+            const range = [];
+            const rangeWithDots = [];
+            for (let i = 1; i <= pageCount; i += 1) {
+                if (i === 1 || i === pageCount || (i >= page - delta && i <= page + delta)) {
+                    range.push(i);
+                }
+            }
+            let lastPageNum = 0;
+            range.forEach((pageItem) => {
+                if (lastPageNum > 0 && pageItem - lastPageNum > 1) {
+                    rangeWithDots.push('...');
+                }
+                rangeWithDots.push(pageItem);
+                lastPageNum = pageItem;
+            });
+
+            const prevHtml = page > 1
+                ? `<a class="all-products-page-button" href="${buildTalentPageHref(page - 1)}" data-talent-page="${page - 1}" aria-label="Previous page">Prev</a>`
+                : `<span class="all-products-page-button is-disabled" aria-hidden="true">Prev</span>`;
+
+            const listHtml = rangeWithDots.map((pageDot) => {
+                if (pageDot === '...') {
+                    return `<span class="all-products-page-ellipsis" aria-hidden="true">&hellip;</span>`;
+                }
+                if (pageDot === page) {
+                    return `<span class="all-products-page-number is-active" aria-current="page">${pageDot}</span>`;
+                }
+                return `<a class="all-products-page-number" href="${buildTalentPageHref(pageDot)}" data-talent-page="${pageDot}" aria-label="Page ${pageDot}">${pageDot}</a>`;
+            }).join('');
+
+            const nextHtml = page < pageCount
+                ? `<a class="all-products-page-button" href="${buildTalentPageHref(page + 1)}" data-talent-page="${page + 1}" aria-label="Next page">Next</a>`
+                : `<span class="all-products-page-button is-disabled" aria-hidden="true">Next</span>`;
+
+            talentPagination.innerHTML = `${prevHtml}<div class="all-products-page-list">${listHtml}</div>${nextHtml}`;
+        };
+
+        const updateTalentResults = (resetPage = false, updateHistory = false) => {
             if (resetPage) {
                 currentPage = 1;
             }
@@ -170,13 +269,13 @@ require __DIR__ . '/../app/views/layout/head.php';
             }
 
             exploreEmpty.classList.toggle('hidden', matchingTalents.length > 0);
-            talentPagination.classList.toggle('hidden', pageCount <= 1);
-            talentPageStatus.textContent = matchingTalents.length > 0
-                ? `Page ${currentPage} of ${pageCount}`
-                : '';
-            previousPageButton.disabled = currentPage <= 1;
-            nextPageButton.disabled = currentPage >= pageCount;
+            renderTalentPagination(currentPage, pageCount);
+
+            if (updateHistory) {
+                window.history.pushState({ page: currentPage }, '', buildTalentPageHref(currentPage));
+            }
         };
+
         exploreFilters.forEach((filter) => filter.addEventListener('click', () => {
             selectedGeneration = filter.dataset.exploreFilter;
             exploreFilters.forEach((button) => {
@@ -184,24 +283,31 @@ require __DIR__ . '/../app/views/layout/head.php';
                 button.setAttribute('aria-pressed', String(active));
                 button.classList.toggle('is-active', active);
             });
-            updateTalentResults(true);
+            updateTalentResults(true, true);
         }));
-        talentSearch.addEventListener('input', () => updateTalentResults(true));
+        talentSearch.addEventListener('input', () => updateTalentResults(true, false));
         talentSearchForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            updateTalentResults(true);
+            updateTalentResults(true, true);
         });
-        previousPageButton.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage -= 1;
-                updateTalentResults();
+        talentPagination?.addEventListener('click', (event) => {
+            const pageLink = event.target instanceof Element ? event.target.closest('a[data-talent-page]') : null;
+            if (!pageLink) {
+                return;
+            }
+            event.preventDefault();
+            const targetPage = Number(pageLink.dataset.talentPage);
+            if (Number.isFinite(targetPage) && targetPage >= 1 && targetPage !== currentPage) {
+                currentPage = targetPage;
+                updateTalentResults(false, true);
             }
         });
-        nextPageButton.addEventListener('click', () => {
-            currentPage += 1;
-            updateTalentResults();
+        window.addEventListener('popstate', () => {
+            const urlPage = Number(new URL(window.location.href).searchParams.get('page')) || 1;
+            currentPage = Math.max(1, urlPage);
+            updateTalentResults(false, false);
         });
-        updateTalentResults();
+        updateTalentResults(false, false);
 
         document.querySelectorAll('.talent-photo').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');

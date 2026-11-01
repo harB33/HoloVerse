@@ -288,14 +288,53 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     'search' => $productSearch,
                                 ], static fn (string|int $value): bool => $value !== '' && $value !== 0);
                                 $paginationQuery += $pageSizeQuery;
+                                $buildTalentMerchPageUrl = static function (int $pageNum) use ($talentCollectionPath, $paginationQuery): string {
+                                    $query = $paginationQuery;
+                                    if ($pageNum > 1) {
+                                        $query['page'] = $pageNum;
+                                    }
+                                    return $talentCollectionPath . ($query ? '?' . http_build_query($query) : '');
+                                };
+                                $delta = 1;
+                                $range = [];
+                                $rangeWithDots = [];
+                                for ($i = 1; $i <= $pageCount; $i++) {
+                                    if ($i === 1 || $i === $pageCount || ($i >= $currentPage - $delta && $i <= $currentPage + $delta)) {
+                                        $range[] = $i;
+                                    }
+                                }
+                                $lastPageNum = 0;
+                                foreach ($range as $pageItem) {
+                                    if ($lastPageNum > 0 && $pageItem - $lastPageNum > 1) {
+                                        $rangeWithDots[] = '...';
+                                    }
+                                    $rangeWithDots[] = $pageItem;
+                                    $lastPageNum = $pageItem;
+                                }
                                 ?>
                                 <nav class="all-products-pagination" aria-label="Talent product pages">
                                     <?php if ($currentPage > 1): ?>
-                                        <a href="<?= store_escape($talentCollectionPath . '?' . http_build_query($paginationQuery + ['page' => $currentPage - 1])) ?>" aria-label="Previous page">Previous</a>
+                                        <a class="all-products-page-button" href="<?= store_escape($buildTalentMerchPageUrl($currentPage - 1)) ?>" aria-label="Previous page">Prev</a>
+                                    <?php else: ?>
+                                        <span class="all-products-page-button is-disabled" aria-hidden="true">Prev</span>
                                     <?php endif; ?>
-                                    <span>Page <?= $currentPage ?> of <?= $pageCount ?></span>
+
+                                    <div class="all-products-page-list">
+                                        <?php foreach ($rangeWithDots as $pageDot): ?>
+                                            <?php if ($pageDot === '...'): ?>
+                                                <span class="all-products-page-ellipsis" aria-hidden="true">&hellip;</span>
+                                            <?php elseif ((int) $pageDot === $currentPage): ?>
+                                                <span class="all-products-page-number is-active" aria-current="page"><?= $pageDot ?></span>
+                                            <?php else: ?>
+                                                <a class="all-products-page-number" href="<?= store_escape($buildTalentMerchPageUrl((int) $pageDot)) ?>" aria-label="Page <?= $pageDot ?>"><?= $pageDot ?></a>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+
                                     <?php if ($currentPage < $pageCount): ?>
-                                        <a href="<?= store_escape($talentCollectionPath . '?' . http_build_query($paginationQuery + ['page' => $currentPage + 1])) ?>" aria-label="Next page">Next</a>
+                                        <a class="all-products-page-button" href="<?= store_escape($buildTalentMerchPageUrl($currentPage + 1)) ?>" aria-label="Next page">Next</a>
+                                    <?php else: ?>
+                                        <span class="all-products-page-button is-disabled" aria-hidden="true">Next</span>
                                     <?php endif; ?>
                                 </nav>
                             <?php endif; ?>

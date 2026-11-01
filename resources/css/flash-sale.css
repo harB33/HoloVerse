@@ -4093,9 +4093,7 @@
 
 .flash-sale-page .flash-countdown-clock span,
 .flash-sale-page .flash-countdown-clock small {
-    border: 1px solid #e5edf2;
     border-radius: 6px;
-    background: #f5fafc;
     color: #172033;
     padding: 4px 6px;
 }
