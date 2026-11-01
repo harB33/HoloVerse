@@ -4604,6 +4604,57 @@ body.order-history-page * {
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
+@keyframes products-section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.all-products-page.products-reveal-ready :is(
+  .all-products-heading,
+  .availability-toolbar,
+  .products-catalog-layout > .generation-filter,
+  .products-catalog-results > .catalog-results-bar,
+  .products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card,
+  .products-catalog-results > .all-products-pagination,
+  .products-catalog-results > .empty-search
+):not(.is-visible) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.all-products-page.products-reveal-ready :is(
+  .all-products-heading,
+  .availability-toolbar,
+  .products-catalog-layout > .generation-filter,
+  .products-catalog-results > .catalog-results-bar,
+  .products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card,
+  .products-catalog-results > .all-products-pagination,
+  .products-catalog-results > .empty-search
+).is-visible {
+  animation: products-section-enter 600ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+
+.all-products-page.products-reveal-ready .catalog-product-card.is-visible {
+  animation-delay: var(--products-reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .all-products-page .is-visible {
+    animation: none;
+  }
+}
+
+html[data-reduce-motion="true"] .all-products-page .is-visible {
+  animation: none;
+}
+
 body.order-history-page .order-history-main.landing-shell {
   width: min(1440px, calc(100% - 96px)) !important;
   max-width: none !important;

@@ -429,6 +429,47 @@ require __DIR__ . '/../app/views/layout/head.php';
         }
 
         const catalogResults = document.querySelector(".products-catalog-results");
+        const catalogRevealReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            || document.documentElement.dataset.reduceMotion === "true";
+        const catalogRevealTargets = [
+            ".all-products-heading",
+            ".availability-toolbar",
+            ".products-catalog-layout > .generation-filter",
+            ".products-catalog-results > .catalog-results-bar",
+            ".products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card",
+            ".products-catalog-results > .all-products-pagination",
+            ".products-catalog-results > .empty-search",
+        ].join(", ");
+        let catalogRevealObserver = null;
+        const observeCatalogRevealTargets = (root = document) => {
+            if (!catalogRevealObserver) {
+                return;
+            }
+
+            let cardIndex = 0;
+            root.querySelectorAll(catalogRevealTargets).forEach((target) => {
+                if (target.matches(".catalog-product-card")) {
+                    target.style.setProperty("--products-reveal-delay", `${(cardIndex++ % 4) * 70}ms`);
+                }
+                catalogRevealObserver.observe(target);
+            });
+        };
+
+        if (!catalogRevealReducedMotion && "IntersectionObserver" in window) {
+            catalogRevealObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("is-visible");
+                    } else {
+                        entry.target.classList.remove("is-visible");
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: "0px 0px 64px 0px" });
+
+            document.body.classList.add("products-reveal-ready");
+            observeCatalogRevealTargets();
+        }
+
         const stopCatalogLoading = () => {
             catalogResults?.classList.remove("is-loading");
             catalogResults?.setAttribute("aria-busy", "false");
@@ -553,11 +594,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                 }
 
                 document.querySelector("[data-catalog-search-error]")?.remove();
+                catalogResults.querySelectorAll(catalogRevealTargets).forEach((target) => {
+                    catalogRevealObserver?.unobserve(target);
+                });
                 const loadingSkeleton = catalogResults.querySelector(".products-loading-skeleton");
                 catalogResults.replaceChildren(
                     ...(loadingSkeleton ? [loadingSkeleton] : []),
                     ...nextResults.childNodes
                 );
+                observeCatalogRevealTargets(catalogResults);
 
                 const countEl = document.querySelector("#all-products-count");
                 if (countEl && nextCount) {
