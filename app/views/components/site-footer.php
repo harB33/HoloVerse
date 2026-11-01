@@ -1,6 +1,7 @@
 <?php
 $siteRoot = $siteRoot ?? '';
 $footerLogoUrl = $siteRoot === '/' ? '/assets/images/logo.png' : ($siteRoot . 'assets/images/logo.png');
+$footerCartAction = $siteRoot === '/' ? '/cart' : ($siteRoot . 'cart');
 $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
 ?>
 <footer class="footer site-footer">
@@ -137,7 +138,8 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
             let data;
             try {
                 data = JSON.parse(card.dataset.quickView || "{}");
-            } catch {
+            } catch (error) {
+                console.error("Unable to read product quick-view data.", error);
                 return;
             }
             if (quickImage) {
@@ -181,7 +183,7 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
                 quickLink.href = data.productUrl || "<?= store_escape($footerProductsUrl) ?>";
             }
             quickModal.hidden = false;
-        });
+        }, true);
 
         quickCloseBtns.forEach((btn) => btn.addEventListener("click", closeQuickView));
         window.addEventListener("holoverse:item-added", closeQuickView);
