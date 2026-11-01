@@ -3,7 +3,7 @@ require_once __DIR__ . '/../app/store.php';
 require_once __DIR__ . '/../app/store/checkout.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: cart');
+    header('Location: /home');
     exit;
 }
 
@@ -56,7 +56,7 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
 }
 
 if ($orderNumber === '' && ($intent['scope'] ?? '') !== 'cart') {
-    header('Location: cart');
+    header('Location: /home');
     exit;
 }
 

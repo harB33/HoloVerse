@@ -1,6 +1,5 @@
 <?php
 $siteRoot = $siteRoot ?? '';
-$footerCartAction = $siteRoot === '/' ? '/cart' : ($siteRoot . 'cart');
 $footerLogoUrl = $siteRoot === '/' ? '/assets/images/logo.png' : ($siteRoot . 'assets/images/logo.png');
 $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
 ?>
@@ -32,7 +31,6 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
             <a href="<?= store_escape($siteRoot === '/' ? '/personalized' : $siteRoot . 'personalized') ?>">International shipping &amp; customs</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/collector-showcase' : $siteRoot . 'collector-showcase') ?>">Collector Showcase</a>
             <a href="<?= store_escape($siteRoot === '/' ? '/purchase' : $siteRoot . 'purchase') ?>">My Purchases</a>
-            <a href="<?= store_escape($footerCartAction) ?>">Shopping Bag</a>
         </div>
 
         <div>

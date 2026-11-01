@@ -37,7 +37,7 @@
             </div>
             <strong><?= $activeCartQuantity ?> <small>items</small></strong>
             <p>Items in this browser's active cart. Adding to cart does not reserve stock.</p>
-            <a class="flash-telemetry-badge no-underline" href="cart">View cart</a>
+            <button class="flash-telemetry-badge no-underline" type="button" data-cart-drawer-open>Open shopping bag</button>
         </article>
 
         <article class="flash-telemetry-card">

@@ -79,10 +79,6 @@ $headerCsrfToken = store_csrf_token();
                             <?php endif; ?>
                             <a class="account-dropdown-action" href="<?= store_escape($pageUrlPrefix . 'collector-showcase') ?>"<?= $activePage === 'collector_showcase' ? ' aria-current="page"' : '' ?>><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-playing-cards-fan preview-icon"><path d="M12.65 7.65a2 2 0 012.629-1.046l5.51 2.374a2 2 0 011.046 2.628l-3.957 9.184a2 2 0 01-2.628 1.046l-5.51-2.374a2 2 0 01-1.046-2.628z"/><path d="M18 7.777V4a2 2 0 00-2-2h-6a2 2 0 00-2 2v10a2 2 0 001.137 1.805"/><path d="m8 4.389-4.364.809a2 2 0 00-1.602 2.33l1.822 9.833a2 2 0 002.331 1.602l2.542-.47"/></svg> Collector Showcase</a>
                             <button class="account-dropdown-action" type="button" data-accessibility-dialog-open><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette preview-icon" aria-hidden="true"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg>Accessibility</button>
-                            <a class="account-dropdown-action" href="<?= store_escape($pageUrlPrefix . 'cart') ?>"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart preview-icon">
-                                <path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/>
-                                <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/>
-                                <circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>Cart</a>
                             <a class="account-dropdown-action" href="<?= store_escape($pageUrlPrefix . 'purchase') ?>"<?= $activePage === 'orders' ? ' aria-current="page"' : '' ?>><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="preview-icon" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H8Z"/><path d="M14 3v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg>My Purchase</a>
                             <button class="account-dropdown-action" type="button" data-logout-dialog-open><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out preview-icon">
                                 <path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>
@@ -379,7 +375,6 @@ $headerCsrfToken = store_csrf_token();
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </button>
         </form>
-        <a class="cart-drawer-view-link" href="<?= store_escape($pageUrlPrefix . 'cart') ?>">View full cart</a>
     </div>
 </aside>
 
@@ -610,9 +605,6 @@ $headerCsrfToken = store_csrf_token();
                     throw new Error(payload?.message || "Unable to update your bag.");
                 }
                 renderCartState(payload);
-                if (document.querySelector(".cart-main") && payload.items?.length === 0) {
-                    window.location.reload();
-                }
             } catch (error) {
                 showToast(error instanceof Error ? error.message : "Unable to update your bag.", true);
             }
