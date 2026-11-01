@@ -544,41 +544,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <img src="<?= store_escape($siteRoot . 'assets/images/suisei2.jpg') ?>" alt="Featured Talent Hoshimachi Suisei" draggable="false" class="auth-artwork-image">
                     <div class="auth-artwork-shade"></div>
                     <div class="auth-artwork-body">
-                        <div class="auth-artwork-top">
-                            <span class="auth-status-pill"><span class="live-dot"></span>Collector Portal</span>
-                            <span class="auth-artwork-code">HV // AUTH-01</span>
-                        </div>
-                        <div class="auth-artwork-content">
-                            <p class="eyebrow">Member Archive &amp; Benefits</p>
-                            <h3 class="auth-artwork-title">Keep every favorite piece in one place.</h3>
-                            <ul class="auth-artwork-perks" role="list">
-                                <li class="auth-artwork-perk">
-                                    <span class="perk-index">01</span>
-                                    <div class="perk-detail">
-                                        <strong>Synced Shopping Bag</strong>
-                                        <span>Seamless cart across every official drop</span>
-                                    </div>
-                                </li>
-                                <li class="auth-artwork-perk">
-                                    <span class="perk-index">02</span>
-                                    <div class="perk-detail">
-                                        <strong>Collector Showcase &amp; Favorites</strong>
-                                        <span>Curate your personal talent merch wall</span>
-                                    </div>
-                                </li>
-                                <li class="auth-artwork-perk">
-                                    <span class="perk-index">03</span>
-                                    <div class="perk-detail">
-                                        <strong>Live Flash Drop Alerts</strong>
-                                        <span>Priority notifications and real-time inventory</span>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="auth-artwork-caption">
-                            <span>FEATURED TALENT // HOSHIMACHI SUISEI</span>
-                            <span>COVER CORP. OFFICIAL</span>
-                        </div>
                     </div>
                 </aside>
                 <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
