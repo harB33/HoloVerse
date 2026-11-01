@@ -3608,6 +3608,56 @@ body.order-history-page .order-history-main.landing-shell {
   background: transparent !important;
 }
 
+@keyframes order-history-section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.purchase-history-page.order-history-reveal-ready :is(
+  .order-history-heading,
+  .order-history-card,
+  .order-history-empty,
+  .all-products-pagination
+):not(.is-visible),
+.orders-history-page.order-history-reveal-ready :is(
+  .order-history-heading,
+  .order-history-card,
+  .order-history-empty,
+  .all-products-pagination
+):not(.is-visible) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.purchase-history-page .is-visible,
+.orders-history-page .is-visible {
+  animation: order-history-section-enter 600ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+
+.purchase-history-page .order-history-card.is-visible,
+.orders-history-page .order-history-card.is-visible {
+  animation-delay: var(--order-history-reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .purchase-history-page .is-visible,
+  .orders-history-page .is-visible {
+    animation: none;
+  }
+}
+
+html[data-reduce-motion="true"] .purchase-history-page .is-visible,
+html[data-reduce-motion="true"] .orders-history-page .is-visible {
+  animation: none;
+}
+
 body.order-history-page .order-history-heading {
   display: flex;
   align-items: center;

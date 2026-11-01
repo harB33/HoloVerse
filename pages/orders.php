@@ -131,7 +131,7 @@ $siteRoot = $isPurchaseOrderDetails
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body class="order-history-page home-landing">
+<body class="order-history-page orders-history-page home-landing">
     <div class="page-shell">
         <?php
         $activePage = 'orders';
@@ -378,4 +378,5 @@ require __DIR__ . '/../app/views/layout/head.php';
         </main>
     </div>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script src="../assets/js/order-history-page.js?v=<?= filemtime(__DIR__ . '/../assets/js/order-history-page.js') ?>" defer></script>
 </body>
