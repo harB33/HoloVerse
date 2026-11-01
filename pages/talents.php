@@ -177,7 +177,11 @@ require __DIR__ . '/../app/views/layout/head.php';
         const talentTotalCount = document.querySelector('[data-talent-total-count]');
         const talentsPerPage = 20;
         let currentPage = <?= (int) $initialPage ?>;
-        let selectedGeneration = 'all';
+        const availableGroups = new Set(
+            Array.from(exploreFilters, (filter) => filter.dataset.exploreFilter)
+        );
+        const requestedGroup = new URLSearchParams(window.location.search).get('group');
+        let selectedGeneration = availableGroups.has(requestedGroup) ? requestedGroup : 'all';
 
         const buildTalentPageHref = (pageNum) => {
             const url = new URL(window.location.href);
@@ -185,6 +189,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                 url.searchParams.delete('page');
             } else {
                 url.searchParams.set('page', String(pageNum));
+            }
+            if (selectedGeneration === 'all') {
+                url.searchParams.delete('group');
+            } else {
+                url.searchParams.set('group', selectedGeneration);
             }
             return `${url.pathname}${url.search}`;
         };
@@ -301,11 +310,24 @@ require __DIR__ . '/../app/views/layout/head.php';
             }
         });
         window.addEventListener('popstate', () => {
-            const urlPage = Number(new URL(window.location.href).searchParams.get('page')) || 1;
+            const url = new URL(window.location.href);
+            const urlPage = Number(url.searchParams.get('page')) || 1;
+            const urlGroup = url.searchParams.get('group');
+            selectedGeneration = availableGroups.has(urlGroup) ? urlGroup : 'all';
+            exploreFilters.forEach((filter) => {
+                const active = filter.dataset.exploreFilter === selectedGeneration;
+                filter.setAttribute('aria-pressed', String(active));
+                filter.classList.toggle('is-active', active);
+            });
             currentPage = Math.max(1, urlPage);
             updateTalentResults(false, false);
         });
-        updateTalentResults(false, false);
+        exploreFilters.forEach((filter) => {
+            const active = filter.dataset.exploreFilter === selectedGeneration;
+            filter.setAttribute('aria-pressed', String(active));
+            filter.classList.toggle('is-active', active);
+        });
+        updateTalentResults(true, false);
 
         document.querySelectorAll('.talent-photo').forEach((image) => image.addEventListener('error', () => {
             image.classList.add('hidden');

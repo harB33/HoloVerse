@@ -273,7 +273,98 @@ usort($categoryRows, static function (array $a, array $b) use ($preferredCategor
 });
 
 $tabCategories = array_slice(array_column($categoryRows, 'category_name'), 0, 5);
-$railCategories = array_slice($categoryRows, 0, 4);
+$talentJapaneseNames = [
+    'Hoshimachi Suisei' => '星街すいせい',
+    'Inugami Korone' => '戌神ころね',
+    'Gawr Gura' => 'がうる・ぐら',
+    'Mori Calliope' => '森カリオペ',
+    'Usada Pekora' => '兎田ぺこら',
+    'Tokino Sora' => 'ときのそら',
+    'Roboco-san' => 'ロボ子さん',
+    'AZKi' => 'あずき',
+    'Sakura Miko' => 'さくらみこ',
+    'Aki Rosenthal' => 'アキ・ローゼンタール',
+    'Akai Haato' => '赤井はあと',
+    'Shirakami Fubuki' => '白上フブキ',
+    'Natsuiro Matsuri' => '夏色まつり',
+    'Ookami Mio' => '大神ミオ',
+    'Nekomata Okayu' => '猫又おかゆ',
+    'Nakiri Ayame' => '百鬼あやめ',
+    'Yuzuki Choco' => '癒月ちょこ',
+    'Oozora Subaru' => '大空スバル',
+    'Shiranui Flare' => '不知火フレア',
+    'Shirogane Noel' => '白銀ノエル',
+    'Houshou Marine' => '宝鐘マリン',
+    'Tsunomaki Watame' => '角巻わため',
+    'Tokoyami Towa' => '常闇トワ',
+    'Himemori Luna' => '姫森ルーナ',
+    'Yukihana Lamy' => '雪花ラミィ',
+    'Momosuzu Nene' => '桃鈴ねね',
+    'Shishiro Botan' => '獅白ぼたん',
+    'Omaru Polka' => '尾丸ポルカ',
+    'La+ Darknesss' => 'ラプラス・ダークネス',
+    'Takane Lui' => '鷹嶺ルイ',
+    'Hakui Koyori' => '博衣こより',
+    'Kazama Iroha' => '風真いろは',
+    'Otonose Kanade' => '音乃瀬奏',
+    'Ichijou Ririka' => '一条莉々華',
+    'Juufuutei Raden' => '儒烏風亭らでん',
+    'Todoroki Hajime' => '轟はじめ',
+    'Isaki Riona' => '響咲リオナ',
+    'Koganei Niko' => '虎金妃笑虎',
+    'Mizumiya Su' => '水宮枢',
+    'Rindo Chihaya' => '輪堂千速',
+    'Kikirara Vivi' => '綺々羅々ヴィヴィ',
+    'Takanashi Kiara' => '小鳥遊キアラ',
+    'Ninomae Ina’nis' => '一伊那尓栖',
+    'Watson Amelia' => 'ワトソン・アメリア',
+    'IRyS' => 'アイリス',
+    'Ouro Kronii' => 'オーロ・クロニー',
+    'Hakos Baelz' => 'ハコス・ベールズ',
+    'Shiori Novella' => 'シオリ・ノヴェラ',
+    'Koseki Bijou' => '古石ビジュー',
+    'Nerissa Ravencroft' => 'ネリッサ・レイヴンクロフト',
+    'Fuwawa Abyssgard' => 'フワワ・アビスガード',
+    'Mococo Abyssgard' => 'モココ・アビスガード',
+    'Elizabeth Rose Bloodflame' => 'エリザベス・ローズ・ブラッドフレイム',
+    'Gigi Murin' => 'ジジ・ムリン',
+    'Cecilia Immergreen' => 'セシリア・イマーグリーン',
+    'Raora Panthera' => 'ラオーラ・パンテーラ',
+    'Ayunda Risu' => 'アユンダ・リス',
+    'Moona Hoshinova' => 'ムーナ・ホシノヴァ',
+    'Airani Iofifteen' => 'アイラニ・イオフィフティーン',
+    'Kureiji Ollie' => 'クレイジー・オリー',
+    'Anya Melfissa' => 'アーニャ・メルフィッサ',
+    'Pavolia Reine' => 'パヴォリア・レイネ',
+    'Vestia Zeta' => 'ベスティア・ゼータ',
+    'Kaela Kovalskia' => 'カエラ・コヴァルスキア',
+    'Kobo Kanaeru' => 'こぼ・かなえる',
+    'Hyakuto Kyoko' => 'ヒャクト・キョウコ',
+    'Achichi Mela' => 'アチチ・メラ',
+    'Suzuna Tsuzuri' => 'スズナ・ツズリ',
+    'Sorashina Sopia' => 'ソラシナ・ソピア',
+];
+$talentTickerItems = array_map(
+    static function (array $talent) use ($talentJapaneseNames): array {
+        $name = (string) $talent['talent_name'];
+        return [
+            'name' => $name,
+            'slug' => (string) $talent['talent_slug'],
+            'japanese' => $talentJapaneseNames[$name] ?? $name,
+        ];
+    },
+    $conn->query('SELECT talent_name, talent_slug FROM talent_tbl ORDER BY talent_name ASC')->fetch_all(PDO::FETCH_ASSOC)
+);
+$talentGroups = $conn->query(
+    'SELECT group_name, group_slug FROM talent_group_tbl ORDER BY group_id ASC'
+)->fetch_all(PDO::FETCH_ASSOC);
+$talentGroupNames = array_map(
+    static fn (array $group): array => [
+        'name' => (string) $group['group_name'],
+        'slug' => (string) $group['group_slug'],
+    ],
+    $talentGroups
+);
 
 // Build diverse shop product list: regular products, pre-orders, flash drop, and user favorites
 $shopProductsById = [];
@@ -525,14 +616,31 @@ require __DIR__ . '/app/views/layout/head.php';
                 </section>
             <?php endif; ?>
 
-            <section class="category-rail" aria-label="Shop categories">
-                <?php foreach ($railCategories as $railCategory): ?>
-                    <?php $railCatName = (string) $railCategory['category_name']; ?>
-                    <button type="button" data-home-jump="<?= store_escape($railCatName) ?>|all">
-                        <span><?= store_escape($railCatName) ?></span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                    </button>
-                <?php endforeach; ?>
+            <section class="talent-marquee" aria-label="Featured hololive production talents">
+                <div class="talent-marquee-track">
+                    <ul class="talent-marquee-group" aria-label="Talent names">
+                        <?php foreach ($talentTickerItems as $talent): ?>
+                            <li>
+                                <span class="talent-marquee-dot" aria-hidden="true"></span>
+                                <a class="talent-marquee-link" href="/talent-merch/<?= rawurlencode($talent['slug']) ?>">
+                                    <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
+                                    <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <ul class="talent-marquee-group" aria-hidden="true">
+                        <?php foreach ($talentTickerItems as $talent): ?>
+                            <li>
+                                <span class="talent-marquee-dot" aria-hidden="true"></span>
+                                <a class="talent-marquee-link" href="/talent-merch/<?= rawurlencode($talent['slug']) ?>" tabindex="-1">
+                                    <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
+                                    <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </section>
 
             <section id="shop" class="shop-section landing-shell">
@@ -769,6 +877,31 @@ require __DIR__ . '/app/views/layout/head.php';
                     <button class="button-primary dark" type="button" data-shop-reset>
                         Reset search
                     </button>
+                </div>
+            </section>
+
+            <section class="talent-marquee" aria-label="Hololive talent groups">
+                <div class="talent-marquee-track">
+                    <ul class="talent-marquee-group" aria-label="Talent group names">
+                        <?php foreach ($talentGroupNames as $group): ?>
+                            <li>
+                                <span class="talent-marquee-dot" aria-hidden="true"></span>
+                                <a class="talent-marquee-link" href="/talents?group=<?= rawurlencode($group['slug']) ?>">
+                                    <span class="talent-marquee-name"><?= store_escape($group['name']) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <ul class="talent-marquee-group" aria-hidden="true">
+                        <?php foreach ($talentGroupNames as $group): ?>
+                            <li>
+                                <span class="talent-marquee-dot" aria-hidden="true"></span>
+                                <a class="talent-marquee-link" href="/talents?group=<?= rawurlencode($group['slug']) ?>" tabindex="-1">
+                                    <span class="talent-marquee-name"><?= store_escape($group['name']) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             </section>
 

@@ -617,46 +617,141 @@ body.home-landing main.landing-shell,
   }
 }
 
-.category-rail {
-  min-height: 104px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid var(--line);
-}
-
-.category-rail button {
-  min-height: 104px;
-  padding: 0 32px;
+.talent-marquee {
+  position: relative;
+  min-height: 50px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border: 0;
-  border-right: 1px solid var(--line);
-  color: var(--ink);
-  background: #fff;
-  font-size: 13px;
+  overflow: hidden;
+  border-block: 1px solid rgba(112, 137, 184, 0.16);
+  color: inherit;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(198, 169, 224, 0.12), transparent 34%),
+    radial-gradient(ellipse at 75% 100%, rgba(116, 190, 218, 0.1), transparent 38%),
+    #fbfcff;
+}
+
+.talent-marquee::before {
+  position: absolute;
+  inset: -18px 0 auto;
+  overflow: hidden;
+  color: rgba(97, 119, 160, 0.035);
+  content: "HOLOVERSE  ·  OFFICIAL TALENT DIRECTORY  ·  HOLOVERSE  ·  OFFICIAL TALENT DIRECTORY";
+  font-size: 47px;
   font-weight: 900;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 220ms ease, background 220ms ease;
+  letter-spacing: 0.11em;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
-.category-rail button:last-child {
-  border-right: 0;
+.talent-marquee-track {
+  position: relative;
+  z-index: 1;
 }
 
-.category-rail button:hover {
+.talent-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: talent-marquee-scroll 72s linear infinite;
+}
+
+.talent-marquee:hover .talent-marquee-track,
+.talent-marquee:focus-within .talent-marquee-track {
+  animation-play-state: paused;
+}
+
+.talent-marquee-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: clamp(30px, 4vw, 64px);
+  margin: 0;
+  padding: 0 clamp(30px, 4vw, 64px) 0 0;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.talent-marquee-group li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.talent-marquee-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  color: #46546d;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.talent-marquee-link:hover,
+.talent-marquee-link:focus-visible {
   color: var(--cyan-dark);
-  background: #f5fcff;
 }
 
-.category-rail button svg {
-  transition: transform 200ms ease;
+.talent-marquee-link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
 }
 
-.category-rail button:hover svg {
-  transform: translateX(5px);
+.talent-marquee-japanese {
+  color: #a4afc4;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.talent-marquee-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #e85d75;
+}
+
+.talent-marquee-group li:nth-child(6n + 2) .talent-marquee-dot {
+  background: #d3a63b;
+}
+
+.talent-marquee-group li:nth-child(6n + 3) .talent-marquee-dot {
+  background: #537af0;
+}
+
+.talent-marquee-group li:nth-child(6n + 4) .talent-marquee-dot {
+  background: #57c5e8;
+}
+
+.talent-marquee-group li:nth-child(6n + 5) .talent-marquee-dot {
+  background: #eaad49;
+}
+
+.talent-marquee-group li:nth-child(6n) .talent-marquee-dot {
+  background: #43a77c;
+}
+
+@keyframes talent-marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talent-marquee {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .talent-marquee-track {
+    animation: none;
+  }
+
+  .talent-marquee-group[aria-hidden="true"] {
+    display: none;
+  }
 }
 
 .shop-section {
@@ -2716,19 +2811,25 @@ html[data-theme="dark"] .home-landing {
   color: #dedee3;
 }
 
-html[data-theme="dark"] .category-rail {
-  border-bottom-color: #2e323b;
+html[data-theme="dark"] .talent-marquee {
+  border-color: #2e323b;
+  background: rgba(28, 30, 36, 0.9);
 }
 
-html[data-theme="dark"] .category-rail button {
-  border-right-color: #2e323b;
-  background: #1c1e24;
-  color: #dedee3;
+html[data-theme="dark"] .talent-marquee-group li {
+  color: #c0c5d2;
 }
 
-html[data-theme="dark"] .category-rail button:hover {
-  background: #252830;
-  color: var(--cyan);
+html[data-theme="dark"] .talent-marquee-link {
+  color: #c0c5d2;
+}
+
+html[data-theme="dark"] .talent-marquee-japanese {
+  color: #8d96a8;
+}
+
+html[data-theme="dark"] .talent-marquee::before {
+  color: rgba(209, 218, 237, 0.025);
 }
 
 html[data-theme="dark"] .product-toolbar,
@@ -2843,19 +2944,21 @@ html[data-theme="dark"] .talent-art::before {
     color: #dedee3;
   }
 
-  html[data-theme="system"] .category-rail {
-    border-bottom-color: #2e323b;
+  html[data-theme="system"] .talent-marquee {
+    border-color: #2e323b;
+    background: rgba(28, 30, 36, 0.9);
   }
 
-  html[data-theme="system"] .category-rail button {
-    border-right-color: #2e323b;
-    background: #1c1e24;
-    color: #dedee3;
+  html[data-theme="system"] .talent-marquee-group li {
+    color: #c0c5d2;
   }
 
-  html[data-theme="system"] .category-rail button:hover {
-    background: #252830;
-    color: var(--cyan);
+  html[data-theme="system"] .talent-marquee-link {
+    color: #c0c5d2;
+  }
+
+  html[data-theme="system"] .talent-marquee-japanese {
+    color: #8d96a8;
   }
 
   html[data-theme="system"] .product-toolbar,
@@ -2999,18 +3102,6 @@ html[data-theme="dark"] .talent-art::before {
 
   .hero-scroll {
     display: none;
-  }
-
-  .category-rail {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .category-rail button:nth-child(2) {
-    border-right: 0;
-  }
-
-  .category-rail button:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--line);
   }
 
   .section-heading {
@@ -3176,12 +3267,6 @@ html[data-theme="dark"] .talent-art::before {
 
   .button-primary {
     min-height: 48px;
-  }
-
-  .category-rail button {
-    min-height: 78px;
-    padding: 0 16px;
-    font-size: 10px;
   }
 
   .shop-section {
