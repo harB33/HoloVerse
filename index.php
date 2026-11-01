@@ -203,7 +203,6 @@ foreach ($liveFlashSales as $saleRow) {
 
 // Determine spotlight flash drop product (live flash sale or fallback discounted/featured item from DB)
 $flashDropProduct = $liveFlashSales[0] ?? null;
-$isLiveScheduledFlash = $flashDropProduct !== null;
 
 if ($flashDropProduct === null) {
     $discountedRows = store_product_rows(
@@ -238,16 +237,6 @@ if ($flashDropProduct !== null && empty($flashDropProduct['talent_name'])) {
     $talentRow = $talentStmt->get_result()->fetch_assoc();
     $talentStmt->close();
     $flashDropProduct['talent_name'] = $talentRow['talent_name'] ?? $flashDropProduct['category_name'] ?? 'hololive production';
-}
-
-$flashDeadlineTimestampMs = 0;
-if ($flashDropProduct !== null && !empty($flashDropProduct['ends_at'])) {
-    try {
-        $endsAtDate = new DateTimeImmutable((string) $flashDropProduct['ends_at'], $flashSaleTimezone);
-        $flashDeadlineTimestampMs = $endsAtDate->getTimestamp() * 1000;
-    } catch (Throwable) {
-        $flashDeadlineTimestampMs = 0;
-    }
 }
 
 // Fetch categories with active products
@@ -496,107 +485,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 </button>
             </section>
 
-            <?php if ($flashDropProduct !== null): ?>
-                <?php
-                $flashStock = max(0, (int) ($flashDropProduct['stock_quantity'] ?? 0));
-                $flashCapacity = max(24, $flashStock + 6);
-                $flashClaimedPercent = min(100, max(12, (int) round((($flashCapacity - $flashStock) / $flashCapacity) * 100)));
-                $flashPrice = (float) ($flashDropProduct['price'] ?? 0);
-                $flashComparePrice = !empty($flashDropProduct['compare_at_price']) && (float) $flashDropProduct['compare_at_price'] > $flashPrice
-                    ? (float) $flashDropProduct['compare_at_price']
-                    : round($flashPrice * 1.2, 2);
-                $flashTalent = (string) ($flashDropProduct['talent_name'] ?: ($flashDropProduct['category_name'] ?? 'hololive production'));
-                $flashImage = store_asset_url((string) ($flashDropProduct['image_url'] ?: 'assets/images/banner/supernova.webp'));
-                $flashProductUrl = store_product_url((string) $flashDropProduct['product_name']);
-                ?>
-                <section id="flash-drop" class="flash-drop-section" data-home-reveal data-flash-drop-section data-flash-deadline="<?= $flashDeadlineTimestampMs ?>">
-                    <div class="flash-drop-layout landing-shell">
-                        <div class="flash-copy">
-                            <div class="flash-eyebrow">
-                                <span class="live-dot"></span>
-                                <?= $isLiveScheduledFlash ? 'Live flash sale drop' : 'Limited-time drop' ?>
-                            </div>
-                            <p class="eyebrow"><?= store_escape($flashTalent) ?> &middot; small batch release</p>
-                            <h2>A little chaos.<br>A lot of Grem.</h2>
-                            <p class="flash-description">
-                                <?= store_escape((string) $flashDropProduct['product_name']) ?> is in the spotlight. Grab the flash price before this drop window closes.
-                            </p>
-
-                            <div class="countdown-block" aria-label="Flash drop countdown">
-                                <div class="countdown-heading">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <span>Drop window ends in</span>
-                                </div>
-                                <div class="countdown-timer" aria-live="off">
-                                    <div class="countdown-unit"><strong data-flash-hours>05</strong><span>hours</span></div>
-                                    <span class="countdown-colon">:</span>
-                                    <div class="countdown-unit"><strong data-flash-minutes>59</strong><span>minutes</span></div>
-                                    <span class="countdown-colon">:</span>
-                                    <div class="countdown-unit"><strong data-flash-seconds>59</strong><span>seconds</span></div>
-                                </div>
-                                <p class="countdown-footnote" data-flash-closes-at>Limited-time allocation while supplies last</p>
-                            </div>
-
-                            <div class="flash-stock">
-                                <div class="flash-stock-heading">
-                                    <span>Drop quantity</span>
-                                    <strong data-flash-stock-label><?= $flashStock ?> left</strong>
-                                </div>
-                                <div
-                                    class="flash-stock-track"
-                                    role="progressbar"
-                                    aria-label="Flash drop availability claimed"
-                                    aria-valuenow="<?= $flashClaimedPercent ?>"
-                                    aria-valuemin="0"
-                                    aria-valuemax="100"
-                                >
-                                    <span data-flash-stock-bar style="width: <?= $flashClaimedPercent ?>%;"></span>
-                                </div>
-                            </div>
-
-                            <div class="flash-cta-row">
-                                <?php if ($flashStock > 0): ?>
-                                    <form action="cart" method="post" data-toast-message="<?= store_escape($flashDropProduct['product_name'] . ' added to your bag') ?>">
-                                        <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
-                                        <input type="hidden" name="variant_id" value="<?= (int) $flashDropProduct['variant_id'] ?>">
-                                        <button class="button-primary flash-buy-button" type="submit" name="action" value="add" data-flash-buy-btn>
-                                            <span>Get the drop</span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <button class="button-primary flash-buy-button" type="button" disabled>Sold out</button>
-                                <?php endif; ?>
-
-                                <button class="drop-reminder" type="button" data-drop-reminder-btn>
-                                    <svg data-reminder-icon-bell xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                                    <svg data-reminder-icon-check hidden xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                                    <span data-reminder-label>Remind me</span>
-                                </button>
-                            </div>
-                            <p class="flash-prototype-note">
-                                Flash price <strong><?= store_escape(store_format_price($flashPrice)) ?></strong>
-                                <?php if ($flashComparePrice > $flashPrice): ?>
-                                    <del><?= store_escape(store_format_price($flashComparePrice)) ?></del>
-                                <?php endif; ?>
-                                <span>&middot;</span>
-                                <a class="flash-All-link" href="flash-sale">View all flash sales</a>
-                            </p>
-                        </div>
-
-                        <div class="flash-artwork">
-                            <a href="<?= store_escape($flashProductUrl) ?>" aria-label="View <?= store_escape((string) $flashDropProduct['product_name']) ?>">
-                                <img src="<?= store_escape($flashImage) ?>" alt="<?= store_escape((string) ($flashDropProduct['alt_text'] ?: $flashDropProduct['product_name'])) ?>" loading="lazy">
-                            </a>
-                            <div class="flash-artwork-caption">
-                                <span>01 / LIMITED RELEASE</span>
-                                <span>OFFICIAL CHARACTER ARTWORK</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            <?php endif; ?>
-
             <section class="talent-marquee" aria-label="Featured hololive production talents">
                 <div class="talent-marquee-track">
                     <ul class="talent-marquee-group" aria-label="Talent names">
@@ -629,9 +517,9 @@ require __DIR__ . '/app/views/layout/head.php';
                     <div>
                         <p class="eyebrow">Latest from the official shop</p>
                         <h2>New arrivals</h2>
+                        <p class="shop-section-description">Fresh merch from across hololive production. Quantities may be limited.</p>
                     </div>
                     <div class="section-heading-aside">
-                        <p>Fresh merch from across hololive production. Quantities may be limited.</p>
                         <a class="button-text" href="products">
                             View all products
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -661,45 +549,41 @@ require __DIR__ . '/app/views/layout/head.php';
                             </button>
                         <?php endforeach; ?>
                     </div>
-                    <button class="button-text" type="button" data-search-overlay-open>
-                        <span>Search merch</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    </button>
-                </div>
-
-                <div class="availability-toolbar" data-home-reveal>
-                    <div class="availability-filters" role="group" aria-label="Filter by availability">
-                        <span class="filter-hint">Availability</span>
-                        <button type="button" class="active" data-availability-filter="all" aria-pressed="true">
-                            Everything
+                    <div class="shop-filter-control">
+                        <button class="button-text" type="button" data-shop-filter-toggle aria-expanded="false" aria-controls="home-shop-filter-panel">
+                            <span>Filter</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M7 12h10"/><path d="M10 17h4"/></svg>
                         </button>
-                        <button type="button" data-availability-filter="ready" aria-pressed="false">
-                            In stock
-                        </button>
-                        <button type="button" data-availability-filter="preorder" aria-pressed="false">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                            Pre-order
-                            <span class="filter-count"><?= $preorderCountInShop ?></span>
-                        </button>
-                        <button type="button" data-availability-filter="flash" aria-pressed="false">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                            Flash drop
-                        </button>
-                        <button type="button" class="saved-filter" data-saved-filter aria-pressed="false">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                            Saved <span class="filter-count" data-saved-filter-count><?= count($favoriteProductIds) ?></span>
-                        </button>
+                        <div class="shop-filter-panel" id="home-shop-filter-panel" data-shop-filter-panel hidden>
+                            <div class="availability-filters" role="group" aria-label="Filter by availability">
+                                <span class="filter-hint">Availability</span>
+                                <button type="button" class="active" data-availability-filter="all" aria-pressed="true">Everything</button>
+                                <button type="button" data-availability-filter="ready" aria-pressed="false">In stock</button>
+                                <button type="button" data-availability-filter="preorder" aria-pressed="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                    Pre-order <span class="filter-count"><?= $preorderCountInShop ?></span>
+                                </button>
+                                <button type="button" data-availability-filter="flash" aria-pressed="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                                    Flash drop
+                                </button>
+                                <button type="button" class="saved-filter" data-saved-filter aria-pressed="false">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                                    Saved <span class="filter-count" data-saved-filter-count><?= count($favoriteProductIds) ?></span>
+                                </button>
+                            </div>
+                            <label class="sort-control">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                                <span>Sort by</span>
+                                <select data-shop-sort>
+                                    <option value="featured">Featured</option>
+                                    <option value="price-low">Price: low to high</option>
+                                    <option value="price-high">Price: high to low</option>
+                                    <option value="name">Name: A to Z</option>
+                                </select>
+                            </label>
+                        </div>
                     </div>
-                    <label class="sort-control">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                        <span>Sort</span>
-                        <select data-shop-sort>
-                            <option value="featured">Featured</option>
-                            <option value="price-low">Price: low to high</option>
-                            <option value="price-high">Price: high to low</option>
-                            <option value="name">Name: A to Z</option>
-                        </select>
-                    </label>
                 </div>
 
                 <p class="results-caption" data-home-reveal data-shop-results-caption>
@@ -906,7 +790,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <h2 id="home-faq-title">Good to<br><em>know.</em></h2>
                         <p class="home-faq-description">Wondering about something? Here are a few helpful notes before you find your new favorite.</p>
                         <a class="home-faq-contact" href="about-us">
-                            Our Team
+                            <span>Our Team</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </a>
                     </div>
@@ -1043,96 +927,12 @@ require __DIR__ . '/app/views/layout/head.php';
 
     <script>
         (() => {
-            // Flash drop countdown timer & alert toggle
-            const flashSection = document.querySelector("[data-flash-drop-section]");
-            if (flashSection) {
-                const hoursEl = flashSection.querySelector("[data-flash-hours]");
-                const minutesEl = flashSection.querySelector("[data-flash-minutes]");
-                const secondsEl = flashSection.querySelector("[data-flash-seconds]");
-                const closesAtEl = flashSection.querySelector("[data-flash-closes-at]");
-                const buyBtn = flashSection.querySelector("[data-flash-buy-btn]");
-                const reminderBtn = flashSection.querySelector("[data-drop-reminder-btn]");
-                const reminderBell = flashSection.querySelector("[data-reminder-icon-bell]");
-                const reminderCheck = flashSection.querySelector("[data-reminder-icon-check]");
-                const reminderLabel = flashSection.querySelector("[data-reminder-label]");
-
-                const getDeadline = () => {
-                    const serverDeadline = Number(flashSection.dataset.flashDeadline || 0);
-                    if (serverDeadline > Date.now()) {
-                        return serverDeadline;
-                    }
-                    const storageKey = "holoverse.flash-deadline";
-                    try {
-                        const stored = Number(window.localStorage.getItem(storageKey));
-                        if (stored > Date.now()) {
-                            return stored;
-                        }
-                        const nextDeadline = Date.now() + 6 * 60 * 60 * 1000;
-                        window.localStorage.setItem(storageKey, String(nextDeadline));
-                        return nextDeadline;
-                    } catch {
-                        return Date.now() + 6 * 60 * 60 * 1000;
-                    }
-                };
-
-                const deadline = getDeadline();
-                if (closesAtEl) {
-                    const closesString = new Date(deadline).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-                    closesAtEl.textContent = `Closes at ${closesString} your local time`;
-                }
-
-                const tickCountdown = () => {
-                    const remainingMs = Math.max(0, deadline - Date.now());
-                    const totalSeconds = Math.floor(remainingMs / 1000);
-                    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
-                    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
-                    const seconds = String(totalSeconds % 60).padStart(2, "0");
-                    if (hoursEl) hoursEl.textContent = hours;
-                    if (minutesEl) minutesEl.textContent = minutes;
-                    if (secondsEl) secondsEl.textContent = seconds;
-                    if (remainingMs <= 0 && buyBtn) {
-                        buyBtn.disabled = true;
-                        buyBtn.textContent = "Drop ended";
-                    }
-                };
-                tickCountdown();
-                window.setInterval(tickCountdown, 1000);
-
-                const alertStorageKey = "holoverse.drop-alert";
-                let dropAlertSaved = false;
-                try {
-                    dropAlertSaved = JSON.parse(window.localStorage.getItem(alertStorageKey) || "false") === true;
-                } catch {
-                    dropAlertSaved = false;
-                }
-
-                const syncReminderState = () => {
-                    if (!reminderBtn) return;
-                    reminderBtn.classList.toggle("is-saved", dropAlertSaved);
-                    if (reminderBell) reminderBell.hidden = dropAlertSaved;
-                    if (reminderCheck) reminderCheck.hidden = !dropAlertSaved;
-                    if (reminderLabel) reminderLabel.textContent = dropAlertSaved ? "Alert saved" : "Remind me";
-                };
-                syncReminderState();
-
-                reminderBtn?.addEventListener("click", () => {
-                    dropAlertSaved = !dropAlertSaved;
-                    try {
-                        window.localStorage.setItem(alertStorageKey, JSON.stringify(dropAlertSaved));
-                    } catch {}
-                    syncReminderState();
-                    if (typeof window.showHoloVerseToast === "function") {
-                        window.showHoloVerseToast(
-                            dropAlertSaved ? "Flash drop alert saved in this browser." : "Flash drop alert removed."
-                        );
-                    }
-                });
-            }
-
             // Shop grid filtering, sorting, and jumping
             const shopGrid = document.querySelector("[data-shop-grid]");
             const productCards = shopGrid ? Array.from(shopGrid.querySelectorAll("[data-product-card]")) : [];
             const categoryTabs = Array.from(document.querySelectorAll("[data-category-tab]"));
+            const shopFilterToggle = document.querySelector("[data-shop-filter-toggle]");
+            const shopFilterPanel = document.querySelector("[data-shop-filter-panel]");
             const availabilityBtns = Array.from(document.querySelectorAll("[data-availability-filter]"));
             const savedFilterBtn = document.querySelector("[data-saved-filter]");
             const savedFilterCountEl = document.querySelector("[data-saved-filter-count]");
@@ -1152,6 +952,31 @@ require __DIR__ . '/app/views/layout/head.php';
             let searchQuery = "";
             let currentShopPage = 1;
             const shopPageSize = 8;
+
+            const setShopFilterPanelOpen = (open) => {
+                if (!shopFilterToggle || !shopFilterPanel) {
+                    return;
+                }
+                shopFilterToggle.setAttribute("aria-expanded", String(open));
+                shopFilterPanel.hidden = !open;
+            };
+
+            shopFilterToggle?.addEventListener("click", () => {
+                setShopFilterPanelOpen(shopFilterToggle.getAttribute("aria-expanded") !== "true");
+            });
+
+            document.addEventListener("click", (event) => {
+                if (event.target instanceof Node && !shopFilterToggle?.parentElement?.contains(event.target)) {
+                    setShopFilterPanelOpen(false);
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && shopFilterToggle?.getAttribute("aria-expanded") === "true") {
+                    setShopFilterPanelOpen(false);
+                    shopFilterToggle.focus();
+                }
+            });
 
             const applyShopFilters = (resetPage = true) => {
                 if (!shopGrid) {
@@ -1262,6 +1087,11 @@ require __DIR__ . '/app/views/layout/head.php';
                         heartSvg.setAttribute("fill", savedOnly ? "currentColor" : "none");
                     }
                 }
+
+                shopFilterToggle?.classList.toggle(
+                    "is-active",
+                    availabilityFilter !== "all" || savedOnly || sortOrder !== "featured"
+                );
 
                 return matchingCards.length;
             };
