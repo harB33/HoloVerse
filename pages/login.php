@@ -747,6 +747,79 @@ require __DIR__ . '/../app/views/layout/head.php';
         }
         loginPanel.querySelectorAll(".otp-feedback-row .otp-error").forEach(dismissAuthErrorAfterDelay);
 
+        const setupPasswordFeedback = (passwordInput, confirmationInput, submitButton, strengthMeter, strengthBar, strengthLabel, confirmationMessage) => {
+            if (!passwordInput || !confirmationInput || !submitButton || !strengthMeter || !strengthBar || !strengthLabel || !confirmationMessage) {
+                return;
+            }
+
+            const updatePasswordFeedback = () => {
+                const password = passwordInput.value;
+                const passwordLength = new TextEncoder().encode(password).length;
+                const checks = [
+                    passwordLength >= 12 && passwordLength <= 72,
+                    /[a-z]/.test(password),
+                    /[A-Z]/.test(password),
+                    /[0-9]/.test(password),
+                    /[^a-zA-Z0-9]/.test(password),
+                ];
+                const score = checks.filter(Boolean).length;
+                const isStrong = checks[0] && score >= 4;
+                const strength = password.length === 0 ? "empty" : isStrong ? "strong" : score >= 3 ? "medium" : "weak";
+                const widths = { empty: 0, weak: 25, medium: 55, strong: 100 };
+                const colors = { empty: "bg-slate-300", weak: "bg-rose-500", medium: "bg-amber-500", strong: "bg-emerald-500" };
+
+                strengthBar.style.width = `${widths[strength]}%`;
+                strengthBar.className = `password-strength-bar h-full transition-all duration-300 ${colors[strength]}`;
+                strengthMeter.setAttribute("aria-valuenow", String(score));
+                strengthLabel.textContent = `Strength: ${strength}`;
+                strengthLabel.className = `font-semibold ${strength === "strong" ? "text-emerald-700" : strength === "medium" ? "text-amber-700" : strength === "empty" ? "text-slate-500" : "text-rose-700"}`;
+
+                const passwordsMatch = confirmationInput.value !== "" && password === confirmationInput.value;
+                confirmationMessage.textContent = confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "";
+                confirmationInput.setCustomValidity(confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "");
+                submitButton.disabled = !isStrong || !passwordsMatch;
+            };
+
+            passwordInput.addEventListener("input", updatePasswordFeedback);
+            confirmationInput.addEventListener("input", updatePasswordFeedback);
+            updatePasswordFeedback();
+
+            passwordInput.form?.addEventListener("submit", (event) => {
+                updatePasswordFeedback();
+                if (submitButton.disabled) {
+                    event.preventDefault();
+                    passwordInput.form.reportValidity();
+                }
+            });
+        };
+
+        const setupResetPasswordControls = (panel) => {
+            const passwordInput = panel.querySelector("#reset-password");
+            if (!passwordInput) {
+                return;
+            }
+            setupPasswordFeedback(
+                passwordInput,
+                panel.querySelector("#reset-password-confirmation"),
+                panel.querySelector("#reset-password-submit"),
+                passwordInput.closest("form")?.querySelector('[role="progressbar"]'),
+                panel.querySelector("#reset-password-strength-bar"),
+                panel.querySelector("#reset-password-strength-label"),
+                panel.querySelector("#reset-password-confirmation-message")
+            );
+        };
+
+        setupPasswordFeedback(
+            passwordInput,
+            confirmationInput,
+            submitButton,
+            strengthMeter,
+            strengthBar,
+            strengthLabel,
+            confirmationMessage
+        );
+        setupResetPasswordControls(loginPanel);
+
         loginPanel.addEventListener("submit", async (event) => {
             const form = event.target;
             if (!(form instanceof HTMLFormElement)) {
@@ -864,12 +937,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                     updateHistory.call(window.history, { authMode: "reset_password" }, "", nextUrl);
                 }
                 setupOtpControls(loginPanel);
+                setupResetPasswordControls(loginPanel);
                 const otpError = loginPanel.querySelector(".otp-feedback-row .otp-error");
                 if (otpError) {
                     otpError.hidden = false;
                     dismissAuthErrorAfterDelay(otpError);
                 }
                 loginPanel.querySelector("#reset-otp")?.focus();
+                loginPanel.querySelector("#reset-password")?.focus();
             } catch (error) {
                 const errorMessage = error instanceof Error
                     ? error.message
@@ -885,7 +960,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     errorNotice = document.createElement("p");
                     errorNotice.className = isLogin
                         ? "auth-error-message otp-error"
-                        : isResetRequest ? "reset-request-error mb-5 text-sm text-rose-700" : "otp-error";
+                        : isResetRequest ? "reset-request-error auth-alert auth-alert-error" : "otp-error";
                     errorNotice.setAttribute("role", "alert");
                     if (isLogin) {
                         let feedback = form.querySelector(".login-feedback");
@@ -912,70 +987,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 form.removeAttribute("aria-busy");
             }
         });
-        const setupPasswordFeedback = (passwordInput, confirmationInput, submitButton, strengthMeter, strengthBar, strengthLabel, confirmationMessage) => {
-            if (!passwordInput || !confirmationInput || !submitButton || !strengthMeter || !strengthBar || !strengthLabel || !confirmationMessage) {
-                return;
-            }
-
-            const updatePasswordFeedback = () => {
-                const password = passwordInput.value;
-                const passwordLength = new TextEncoder().encode(password).length;
-                const checks = [
-                    passwordLength >= 12 && passwordLength <= 72,
-                    /[a-z]/.test(password),
-                    /[A-Z]/.test(password),
-                    /[0-9]/.test(password),
-                    /[^a-zA-Z0-9]/.test(password),
-                ];
-                const score = checks.filter(Boolean).length;
-                const isStrong = checks[0] && score >= 4;
-                const strength = password.length === 0 ? "empty" : isStrong ? "strong" : score >= 3 ? "medium" : "weak";
-                const widths = { empty: 0, weak: 25, medium: 55, strong: 100 };
-                const colors = { empty: "bg-slate-300", weak: "bg-rose-500", medium: "bg-amber-500", strong: "bg-emerald-500" };
-
-                strengthBar.style.width = `${widths[strength]}%`;
-                strengthBar.className = `password-strength-bar h-full rounded-full transition-all duration-300 ${colors[strength]}`;
-                strengthMeter.setAttribute("aria-valuenow", String(score));
-                strengthLabel.textContent = `Strength: ${strength}`;
-                strengthLabel.className = `font-semibold ${strength === "strong" ? "text-emerald-700" : strength === "medium" ? "text-amber-700" : strength === "empty" ? "text-slate-500" : "text-rose-700"}`;
-
-                const passwordsMatch = confirmationInput.value !== "" && password === confirmationInput.value;
-                confirmationMessage.textContent = confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "";
-                confirmationInput.setCustomValidity(confirmationInput.value && !passwordsMatch ? "Passwords do not match." : "");
-                submitButton.disabled = !isStrong || !passwordsMatch;
-            };
-
-            passwordInput.addEventListener("input", updatePasswordFeedback);
-            confirmationInput.addEventListener("input", updatePasswordFeedback);
-            updatePasswordFeedback();
-
-            passwordInput.form?.addEventListener("submit", (event) => {
-                updatePasswordFeedback();
-                if (submitButton.disabled) {
-                    event.preventDefault();
-                    passwordInput.form.reportValidity();
-                }
-            });
-        };
-
-        setupPasswordFeedback(
-            passwordInput,
-            confirmationInput,
-            submitButton,
-            strengthMeter,
-            strengthBar,
-            strengthLabel,
-            confirmationMessage
-        );
-        setupPasswordFeedback(
-            loginPanel.querySelector("#reset-password"),
-            loginPanel.querySelector("#reset-password-confirmation"),
-            loginPanel.querySelector("#reset-password-submit"),
-            loginPanel.querySelector("#reset-password")?.closest("form")?.querySelector('[role="progressbar"]'),
-            loginPanel.querySelector("#reset-password-strength-bar"),
-            loginPanel.querySelector("#reset-password-strength-label"),
-            loginPanel.querySelector("#reset-password-confirmation-message")
-        );
 
         const setAuthMode = (showRegister) => {
             authShell.classList.toggle("is-register", showRegister);
