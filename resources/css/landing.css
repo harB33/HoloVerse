@@ -5751,6 +5751,7 @@ body.order-history-page .order-history-summary-total strong {
 .talent-poster-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .talent-poster-card {
@@ -5835,25 +5836,34 @@ body.order-history-page .order-history-summary-total strong {
 }
 
 .talent-poster-caption {
-  padding: 12px 0;
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px 8px;
-  border-bottom: 1px solid #dfe4e9;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 30px 10px 10px;
+  background: linear-gradient(180deg, transparent, rgb(8 16 28 / 88%));
 }
 
 .talent-poster-caption > span {
-  color: #687789;
-  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  color: rgb(255 255 255 / 78%);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .talent-poster-caption strong {
-  color: #172537;
-  font-size: 12px;
-  font-weight: 600;
-  text-align: right;
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .talent-poster-caption small {

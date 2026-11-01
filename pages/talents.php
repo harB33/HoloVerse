@@ -102,11 +102,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         <?php if ($portraitUrl !== ''): ?>
                                             <img class="talent-photo talent-poster-photo" src="<?= store_escape($portraitUrl) ?>" alt="<?= store_escape($talent['name']) ?>" loading="lazy" decoding="async">
                                         <?php endif; ?>
+                                        <figcaption class="talent-poster-caption">
+                                            <span><?= store_escape($talent['group_names'] ?: 'hololive production') ?></span>
+                                            <strong><?= store_escape($talent['name']) ?></strong>
+                                        </figcaption>
                                     </div>
-                                    <figcaption class="talent-poster-caption">
-                                        <span><?= store_escape($talent['group_names'] ?: 'hololive production') ?></span>
-                                        <strong><?= store_escape($talent['name']) ?></strong>
-                                    </figcaption>
                                 </figure>
                             </a>
                         <?php endforeach; ?>
