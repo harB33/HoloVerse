@@ -431,7 +431,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </p>
                             </header>
                             <?php if ($notice !== ''): ?>
-                                <p role="<?= $noticeType === 'error' ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
+                                <p<?= $noticeType === 'error' ? ' role="alert"' : '' ?>><?= store_escape($notice) ?></p>
                             <?php endif; ?>
                             <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
                                 <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
@@ -528,7 +528,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </header>
 
                         <?php if ($notice !== ''): ?>
-                            <p role="<?= $noticeType === 'error' ? 'alert' : 'status' ?>"><?= store_escape($notice) ?></p>
+                            <p<?= $noticeType === 'error' ? ' role="alert"' : '' ?>><?= store_escape($notice) ?></p>
                         <?php endif; ?>
                         <form action="login" method="post" class="login-form space-y-5 auth-form">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
