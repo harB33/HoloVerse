@@ -775,7 +775,7 @@ require __DIR__ . '/app/views/layout/head.php';
             <section class="home-video-section" aria-label="Hololive video feature">
                 <div class="home-video-frame">
                     <video autoplay muted loop playsinline preload="metadata" aria-label="Hololive featured video">
-                        <source src="assets/images/design/Recording%202026-11-01%20142014.mp4" type="video/mp4">
+                        <source src="assets/images/design/Video%20Project%203.mp4" type="video/mp4">
                         Your browser does not support embedded videos.
                     </video>
                 </div>

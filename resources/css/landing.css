@@ -603,9 +603,8 @@ body.home-landing main.landing-shell,
 .home-video-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 5;
-  min-height: 440px;
-  max-height: 1050px;
+  height: calc(28.125vw + 210px);
+  min-height: 720px;
   margin: 0 auto;
 }
 
@@ -620,9 +619,8 @@ body.home-landing main.landing-shell,
 
 @media (max-width: 640px) {
   .home-video-frame {
-    aspect-ratio: 1 / 1;
-    min-height: 360px;
-    max-height: none;
+    height: calc(100vw + 210px);
+    min-height: 640px;
   }
 }
 
