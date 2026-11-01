@@ -35,14 +35,34 @@ $headerCsrfToken = store_csrf_token();
         </nav>
 
         <div class="header-actions">
-            <span class="currency-button" aria-label="Store currency: Philippine Peso (PHP)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-                    <path d="M2 12h20" />
-                </svg>
-                <span>PHP</span>
-            </span>
+            <details class="currency-menu">
+                <summary class="currency-button" aria-label="Choose display currency">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+                        <path d="M2 12h20" />
+                    </svg>
+                    <span><?= store_escape(store_current_currency()) ?></span>
+                </summary>
+                <div class="currency-dropdown">
+                    <form method="post" action="">
+                        <input type="hidden" name="csrf_token" value="<?= store_escape($headerCsrfToken) ?>">
+                        <input type="hidden" name="store_currency_action" value="change">
+                        <?php foreach (['PHP' => 'Philippine peso', 'JPY' => 'Japanese yen', 'USD' => 'US dollar'] as $currencyCode => $currencyName): ?>
+                            <button
+                                class="currency-option"
+                                type="submit"
+                                name="currency"
+                                value="<?= store_escape($currencyCode) ?>"
+                                aria-pressed="<?= store_current_currency() === $currencyCode ? 'true' : 'false' ?>">
+                                <span><?= store_escape($currencyCode) ?></span>
+                                <small><?= store_escape($currencyName) ?></small>
+                            </button>
+                        <?php endforeach; ?>
+                        <p>Approximate rates. Orders are charged in PHP.</p>
+                    </form>
+                </div>
+            </details>
 
             <button class="icon-button" type="button" data-search-overlay-open aria-label="Search store" aria-expanded="false" aria-controls="site-search-overlay">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

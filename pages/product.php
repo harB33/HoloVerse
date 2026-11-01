@@ -716,7 +716,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <del class="product-compare-price" data-product-compare data-unit-price="<?= store_escape((string) (float) ($defaultVariant['compare_at_price'] ?? 0)) ?>" <?= empty($defaultVariant['compare_at_price']) || (float) $defaultVariant['compare_at_price'] <= (float) $defaultVariant['price'] ? 'hidden' : '' ?>><?= !empty($defaultVariant['compare_at_price']) && (float) $defaultVariant['compare_at_price'] > (float) $defaultVariant['price'] ? store_escape(store_format_price((float) $defaultVariant['compare_at_price'])) : '' ?></del>
                         </div>
 
-                        <form class="product-purchase-form" action="cart" method="post" data-product-form data-toast-message="<?= store_escape($product['product_name'] . ' added to your bag') ?>">
+                        <form class="product-purchase-form" action="cart" method="post" data-product-form data-price-currency="<?= store_escape(store_current_currency()) ?>" data-price-rate="<?= store_escape((string) store_currency_rate()) ?>" data-price-symbol="<?= store_escape(store_currency_symbol()) ?>" data-toast-message="<?= store_escape($product['product_name'] . ' added to your bag') ?>">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="action" value="add">
                             <input type="hidden" name="variant_id" value="<?= (int) $defaultVariant['variant_id'] ?>" data-variant-input>
@@ -964,9 +964,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                 let unitPrice = Number(price.dataset.unitPrice) || 0;
                 let unitComparePrice = Number(comparePrice?.dataset.unitPrice) || 0;
 
-                const formatPrice = (amount) => `₱${amount.toLocaleString('en-PH', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
+                const currency = form.dataset.priceCurrency || 'PHP';
+                const currencyRate = Number(form.dataset.priceRate) || 1;
+                const currencySymbol = form.dataset.priceSymbol || '₱';
+                const fractionDigits = currency === 'JPY' ? 0 : 2;
+                const formatPrice = (amount) => `${currencySymbol}${(amount * currencyRate).toLocaleString(undefined, {
+                    minimumFractionDigits: fractionDigits,
+                    maximumFractionDigits: fractionDigits,
                 })}`;
                 const updatePriceBlock = () => {
                     const quantity = Math.max(1, Number(quantityInput.value) || 1);

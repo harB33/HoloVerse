@@ -5,9 +5,37 @@ function store_escape(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function store_current_currency(): string
+{
+    $currency = $_SESSION['store_currency'] ?? 'PHP';
+
+    return is_string($currency) && array_key_exists($currency, STORE_CURRENCY_RATES)
+        ? $currency
+        : 'PHP';
+}
+
+function store_currency_rate(?string $currency = null): float
+{
+    return STORE_CURRENCY_RATES[$currency ?? store_current_currency()];
+}
+
+function store_currency_symbol(?string $currency = null): string
+{
+    return match ($currency ?? store_current_currency()) {
+        'JPY' => '¥',
+        'USD' => '$',
+        default => '₱',
+    };
+}
+
 function store_format_price(float $amount): string
 {
-    return '₱' . number_format($amount, 2);
+    $currency = store_current_currency();
+    $fractionDigits = $currency === 'JPY' ? 0 : 2;
+    $convertedAmount = $amount * store_currency_rate($currency);
+
+    return store_currency_symbol($currency)
+        . number_format($convertedAmount, $fractionDigits, '.', ',');
 }
 
 function store_calculate_sales_tax(array $items, string $unitPriceField = 'price'): float
