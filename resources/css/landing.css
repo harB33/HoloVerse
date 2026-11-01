@@ -3822,6 +3822,18 @@ body.order-history-page .order-history-summary {
   background: transparent;
 }
 
+body.order-history-page .order-history-store {
+  background: #f8fafc;
+}
+
+body.order-history-page .order-history-payment {
+  background: #f8fafc;
+}
+
+body.order-history-page .purchase-detail-card .order-history-summary-total {
+  background: #f8fafc;
+}
+
 body.order-history-page .order-history-summary-total strong {
   border-left-color: var(--line);
   color: var(--ink);
