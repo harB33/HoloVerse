@@ -387,7 +387,7 @@ $siteRoot = '';
 require __DIR__ . '/app/views/layout/head.php';
 ?>
 
-<body class="home-landing">
+<body class="home-page home-landing">
     <div class="page-shell home-landing">
         <?php require __DIR__ . '/app/views/components/watermark.php'; ?>
         <?php
@@ -398,8 +398,8 @@ require __DIR__ . '/app/views/layout/head.php';
         <main id="top">
             <section class="hero" aria-label="HoloVerse official shop introduction">
                 <div class="hero-image" style="background-image: url('assets/images/design/hero.png');"></div>
-                <div class="hero-shade"></div>
-                <div class="hero-copy">
+                <div class="hero-shade" data-home-reveal="shade"></div>
+                <div class="hero-copy" data-home-reveal>
                     <p class="hero-kicker">Your oshi. Your collection.</p>
                     <h1>
                         <span>hololive</span>
@@ -437,7 +437,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 $flashImage = store_asset_url((string) ($flashDropProduct['image_url'] ?: 'assets/images/banner/supernova.webp'));
                 $flashProductUrl = store_product_url((string) $flashDropProduct['product_name']);
                 ?>
-                <section id="flash-drop" class="flash-drop-section" data-flash-drop-section data-flash-deadline="<?= $flashDeadlineTimestampMs ?>">
+                <section id="flash-drop" class="flash-drop-section" data-home-reveal data-flash-drop-section data-flash-deadline="<?= $flashDeadlineTimestampMs ?>">
                     <div class="flash-drop-layout landing-shell">
                         <div class="flash-copy">
                             <div class="flash-eyebrow">
@@ -536,7 +536,7 @@ require __DIR__ . '/app/views/layout/head.php';
             </section>
 
             <section id="shop" class="shop-section landing-shell">
-                <div class="section-heading">
+                <div class="section-heading" data-home-reveal>
                     <div>
                         <p class="eyebrow">Latest from the official shop</p>
                         <h2>New arrivals</h2>
@@ -550,7 +550,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     </div>
                 </div>
 
-                <div class="product-toolbar">
+                <div class="product-toolbar" data-home-reveal>
                     <div class="filter-tabs" role="tablist" aria-label="Product categories">
                         <button
                             type="button"
@@ -578,7 +578,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     </button>
                 </div>
 
-                <div class="availability-toolbar">
+                <div class="availability-toolbar" data-home-reveal>
                     <div class="availability-filters" role="group" aria-label="Filter by availability">
                         <span class="filter-hint">Availability</span>
                         <button type="button" class="active" data-availability-filter="all" aria-pressed="true">
@@ -613,11 +613,11 @@ require __DIR__ . '/app/views/layout/head.php';
                     </label>
                 </div>
 
-                <p class="results-caption" data-shop-results-caption>
+                <p class="results-caption" data-home-reveal data-shop-results-caption>
                     <?= count($shopProducts) ?> <?= count($shopProducts) === 1 ? 'piece' : 'pieces' ?> &middot; Official character goods
                 </p>
 
-                <div class="product-grid" data-shop-grid>
+                <div class="product-grid" data-home-reveal data-shop-grid>
                     <?php foreach ($shopProducts as $index => $product): ?>
                         <?php
                         $productId = (int) $product['product_id'];
@@ -756,7 +756,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     <?php endforeach; ?>
                 </div>
 
-                <nav class="all-products-pagination home-shop-pagination hidden" aria-label="New arrival product pages" data-shop-pagination hidden>
+                <nav class="all-products-pagination home-shop-pagination hidden" aria-label="New arrival product pages" data-home-reveal data-shop-pagination hidden>
                     <button class="all-products-page-button" type="button" data-shop-page-previous aria-label="Previous page">Prev</button>
                     <div class="all-products-page-list" data-shop-page-list></div>
                     <button class="all-products-page-button" type="button" data-shop-page-next aria-label="Next page">Next</button>
@@ -772,7 +772,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 </div>
             </section>
 
-            <section class="home-video-section" aria-label="Hololive video feature">
+            <section class="home-video-section" data-home-reveal aria-label="Hololive video feature">
                 <div class="home-video-frame">
                     <video autoplay muted loop playsinline preload="metadata" aria-label="Hololive featured video">
                         <source src="assets/images/design/Video%20Project%203.mp4" type="video/mp4">
@@ -783,7 +783,7 @@ require __DIR__ . '/app/views/layout/head.php';
 
             <section id="preorders" class="preorder-section">
                 <div class="landing-shell">
-                    <div class="preorder-heading">
+                    <div class="preorder-heading" data-home-reveal>
                         <div>
                             <p class="eyebrow">Made to order &middot; reserve yours</p>
                             <h2>Worth the wait.</h2>
@@ -813,7 +813,7 @@ require __DIR__ . '/app/views/layout/head.php';
                                 : 'Expected Spring 2027';
                             $preIsFavorite = in_array($preId, $favoriteProductIds, true);
                             ?>
-                            <article class="preorder-card">
+                            <article class="preorder-card" data-home-reveal>
                                 <div class="preorder-image">
                                     <a href="<?= store_escape($preUrl) ?>" aria-label="View <?= store_escape($preName) ?>">
                                         <img src="<?= store_escape($preImage) ?>" alt="<?= store_escape((string) ($preorderProduct['alt_text'] ?: $preName)) ?>" loading="lazy">
@@ -869,7 +869,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php endforeach; ?>
                     </div>
 
-                    <div class="preorder-process" aria-label="How pre-orders work">
+                    <div class="preorder-process" data-home-reveal aria-label="How pre-orders work">
                         <div>
                             <span>01</span>
                             <p><strong>Reserve your merch</strong>Secure the items you want during the order window.</p>
@@ -883,11 +883,11 @@ require __DIR__ . '/app/views/layout/head.php';
                             <p><strong>Ships to your door</strong>Track the estimated shipping window in your order details.</p>
                         </div>
                     </div>
-                    <p class="preorder-disclaimer">Pre-order dates and shipping estimates are subject to production schedules. Check the product listing for current details.</p>
+                    <p class="preorder-disclaimer" data-home-reveal>Pre-order dates and shipping estimates are subject to production schedules. Check the product listing for current details.</p>
                 </div>
             </section>
 
-            <section id="collections" class="street-feature" style="background-image: linear-gradient(90deg, rgba(4, 8, 15, 0.97), rgba(4, 8, 15, 0.75) 32%, rgba(4, 8, 15, 0.08) 63%), url('assets/images/design/collection.png');">
+            <section id="collections" class="street-feature" data-home-reveal style="background-image: linear-gradient(90deg, rgba(4, 8, 15, 0.97), rgba(4, 8, 15, 0.75) 32%, rgba(4, 8, 15, 0.08) 63%), url('assets/images/design/collection.png');">
                 <div class="street-copy">
                     <p class="eyebrow">Seasonal drop</p>
                     <h2>Autumn Street</h2>
@@ -899,7 +899,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 </div>
             </section>
 
-            <section id="talents" class="talent-feature landing-shell">
+            <section id="talents" class="talent-feature landing-shell" data-home-reveal>
                 <div class="talent-art">
                     <img src="assets/images/design/talents.png" alt="hololive English Advent and Justice official artwork" loading="lazy">
                 </div>
@@ -924,11 +924,11 @@ require __DIR__ . '/app/views/layout/head.php';
             </section>
 
             <section class="newsletter">
-                <div>
+                <div data-home-reveal>
                     <p class="eyebrow">Never miss a drop</p>
                     <h2>Merch news, direct from hololive.</h2>
                 </div>
-                <form data-newsletter-form>
+                <form data-home-reveal data-newsletter-form>
                     <label for="newsletter-email">Email address</label>
                     <div class="email-field">
                         <input id="newsletter-email" type="email" placeholder="you@example.com" required>
@@ -1432,6 +1432,7 @@ require __DIR__ . '/app/views/layout/head.php';
             });
         })();
     </script>
+    <script src="assets/js/home-page.js?v=<?= filemtime(__DIR__ . '/assets/js/home-page.js') ?>" defer></script>
     <?php
     $cartHref = 'cart';
     include __DIR__ . '/app/views/components/cart-button.php';
