@@ -422,25 +422,6 @@ if (count($shopProductsById) < 12) {
 }
 
 $shopProducts = array_slice(array_values($shopProductsById), 0, 16);
-$preorderShowcaseProducts = array_slice($preorderRows, 0, 3);
-if (count($preorderShowcaseProducts) < 3) {
-    foreach ($shopProducts as $prod) {
-        if (count($preorderShowcaseProducts) >= 3) {
-            break;
-        }
-        $pid = (int) $prod['product_id'];
-        $alreadyIn = false;
-        foreach ($preorderShowcaseProducts as $existingPre) {
-            if ((int) $existingPre['product_id'] === $pid) {
-                $alreadyIn = true;
-                break;
-            }
-        }
-        if (!$alreadyIn) {
-            $preorderShowcaseProducts[] = $prod;
-        }
-    }
-}
 
 $preorderCountInShop = 0;
 foreach ($shopProducts as $prod) {
@@ -914,109 +895,44 @@ require __DIR__ . '/app/views/layout/head.php';
                 </div>
             </section>
 
-            <section id="preorders" class="preorder-section">
-                <div class="landing-shell">
-                    <div class="preorder-heading" data-home-reveal>
-                        <div>
-                            <p class="eyebrow">Made to order &middot; reserve yours</p>
-                            <h2>Worth the wait.</h2>
-                        </div>
-                        <div class="preorder-heading-aside">
-                            <p>Lock in a favorite before the order window closes. Shipping estimates are shown before you reserve.</p>
-                            <a class="button-text" href="pre-order">
-                                <span>Browse all pre-orders</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                            </a>
-                        </div>
+            <section class="home-faq-section" aria-labelledby="home-faq-title" data-home-reveal>
+                <div class="home-faq-layout landing-shell">
+                    <div class="home-faq-intro" data-home-reveal>
+                        <p class="home-faq-eyebrow">The little details</p>
+                        <h2 id="home-faq-title">Good to<br><em>know.</em></h2>
+                        <p class="home-faq-description">Wondering about something? Here are a few helpful notes before you find your new favorite.</p>
+                        <a class="home-faq-contact" href="about-us">
+                            Our Team
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </a>
                     </div>
 
-                    <div class="preorder-grid">
-                        <?php foreach ($preorderShowcaseProducts as $preorderProduct): ?>
-                            <?php
-                            $preId = (int) $preorderProduct['product_id'];
-                            $preVariantId = (int) $preorderProduct['variant_id'];
-                            $preName = (string) $preorderProduct['product_name'];
-                            $preUrl = store_product_url($preName);
-                            $preTalent = (string) ($preorderProduct['talent_name'] ?: ($preorderProduct['category_name'] ?? 'hololive production'));
-                            $prePrice = (float) ($preorderProduct['price'] ?? 0);
-                            $preStock = max(0, (int) ($preorderProduct['stock_quantity'] ?? 0));
-                            $preImage = store_asset_url((string) ($preorderProduct['image_url'] ?: 'assets/images/logo.png'));
-                            $preShipWindow = !empty($preorderProduct['expected_ship_date'])
-                                ? 'Expected ' . date('F Y', strtotime((string) $preorderProduct['expected_ship_date']))
-                                : 'Expected Spring 2027';
-                            $preIsFavorite = in_array($preId, $favoriteProductIds, true);
-                            ?>
-                            <article class="preorder-card" data-home-reveal>
-                                <div class="preorder-image">
-                                    <a href="<?= store_escape($preUrl) ?>" aria-label="View <?= store_escape($preName) ?>">
-                                        <img src="<?= store_escape($preImage) ?>" alt="<?= store_escape((string) ($preorderProduct['alt_text'] ?: $preName)) ?>" loading="lazy">
-                                    </a>
-                                    <span class="preorder-open">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                                        Pre-order open
-                                    </span>
-                                    <form class="collector-favorite-form" action="<?= store_escape($favoriteShowcaseUrl) ?>" method="post" data-favorite-form>
-                                        <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
-                                        <input type="hidden" name="product_id" value="<?= $preId ?>">
-                                        <input type="hidden" name="action" value="<?= $preIsFavorite ? 'remove' : 'save' ?>">
-                                        <button
-                                            class="collector-favorite-button favorite-button<?= $preIsFavorite ? ' is-favorite active' : '' ?>"
-                                            type="submit"
-                                            aria-label="<?= $preIsFavorite ? 'Remove ' : 'Add ' ?><?= store_escape($preName) ?> <?= $preIsFavorite ? 'from' : 'to' ?> your Collector Showcase"
-                                            aria-pressed="<?= $preIsFavorite ? 'true' : 'false' ?>"
-                                            title="<?= $preIsFavorite ? 'Remove from Collector Showcase' : 'Save to Collector Showcase' ?>"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="<?= $preIsFavorite ? 'currentColor' : 'none' ?>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="preorder-card-content">
-                                    <p class="preorder-talent"><?= store_escape($preTalent) ?></p>
-                                    <div class="preorder-product-title">
-                                        <h3><a href="<?= store_escape($preUrl) ?>"><?= store_escape($preName) ?></a></h3>
-                                        <strong><?= store_escape(store_format_price($prePrice)) ?></strong>
-                                    </div>
-                                    <div class="preorder-shipping">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
-                                        <span>Estimated shipping</span>
-                                        <strong><?= store_escape($preShipWindow) ?></strong>
-                                    </div>
-                                    <?php if ($preStock > 0): ?>
-                                        <form action="cart" method="post" data-toast-message="<?= store_escape($preName . ' reserved in your bag') ?>">
-                                            <input type="hidden" name="csrf_token" value="<?= store_escape($csrfToken) ?>">
-                                            <input type="hidden" name="variant_id" value="<?= $preVariantId ?>">
-                                            <button class="reserve-button" type="submit" name="action" value="add">
-                                                <span>Reserve pre-order</span>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <button class="reserve-button" type="button" disabled>
-                                            <span>Sold out</span>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
+                    <div class="home-faq-list" data-home-reveal>
+                        <details class="home-faq-item" open>
+                            <summary>Where can I find shipping details for my order?</summary>
+                            <div class="home-faq-answer">
+                                <p>Shipping options, delivery estimates, and any applicable fees are shown at checkout for your destination. Product-specific notes are listed with each item.</p>
+                            </div>
+                        </details>
+                        <details class="home-faq-item">
+                            <summary>Are all items available everywhere?</summary>
+                            <div class="home-faq-answer">
+                                <p>Availability and shipping options can vary by destination. Enter your shipping address at checkout to see which options are available for your order.</p>
+                            </div>
+                        </details>
+                        <details class="home-faq-item">
+                            <summary>Can I change or cancel an order?</summary>
+                            <div class="home-faq-answer">
+                                <p>Please contact our team as soon as possible through the <a href="about-us">About Us page</a>. Changes may not be possible once an order has entered processing or shipped.</p>
+                            </div>
+                        </details>
+                        <details class="home-faq-item">
+                            <summary>How do I hear about new collections?</summary>
+                            <div class="home-faq-answer">
+                                <p>Browse the <a href="products">latest arrivals</a> and featured collections, or sign up for the newsletter below to hear about new drops.</p>
+                            </div>
+                        </details>
                     </div>
-
-                    <div class="preorder-process" data-home-reveal aria-label="How pre-orders work">
-                        <div>
-                            <span>01</span>
-                            <p><strong>Reserve your merch</strong>Secure the items you want during the order window.</p>
-                        </div>
-                        <div>
-                            <span>02</span>
-                            <p><strong>Made for fans</strong>Production starts after the pre-order period closes.</p>
-                        </div>
-                        <div>
-                            <span>03</span>
-                            <p><strong>Ships to your door</strong>Track the estimated shipping window in your order details.</p>
-                        </div>
-                    </div>
-                    <p class="preorder-disclaimer" data-home-reveal>Pre-order dates and shipping estimates are subject to production schedules. Check the product listing for current details.</p>
                 </div>
             </section>
 
