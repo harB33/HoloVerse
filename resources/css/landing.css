@@ -1433,10 +1433,14 @@ html[data-theme="dark"] .home-faq-answer a {
   width: auto;
   min-height: 42px;
   flex: 1 1 auto;
+  display: -webkit-box;
+  overflow: hidden;
   color: #171522;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .home-product-card .product-info > .home-product-title-row > .product-title-link:hover {
@@ -1590,10 +1594,14 @@ html[data-theme="dark"] .home-faq-answer a {
   width: auto;
   min-height: 42px;
   flex: 1 1 auto;
+  display: -webkit-box;
+  overflow: hidden;
   color: #171522;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .catalog-product-price {
