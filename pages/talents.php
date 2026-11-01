@@ -96,20 +96,18 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 : '';
                             ?>
                             <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
-                                <article class="talent-poster-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
-                                    <span class="talent-poster-initials" aria-hidden="true"><?= store_escape($talentInitials) ?></span>
-                                    <?php if ($portraitUrl !== ''): ?>
-                                        <img class="talent-photo talent-poster-photo" src="<?= store_escape($portraitUrl) ?>" alt="<?= store_escape($talent['name']) ?>" loading="lazy" decoding="async">
-                                    <?php endif; ?>
-                                    <div class="talent-poster-overlay">
-                                        <span><?= store_escape($talent['group_names'] ?: 'hololive production') ?></span>
-                                        <h3><?= store_escape($talent['name']) ?></h3>
-                                        <small>
-                                            Shop merch
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                                        </small>
+                                <figure class="talent-poster-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
+                                    <div class="talent-poster-media">
+                                        <span class="talent-poster-initials" aria-hidden="true"><?= store_escape($talentInitials) ?></span>
+                                        <?php if ($portraitUrl !== ''): ?>
+                                            <img class="talent-photo talent-poster-photo" src="<?= store_escape($portraitUrl) ?>" alt="<?= store_escape($talent['name']) ?>" loading="lazy" decoding="async">
+                                        <?php endif; ?>
                                     </div>
-                                </article>
+                                    <figcaption class="talent-poster-caption">
+                                        <span><?= store_escape($talent['group_names'] ?: 'hololive production') ?></span>
+                                        <strong><?= store_escape($talent['name']) ?></strong>
+                                    </figcaption>
+                                </figure>
                             </a>
                         <?php endforeach; ?>
                     </div>
