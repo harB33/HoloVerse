@@ -572,6 +572,9 @@ $headerCsrfToken = store_csrf_token();
         // Cart drawer
         const cartDrawer = document.querySelector("[data-cart-drawer]");
         const cartBackdrop = document.querySelector("[data-cart-drawer-backdrop]");
+        if (cartDrawer && cartBackdrop) {
+            document.body.append(cartBackdrop, cartDrawer);
+        }
         const cartOpenButtons = document.querySelectorAll("[data-cart-drawer-open]");
         const cartCloseButton = document.querySelector("[data-cart-drawer-close]");
         const cartBadges = document.querySelectorAll("[data-cart-badge]");

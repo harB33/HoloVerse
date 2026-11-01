@@ -1332,6 +1332,7 @@ footer.site-footer {
 }
 
 .drawer-backdrop[data-cart-drawer-backdrop] {
+  z-index: 1000;
   background: rgba(4, 10, 20, 0.28);
 }
 
@@ -1348,6 +1349,7 @@ footer.site-footer {
 }
 
 .cart-drawer {
+  z-index: 1001;
   right: 0;
   width: min(500px, 100vw);
 }
