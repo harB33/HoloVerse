@@ -6402,7 +6402,8 @@
   .collector-feedback-toast {
     position: fixed;
     z-index: 100000;
-    right: 24px;
+    left: 50%;
+    right: auto;
     bottom: 24px;
     display: flex;
     min-height: 48px;
@@ -6418,6 +6419,7 @@
     color: #40564a;
     box-shadow: 0 8px 24px rgb(16 24 40 / 12%);
     font: 500 14px/1.4 Arial, sans-serif;
+    transform: translateX(-50%);
     animation: collector-toast-enter 220ms ease-out both;
   }
 
@@ -6449,12 +6451,12 @@
   @keyframes collector-toast-enter {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translate(-50%, 8px);
     }
 
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate(-50%, 0);
     }
   }
 
@@ -6506,9 +6508,7 @@
 
   @media (max-width: 480px) {
     .collector-feedback-toast {
-      right: 16px;
       bottom: 16px;
-      left: auto;
       width: max-content;
       max-width: calc(100vw - 32px);
     }

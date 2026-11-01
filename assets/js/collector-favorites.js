@@ -73,6 +73,8 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
     }, loginUrl ? 9000 : 5000);
 };
 
+window.showCollectorFeedback = showCollectorFeedback;
+
 const updateFavoritePagination = (count, pageSize) => {
     const pagination = document.querySelector('[data-favorite-pagination]');
     if (!pagination) {

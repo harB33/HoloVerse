@@ -226,7 +226,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             gap: clamp(32px, 5vw, 68px);
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: var(--bg);
+            background: #fff;
             padding: clamp(20px, 2.5vw, 36px);
             box-shadow: 0 18px 42px rgba(15, 29, 51, 0.06);
         }
@@ -240,9 +240,15 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-recommendations-controls button:disabled { cursor: not-allowed; opacity: .4; }
         .product-recommendations-controls button:focus-visible { outline: 2px solid var(--holo-cyan); outline-offset: 2px; }
         .product-recommendations-controls svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
-        .product-recommendations-track { display: flex; gap: 20px; overflow-x: auto; overscroll-behavior-x: contain; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
+        .product-recommendations-track { display: flex; align-items: stretch; gap: 20px; overflow-x: auto; overscroll-behavior-x: contain; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
         .product-recommendations-track::-webkit-scrollbar { display: none; }
-        .product-recommendations-track > .product-card { flex: 0 0 calc((100% - 60px) / 4); min-width: 0; scroll-snap-align: start; }
+        .product-recommendations-track > .product-card { display: flex; flex: 0 0 calc((100% - 60px) / 4); min-width: 0; flex-direction: column; scroll-snap-align: start; }
+        .product-recommendations-track .product-image-wrap { flex: 0 0 auto; aspect-ratio: 1 / 1; }
+        .product-recommendations-track .product-info { display: flex; flex: 1 1 auto; flex-direction: column; }
+        .product-recommendations-track .product-info > .product-title-link { display: -webkit-box; height: 4.05em; min-height: 4.05em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+        .product-recommendations-track .product-info > .merch-status { min-height: 2.8em; }
+        .product-recommendations-track .product-info > form,
+        .product-recommendations-track .product-info > .add-button { margin-top: auto; }
 
         .product-gallery { min-width: 0; }
 
@@ -281,6 +287,98 @@ require __DIR__ . '/../app/views/layout/head.php';
             flex: 0 1 auto;
             padding: 24px;
             object-fit: contain;
+        }
+
+        .product-gallery-main-trigger {
+            position: absolute;
+            z-index: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: zoom-in;
+            border: 0;
+            background: transparent;
+            padding: 0;
+        }
+
+        .product-gallery-main-trigger:focus-visible {
+            outline: 3px solid var(--holo-cyan);
+            outline-offset: -5px;
+        }
+
+        .product-image-lightbox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            right: auto;
+            bottom: auto;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            box-sizing: border-box;
+            width: min(96vw, 1500px);
+            max-width: none;
+            height: min(94vh, 1100px);
+            max-height: none;
+            overflow: visible;
+            border: 0;
+            background: transparent;
+            padding: 0;
+        }
+
+        .product-image-lightbox::backdrop {
+            background: rgba(8, 12, 20, .88);
+            backdrop-filter: blur(5px);
+        }
+
+        .product-image-lightbox img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .product-image-lightbox-nav {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            display: grid;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            place-items: center;
+            transform: translateY(-50%);
+            border: 1px solid rgba(255, 255, 255, .65);
+            border-radius: 50%;
+            background: rgba(16, 24, 38, .75);
+            color: #fff;
+            font: 400 32px/1 var(--font-sans);
+        }
+
+        .product-image-lightbox-nav:hover { background: rgba(16, 24, 38, .95); }
+        .product-image-lightbox-nav:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+        .product-image-lightbox-previous { left: 12px; }
+        .product-image-lightbox-next { right: 12px; }
+
+        .product-image-lightbox-close {
+            position: absolute;
+            z-index: 1;
+            top: 12px;
+            right: 12px;
+            display: grid;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, .65);
+            border-radius: 50%;
+            background: rgba(16, 24, 38, .75);
+            color: #fff;
+            font: 400 28px/1 var(--font-sans);
+        }
+
+        .product-image-lightbox-close:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 3px;
         }
 
         .product-category-tag {
@@ -432,8 +530,8 @@ require __DIR__ . '/../app/views/layout/head.php';
             padding: 20px 0;
         }
 
-        .product-current-price { color: var(--ink); font: 700 clamp(1.75rem, 2.4vw, 2.25rem)/1.1 var(--font-mono); }
-        .product-compare-price { color: var(--muted); font: 500 1rem var(--font-mono); }
+        .product-current-price { color: var(--ink); font: 700 clamp(1.75rem, 2.4vw, 2.25rem)/1.1 var(--font-display); }
+        .product-compare-price { color: var(--muted); font: 500 1rem var(--font-sans); }
 
         .product-purchase-form { display: flex; flex: 1; flex-direction: column; gap: 18px; padding-top: 18px; }
         .product-variant-picker { min-width: 0; margin: 0; border: 0; padding: 0; }
@@ -565,12 +663,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 aria-hidden="true">
                             <span class="product-category-tag"><?= store_escape($product['category_name']) ?></span>
                             <?php require __DIR__ . '/../app/views/components/collector-favorite-button.php'; ?>
-                            <img
-                                class="product-gallery-main"
-                                src="<?= store_escape($defaultImageUrl) ?>"
-                                alt="<?= store_escape($galleryImages[0]['alt_text'] ?? $product['product_name']) ?>"
-                                tabindex="0"
-                                fetchpriority="high">
+                            <button class="product-gallery-main-trigger" type="button" data-gallery-open aria-label="View full-size <?= store_escape($galleryImages[0]['alt_text'] ?? $product['product_name']) ?>">
+                                <img
+                                    class="product-gallery-main"
+                                    src="<?= store_escape($defaultImageUrl) ?>"
+                                    alt=""
+                                    aria-hidden="true"
+                                    fetchpriority="high">
+                            </button>
                         </div>
                         <?php if (count($galleryImages) > 1): ?>
                             <div class="product-gallery-carousel" data-gallery-carousel>
@@ -589,6 +689,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                     </div>
 
+                    <dialog class="product-image-lightbox" data-gallery-lightbox aria-label="Full-size product image">
+                        <button class="product-image-lightbox-close" type="button" data-gallery-close aria-label="Close full-size image">×</button>
+                        <button class="product-image-lightbox-nav product-image-lightbox-previous" type="button" data-lightbox-previous aria-label="Show previous product image">‹</button>
+                        <img src="<?= store_escape($defaultImageUrl) ?>" alt="<?= store_escape($galleryImages[0]['alt_text'] ?? $product['product_name']) ?>" data-gallery-lightbox-image>
+                        <button class="product-image-lightbox-nav product-image-lightbox-next" type="button" data-lightbox-next aria-label="Show next product image">›</button>
+                    </dialog>
+
                     <div class="product-detail-info">
                         <div class="product-info-heading">
                             <span class="product-info-category"><?= store_escape($productTalentLabel !== '' ? $productTalentLabel . ' · ' . $product['category_name'] : $product['category_name']) ?></span>
@@ -605,8 +712,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
 
                         <div class="product-price-block" aria-live="polite">
-                            <strong class="product-current-price" data-product-price><?= store_escape(store_format_price((float) $defaultVariant['price'])) ?></strong>
-                            <del class="product-compare-price" data-product-compare <?= empty($defaultVariant['compare_at_price']) || (float) $defaultVariant['compare_at_price'] <= (float) $defaultVariant['price'] ? 'hidden' : '' ?>><?= !empty($defaultVariant['compare_at_price']) ? store_escape(store_format_price((float) $defaultVariant['compare_at_price'])) : '' ?></del>
+                            <strong class="product-current-price" data-product-price data-unit-price="<?= store_escape((string) (float) $defaultVariant['price']) ?>"><?= store_escape(store_format_price((float) $defaultVariant['price'])) ?></strong>
+                            <del class="product-compare-price" data-product-compare data-unit-price="<?= store_escape((string) (float) ($defaultVariant['compare_at_price'] ?? 0)) ?>" <?= empty($defaultVariant['compare_at_price']) || (float) $defaultVariant['compare_at_price'] <= (float) $defaultVariant['price'] ? 'hidden' : '' ?>><?= !empty($defaultVariant['compare_at_price']) && (float) $defaultVariant['compare_at_price'] > (float) $defaultVariant['price'] ? store_escape(store_format_price((float) $defaultVariant['compare_at_price'])) : '' ?></del>
                         </div>
 
                         <form class="product-purchase-form" action="cart" method="post" data-product-form data-toast-message="<?= store_escape($product['product_name'] . ' added to your bag') ?>">
@@ -631,7 +738,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                                             data-variant-option
                                                             data-variant-id="<?= (int) $variant['variant_id'] ?>"
                                                             data-price="<?= store_escape(store_format_price((float) $variant['price'])) ?>"
+                                                            data-price-value="<?= store_escape((string) (float) $variant['price']) ?>"
                                                             data-compare="<?= !empty($variant['compare_at_price']) ? store_escape(store_format_price((float) $variant['compare_at_price'])) : '' ?>"
+                                                            data-compare-value="<?= !empty($variant['compare_at_price']) ? store_escape((string) (float) $variant['compare_at_price']) : '' ?>"
                                                             data-stock="<?= (int) $variant['stock_quantity'] ?>"
                                                             aria-pressed="<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? 'true' : 'false' ?>"
                                                             <?= (int) $variant['stock_quantity'] < 1 ? 'disabled' : '' ?>>
@@ -722,6 +831,9 @@ require __DIR__ . '/../app/views/layout/head.php';
             (() => {
                 const galleryMain = document.querySelector('.product-gallery-main');
                 const galleryBackdrop = document.querySelector('.product-gallery-backdrop');
+                const galleryLightbox = document.querySelector('[data-gallery-lightbox]');
+                const galleryLightboxImage = document.querySelector('[data-gallery-lightbox-image]');
+                const galleryOpenButton = document.querySelector('[data-gallery-open]');
                 const galleryThumbnailStrip = document.querySelector('.product-gallery-thumbnails');
                 const galleryThumbnails = [...document.querySelectorAll('[data-gallery-image]')];
                 let activeGalleryIndex = 0;
@@ -754,6 +866,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     galleryMain.src = activeThumbnail.dataset.imageSrc;
                     galleryBackdrop.src = activeThumbnail.dataset.imageSrc;
                     galleryMain.alt = activeThumbnail.dataset.imageAlt || '';
+                    if (galleryLightboxImage) {
+                        galleryLightboxImage.src = activeThumbnail.dataset.imageSrc;
+                        galleryLightboxImage.alt = activeThumbnail.dataset.imageAlt || '';
+                    }
                     galleryThumbnails.forEach((thumbnail, thumbnailIndex) => {
                         const selected = thumbnailIndex === activeGalleryIndex;
                         thumbnail.classList.toggle('is-active', selected);
@@ -780,7 +896,38 @@ require __DIR__ . '/../app/views/layout/head.php';
                 document.querySelector('[data-gallery-next]')?.addEventListener('click', () => {
                     showGalleryImage(activeGalleryIndex + 1, true);
                 });
-                galleryMain?.addEventListener('keydown', (event) => {
+                galleryLightbox?.querySelector('[data-lightbox-previous]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex - 1, true);
+                });
+                galleryLightbox?.querySelector('[data-lightbox-next]')?.addEventListener('click', () => {
+                    showGalleryImage(activeGalleryIndex + 1, true);
+                });
+
+                galleryOpenButton?.addEventListener('click', () => {
+                    if (galleryLightbox instanceof HTMLDialogElement && !galleryLightbox.open) {
+                        galleryLightbox.showModal();
+                        galleryLightbox.querySelector('[data-gallery-close]')?.focus();
+                    }
+                });
+                galleryLightbox?.querySelector('[data-gallery-close]')?.addEventListener('click', () => {
+                    galleryLightbox.close();
+                });
+                galleryLightbox?.addEventListener('click', (event) => {
+                    if (event.target === galleryLightbox) {
+                        galleryLightbox.close();
+                    }
+                });
+                galleryLightbox?.addEventListener('keydown', (event) => {
+                    if (event.key === 'ArrowLeft') {
+                        event.preventDefault();
+                        showGalleryImage(activeGalleryIndex - 1, true);
+                    } else if (event.key === 'ArrowRight') {
+                        event.preventDefault();
+                        showGalleryImage(activeGalleryIndex + 1, true);
+                    }
+                });
+
+                galleryOpenButton?.addEventListener('keydown', (event) => {
                     if (event.key === 'ArrowLeft') {
                         showGalleryImage(activeGalleryIndex - 1, true);
                     } else if (event.key === 'ArrowRight') {
@@ -814,19 +961,33 @@ require __DIR__ . '/../app/views/layout/head.php';
                 const stockStatus = document.querySelector('[data-stock-status]');
                 const quantityInput = form.querySelector('[data-quantity-input]');
                 const addButton = form.querySelector('[data-add-button]');
+                let unitPrice = Number(price.dataset.unitPrice) || 0;
+                let unitComparePrice = Number(comparePrice?.dataset.unitPrice) || 0;
+
+                const formatPrice = (amount) => `₱${amount.toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}`;
+                const updatePriceBlock = () => {
+                    const quantity = Math.max(1, Number(quantityInput.value) || 1);
+                    price.textContent = formatPrice(unitPrice * quantity);
+                    if (comparePrice) {
+                        const hasDiscount = unitComparePrice > unitPrice;
+                        comparePrice.textContent = hasDiscount ? formatPrice(unitComparePrice * quantity) : '';
+                        comparePrice.hidden = !hasDiscount;
+                    }
+                };
 
                 const setVariant = (option) => {
                     const stock = Number(option.dataset.stock) || 0;
                     variantInput.value = option.dataset.variantId;
-                    price.textContent = option.dataset.price;
-                    if (comparePrice) {
-                        comparePrice.textContent = option.dataset.compare || '';
-                        comparePrice.hidden = !option.dataset.compare;
-                    }
+                    unitPrice = Number(option.dataset.priceValue) || 0;
+                    unitComparePrice = Number(option.dataset.compareValue) || 0;
                     stockStatus.lastChild.textContent = stock > 0 ? ` ${stock} available` : ' Currently sold out';
                     stockStatus.classList.toggle('is-sold-out', stock < 1);
                     quantityInput.max = String(Math.max(1, stock));
                     quantityInput.value = String(Math.min(Math.max(1, Number(quantityInput.value) || 1), Math.max(1, stock)));
+                    updatePriceBlock();
                     addButton.disabled = stock < 1;
                     addButton.lastChild.textContent = stock > 0 ? ` ${addButton.dataset.inStockLabel}` : ' Sold out';
                     document.querySelectorAll('[data-variant-option]').forEach((item) => {
@@ -845,11 +1006,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                         const delta = Number(button.dataset.quantityChange);
                         const maximum = Number(quantityInput.max) || 1;
                         quantityInput.value = String(Math.min(maximum, Math.max(1, (Number(quantityInput.value) || 1) + delta)));
+                        updatePriceBlock();
                     });
                 });
+                quantityInput.addEventListener('input', updatePriceBlock);
                 quantityInput.addEventListener('change', () => {
                     const maximum = Number(quantityInput.max) || 1;
                     quantityInput.value = String(Math.min(maximum, Math.max(1, Number(quantityInput.value) || 1)));
+                    updatePriceBlock();
                 });
 
                 const recommendationsTrack = document.querySelector('[data-recommendations-track]');

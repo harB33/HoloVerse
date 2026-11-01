@@ -437,6 +437,10 @@ $headerCsrfToken = store_csrf_token();
         let toastTimeout = null;
 
         const showToast = (message, isError = false) => {
+            if (typeof window.showCollectorFeedback === "function") {
+                window.showCollectorFeedback(message, "", isError ? "error" : "success");
+                return;
+            }
             if (!toastElement || !toastMessageElement) {
                 return;
             }
@@ -871,7 +875,7 @@ $headerCsrfToken = store_csrf_token();
                     },
                 }));
 
-                showToast(customToastMessage || "Added to your bag");
+                showToast("Successfully added to your bag");
             } catch (error) {
                 console.error("Unable to add item to bag.", error);
                 showToast(error instanceof Error ? error.message : "Unable to add item to bag.", true);
