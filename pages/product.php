@@ -243,12 +243,8 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-recommendations-track { display: flex; align-items: stretch; gap: 20px; overflow-x: auto; overscroll-behavior-x: contain; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
         .product-recommendations-track::-webkit-scrollbar { display: none; }
         .product-recommendations-track > .product-card { display: flex; flex: 0 0 calc((100% - 60px) / 4); min-width: 0; flex-direction: column; scroll-snap-align: start; }
-        .product-recommendations-track .product-image-wrap { flex: 0 0 auto; aspect-ratio: 1 / 1; }
+        .product-recommendations-track .catalog-product-media { flex: 0 0 auto; }
         .product-recommendations-track .product-info { display: flex; flex: 1 1 auto; flex-direction: column; }
-        .product-recommendations-track .product-info > .product-title-link { display: -webkit-box; height: 4.05em; min-height: 4.05em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
-        .product-recommendations-track .product-info > .merch-status { min-height: 2.8em; }
-        .product-recommendations-track .product-info > form,
-        .product-recommendations-track .product-info > .add-button { margin-top: auto; }
 
         .product-gallery { min-width: 0; }
 
@@ -807,7 +803,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     $recommendedProduct['alt_text'] = $recommendationImages[0]['alt_text'] ?? $recommendedProduct['product_name'];
                                 }
                                 $product = $recommendedProduct;
+                                $catalogProductCardDesign = true;
                                 require __DIR__ . '/../app/views/components/product-card.php';
+                                unset($catalogProductCardDesign);
                                 ?>
                             <?php endforeach; ?>
                         </div>

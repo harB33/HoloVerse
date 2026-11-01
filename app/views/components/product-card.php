@@ -136,7 +136,7 @@ if (isset($productCardAttributes) && is_array($productCardAttributes)) {
     <?php endif; ?>
 
     <div class="product-info">
-        <p><?= store_escape($cardTalentName) ?></p>
+        <p><?= store_escape(!empty($catalogProductCardDesign) ? $cardCategoryName : $cardTalentName) ?></p>
         <?php if (!empty($catalogProductCardDesign)): ?>
             <div class="catalog-product-title-row">
                 <a class="product-title-link" href="<?= store_escape($cardProductUrl) ?>"><?= store_escape($cardProductName) ?></a>
@@ -150,20 +150,31 @@ if (isset($productCardAttributes) && is_array($productCardAttributes)) {
         <?php else: ?>
             <a class="product-title-link" href="<?= store_escape($cardProductUrl) ?>"><?= store_escape($cardProductName) ?></a>
         <?php endif; ?>
-        <span class="merch-status status-<?= store_escape($cardStatus) ?>">
-            <?php if ($cardStatus === 'flash'): ?>
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-            <?php elseif ($cardStatus === 'preorder'): ?>
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-            <?php endif; ?>
-            <?= store_escape($cardStatusLabel) ?><?= $cardShipWindow !== '' ? ' · ' . store_escape($cardShipWindow) : '' ?>
-        </span>
+        <?php if (empty($catalogProductCardDesign)): ?>
+            <span class="merch-status status-<?= store_escape($cardStatus) ?>">
+                <?php if ($cardStatus === 'flash'): ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                <?php elseif ($cardStatus === 'preorder'): ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <?php endif; ?>
+                <?= store_escape($cardStatusLabel) ?><?= $cardShipWindow !== '' ? ' · ' . store_escape($cardShipWindow) : '' ?>
+            </span>
+        <?php endif; ?>
         <div class="product-meta">
             <?php if (empty($catalogProductCardDesign)): ?>
                 <strong><?= store_escape(store_format_price($cardPrice)) ?></strong>
                 <?php if ($cardCompareAtPrice > 0): ?>
                     <del><?= store_escape(store_format_price($cardCompareAtPrice)) ?></del>
                 <?php endif; ?>
+            <?php else: ?>
+                <span class="merch-status status-<?= store_escape($cardStatus) ?>">
+                    <?php if ($cardStatus === 'flash'): ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+                    <?php elseif ($cardStatus === 'preorder'): ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    <?php endif; ?>
+                    <?= store_escape($cardStatusLabel) ?><?= $cardShipWindow !== '' ? ' · ' . store_escape($cardShipWindow) : '' ?>
+                </span>
             <?php endif; ?>
             <span><?= store_escape($cardVariantNote) ?></span>
         </div>

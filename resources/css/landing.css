@@ -1637,11 +1637,31 @@ html[data-theme="dark"] .home-faq-answer a {
   font-size: 8px;
 }
 
+.catalog-product-card .product-meta > .merch-status {
+  min-height: 0;
+  max-width: 48%;
+  margin: 0;
+  margin-left: 0;
+  overflow: hidden;
+  color: #778092;
+  font-size: 8px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
 .catalog-product-card .product-meta > span {
-  max-width: 100%;
+  max-width: 52%;
+  min-width: 0;
   overflow: hidden;
   font-size: inherit;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-product-card .product-meta > span:last-child {
+  text-align: right;
 }
 
 html[data-theme="dark"] .catalog-product-card .product-info > p {
@@ -1655,6 +1675,10 @@ html[data-theme="dark"] .catalog-product-price {
 
 html[data-theme="dark"] .catalog-product-card .product-meta {
   border-color: #343943;
+  color: #a7afbd;
+}
+
+html[data-theme="dark"] .catalog-product-card .product-meta > .merch-status {
   color: #a7afbd;
 }
 
@@ -3664,6 +3688,10 @@ html[data-theme="dark"] .talent-art::before {
 
   html[data-theme="system"] .catalog-product-card .product-meta {
     border-color: #343943;
+    color: #a7afbd;
+  }
+
+  html[data-theme="system"] .catalog-product-card .product-meta > .merch-status {
     color: #a7afbd;
   }
 
