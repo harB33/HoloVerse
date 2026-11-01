@@ -55,7 +55,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="order-history-page home-landing">
     <div class="page-shell">
         <?php
         $activePage = 'orders';

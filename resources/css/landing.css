@@ -36,9 +36,84 @@
   display: none !important;
 }
 
-.landing-shell {
-  width: min(1440px, calc(100% - 96px));
-  margin-inline: auto;
+.landing-shell,
+main.landing-shell,
+body.home-landing .landing-shell,
+body.home-landing main.landing-shell,
+.site-header.landing-shell,
+.footer-main.landing-shell,
+.footer-bottom.landing-shell,
+.all-products-main.landing-shell,
+.talent-directory-main.landing-shell,
+.preorder-main.landing-shell,
+.flash-sale-main.landing-shell,
+.product-page-main.landing-shell,
+.collector-showcase-main.landing-shell,
+.cart-main.landing-shell,
+.checkout-main.landing-shell,
+.order-history-main.landing-shell,
+.info-main.landing-shell,
+.about-main.landing-shell,
+.auth-main.landing-shell {
+  width: min(1440px, calc(100% - 96px)) !important;
+  max-width: none !important;
+  margin-inline: auto !important;
+  padding-inline: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1180px) {
+  .landing-shell,
+  main.landing-shell,
+  body.home-landing .landing-shell,
+  body.home-landing main.landing-shell,
+  .site-header.landing-shell,
+  .footer-main.landing-shell,
+  .footer-bottom.landing-shell,
+  .all-products-main.landing-shell,
+  .talent-directory-main.landing-shell,
+  .preorder-main.landing-shell,
+  .flash-sale-main.landing-shell,
+  .product-page-main.landing-shell,
+  .collector-showcase-main.landing-shell,
+  .cart-main.landing-shell,
+  .checkout-main.landing-shell,
+  .order-history-main.landing-shell,
+  .info-main.landing-shell,
+  .about-main.landing-shell,
+  .auth-main.landing-shell {
+    width: min(1440px, calc(100% - 48px)) !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+    padding-inline: 0 !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .landing-shell,
+  main.landing-shell,
+  body.home-landing .landing-shell,
+  body.home-landing main.landing-shell,
+  .site-header.landing-shell,
+  .footer-main.landing-shell,
+  .footer-bottom.landing-shell,
+  .all-products-main.landing-shell,
+  .talent-directory-main.landing-shell,
+  .preorder-main.landing-shell,
+  .flash-sale-main.landing-shell,
+  .product-page-main.landing-shell,
+  .collector-showcase-main.landing-shell,
+  .cart-main.landing-shell,
+  .checkout-main.landing-shell,
+  .order-history-main.landing-shell,
+  .info-main.landing-shell,
+  .about-main.landing-shell,
+  .auth-main.landing-shell {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    margin-inline: auto !important;
+    padding-inline: 0 !important;
+  }
 }
 
 .home-landing {
@@ -2741,10 +2816,6 @@ html[data-theme="dark"] .talent-art::before {
 }
 
 @media (max-width: 900px) {
-  .landing-shell {
-    width: min(100% - 40px, 700px);
-  }
-
   .announcement-bar > span:first-child,
   .announcement-separator {
     display: none;
@@ -3409,17 +3480,78 @@ body.about-page {
 /* Shared Section Headers & Eyebrows across Inner Pages */
 .all-products-main,
 .talents-main,
+.talent-directory-main,
 .preorder-main,
 .flash-sale-main,
+.product-page-main,
 .cart-main,
 .checkout-main,
 .collector-showcase-main,
 .order-history-main,
-.about-main {
+.about-main,
+.info-main {
   position: relative;
   z-index: 2;
   padding-top: 52px;
   padding-bottom: 108px;
+  padding-inline: 0 !important;
+}
+
+/* Ensure inner sections span 100% of .landing-shell without introducing conflicting max-width caps or padding */
+.landing-shell > .explore,
+.landing-shell .explore.talent-directory-explore {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  background-image: none !important;
+}
+
+.landing-shell .explore-inner {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.landing-shell .all-products-intro,
+.landing-shell .talents-intro,
+.landing-shell .preorder-intro,
+.landing-shell .products-catalog-layout,
+.landing-shell .talents-catalog-layout,
+.landing-shell .talent-directory-layout,
+.landing-shell .all-products-pagination,
+.landing-shell .talent-pagination,
+.landing-shell .preorder-pagination,
+.landing-shell .preorder-hero-banner,
+.landing-shell .preorder-grid,
+.landing-shell .preorder-process,
+.landing-shell .preorder-guide,
+.landing-shell .vault-inventory-ration,
+.landing-shell .flash-mechanics,
+.landing-shell .flash-sale-carousel,
+.landing-shell .flash-telemetry,
+.landing-shell .flash-sale-card,
+.landing-shell .product-layout,
+.landing-shell .product-recommendations,
+.landing-shell .cart-layout,
+.landing-shell .auth-layout,
+.landing-shell .checkout-layout,
+.landing-shell .checkout-panel,
+.landing-shell .order-history-list,
+.landing-shell .collector-purchases-list,
+.landing-shell .collector-showcase-section,
+.landing-shell .collector-showcase-grid,
+.landing-shell .about-introduction,
+.landing-shell .about-story,
+.landing-shell .about-interlude,
+.landing-shell .about-principles,
+.landing-shell .about-team,
+.landing-shell .about-toolkit {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .all-products-intro,
@@ -5278,5 +5410,655 @@ body.flash-sale-page.home-landing .flash-mechanics-card p {
 
   .cart-item {
     grid-template-columns: 76px minmax(0, 1fr);
+  }
+}
+
+/* ==========================================================================
+   Official Member Authentication (/login) Design System
+   ========================================================================== */
+
+body.auth-page.home-landing {
+  background-color: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+body.auth-page.home-landing .page-shell.auth-page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.auth-page.home-landing .auth-main.landing-shell {
+  flex: 1 0 auto;
+  padding-block: 44px 72px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Sharp architectural 2-column card */
+body.auth-page.home-landing .auth-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  min-height: 870px;
+  border: 1px solid var(--line);
+  border-radius: 0 !important;
+  background: #ffffff;
+  box-shadow: 0 20px 48px -12px rgba(16, 24, 39, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hide duplicate brand logo inside card since sticky .site-header is present */
+body.auth-page.home-landing .auth-card-brand,
+body.auth-page.home-landing .auth-login-panel .brand,
+body.auth-page.home-landing .auth-register-content .brand {
+  display: none !important;
+}
+
+/* Login panel (Left column on desktop) */
+body.auth-page.home-landing .auth-login-panel {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(36px, 4.5vw, 64px);
+  background: #ffffff;
+  min-height: 680px;
+  position: relative;
+  z-index: 1;
+}
+
+body.auth-page.home-landing .auth-panel-inner {
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+/* Register surface (Right column on desktop, slides into view) */
+body.auth-page.home-landing .auth-register-surface {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  min-height: 680px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(36px, 4.5vw, 64px);
+  background: #ffffff;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(32px);
+  overflow-y: auto;
+  transition:
+    opacity 450ms ease,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 450ms ease;
+}
+
+body.auth-page.home-landing .auth-register-content {
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+body.auth-page.home-landing .auth-layout.is-register .auth-login-panel {
+  visibility: hidden;
+}
+
+body.auth-page.home-landing .auth-layout.is-register .auth-register-surface {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* Typography & Headers */
+body.auth-page.home-landing .auth-header {
+  margin-bottom: 28px;
+}
+
+body.auth-page.home-landing .auth-header .eyebrow {
+  color: var(--cyan-dark);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+}
+
+body.auth-page.home-landing .auth-header h1,
+body.auth-page.home-landing .auth-header h2 {
+  color: var(--ink);
+  font-family: var(--font-display, inherit);
+  font-size: clamp(30px, 3.2vw, 42px);
+  font-weight: 950;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+
+body.auth-page.home-landing .auth-lead {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 10px 0 0 0;
+}
+
+/* Form Fields & Sharp Inputs */
+body.auth-page.home-landing .auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body.auth-page.home-landing .auth-form > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+body.auth-page.home-landing .auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.auth-page.home-landing .auth-label {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+body.auth-page.home-landing .auth-input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 0 !important;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: none !important;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+body.auth-page.home-landing .auth-input::placeholder {
+  color: #94a3b8;
+}
+
+body.auth-page.home-landing .auth-input:focus {
+  border-color: var(--cyan-dark);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 196, 239, 0.16) !important;
+}
+
+/* Submit Buttons - match .button-primary.dark */
+body.auth-page.home-landing .auth-submit-button,
+body.auth-page.home-landing .otp-verify-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  border-radius: 0 !important;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+body.auth-page.home-landing .auth-submit-button:hover,
+body.auth-page.home-landing .otp-verify-button:hover {
+  background: var(--cyan-dark);
+  border-color: var(--cyan-dark);
+  color: #ffffff;
+}
+
+body.auth-page.home-landing .auth-submit-button:focus-visible,
+body.auth-page.home-landing .otp-verify-button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+body.auth-page.home-landing .auth-submit-button:disabled,
+body.auth-page.home-landing .otp-verify-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Mode Switches & Links */
+body.auth-page.home-landing .auth-mode-button,
+body.auth-page.home-landing .login-forgot-password a {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--cyan-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+body.auth-page.home-landing .auth-mode-button:hover,
+body.auth-page.home-landing .login-forgot-password a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body.auth-page.home-landing .auth-switch-prompt {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+body.auth-page.home-landing .login-feedback-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+body.auth-page.home-landing .login-feedback {
+  min-width: 0;
+}
+
+body.auth-page.home-landing .login-forgot-password {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+}
+
+/* Sharp Alert & Status Banners */
+body.auth-page.home-landing .auth-alert {
+  padding: 12px 16px;
+  border-radius: 0 !important;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+body.auth-page.home-landing .auth-alert-error,
+body.auth-page.home-landing .otp-error {
+  border: 1px solid #fecdd3;
+  border-left: 4px solid #e11d48;
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+body.auth-page.home-landing .otp-error {
+  padding: 10px 14px;
+  border-radius: 0 !important;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body.auth-page.home-landing .auth-alert-success {
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid #10b981;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+/* Sharp Password Strength Meter */
+body.auth-page.home-landing .password-strength {
+  margin-top: -8px;
+  margin-bottom: 4px;
+}
+
+body.auth-page.home-landing .password-strength [role="progressbar"] {
+  height: 4px;
+  background: var(--line);
+  border-radius: 0 !important;
+  overflow: hidden;
+}
+
+body.auth-page.home-landing .password-strength .password-strength-bar {
+  border-radius: 0 !important;
+}
+
+body.auth-page.home-landing #password-strength-label,
+body.auth-page.home-landing #reset-password-strength-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+body.auth-page.home-landing #password-strength-help,
+body.auth-page.home-landing #reset-password-strength-help {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Sharp OTP Entry */
+body.auth-page.home-landing .otp-entry {
+  position: relative;
+  height: 52px;
+  width: 100%;
+}
+
+body.auth-page.home-landing .otp-digit-box {
+  border-radius: 0 !important;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 800;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+body.auth-page.home-landing .otp-entry.is-enhanced.is-focused .otp-digit-box {
+  border-color: var(--line);
+}
+
+body.auth-page.home-landing .otp-entry.is-enhanced.is-focused .otp-digit-box.is-current {
+  border-color: var(--cyan-dark);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 196, 239, 0.2);
+  transform: none;
+}
+
+body.auth-page.home-landing .otp-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+body.auth-page.home-landing .otp-timer span {
+  font-family: var(--font-mono);
+  color: var(--cyan-dark);
+  font-weight: 800;
+}
+
+body.auth-page.home-landing .otp-resend-link {
+  color: var(--cyan-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+body.auth-page.home-landing .otp-resend-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Editorial Artwork Panel */
+body.auth-page.home-landing .auth-artwork-panel {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  height: 100%;
+  min-height: 680px;
+  overflow: hidden;
+  border-radius: 0 !important;
+  z-index: 2;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: #070e1b;
+}
+
+body.auth-page.home-landing .auth-layout.is-register .auth-artwork-panel {
+  transform: translateX(-100%);
+}
+
+body.auth-page.home-landing .auth-artwork-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+body.auth-page.home-landing .auth-artwork-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 14, 27, 0.72) 0%,
+    rgba(7, 14, 27, 0.32) 32%,
+    rgba(7, 14, 27, 0.85) 72%,
+    rgba(7, 14, 27, 0.98) 100%
+  );
+  pointer-events: none;
+}
+
+body.auth-page.home-landing .auth-artwork-body {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: clamp(28px, 4vw, 44px);
+  color: #ffffff;
+}
+
+body.auth-page.home-landing .auth-artwork-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body.auth-page.home-landing .auth-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(16, 24, 39, 0.65);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body.auth-page.home-landing .auth-status-pill .live-dot {
+  background: var(--cyan);
+  box-shadow: 0 0 0 5px rgba(22, 196, 239, 0.2);
+}
+
+body.auth-page.home-landing .auth-artwork-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.auth-page.home-landing .auth-artwork-content {
+  margin-top: auto;
+  margin-bottom: 24px;
+}
+
+body.auth-page.home-landing .auth-artwork-content .eyebrow {
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+
+body.auth-page.home-landing .auth-artwork-title {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+  margin: 0 0 24px 0;
+}
+
+body.auth-page.home-landing .auth-artwork-perks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.auth-page.home-landing .auth-artwork-perk {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(7, 14, 27, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+body.auth-page.home-landing .perk-index {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--cyan);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+body.auth-page.home-landing .perk-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.auth-page.home-landing .perk-detail strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+body.auth-page.home-landing .perk-detail span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.4;
+}
+
+body.auth-page.home-landing .auth-artwork-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+/* Tablet & Mobile Responsiveness */
+@media (max-width: 1023px) {
+  body.auth-page.home-landing .auth-layout {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+
+  body.auth-page.home-landing .auth-artwork-panel {
+    display: none !important;
+  }
+
+  body.auth-page.home-landing .auth-login-panel {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    padding: 36px 24px !important;
+    min-height: auto !important;
+  }
+
+  body.auth-page.home-landing .auth-register-surface {
+    position: relative !important;
+    display: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 36px 24px !important;
+    transform: none !important;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  body.auth-page.home-landing .auth-layout.is-register .auth-login-panel {
+    display: none !important;
+  }
+
+  body.auth-page.home-landing .auth-layout.is-register .auth-register-surface {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 620px) {
+  body.auth-page.home-landing .auth-main.landing-shell {
+    padding-block: 24px 48px;
+  }
+
+  body.auth-page.home-landing .auth-login-panel,
+  body.auth-page.home-landing .auth-register-surface {
+    padding: 24px 16px !important;
+  }
+
+  body.auth-page.home-landing .auth-header h1,
+  body.auth-page.home-landing .auth-header h2 {
+    font-size: 28px;
+  }
+
+  body.auth-page.home-landing .otp-boxes {
+    gap: 4px;
+  }
+
+  body.auth-page.home-landing .otp-digit-box {
+    font-size: 18px;
+  }
+
+  body.auth-page.home-landing .auth-artwork-caption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }

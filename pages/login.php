@@ -361,240 +361,288 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body class="auth-page relative isolate min-h-screen border-t-2 border-sky-500 bg-transparent font-['Kanit'] text-slate-800">
-    <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
-    <main class="auth-main flex min-h-screen w-full items-center justify-center px-4 py-4 sm:px-8 lg:px-6">
-        <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?> relative grid min-h-0 w-full max-w-7xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40 lg:grid-cols-2">
-            <section class="auth-login-panel relative flex flex-col justify-center py-10 lg:pl-12 xl:pl-20<?= $isPasswordResetRequest ? ' reset-request-panel' : '' ?>" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
-                <div class="w-full max-w-md<?= $isPasswordResetRequest ? ' reset-request-layout' : '' ?>">
-                    <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
-                    <div class="otp-verification">
-                    <?php endif; ?>
-                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
-                        <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
-                        <span class="brand-wordmark">holo<span>verse</span></span>
-                    </a>
-                    <?php if ($isPasswordResetRequest): ?>
-                        <header class="mb-8">
-                            <h1 class="text-3xl font-bold text-slate-800">Forgot password?</h1>
-                            <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">Enter your account email and we’ll send you a one-time reset code.</p>
-                        </header>
-                        <?php if ($message !== ''): ?>
-                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
+<body class="auth-page home-landing">
+    <div class="page-shell auth-page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
+        <?php
+        $activePage = '';
+        $showLogin = true;
+        require __DIR__ . '/../app/views/components/site-header.php';
+        ?>
+        <main class="auth-main landing-shell">
+            <div class="auth-layout<?= $isRegistration ? ' is-register' : '' ?>" data-auth-layout>
+                <section class="auth-login-panel<?= $isPasswordResetRequest ? ' reset-request-panel' : '' ?>" aria-label="<?= $isPasswordResetRequest || $isPasswordReset ? 'Password reset' : 'Sign in' ?>" aria-hidden="<?= $isRegistration ? 'true' : 'false' ?>"<?= $isRegistration ? ' inert' : '' ?>>
+                    <div class="auth-panel-inner w-full max-w-md<?= $isPasswordResetRequest ? ' reset-request-layout' : '' ?>">
+                        <?php if ($isPasswordReset && !$isResetPasswordVerified): ?>
+                        <div class="otp-verification">
                         <?php endif; ?>
-                        <form action="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5">
-                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                            <input type="hidden" name="mode" value="forgot_password">
-                            <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                            <div>
-                                <label for="reset-request-email" class="mb-2 block text-sm font-medium text-slate-700">Email</label>
-                                <input id="reset-request-email" type="email" name="email" autocomplete="email" placeholder="Example@email.com" required value="<?= store_escape($resetRequestEmail) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
-                            </div>
-                            <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
-                                Send reset code
-                            </button>
-                        </form>
-                        <p class="mt-7 text-center text-sm text-slate-600">
-                            <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
-                        </p>
-                    <?php elseif ($isPasswordReset): ?>
-                        <header class="mb-8">
-                            <h1 class="text-3xl font-bold text-slate-800"><?= $isResetPasswordVerified ? 'Choose a new password' : 'Verify your email' ?></h1>
-                            <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">
-                                <?php if ($isResetPasswordVerified): ?>
-                                    Your code is verified. Set a new password for <?= store_escape($resetEmail) ?>.
-                                <?php else: ?>
-                                    Enter the six-digit code sent to <?= $resetEmail !== '' ? store_escape($resetEmail) : 'your email' ?> to continue.
-                                <?php endif; ?>
-                            </p>
-                        </header>
-                        <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
-                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
-                        <?php endif; ?>
-                        <?php if ($resetEmail !== ''): ?>
-                            <?php if ($isResetPasswordVerified): ?>
-                            <form action="login?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5">
+                        <a class="brand auth-card-brand" href="/home" aria-label="HoloVerse home">
+                            <img class="brand-logo" src="<?= store_escape($siteRoot . 'assets/images/logo.png') ?>" alt="" draggable="false">
+                            <span class="brand-wordmark">holo<span>verse</span></span>
+                        </a>
+                        <?php if ($isPasswordResetRequest): ?>
+                            <header class="auth-header">
+                                <p class="eyebrow">Account Recovery</p>
+                                <h1>Forgot password?</h1>
+                                <p class="auth-lead">Enter your account email and we’ll send you a one-time reset code.</p>
+                            </header>
+                            <?php if ($message !== ''): ?>
+                                <p class="auth-alert auth-alert-error reset-request-error" role="alert"><?= store_escape($message) ?></p>
+                            <?php endif; ?>
+                            <form action="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5 auth-form">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                <input type="hidden" name="mode" value="reset_password">
+                                <input type="hidden" name="mode" value="forgot_password">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                                <div>
-                                    <label for="reset-password" class="mb-2 block text-sm font-medium text-slate-700">New password</label>
-                                    <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
-                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                <div class="auth-field">
+                                    <label for="reset-request-email" class="auth-label">Email</label>
+                                    <input id="reset-request-email" type="email" name="email" autocomplete="email" placeholder="example@email.com" required value="<?= store_escape($resetRequestEmail) ?>"
+                                        class="auth-input">
                                 </div>
-                                <div class="password-strength" aria-live="polite">
-                                    <div class="mb-2 flex items-center justify-between text-xs">
-                                        <span id="reset-password-strength-help" class="text-slate-500">Use at least 12 characters and 3 character types.</span>
-                                        <span id="reset-password-strength-label" class="font-semibold text-slate-500">Strength: empty</span>
-                                    </div>
-                                    <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
-                                        <div id="reset-password-strength-bar" class="password-strength-bar h-full w-0 rounded-full bg-rose-500 transition-all duration-300"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="reset-password-confirmation" class="mb-2 block text-sm font-medium text-slate-700">Confirm password</label>
-                                    <input id="reset-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="72" placeholder="Re-enter your password" required aria-describedby="reset-password-confirmation-message"
-                                        class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
-                                    <p id="reset-password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
-                                </div>
-                                <button id="reset-password-submit" type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50">
-                                    Reset password
+                                <button type="submit" class="auth-submit-button">
+                                    Send reset code
                                 </button>
                             </form>
-                            <?php else: ?>
-                            <form action="login?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5">
-                                <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                                <input type="hidden" name="mode" value="verify_reset_otp">
-                                <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                                <div>
-                                    <label for="reset-otp" class="mb-2 block text-sm font-medium text-slate-700">One-time code</label>
-                                    <div class="otp-entry">
-                                        <input id="reset-otp" class="otp-input block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required aria-label="Six-digit one-time code">
-                                        <div class="otp-boxes" aria-hidden="true">
-                                            <span class="otp-digit-box"></span>
-                                            <span class="otp-digit-box"></span>
-                                            <span class="otp-digit-box"></span>
-                                            <span class="otp-digit-box"></span>
-                                            <span class="otp-digit-box"></span>
-                                            <span class="otp-digit-box"></span>
+                            <p class="auth-switch-prompt">
+                                <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                            </p>
+                        <?php elseif ($isPasswordReset): ?>
+                            <header class="auth-header">
+                                <p class="eyebrow"><?= $isResetPasswordVerified ? 'Security Update' : 'One-Time Verification' ?></p>
+                                <h1><?= $isResetPasswordVerified ? 'Choose a new password.' : 'Verify your email.' ?></h1>
+                                <p class="auth-lead">
+                                    <?php if ($isResetPasswordVerified): ?>
+                                        Your code is verified. Set a new password for <?= store_escape($resetEmail) ?>.
+                                    <?php else: ?>
+                                        Enter the six-digit code sent to <?= $resetEmail !== '' ? store_escape($resetEmail) : 'your email' ?> to continue.
+                                    <?php endif; ?>
+                                </p>
+                            </header>
+                            <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
+                                <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
+                            <?php endif; ?>
+                            <?php if ($resetEmail !== ''): ?>
+                                <?php if ($isResetPasswordVerified): ?>
+                                <form action="login?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5 auth-form">
+                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                    <input type="hidden" name="mode" value="reset_password">
+                                    <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                                    <div class="auth-field">
+                                        <label for="reset-password" class="auth-label">New password</label>
+                                        <input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="12" maxlength="72" placeholder="At least 12 characters" required aria-describedby="reset-password-strength-help reset-password-strength-label"
+                                            class="auth-input">
+                                    </div>
+                                    <div class="password-strength" aria-live="polite">
+                                        <div class="mb-2 flex items-center justify-between text-xs">
+                                            <span id="reset-password-strength-help">Use at least 12 characters and 3 character types.</span>
+                                            <span id="reset-password-strength-label" class="font-semibold text-slate-500">Strength: empty</span>
+                                        </div>
+                                        <div class="h-2 overflow-hidden bg-slate-200" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+                                            <div id="reset-password-strength-bar" class="password-strength-bar h-full w-0 bg-rose-500 transition-all duration-300"></div>
                                         </div>
                                     </div>
-                                    <div class="otp-meta-row">
-                                        <p class="otp-timer">Remaining time: <span id="reset-otp-timer" data-expires-at="<?= $resetOtpExpiresAt ?>">--:--</span></p>
-                                        <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
+                                    <div class="auth-field">
+                                        <label for="reset-password-confirmation" class="auth-label">Confirm password</label>
+                                        <input id="reset-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="72" placeholder="Re-enter your password" required aria-describedby="reset-password-confirmation-message"
+                                            class="auth-input">
+                                        <p id="reset-password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
                                     </div>
+                                    <button id="reset-password-submit" type="submit" class="auth-submit-button disabled:cursor-not-allowed disabled:opacity-50">
+                                        Reset password
+                                    </button>
+                                </form>
+                                <?php else: ?>
+                                <form action="login?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5 auth-form">
+                                    <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                                    <input type="hidden" name="mode" value="verify_reset_otp">
+                                    <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                                    <div class="auth-field">
+                                        <label for="reset-otp" class="auth-label">One-time code</label>
+                                        <div class="otp-entry">
+                                            <input id="reset-otp" class="otp-input auth-input" type="text" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required aria-label="Six-digit one-time code">
+                                            <div class="otp-boxes" aria-hidden="true">
+                                                <span class="otp-digit-box"></span>
+                                                <span class="otp-digit-box"></span>
+                                                <span class="otp-digit-box"></span>
+                                                <span class="otp-digit-box"></span>
+                                                <span class="otp-digit-box"></span>
+                                                <span class="otp-digit-box"></span>
+                                            </div>
+                                        </div>
+                                        <div class="otp-meta-row">
+                                            <p class="otp-timer">Remaining time: <span id="reset-otp-timer" data-expires-at="<?= $resetOtpExpiresAt ?>">--:--</span></p>
+                                            <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="otp-verify-button auth-submit-button">
+                                        Verify code
+                                    </button>
+                                </form>
+                                <div class="otp-feedback-row">
+                                    <?php if ($message !== ''): ?>
+                                        <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
+                                    <?php endif; ?>
+                                    <p class="otp-signin-link">
+                                        <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                                    </p>
                                 </div>
-                                <button type="submit" class="otp-verify-button">
-                                    Verify code
-                                </button>
-                            </form>
-                            <div class="otp-feedback-row">
-                                <?php if ($message !== ''): ?>
-                                    <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
                                 <?php endif; ?>
-                                <p class="otp-signin-link">
-                                    <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
-                                </p>
+                            <?php else: ?>
+                                <p class="auth-alert auth-alert-error" role="alert">Start a new password reset request to receive a code.</p>
+                            <?php endif; ?>
+                            <?php if (!$isResetPasswordVerified): ?>
                             </div>
                             <?php endif; ?>
                         <?php else: ?>
-                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">Start a new password reset request to receive a code.</p>
+                        <header class="auth-header">
+                            <p class="eyebrow">Official Member Sign In</p>
+                            <h1>Welcome back.</h1>
+                            <p class="auth-lead">Sign in to manage your HoloVerse account and saved cart.</p>
+                        </header>
+
+                        <?php if ($notice !== ''): ?>
+                            <p class="auth-alert auth-alert-success" role="status"><?= store_escape($notice) ?></p>
                         <?php endif; ?>
-                        <?php if (!$isResetPasswordVerified): ?>
-                        </div>
+                        <form action="login" method="post" class="login-form space-y-5 auth-form">
+                            <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
+                            <input type="hidden" name="mode" value="login">
+                            <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
+                            <div class="auth-field">
+                                <label for="login-email" class="auth-label">Email</label>
+                                <input id="login-email" type="email" name="email" autocomplete="email" placeholder="example@email.com" required
+                                    class="auth-input">
+                            </div>
+                            <div class="auth-field">
+                                <label for="login-password" class="auth-label">Password</label>
+                                <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
+                                    class="auth-input">
+                            </div>
+                            <div class="login-feedback-row">
+                                <?php if ($message !== '' && !$isRegistration): ?>
+                                    <div class="login-feedback space-y-1">
+                                        <p class="auth-error-message otp-error" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
+                                        <p class="login-retry-timer otp-timer"<?= $loginRateLimitSeconds > 0 ? '' : ' hidden' ?>>Try again in <span>--:--</span>.</p>
+                                    </div>
+                                <?php endif; ?>
+                                <p class="login-forgot-password">
+                                    <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
+                                </p>
+                            </div>
+                            <button type="submit" class="auth-submit-button">
+                                Sign in
+                            </button>
+                        </form>
+
+                        <p class="auth-switch-prompt">
+                            Don’t have an account?
+                            <button type="button" class="auth-mode-button" data-show-register>Create account</button>
+                        </p>
                         <?php endif; ?>
-                    <?php else: ?>
-                    <header class="mb-8">
-                        <h1 class="text-3xl font-bold text-slate-800">Welcome back</h1>
-                        <p class="mt-4 max-w-sm text-sm leading-6 text-slate-600 sm:text-base">Sign in to manage your HoloVerse account and saved cart.</p>
-                    </header>
+                    </div>
+                </section>
 
-                    <?php if ($notice !== ''): ?>
-                        <p class="mb-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status"><?= store_escape($notice) ?></p>
-                    <?php endif; ?>
-                    <form action="login" method="post" class="login-form space-y-5">
-                        <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
-                        <input type="hidden" name="mode" value="login">
-                        <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                        <div>
-                            <label for="login-email" class="mb-2 block text-sm font-medium text-slate-700">Email</label>
-                            <input id="login-email" type="email" name="email" autocomplete="email" placeholder="Example@email.com" required
-                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                <aside class="auth-artwork-panel" aria-label="Official Collector Access">
+                    <img src="<?= store_escape($siteRoot . 'assets/images/suisei2.jpg') ?>" alt="Featured Talent Hoshimachi Suisei" draggable="false" class="auth-artwork-image">
+                    <div class="auth-artwork-shade"></div>
+                    <div class="auth-artwork-body">
+                        <div class="auth-artwork-top">
+                            <span class="auth-status-pill"><span class="live-dot"></span>Collector Portal</span>
+                            <span class="auth-artwork-code">HV // AUTH-01</span>
                         </div>
-                        <div>
-                            <label for="login-password" class="mb-2 block text-sm font-medium text-slate-700">Password</label>
-                            <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" required
-                                class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                        <div class="auth-artwork-content">
+                            <p class="eyebrow">Member Archive &amp; Benefits</p>
+                            <h3 class="auth-artwork-title">Keep every favorite piece in one place.</h3>
+                            <ul class="auth-artwork-perks" role="list">
+                                <li class="auth-artwork-perk">
+                                    <span class="perk-index">01</span>
+                                    <div class="perk-detail">
+                                        <strong>Synced Shopping Bag</strong>
+                                        <span>Seamless cart across every official drop</span>
+                                    </div>
+                                </li>
+                                <li class="auth-artwork-perk">
+                                    <span class="perk-index">02</span>
+                                    <div class="perk-detail">
+                                        <strong>Collector Showcase &amp; Favorites</strong>
+                                        <span>Curate your personal talent merch wall</span>
+                                    </div>
+                                </li>
+                                <li class="auth-artwork-perk">
+                                    <span class="perk-index">03</span>
+                                    <div class="perk-detail">
+                                        <strong>Live Flash Drop Alerts</strong>
+                                        <span>Priority notifications and real-time inventory</span>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="login-feedback-row">
-                            <?php if ($message !== '' && !$isRegistration): ?>
-                                <div class="login-feedback space-y-1">
-                                    <p class="auth-error-message otp-error" role="alert" data-retry-after="<?= $loginRateLimitSeconds ?>"><?= store_escape($message) ?></p>
-                                    <p class="login-retry-timer otp-timer"<?= $loginRateLimitSeconds > 0 ? '' : ' hidden' ?>>Try again in <span>--:--</span>.</p>
-                                </div>
-                            <?php endif; ?>
-                            <p class="login-forgot-password text-right text-sm">
-                                <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
-                            </p>
+                        <div class="auth-artwork-caption">
+                            <span>FEATURED TALENT // HOSHIMACHI SUISEI</span>
+                            <span>COVER CORP. OFFICIAL</span>
                         </div>
-                        <button type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200">
-                            Sign in
-                        </button>
-                    </form>
-
-                    <p class="mt-9 text-center text-sm text-slate-600">
-                        Don’t have an account?
-                        <button type="button" class="auth-mode-button" data-show-register>Create account</button>
-                    </p>
-                    <?php endif; ?>
-                </div>
-            </section>
-
-            <aside class="auth-artwork-panel relative min-h-[420px] overflow-hidden rounded-2xl shadow-sm lg:min-h-full" aria-label="Create account">
-                <img src="../assets/images/suisei2.jpg" alt="" draggable="false" class="absolute inset-0 h-full w-full object-cover object-[center_70%]">
-            </aside>
-            <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
-                <div class="auth-register-content">
-                    <a class="brand mb-6 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500" href="/home" aria-label="HoloVerse home">
-                        <img class="brand-logo" src="../assets/images/logo.png" alt="" draggable="false">
-                        <span class="brand-wordmark">holo<span>verse</span></span>
+                    </div>
+                </aside>
+                <section class="auth-register-surface" aria-label="Create account" aria-hidden="<?= $isRegistration ? 'false' : 'true' ?>"<?= $isRegistration ? '' : ' inert' ?>>
+                    <div class="auth-register-content">
+                        <a class="brand auth-card-brand" href="/home" aria-label="HoloVerse home">
+                            <img class="brand-logo" src="<?= store_escape($siteRoot . 'assets/images/logo.png') ?>" alt="" draggable="false">
+                            <span class="brand-wordmark">holo<span>verse</span></span>
                         </a>
-                        <header class="mb-4">
-                            <h2 class="text-3xl font-bold text-slate-800">Create your account</h2>
-                            <p class="mt-2 text-sm leading-6 text-slate-600">Create an account to keep your cart with you.</p>
+                        <header class="auth-header">
+                            <p class="eyebrow">New Collector Registration</p>
+                            <h2>Create your account.</h2>
+                            <p class="auth-lead">Create an account to keep your cart, favorites, and showcase.</p>
                         </header>
 
                         <?php if ($message !== '' && $isRegistration): ?>
-                            <p class="mb-5 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert"><?= store_escape($message) ?></p>
+                            <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
 
-                        <form action="login?mode=register" method="post" class="space-y-5">
+                        <form action="login?mode=register" method="post" class="space-y-5 auth-form">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="register">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
-                            <div>
-                                <label for="register-username" class="mb-2 block text-sm font-medium text-slate-700">Name</label>
+                            <div class="auth-field">
+                                <label for="register-username" class="auth-label">Name</label>
                                 <input id="register-username" type="text" name="username" autocomplete="name" minlength="2" maxlength="50" required value="<?= store_escape($registrationName) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                    class="auth-input">
                             </div>
-                            <div>
-                                <label for="register-email" class="mb-2 block text-sm font-medium text-slate-700">Email</label>
-                                <input id="register-email" type="email" name="email" autocomplete="email" placeholder="Example@email.com" required value="<?= store_escape($registrationEmail) ?>"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                            <div class="auth-field">
+                                <label for="register-email" class="auth-label">Email</label>
+                                <input id="register-email" type="email" name="email" autocomplete="email" placeholder="example@email.com" required value="<?= store_escape($registrationEmail) ?>"
+                                    class="auth-input">
                             </div>
-                            <div>
-                                <label for="register-password" class="mb-2 block text-sm font-medium text-slate-700">Password</label>
+                            <div class="auth-field">
+                                <label for="register-password" class="auth-label">Password</label>
                                 <input id="register-password" type="password" name="password" autocomplete="new-password" placeholder="At least 12 characters" minlength="12" maxlength="72" required aria-describedby="password-strength-help password-strength-label"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                    class="auth-input">
                             </div>
                             <div class="password-strength" aria-live="polite">
                                 <div class="mb-2 flex items-center justify-between text-xs">
-                                    <span id="password-strength-help" class="text-slate-500">Use at least 12 characters and 3 character types.</span>
+                                    <span id="password-strength-help">Use at least 12 characters and 3 character types.</span>
                                     <span id="password-strength-label" class="font-semibold text-slate-500">Strength: empty</span>
                                 </div>
-                                <div class="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
-                                    <div class="password-strength-bar h-full w-0 rounded-full bg-rose-500 transition-all duration-300"></div>
+                                <div class="h-2 overflow-hidden bg-slate-200" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+                                    <div class="password-strength-bar h-full w-0 bg-rose-500 transition-all duration-300"></div>
                                 </div>
                             </div>
-                            <div>
-                                <label for="register-password-confirmation" class="mb-2 block text-sm font-medium text-slate-700">Confirm password</label>
+                            <div class="auth-field">
+                                <label for="register-password-confirmation" class="auth-label">Confirm password</label>
                                 <input id="register-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Re-enter your password" required aria-describedby="password-confirmation-message"
-                                    class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
+                                    class="auth-input">
                                 <p id="password-confirmation-message" class="mt-2 min-h-4 text-xs text-rose-600" aria-live="polite"></p>
                             </div>
-                            <button id="register-submit" type="submit" class="w-full rounded-lg bg-slate-800 px-5 py-3 text-center text-base font-medium text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50">
+                            <button id="register-submit" type="submit" class="auth-submit-button disabled:cursor-not-allowed disabled:opacity-50">
                                 Create account
                             </button>
                         </form>
-                        <p class="auth-register-footer mt-3 text-center text-sm text-slate-600">
+                        <p class="auth-register-footer auth-switch-prompt">
                             Already have an account?
                             <button type="button" class="auth-mode-button" data-show-login>Sign in</button>
                         </p>
                     </div>
                 </section>
-        </div>
-    </main>
+            </div>
+        </main>
     <script>
         const authShell = document.querySelector(".auth-layout");
         const loginPanel = document.querySelector(".auth-login-panel");
@@ -997,6 +1045,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         window.addEventListener("popstate", () => setAuthMode(new URLSearchParams(window.location.search).get("mode") === "register"));
     </script>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    </div>
 </body>
 
 </html>

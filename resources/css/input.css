@@ -1269,7 +1269,7 @@
     scroll-snap-align: start;
   }
 
-  .all-products-main {
+  .all-products-main:not(.landing-shell) {
     @apply relative z-[1] min-h-[calc(100vh-70px)] bg-transparent px-[clamp(20px,4vw,64px)] pb-16 pt-11;
   }
 
@@ -3834,7 +3834,7 @@
     @apply bg-white;
   }
 
-  .about-main {
+  .about-main:not(.landing-shell) {
     @apply mx-auto max-w-[1200px] px-6 pb-20 pt-10 sm:pt-14;
   }
 
@@ -4157,7 +4157,7 @@
   }
 
   @media (max-width: 639px) {
-    .about-main {
+    .about-main:not(.landing-shell) {
       @apply px-5 pt-7;
     }
 
@@ -4186,7 +4186,7 @@
     @apply min-h-screen bg-transparent;
   }
 
-  .flash-sale-main {
+  .flash-sale-main:not(.landing-shell) {
     @apply mx-auto max-w-[1280px] bg-white px-7 pb-12;
   }
 
@@ -4506,7 +4506,7 @@
     @apply min-h-screen bg-transparent;
   }
 
-  .cart-main {
+  .cart-main:not(.landing-shell) {
     @apply mx-auto max-w-[1360px] px-3 pb-6 pt-20 font-montserrat;
   }
 
@@ -4719,7 +4719,7 @@
     @apply rounded-lg bg-rose-50 px-4 py-3 text-xs text-rose-700;
   }
 
-  .order-history-main {
+  .order-history-main:not(.landing-shell) {
     @apply relative z-10 mx-auto w-[min(100%-32px,1000px)] pt-8 pb-14 font-montserrat text-[#172333] md:pt-12 md:pb-24;
   }
 
@@ -4964,7 +4964,7 @@
     @apply min-h-screen bg-transparent;
   }
 
-  .checkout-main {
+  .checkout-main:not(.landing-shell) {
     @apply relative z-10 mx-auto max-w-[1380px] px-6 pb-20 pt-[80px] font-montserrat;
   }
 
@@ -5181,7 +5181,7 @@
   }
 
   @media (max-width: 640px) {
-    .checkout-main {
+    .checkout-main:not(.landing-shell) {
       @apply px-3 pt-12;
     }
 
@@ -5210,7 +5210,7 @@
     @apply mx-auto max-w-2xl;
   }
 
-  .info-main {
+  .info-main:not(.landing-shell) {
     @apply relative z-10 mx-auto max-w-[1200px] px-6 pb-20 pt-[34px];
   }
 
@@ -5374,7 +5374,7 @@
     @apply min-h-screen bg-transparent;
   }
 
-  .preorder-main {
+  .preorder-main:not(.landing-shell) {
     @apply relative z-10 mx-auto max-w-[1180px] px-6 pb-20 pt-[34px];
   }
 
@@ -5636,7 +5636,7 @@
 }
 
 @media (max-width: 760px) {
-  .flash-sale-main {
+  .flash-sale-main:not(.landing-shell) {
     @apply px-4;
   }
 
@@ -5800,7 +5800,7 @@
 }
 
 @media (max-width: 480px) {
-  .cart-main {
+  .cart-main:not(.landing-shell) {
     @apply px-3 pb-5 pt-12;
   }
 
@@ -5864,7 +5864,7 @@
   transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.auth-main {
+.auth-main:not(.landing-shell) {
   min-height: calc(100svh - 2px);
 }
 
@@ -6244,24 +6244,25 @@
 }
 
 @media (min-width: 1024px) {
-  .auth-page {
+  .auth-page:not(.home-landing) {
     height: 100svh;
     min-height: 0;
     overflow: hidden;
   }
 
-  .auth-main {
+  .auth-page:not(.home-landing) .auth-main,
+  .auth-main:not(.landing-shell) {
     height: 100%;
     min-height: 0;
     padding-block: 1rem;
   }
 
-  .auth-layout {
+  .auth-page:not(.home-landing) .auth-layout {
     height: min(96svh, 760px);
     min-height: 0;
   }
 
-  .auth-artwork-panel {
+  .auth-page:not(.home-landing) .auth-artwork-panel {
     height: 100%;
     min-height: 0;
   }
@@ -6280,32 +6281,32 @@
 }
 
 @media (min-width: 1024px) and (max-height: 900px) {
-  .auth-register-surface {
+  .auth-page:not(.home-landing) .auth-register-surface {
     padding-block: 12px;
   }
 
-  .auth-register-content > .brand {
+  .auth-page:not(.home-landing) .auth-register-content > .brand {
     margin-bottom: 0.75rem;
   }
 
-  .auth-register-content header {
+  .auth-page:not(.home-landing) .auth-register-content header {
     margin-bottom: 0.75rem;
   }
 
-  .auth-register-content header h2 {
+  .auth-page:not(.home-landing) .auth-register-content header h2 {
     font-size: 1.5rem;
     line-height: 2rem;
   }
 
-  .auth-register-content form.space-y-5 > :not(:first-child) {
+  .auth-page:not(.home-landing) .auth-register-content form.space-y-5 > :not(:first-child) {
     margin-top: 0.5rem;
   }
 
-  .auth-register-content form input {
+  .auth-page:not(.home-landing) .auth-register-content form input {
     padding-block: 0.375rem;
   }
 
-  .auth-register-footer {
+  .auth-page:not(.home-landing) .auth-register-footer {
     margin-top: 0.5rem;
   }
 }
@@ -6524,7 +6525,7 @@
     flex: 0 0 auto;
   }
 
-  .collector-showcase-main {
+  .collector-showcase-main:not(.landing-shell) {
     position: relative;
     z-index: 10;
     width: min(100% - 48px, 1320px);
@@ -6957,7 +6958,7 @@
   }
 
   @media (max-width: 560px) {
-    .collector-showcase-main {
+    .collector-showcase-main:not(.landing-shell) {
       width: min(100% - 32px, 1320px);
     }
 

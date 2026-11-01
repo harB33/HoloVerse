@@ -509,42 +509,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </div>
             </section>
 
-            <!-- 2. Product Toolbar (Category Tabs + Search trigger) -->
-            <div class="product-toolbar preorder-product-toolbar">
-                <div class="filter-tabs" role="tablist" aria-label="Pre-order categories">
-                    <button
-                        type="button"
-                        class="<?= $selectedCategory === 0 ? 'active' : '' ?>"
-                        role="tab"
-                        aria-selected="<?= $selectedCategory === 0 ? 'true' : 'false' ?>"
-                        data-category-tab=""
-                    >
-                        All Categories
-                    </button>
-                    <?php foreach ($categories as $cat): ?>
-                        <?php
-                        $catId = (int) $cat['category_id'];
-                        $catSlug = store_category_slug($cat['category_name']);
-                        $isTabActive = $selectedCategory === $catId || $selectedCategorySlug === $catSlug;
-                        ?>
-                        <button
-                            type="button"
-                            class="<?= $isTabActive ? 'active' : '' ?>"
-                            role="tab"
-                            aria-selected="<?= $isTabActive ? 'true' : 'false' ?>"
-                            data-category-tab="<?= $catId ?>"
-                            data-category-slug="<?= store_escape($catSlug) ?>"
-                        >
-                            <?= store_escape($cat['category_name']) ?>
-                        </button>
-                    <?php endforeach; ?>
-                </div>
-                <button class="button-text" type="button" data-search-overlay-open>
-                    <span>Search merch</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                </button>
-            </div>
-
             <!-- Availability Toolbar & Sort -->
             <div class="availability-toolbar">
                 <div class="availability-filters" role="group" aria-label="Filter pre-orders by availability">

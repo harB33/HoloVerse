@@ -142,7 +142,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="cart-page home-landing">
     <div class="page-shell cart-page">
         <?php
         $activePage = '';

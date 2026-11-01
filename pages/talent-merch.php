@@ -192,7 +192,7 @@ $siteRoot = '/';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="talents-page all-products-page home-landing">
     <div class="page-shell">
         <?php
         $activePage = 'talents';

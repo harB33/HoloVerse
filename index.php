@@ -387,7 +387,7 @@ $siteRoot = '';
 require __DIR__ . '/app/views/layout/head.php';
 ?>
 
-<body>
+<body class="home-landing">
     <div class="page-shell home-landing">
         <?php require __DIR__ . '/app/views/components/watermark.php'; ?>
         <?php

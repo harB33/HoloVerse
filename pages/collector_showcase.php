@@ -111,7 +111,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="collector-showcase-page home-landing">
     <div class="page-shell">
         <?php
         $activePage = 'collector_showcase';

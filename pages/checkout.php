@@ -214,7 +214,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="checkout-page home-landing">
     <div class="page-shell checkout-page">
         <?php
         $activePage = '';

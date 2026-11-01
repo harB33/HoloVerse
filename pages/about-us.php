@@ -5,7 +5,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="about-page home-landing">
     <div class="page-shell info-page about-page">
         <?php
         $activePage = 'about-us';

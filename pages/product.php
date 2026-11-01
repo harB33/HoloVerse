@@ -178,7 +178,7 @@ $siteRoot = '../';
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="home-landing">
     <style>
         .product-page-main {
             position: relative;
