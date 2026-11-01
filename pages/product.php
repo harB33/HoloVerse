@@ -986,7 +986,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     stockStatus.lastChild.textContent = stock > 0 ? ` ${stock} available` : ' Currently sold out';
                     stockStatus.classList.toggle('is-sold-out', stock < 1);
                     quantityInput.max = String(Math.max(1, stock));
-                    quantityInput.value = String(Math.min(Math.max(1, Number(quantityInput.value) || 1), Math.max(1, stock)));
+                    quantityInput.value = '1';
                     updatePriceBlock();
                     addButton.disabled = stock < 1;
                     addButton.lastChild.textContent = stock > 0 ? ` ${addButton.dataset.inStockLabel}` : ' Sold out';
