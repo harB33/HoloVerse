@@ -419,7 +419,7 @@ body.home-landing main.landing-shell,
 
 .hero {
   position: relative;
-  min-height: calc(100svh - 116px);
+  min-height: calc(100svh - 82px);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -2965,7 +2965,7 @@ html[data-theme="dark"] .talent-art::before {
   }
 
   .hero {
-    min-height: calc(100svh - 104px);
+    min-height: calc(100svh - 70px);
     align-items: flex-end;
   }
 
@@ -3139,7 +3139,7 @@ html[data-theme="dark"] .talent-art::before {
   }
 
   .hero {
-    min-height: calc(100svh - 98px);
+    min-height: calc(100svh - 64px);
   }
 
   .hero-image {
