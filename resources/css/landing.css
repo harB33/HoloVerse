@@ -2642,10 +2642,12 @@ footer.site-footer {
 
 .quick-modal-copy h2 {
   margin: 12px 0 14px;
-  font-size: clamp(35px, 4.2vw, 58px);
+  max-width: 100%;
+  font-size: clamp(30px, 3.4vw, 44px);
   font-weight: 950;
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
 }
 
 .quick-modal-copy > strong {
