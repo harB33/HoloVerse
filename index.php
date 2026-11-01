@@ -756,6 +756,12 @@ require __DIR__ . '/app/views/layout/head.php';
                     <?php endforeach; ?>
                 </div>
 
+                <nav class="all-products-pagination home-shop-pagination hidden" aria-label="New arrival product pages" data-shop-pagination hidden>
+                    <button class="all-products-page-button" type="button" data-shop-page-previous aria-label="Previous page">Prev</button>
+                    <div class="all-products-page-list" data-shop-page-list></div>
+                    <button class="all-products-page-button" type="button" data-shop-page-next aria-label="Next page">Next</button>
+                </nav>
+
                 <div class="empty-search" data-shop-empty hidden>
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <h3>No merch found</h3>
@@ -763,6 +769,15 @@ require __DIR__ . '/app/views/layout/head.php';
                     <button class="button-primary dark" type="button" data-shop-reset>
                         Reset search
                     </button>
+                </div>
+            </section>
+
+            <section class="home-video-section" aria-label="Hololive video feature">
+                <div class="home-video-frame">
+                    <video autoplay muted loop playsinline preload="metadata" aria-label="Hololive featured video">
+                        <source src="assets/images/design/Recording%202026-11-01%20142014.mp4" type="video/mp4">
+                        Your browser does not support embedded videos.
+                    </video>
                 </div>
             </section>
 
@@ -1072,14 +1087,20 @@ require __DIR__ . '/app/views/layout/head.php';
             const resultsCaption = document.querySelector("[data-shop-results-caption]");
             const emptyState = document.querySelector("[data-shop-empty]");
             const resetBtn = document.querySelector("[data-shop-reset]");
+            const shopPagination = document.querySelector("[data-shop-pagination]");
+            const shopPageList = document.querySelector("[data-shop-page-list]");
+            const previousShopPage = document.querySelector("[data-shop-page-previous]");
+            const nextShopPage = document.querySelector("[data-shop-page-next]");
 
             let activeCategory = "All merch";
             let availabilityFilter = "all";
             let savedOnly = false;
             let sortOrder = "featured";
             let searchQuery = "";
+            let currentShopPage = 1;
+            const shopPageSize = 8;
 
-            const applyShopFilters = () => {
+            const applyShopFilters = (resetPage = true) => {
                 if (!shopGrid) {
                     return 0;
                 }
@@ -1118,13 +1139,44 @@ require __DIR__ . '/app/views/layout/head.php';
                     return Number(a.dataset.featuredIndex || 0) - Number(b.dataset.featuredIndex || 0);
                 });
 
-                const matchingSet = new Set(matchingCards);
+                const pageCount = Math.ceil(matchingCards.length / shopPageSize);
+                currentShopPage = resetPage
+                    ? 1
+                    : Math.min(currentShopPage, Math.max(pageCount, 1));
+                const pageStart = (currentShopPage - 1) * shopPageSize;
+                const visibleCards = matchingCards.slice(pageStart, pageStart + shopPageSize);
+                const visibleSet = new Set(visibleCards);
                 productCards.forEach((card) => {
-                    card.hidden = !matchingSet.has(card);
+                    card.hidden = !visibleSet.has(card);
                 });
                 matchingCards.forEach((card) => {
                     shopGrid.appendChild(card);
                 });
+
+                if (shopPagination && shopPageList && previousShopPage && nextShopPage) {
+                    shopPagination.hidden = pageCount <= 1;
+                    shopPagination.classList.toggle("hidden", pageCount <= 1);
+                    previousShopPage.disabled = currentShopPage <= 1;
+                    previousShopPage.classList.toggle("is-disabled", previousShopPage.disabled);
+                    nextShopPage.disabled = currentShopPage >= pageCount;
+                    nextShopPage.classList.toggle("is-disabled", nextShopPage.disabled);
+                    shopPageList.replaceChildren();
+
+                    for (let page = 1; page <= pageCount; page += 1) {
+                        const pageButton = document.createElement("button");
+                        pageButton.type = "button";
+                        pageButton.className = `all-products-page-number${page === currentShopPage ? " is-active" : ""}`;
+                        pageButton.dataset.shopPage = String(page);
+                        pageButton.textContent = String(page);
+                        if (page === currentShopPage) {
+                            pageButton.setAttribute("aria-current", "page");
+                            pageButton.disabled = true;
+                        } else {
+                            pageButton.setAttribute("aria-label", `Page ${page}`);
+                        }
+                        shopPageList.appendChild(pageButton);
+                    }
+                }
 
                 if (emptyState) {
                     emptyState.hidden = matchingCards.length > 0;
@@ -1160,6 +1212,29 @@ require __DIR__ . '/app/views/layout/head.php';
 
                 return matchingCards.length;
             };
+
+            shopPagination?.addEventListener("click", (event) => {
+                const target = event.target instanceof Element ? event.target.closest("button") : null;
+                if (!target || target.disabled) {
+                    return;
+                }
+
+                const requestedPage = target.dataset.shopPage
+                    ? Number(target.dataset.shopPage)
+                    : target === previousShopPage
+                        ? currentShopPage - 1
+                        : target === nextShopPage
+                            ? currentShopPage + 1
+                            : currentShopPage;
+                if (!Number.isInteger(requestedPage) || requestedPage === currentShopPage) {
+                    return;
+                }
+
+                currentShopPage = requestedPage;
+                applyShopFilters(false);
+                shopGrid?.scrollIntoView({ behavior: "smooth", block: "start" });
+                shopPageList?.querySelector(`[data-shop-page="${currentShopPage}"]`)?.focus({ preventScroll: true });
+            });
 
             window.filterHoloVerseHomeShop = ({ category, status, query }) => {
                 if (typeof category === "string") {
@@ -1255,6 +1330,8 @@ require __DIR__ . '/app/views/layout/head.php';
                     applyShopFilters();
                 }
             });
+
+            applyShopFilters();
 
             // Quick View Modal
             const quickModal = document.querySelector("[data-quick-view-modal]");
