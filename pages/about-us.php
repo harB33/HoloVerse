@@ -75,7 +75,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </header>
                 <div class="about-team-grid">
                     <?php foreach ([
-                        ['name' => 'Jomari Wamil', 'role' => 'Team lead', 'image' => '../assets/images/Wamil.png'],
+                        ['name' => 'Jomari Wamil', 'role' => 'Team lead', 'image' => '../assets/images/wamil.jpg'],
                         ['name' => 'Harvy Bautista', 'role' => 'Developer', 'image' => '../assets/images/harvy.png'],
                         ['name' => 'Jhon Rick Parica', 'role' => 'Developer', 'image' => '../assets/images/parica.jpg'],
                         ['name' => 'John Rommel Patriarca', 'role' => 'Developer', 'image' => '../assets/images/rommel.jpg'],
