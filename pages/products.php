@@ -253,16 +253,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </div>
                 <div class="section-heading-aside">
                     <span class="all-products-count" id="all-products-count"><?= number_format($totalProductCount) ?> <?= $totalProductCount === 1 ? 'product' : 'products' ?><?= $productSearch !== '' ? ' found' : '' ?></span>
-                    <nav class="products-promo-links" aria-label="Shop product collections">
-                        <a class="active" href="<?= store_escape($siteRoot . 'pre-order') ?>">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                            <span>Pre-order</span>
-                        </a>
-                        <a href="<?= store_escape($siteRoot . 'flash-sale') ?>">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                            <span>Flash sale</span>
-                        </a>
-                    </nav>
                 </div>
             </section>
 

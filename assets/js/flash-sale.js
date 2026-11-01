@@ -278,9 +278,21 @@ const updateSaleProductDetails = (card) => {
     });
     syncProductBadgeWidth();
 
-    const productLink = saleDetail("product-link");
-    if (productLink && product.productUrl) {
-        productLink.href = product.productUrl;
+    const productLinks = document.querySelectorAll(`[data-sale-detail="product-link"]`);
+    productLinks.forEach((link) => {
+        if (product.productUrl) {
+            link.href = product.productUrl;
+        }
+    });
+
+    const comparePriceEl = saleDetail("compare-price");
+    if (comparePriceEl) {
+        comparePriceEl.hidden = !product.comparePrice || product.comparePrice === product.price;
+    }
+
+    const discountEl = saleDetail("discount");
+    if (discountEl) {
+        discountEl.hidden = !product.discount || product.discount <= 0;
     }
 
     const capacity = Math.max(24, stock + 6);
@@ -291,7 +303,7 @@ const updateSaleProductDetails = (card) => {
     }
     const stockClaimedLabel = saleDetail("stock-claimed-label");
     if (stockClaimedLabel) {
-        stockClaimedLabel.textContent = `${claimedPercent}% claimed`;
+        stockClaimedLabel.textContent = live ? `${stock} left` : (product.state === "archive" ? "Ended" : "0 left");
     }
     const stockTrack = document.querySelector(".flash-stock-track");
     if (stockTrack) {

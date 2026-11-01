@@ -170,57 +170,39 @@ require __DIR__ . '/../app/views/layout/head.php';
 
             <?php if ($saleProduct): ?>
                 <article class="flash-spotlight-card flash-drop-section" id="flash-drop-spotlight" data-flash-drop-section>
-                    <div class="flash-spotlight-accent-bar" aria-hidden="true"></div>
                     <div class="flash-drop-layout">
-                        <div class="flash-product-details flash-copy">
-                            <div class="flash-spotlight-status-bar">
-                                <div class="flash-eyebrow">
-                                    <span class="live-dot" aria-hidden="true"></span>
-                                    <span data-sale-detail="state-label"><?= $isLiveScheduledFlash ? 'Live flash sale drop' : 'Limited-time drop' ?></span>
-                                </div>
-                                <span class="flash-talent-pill" data-sale-detail="talent"><?= store_escape($flashTalent) ?></span>
+                        <div class="flash-copy">
+                            <div class="flash-eyebrow">
+                                <span class="live-dot" aria-hidden="true"></span>
+                                <span data-sale-detail="state-label"><?= $isLiveScheduledFlash ? 'Live flash sale drop' : 'Limited-time drop' ?></span>
                             </div>
 
-                            <div class="flash-eyebrow-breadcrumb">
+                            <p class="eyebrow">
+                                <span data-sale-detail="talent"><?= store_escape($flashTalent) ?></span> &middot;
                                 <span data-sale-detail="category"><?= store_escape($saleProduct['category_name']) ?></span>
-                                <span class="breadcrumb-sep">/</span>
-                                <span data-sale-detail="variant"><?= store_escape($saleProduct['variant_name']) ?></span>
-                            </div>
+                                <?php if (!empty($saleProduct['variant_name'])): ?>
+                                    <span class="eyebrow-sep">/</span>
+                                    <span data-sale-detail="variant"><?= store_escape($saleProduct['variant_name']) ?></span>
+                                <?php endif; ?>
+                            </p>
 
-                            <h2 id="flash-product-title" class="flash-spotlight-title" data-sale-detail="name"><?= store_escape($saleProduct['product_name']) ?></h2>
+                            <h2 id="flash-product-title" data-sale-detail="name"><?= store_escape($saleProduct['product_name']) ?></h2>
 
                             <div class="flash-product-description-block">
-                                <p class="flash-product-description" data-sale-detail="description-preview"><?= store_escape($saleDescription) ?></p>
+                                <p class="flash-description" data-sale-detail="description-preview"><?= store_escape($saleDescription) ?></p>
                                 <div class="flash-product-description-full" id="flash-product-description-full" data-sale-detail="description-full" hidden>
                                     <div class="description-full-text"><?= nl2br(store_escape($saleDescription)) ?></div>
                                 </div>
                                 <button class="flash-product-description-toggle" type="button" aria-expanded="false" aria-controls="flash-product-description-full" data-sale-description-toggle<?= strlen($saleDescription) <= 160 ? ' hidden' : '' ?>>
                                     <span>Read full product details</span>
-                                    <svg class="toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    <svg class="toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                                 </button>
-                            </div>
-
-                            <div class="flash-price-panel">
-                                <div class="flash-price-line">
-                                    <div class="flash-price-digits">
-                                        <strong data-sale-detail="price"><?= store_escape(store_format_price($flashPrice)) ?></strong>
-                                        <del data-sale-detail="compare-price"><?= store_escape(store_format_price($flashComparePrice)) ?></del>
-                                    </div>
-                                    <span class="flash-discount-pill" data-sale-detail="discount"><?= $discountPercent ?>% off</span>
-                                </div>
-                                <div class="flash-price-sub">
-                                    <span class="price-sub-dot" aria-hidden="true"></span>
-                                    <small data-sale-detail="sale-note"><?= $isLiveScheduledFlash ? 'Official hololive production allocation · Instant checkout' : 'Limited allocation drop' ?></small>
-                                </div>
                             </div>
 
                             <div class="countdown-block" aria-label="Flash drop countdown" data-sale-countdown-wrap<?= empty($flashDeadlineIso) ? ' hidden' : '' ?>>
                                 <div class="countdown-heading">
-                                    <div class="countdown-heading-left">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        <span data-sale-countdown-text>Drop window ends in</span>
-                                    </div>
-                                    <span class="countdown-live-badge">LIVE TIMER</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span data-sale-countdown-text>Drop window ends in</span>
                                 </div>
                                 <div class="countdown-timer flash-countdown-clock" aria-live="off" data-countdown="<?= store_escape($flashDeadlineIso) ?>">
                                     <div class="countdown-unit"><strong data-countdown-days>00</strong><span>days</span></div>
@@ -231,16 +213,15 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <span class="countdown-colon">:</span>
                                     <div class="countdown-unit"><strong data-countdown-seconds>00</strong><span>seconds</span></div>
                                 </div>
-                                <p class="countdown-footnote" data-sale-detail="countdown-footnote">Special flash pricing active until timer reaches zero or inventory sells out.</p>
+                                <p class="countdown-footnote" data-sale-detail="countdown-footnote">Limited-time allocation while supplies last</p>
                             </div>
 
                             <div class="flash-stock">
                                 <div class="flash-stock-heading">
                                     <span data-sale-detail="stock-status" class="flash-stock-status<?= $flashStock > 0 ? '' : ' is-unavailable' ?>" role="status">
-                                        <span class="flash-stock-indicator" aria-hidden="true"></span>
-                                        <span data-sale-detail="stock-text"><?= $flashStock > 0 ? $flashStock . ' units remaining' : 'Currently sold out' ?></span>
+                                        <span data-sale-detail="stock-text"><?= $flashStock > 0 ? 'Drop quantity' : 'Currently sold out' ?></span>
                                     </span>
-                                    <strong data-sale-detail="stock-claimed-label" class="flash-stock-claimed-pill"><?= $flashClaimedPercent ?>% claimed</strong>
+                                    <strong data-sale-detail="stock-claimed-label"><?= $flashStock > 0 ? $flashStock . ' left' : '0 left' ?></strong>
                                 </div>
                                 <div class="flash-stock-track" role="progressbar" aria-label="Flash drop availability claimed" aria-valuenow="<?= $flashClaimedPercent ?>" aria-valuemin="0" aria-valuemax="100">
                                     <span data-sale-detail="stock-bar" style="width: <?= $flashClaimedPercent ?>%;"></span>
@@ -251,8 +232,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <form action="cart" method="post" data-sale-detail="cart-form"<?= $flashStock > 0 ? '' : ' hidden' ?> data-toast-message="<?= store_escape($saleProduct['product_name'] . ' added to your bag') ?>">
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                     <input type="hidden" name="variant_id" value="<?= (int) $saleProduct['variant_id'] ?>" data-sale-detail="variant-id">
-                                    <button class="button-primary flash-buy-button" type="submit" name="action" value="add">
-                                        <span>Claim flash price</span>
+                                    <button class="button-primary flash-buy-button" type="submit" name="action" value="add" data-flash-buy-btn>
+                                        <span>Get the drop</span>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                     </button>
                                 </form>
@@ -260,31 +241,30 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     Sold out
                                 </button>
                                 <p data-sale-detail="cart-message" role="status" hidden></p>
-                                <a class="button-outline light flash-product-link" href="<?= store_escape($flashProductUrl) ?>" data-sale-detail="product-link">
-                                    <span>Product page</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
-                                </a>
+
                                 <button class="drop-reminder" type="button" data-drop-reminder-btn>
-                                    <svg data-reminder-icon-bell xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                                    <svg data-reminder-icon-check hidden xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                                    <svg data-reminder-icon-bell xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                                    <svg data-reminder-icon-check hidden xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
                                     <span data-reminder-label>Remind me</span>
                                 </button>
                             </div>
+
+                            <p class="flash-prototype-note">
+                                Flash price <strong data-sale-detail="price"><?= store_escape(store_format_price($flashPrice)) ?></strong>
+                                <del data-sale-detail="compare-price"<?= $flashComparePrice > $flashPrice ? '' : ' hidden' ?>><?= store_escape(store_format_price($flashComparePrice)) ?></del>
+                                <span class="flash-discount-tag" data-sale-detail="discount"><?= $discountPercent ?>% off</span>
+                                <span class="flash-prototype-sep">&middot;</span>
+                                <a class="flash-product-link" href="<?= store_escape($flashProductUrl) ?>" data-sale-detail="product-link">View product page</a>
+                            </p>
                         </div>
 
                         <section class="flash-gallery flash-artwork" aria-label="Product gallery">
-                            <div class="flash-product-image">
-                                <img class="flash-product-backdrop" src="<?= store_escape($saleImageUrl) ?>" alt="" aria-hidden="true">
-                                <img class="flash-product-main-image" src="<?= store_escape($saleImageUrl) ?>" alt="<?= store_escape($saleImageAlt) ?>" tabindex="0" fetchpriority="high">
-                                <div class="flash-image-badges">
-                                    <span class="drop-edition" data-sale-detail="stock-badge"><?= $flashStock ?> units available</span>
-                                    <span class="drop-edition drop-product-title-tag" data-sale-detail="product-badge"><?= store_escape($saleProduct['product_name']) ?></span>
-                                </div>
-                            </div>
+                            <a href="<?= store_escape($flashProductUrl) ?>" data-sale-detail="product-link" aria-label="View <?= store_escape((string) $saleProduct['product_name']) ?>">
+                                <img class="flash-product-main-image" src="<?= store_escape($saleImageUrl) ?>" alt="<?= store_escape($saleImageAlt) ?>" fetchpriority="high">
+                            </a>
                             <div class="flash-artwork-caption">
-                                <span class="caption-lead">01 / LIMITED RELEASE</span>
-                                <span class="caption-variant" data-sale-detail="variant-caption"><?= store_escape($saleProduct['variant_name']) ?></span>
-                                <span class="caption-cat" data-sale-detail="category-caption"><?= store_escape($saleProduct['category_name']) ?></span>
+                                <span data-sale-detail="stock-badge">01 / LIMITED RELEASE</span>
+                                <span data-sale-detail="variant-caption">OFFICIAL CHARACTER ARTWORK</span>
                             </div>
                             <div class="product-gallery-carousel" data-gallery-carousel>
                                 <button class="product-gallery-arrow" type="button" data-gallery-previous aria-label="Show previous product image"<?= count($saleGalleryImages) < 2 ? ' hidden' : '' ?>>‹</button>
