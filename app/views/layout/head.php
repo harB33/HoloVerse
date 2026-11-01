@@ -23,68 +23,6 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        html[data-page-layout="home"]::before,
-        html[data-page-layout="home"]::after {
-            position: fixed;
-            content: "";
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 450ms ease, visibility 0s linear 450ms;
-        }
-
-        html[data-page-layout="home"]::before {
-            z-index: 99998;
-            inset: 0;
-            background-color: #fff;
-            background-image:
-                radial-gradient(circle at center, transparent 0 112px, rgb(28 167 198 / 5%) 113px 114px, transparent 115px 162px, rgb(28 167 198 / 4%) 163px 164px, transparent 165px),
-                repeating-conic-gradient(from 8deg at 50% 50%, transparent 0deg 28deg, rgb(28 167 198 / 2%) 29deg 30deg, transparent 31deg 60deg);
-        }
-
-        html[data-page-layout="home"]::after {
-            z-index: 99999;
-            top: 50%;
-            left: 50%;
-            width: 360px;
-            height: 125px;
-            background-image: url("<?= htmlspecialchars($siteRoot, ENT_QUOTES, 'UTF-8') ?>assets/images/holoverse-wordmark-dark.png");
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: 340px auto;
-            transform: translate(-50%, -50%);
-        }
-
-        html[data-page-layout="home"].page-loading {
-            overflow: hidden;
-        }
-
-        html[data-page-layout="home"].page-loading::before {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: all;
-            transition: opacity 450ms ease, visibility 0s;
-        }
-
-        html[data-page-layout="home"].page-loading::after {
-            opacity: 1;
-            visibility: visible;
-            animation: page-loader-pulse 2.5s ease-in-out infinite alternate;
-            transition: opacity 450ms ease, visibility 0s;
-        }
-
-        @keyframes page-loader-pulse {
-            from {
-                filter: blur(0);
-                transform: translate(-50%, -50%) scale(.96);
-            }
-
-            to {
-                filter: blur(.35px);
-                transform: translate(-50%, -50%) scale(1.04);
-            }
-        }
-
         <?php if (in_array($pageLayout, ['purchase', 'purchase-detail'], true)): ?>
         @view-transition {
             navigation: none;
@@ -132,19 +70,14 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
         }
 
         @media (prefers-reduced-motion: reduce) {
-            html[data-page-layout="home"]::before,
-            html[data-page-layout="home"]::after,
             ::view-transition-old(root),
             ::view-transition-new(root),
-            html[data-page-layout="home"].page-loading::after,
             html.page-enter body > :not(script):not(style) {
                 animation: none;
                 transition: none;
             }
         }
 
-        html[data-reduce-motion="true"][data-page-layout="home"]::before,
-        html[data-reduce-motion="true"][data-page-layout="home"]::after,
         html[data-reduce-motion="true"]::view-transition-old(root),
         html[data-reduce-motion="true"]::view-transition-new(root) {
             animation: none;
@@ -154,7 +87,6 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
     <script>
         (() => {
             const pageRoot = document.documentElement;
-            const hasHomeLoader = pageRoot.dataset.pageLayout === "home";
             const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             const supportsPageTransitions = CSS.supports("view-transition-name: root");
             const disablePageTransitions = ["purchase", "purchase-detail"].includes(pageRoot.dataset.pageLayout);
@@ -175,19 +107,6 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
                 window.setTimeout(() => pageRoot.classList.remove("page-enter"), 600);
                 pageRoot.removeAttribute("aria-busy");
             };
-
-            if (hasHomeLoader) {
-                pageRoot.classList.add("page-loading");
-                pageRoot.setAttribute("aria-busy", "true");
-
-                window.addEventListener("load", () => {
-                    window.setTimeout(() => {
-                        pageRoot.classList.remove("page-loading");
-                        pageRoot.removeAttribute("aria-busy");
-                    }, reducedMotion ? 0 : Math.max(0, 3000 - performance.now()));
-                }, { once: true });
-                return;
-            }
 
             startOpening();
         })();

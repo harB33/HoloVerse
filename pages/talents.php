@@ -315,6 +315,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     $cartHref = 'cart';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
+    <script src="../assets/js/talents-page.js?v=<?= filemtime(__DIR__ . '/../assets/js/talents-page.js') ?>" defer></script>
 </body>
 
 </html>

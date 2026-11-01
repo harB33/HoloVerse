@@ -4643,6 +4643,33 @@ body.order-history-page .order-history-summary-total strong {
   color: inherit;
 }
 
+.talents-page.talent-reveal-ready :is(
+  .all-products-intro,
+  .talent-directory-filter,
+  .talent-card-link,
+  .talent-pagination
+):not(.is-visible) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.talents-page .all-products-intro,
+.talents-page .talent-directory-filter,
+.talents-page .talent-card-link,
+.talents-page .talent-pagination {
+  transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.25, 1),
+    transform 600ms cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+
+.talents-page .talent-card-link {
+  transition-delay: var(--talent-reveal-delay, 0ms);
+}
+
+.talents-page .is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .talent-poster-media {
   position: relative;
   aspect-ratio: 3 / 4;
@@ -4678,6 +4705,16 @@ body.order-history-page .order-history-summary-total strong {
 .talent-card-link:hover .talent-poster-photo,
 .talent-card-link:focus-visible .talent-poster-photo {
   transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talents-page .all-products-intro,
+  .talents-page .talent-directory-filter,
+  .talents-page .talent-card-link,
+  .talents-page .talent-pagination {
+    transition: none;
+    transform: none;
+  }
 }
 
 .talent-poster-caption {
