@@ -167,8 +167,8 @@ foreach ($variants as $variant) {
     }
 }
 if ($ungroupedVariants) {
-    $variantGroups['Other items'] = [
-        'name' => 'Other items',
+    $variantGroups[''] = [
+        'name' => '',
         'variants' => $ungroupedVariants,
     ];
 }
@@ -530,19 +530,21 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-compare-price { color: var(--muted); font: 500 1rem var(--font-sans); }
 
         .product-purchase-form { display: flex; flex: 1; flex-direction: column; gap: 18px; padding-top: 18px; }
-        .product-variant-picker { min-width: 0; margin: 0; border: 0; padding: 0; }
-        .product-variant-picker legend { margin-bottom: 10px; color: var(--ink); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-        .product-variant-options {
+        .product-variant-picker {
             display: flex;
+            min-width: 0;
             max-height: min(184px, 40vh);
             flex-wrap: wrap;
             align-content: flex-start;
             gap: 8px;
             overflow-y: auto;
             overscroll-behavior-y: contain;
+            margin: 0;
+            border: 0;
             padding: 2px 8px 2px 0;
             scrollbar-width: thin;
         }
+        .product-variant-picker legend { margin-bottom: 10px; color: var(--ink); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
         .product-variant-group { flex: 1 0 100%; display: grid; gap: 8px; }
         .product-variant-group h3 { margin: 0; color: var(--muted); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
         .product-variant-group-options { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -560,7 +562,8 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-variant-option:hover:not(:disabled) { border-color: var(--holo-cyan); color: var(--ink); }
         .product-variant-option.is-selected { border-color: var(--ink); background: var(--ink); color: #fff; }
         .product-variant-option:disabled { cursor: not-allowed; opacity: .45; }
-        .product-single-variant { display: flex; justify-content: space-between; gap: 16px; margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 0.88rem; }
+        .product-single-variant { display: flex; justify-content: flex-start; gap: 12px; margin: 0; padding: 12px 0; color: var(--muted); font-size: 0.88rem; }
+        p.product-single-variant > span { color: var(--ink); font-weight: 800; }
         .product-single-variant strong { color: var(--ink); font-weight: 800; }
 
         .product-stock-status { display: inline-flex; align-items: center; gap: 8px; width: fit-content; margin: 0; border-radius: 999px; background: #e8f8f0; padding: 6px 12px; color: #0e7a53; font: 800 0.76rem var(--font-sans); }
@@ -568,7 +571,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-stock-status.is-sold-out { background: #fdecef; color: #b23a48; }
         .product-stock-status.is-sold-out span { background: #d74a58; }
 
-        .product-trust-note { display: flex; align-items: flex-start; gap: 14px; margin: auto 0 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 14px 16px; color: var(--holo-deep); }
+        .product-trust-note { display: flex; align-items: flex-start; gap: 14px; margin: auto 0 0; padding: 14px 0; color: var(--holo-deep); }
         .product-trust-note svg { flex: 0 0 26px; width: 26px; height: 26px; margin-top: 2px; }
         .product-trust-note p { margin: 0; color: var(--ink-soft); font-size: 0.85rem; line-height: 1.55; }
 
@@ -727,36 +730,34 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php if (count($variants) > 1): ?>
                                 <fieldset class="product-variant-picker">
                                     <legend>Choose edition</legend>
-                                    <div class="product-variant-options">
-                                        <?php foreach ($variantGroups as $group): ?>
-                                            <div class="product-variant-group">
-                                                <?php if ($group['name'] !== ''): ?>
-                                                    <h3><?= store_escape($group['name']) ?></h3>
-                                                <?php endif; ?>
-                                                <div class="product-variant-group-options">
-                                                    <?php foreach ($group['variants'] as $variant): ?>
-                                                        <button
-                                                            class="product-variant-option<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? ' is-selected' : '' ?>"
-                                                            type="button"
-                                                            data-variant-option
-                                                            data-variant-id="<?= (int) $variant['variant_id'] ?>"
-                                                            data-price="<?= store_escape(store_format_price((float) $variant['price'])) ?>"
-                                                            data-price-value="<?= store_escape((string) (float) $variant['price']) ?>"
-                                                            data-compare="<?= !empty($variant['compare_at_price']) ? store_escape(store_format_price((float) $variant['compare_at_price'])) : '' ?>"
-                                                            data-compare-value="<?= !empty($variant['compare_at_price']) ? store_escape((string) (float) $variant['compare_at_price']) : '' ?>"
-                                                            data-stock="<?= (int) $variant['stock_quantity'] ?>"
-                                                            aria-pressed="<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? 'true' : 'false' ?>"
-                                                            <?= (int) $variant['stock_quantity'] < 1 ? 'disabled' : '' ?>>
-                                                            <?= store_escape($variant['edition_label']) ?><?= (int) $variant['stock_quantity'] < 1 ? ' · Sold out' : '' ?>
-                                                        </button>
-                                                    <?php endforeach; ?>
-                                                </div>
+                                    <?php foreach ($variantGroups as $group): ?>
+                                        <div class="product-variant-group">
+                                            <?php if ($group['name'] !== ''): ?>
+                                                <h3><?= store_escape($group['name']) ?></h3>
+                                            <?php endif; ?>
+                                            <div class="product-variant-group-options">
+                                                <?php foreach ($group['variants'] as $variant): ?>
+                                                    <button
+                                                        class="product-variant-option<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? ' is-selected' : '' ?>"
+                                                        type="button"
+                                                        data-variant-option
+                                                        data-variant-id="<?= (int) $variant['variant_id'] ?>"
+                                                        data-price="<?= store_escape(store_format_price((float) $variant['price'])) ?>"
+                                                        data-price-value="<?= store_escape((string) (float) $variant['price']) ?>"
+                                                        data-compare="<?= !empty($variant['compare_at_price']) ? store_escape(store_format_price((float) $variant['compare_at_price'])) : '' ?>"
+                                                        data-compare-value="<?= !empty($variant['compare_at_price']) ? store_escape((string) (float) $variant['compare_at_price']) : '' ?>"
+                                                        data-stock="<?= (int) $variant['stock_quantity'] ?>"
+                                                        aria-pressed="<?= (int) $variant['variant_id'] === (int) $defaultVariant['variant_id'] ? 'true' : 'false' ?>"
+                                                        <?= (int) $variant['stock_quantity'] < 1 ? 'disabled' : '' ?>>
+                                                        <?= store_escape($variant['edition_label']) ?><?= (int) $variant['stock_quantity'] < 1 ? ' · Sold out' : '' ?>
+                                                    </button>
+                                                <?php endforeach; ?>
                                             </div>
-                                        <?php endforeach; ?>
-                                    </div>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </fieldset>
                             <?php else: ?>
-                                <p class="product-single-variant"><span>Edition</span><strong><?= store_escape($defaultVariant['variant_name']) ?></strong></p>
+                                <p class="product-single-variant"><span>Edition:</span><strong><?= store_escape($defaultVariant['variant_name']) ?></strong></p>
                             <?php endif; ?>
 
                             <p class="product-stock-status<?= (int) $defaultVariant['stock_quantity'] < 1 ? ' is-sold-out' : '' ?>" data-stock-status role="status">
