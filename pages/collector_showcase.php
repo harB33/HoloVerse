@@ -119,18 +119,49 @@ require __DIR__ . '/../app/views/layout/head.php';
         ?>
 
         <main class="collector-showcase-main landing-shell">
-            <header class="all-products-intro">
-                <div class="all-products-intro-top">
-                    <div>
-                        <p class="eyebrow">Your personal collection</p>
-                        <h1>Collector Showcase</h1>
-                        <p>Keep the pieces you love close, and celebrate the official character goods you have made part of your collection.</p>
+            <header class="all-products-intro collector-showcase-intro">
+                <div class="collector-showcase-intro-copy">
+                    <p class="eyebrow">Your personal collection</p>
+                    <h1>Collector Showcase</h1>
+                    <p>Keep the pieces you love close, and celebrate the official character goods you have made part of your collection.</p>
+                    <div class="collector-showcase-intro-meta" aria-label="Collection statistics">
+                        <div class="collector-showcase-stat">
+                            <span class="collector-showcase-stat-label">Saved</span>
+                            <span class="collector-showcase-stat-value">
+                                <svg class="collector-showcase-stat-heart" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
+                                <strong><?= $favoriteProductCount ?></strong>
+                            </span>
+                        </div>
+                        <div class="collector-showcase-stat">
+                            <span class="collector-showcase-stat-label">Collected</span>
+                            <span class="collector-showcase-stat-value"><strong><?= count($purchasedProducts) ?></strong></span>
+                        </div>
+                        <div class="collector-showcase-stat">
+                            <span class="collector-showcase-stat-label">Goods</span>
+                            <span class="collector-showcase-stat-value collector-showcase-stat-official">Official</span>
+                        </div>
                     </div>
                     <?php if ($userId < 1): ?>
-                        <div class="all-products-intro-actions">
+                        <div class="all-products-intro-actions collector-showcase-intro-actions">
                             <a class="button-primary dark" href="/login">Sign in to start your collection</a>
                         </div>
                     <?php endif; ?>
+                </div>
+                <div class="collector-showcase-hero-art">
+                    <div
+                        class="collector-showcase-art-slides"
+                        data-image-slideshow
+                        data-slideshow-images="/assets/images/design/collection.png|/assets/images/banner/seasonaldays.webp|/assets/images/banner/ina-slide.jpg|/assets/images/banner/kronii.webp|/assets/images/banner/dreamspark.webp|/assets/images/banner/regloss_ar_live.webp|/assets/images/banner/travel_to_indo.webp"
+                        role="img"
+                        aria-label="Rotating artwork featuring hololive talents and official merchandise"
+                    >
+                        <div class="collector-showcase-art-slide is-active" data-slideshow-layer style="background-image: url('/assets/images/design/collection.png');"></div>
+                        <div class="collector-showcase-art-slide" data-slideshow-layer></div>
+                    </div>
+                    <div class="collector-showcase-hero-art-caption">
+                        <img src="<?= store_escape(store_asset_url('assets/images/hololive.png', $siteRoot)) ?>" alt="" aria-hidden="true">
+                        <span>Official character goods archive</span>
+                    </div>
                 </div>
             </header>
 
@@ -241,6 +272,7 @@ require __DIR__ . '/../app/views/layout/head.php';
     include __DIR__ . '/../app/views/components/cart-button.php';
     ?>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script src="../assets/js/art-slideshow.js?v=<?= filemtime(__DIR__ . '/../Assets/js/art-slideshow.js') ?>" defer></script>
 </body>
 
 </html>

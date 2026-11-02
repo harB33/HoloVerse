@@ -434,10 +434,35 @@ body.home-landing main.landing-shell,
 .hero-image {
   position: absolute;
   inset: -2%;
-  background-image: var(--hero-art);
+  overflow: hidden;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
   background-position: center;
   background-size: cover;
-  will-change: transform;
+  opacity: 0;
+  transform: scale(1.015);
+  transition: opacity 850ms ease, transform 7s linear;
+  will-change: opacity, transform;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide,
+  .collector-showcase-art-slide {
+    transition: none;
+  }
+
+  .hero-slide,
+  .collector-showcase-art-slide {
+    transform: none;
+  }
 }
 
 .hero-shade {
@@ -3979,6 +4004,10 @@ html[data-theme="dark"] .talent-art::before {
     background-position: 63% center;
   }
 
+  .hero-slide {
+    background-position: 63% center;
+  }
+
   .hero-shade {
     background: linear-gradient(0deg, rgba(6, 14, 27, 0.98) 0%, rgba(6, 14, 27, 0.74) 45%, rgba(6, 14, 27, 0.08) 82%);
   }
@@ -3986,7 +4015,7 @@ html[data-theme="dark"] .talent-art::before {
   .hero-copy {
     width: auto;
     margin: 0 26px;
-    padding: 300px 0 68px;
+    padding: 300px 0 100px;
   }
 
   .hero h1,
@@ -4140,9 +4169,13 @@ html[data-theme="dark"] .talent-art::before {
     background-position: 61% top;
   }
 
+  .hero-slide {
+    background-position: 61% top;
+  }
+
   .hero-copy {
     margin: 0 20px;
-    padding: 265px 0 47px;
+    padding: 265px 0 90px;
   }
 
   .hero h1,
