@@ -507,12 +507,6 @@ require __DIR__ . '/app/views/layout/head.php';
                         <h2>New arrivals</h2>
                         <p class="shop-section-description">Fresh merch from across hololive production. Quantities may be limited.</p>
                     </div>
-                    <div class="section-heading-aside">
-                        <a class="button-text" href="products">
-                            View all products
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                        </a>
-                    </div>
                 </div>
 
                 <div class="product-toolbar" data-home-reveal>
@@ -537,33 +531,11 @@ require __DIR__ . '/app/views/layout/head.php';
                             </button>
                         <?php endforeach; ?>
                     </div>
-                    <div class="sort-control shop-toolbar-sort-control">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                        <span>Sort by</span>
-                        <div class="shop-sort-dropdown" data-shop-sort-dropdown>
-                            <button
-                                class="shop-sort-trigger"
-                                type="button"
-                                data-shop-sort-trigger
-                                aria-haspopup="listbox"
-                                aria-expanded="false"
-                                aria-controls="home-shop-sort-options"
-                            >
-                                <span data-shop-sort-label>Featured</span>
-                            </button>
-                            <div class="shop-sort-options" id="home-shop-sort-options" data-shop-sort-options role="listbox" aria-label="Sort products" hidden>
-                                <button type="button" role="option" data-shop-sort-option="featured" aria-selected="true">Featured</button>
-                                <button type="button" role="option" data-shop-sort-option="price-low" aria-selected="false">Low to high</button>
-                                <button type="button" role="option" data-shop-sort-option="price-high" aria-selected="false">High to low</button>
-                                <button type="button" role="option" data-shop-sort-option="name" aria-selected="false">A to Z</button>
-                            </div>
-                        </div>
-                        <select data-shop-sort aria-label="Sort products" hidden>
-                            <option value="featured">Featured</option>
-                            <option value="price-low">Low to high</option>
-                            <option value="price-high">High to low</option>
-                            <option value="name">A to Z</option>
-                        </select>
+                    <div class="section-heading-aside">
+                        <a class="button-text" href="products">
+                            View all products
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
 
@@ -911,12 +883,6 @@ require __DIR__ . '/app/views/layout/head.php';
             const shopGrid = document.querySelector("[data-shop-grid]");
             const productCards = shopGrid ? Array.from(shopGrid.querySelectorAll("[data-product-card]")) : [];
             const categoryTabs = Array.from(document.querySelectorAll("[data-category-tab]"));
-            const sortSelect = document.querySelector("[data-shop-sort]");
-            const sortDropdown = document.querySelector("[data-shop-sort-dropdown]");
-            const sortTrigger = document.querySelector("[data-shop-sort-trigger]");
-            const sortLabel = document.querySelector("[data-shop-sort-label]");
-            const sortOptionsPanel = document.querySelector("[data-shop-sort-options]");
-            const sortOptionButtons = Array.from(document.querySelectorAll("[data-shop-sort-option]"));
             const resultsCaption = document.querySelector("[data-shop-results-caption]");
             const emptyState = document.querySelector("[data-shop-empty]");
             const resetBtn = document.querySelector("[data-shop-reset]");
@@ -927,96 +893,9 @@ require __DIR__ . '/app/views/layout/head.php';
 
             let activeCategory = "All merch";
             let availabilityFilter = "all";
-            let sortOrder = "featured";
             let searchQuery = "";
             let currentShopPage = 1;
             const shopPageSize = 8;
-
-            const setSortDropdownOpen = (open, focusSelected = false) => {
-                if (!sortTrigger || !sortOptionsPanel) {
-                    return;
-                }
-                sortTrigger.setAttribute("aria-expanded", String(open));
-                sortOptionsPanel.hidden = !open;
-                if (open && focusSelected) {
-                    const selectedOption = sortOptionButtons.find((option) => option.dataset.shopSortOption === sortOrder);
-                    (selectedOption || sortOptionButtons[0])?.focus();
-                }
-            };
-
-            const syncSortDropdown = () => {
-                const selectedOption = sortOptionButtons.find((option) => option.dataset.shopSortOption === sortOrder);
-                if (sortLabel && selectedOption) {
-                    sortLabel.textContent = selectedOption.textContent?.trim() || "";
-                }
-                sortOptionButtons.forEach((option) => {
-                    const isSelected = option.dataset.shopSortOption === sortOrder;
-                    option.setAttribute("aria-selected", String(isSelected));
-                    option.tabIndex = isSelected ? 0 : -1;
-                });
-            };
-
-            sortTrigger?.addEventListener("click", () => {
-                setSortDropdownOpen(sortTrigger.getAttribute("aria-expanded") !== "true", true);
-            });
-
-            sortOptionButtons.forEach((option) => {
-                option.addEventListener("click", () => {
-                    sortOrder = option.dataset.shopSortOption || "featured";
-                    if (sortSelect) {
-                        sortSelect.value = sortOrder;
-                    }
-                    syncSortDropdown();
-                    setSortDropdownOpen(false);
-                    sortTrigger?.focus();
-                    applyShopFilters();
-                });
-            });
-
-            sortDropdown?.addEventListener("keydown", (event) => {
-                if (!(event instanceof KeyboardEvent) || sortOptionButtons.length === 0) {
-                    return;
-                }
-                if (event.key === "Tab" && sortTrigger?.getAttribute("aria-expanded") === "true") {
-                    setSortDropdownOpen(false);
-                    return;
-                }
-                if (
-                    event.target === sortTrigger
-                    && (event.key === "ArrowDown" || event.key === "ArrowUp")
-                    && sortTrigger?.getAttribute("aria-expanded") !== "true"
-                ) {
-                    event.preventDefault();
-                    setSortDropdownOpen(true, true);
-                    return;
-                }
-                const focusedIndex = sortOptionButtons.indexOf(document.activeElement);
-                let nextIndex = focusedIndex;
-                if (event.key === "ArrowDown") {
-                    nextIndex = focusedIndex < 0 ? 0 : (focusedIndex + 1) % sortOptionButtons.length;
-                } else if (event.key === "ArrowUp") {
-                    nextIndex = focusedIndex < 0 ? sortOptionButtons.length - 1 : (focusedIndex - 1 + sortOptionButtons.length) % sortOptionButtons.length;
-                } else if (event.key === "Home") {
-                    nextIndex = 0;
-                } else if (event.key === "End") {
-                    nextIndex = sortOptionButtons.length - 1;
-                } else if (event.key === "Escape") {
-                    setSortDropdownOpen(false);
-                    sortTrigger?.focus();
-                    event.preventDefault();
-                    return;
-                } else {
-                    return;
-                }
-                event.preventDefault();
-                sortOptionButtons[nextIndex]?.focus();
-            });
-
-            document.addEventListener("click", (event) => {
-                if (event.target instanceof Node && !sortDropdown?.contains(event.target)) {
-                    setSortDropdownOpen(false);
-                }
-            });
 
             const applyShopFilters = (resetPage = true) => {
                 if (!shopGrid) {
@@ -1042,18 +921,7 @@ require __DIR__ . '/app/views/layout/head.php';
                     return matchesCategory && matchesAvailability && matchesSearch;
                 });
 
-                matchingCards.sort((a, b) => {
-                    if (sortOrder === "price-low") {
-                        return Number(a.dataset.price || 0) - Number(b.dataset.price || 0);
-                    }
-                    if (sortOrder === "price-high") {
-                        return Number(b.dataset.price || 0) - Number(a.dataset.price || 0);
-                    }
-                    if (sortOrder === "name") {
-                        return (a.dataset.name || "").localeCompare(b.dataset.name || "");
-                    }
-                    return Number(a.dataset.featuredIndex || 0) - Number(b.dataset.featuredIndex || 0);
-                });
+                matchingCards.sort((a, b) => Number(a.dataset.featuredIndex || 0) - Number(b.dataset.featuredIndex || 0));
 
                 const pageCount = Math.ceil(matchingCards.length / shopPageSize);
                 currentShopPage = resetPage
@@ -1157,25 +1025,14 @@ require __DIR__ . '/app/views/layout/head.php';
                 });
             });
 
-            sortSelect?.addEventListener("change", () => {
-                sortOrder = sortSelect.value || "featured";
-                syncSortDropdown();
-                applyShopFilters();
-            });
-
             resetBtn?.addEventListener("click", () => {
                 searchQuery = "";
                 activeCategory = "All merch";
                 availabilityFilter = "all";
-                if (sortSelect) {
-                    sortSelect.value = "featured";
-                }
-                sortOrder = "featured";
                 const searchOverlayInput = document.querySelector("[data-search-overlay-input]");
                 if (searchOverlayInput) {
                     searchOverlayInput.value = "";
                 }
-                syncSortDropdown();
                 applyShopFilters();
             });
 
@@ -1197,7 +1054,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 });
             });
 
-            syncSortDropdown();
             applyShopFilters();
 
             // Quick View Modal

@@ -1075,8 +1075,8 @@ html[data-theme="dark"] .home-faq-answer a {
 }
 
 .shop-section .section-heading-aside {
-  align-self: flex-start;
-  margin-top: 48px;
+  align-self: center;
+  margin-top: 0;
 }
 
 .shop-section .section-heading-aside .button-text,
