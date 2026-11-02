@@ -458,7 +458,10 @@ require __DIR__ . '/app/views/layout/head.php';
 
         <main id="top">
             <section class="hero" aria-label="HoloVerse official shop introduction">
-                <div class="hero-image" style="background-image: url('assets/images/design/hero.png');"></div>
+                <div class="hero-image" data-image-slideshow data-slideshow-images="/assets/images/banner/seasonaldays.webp|/assets/images/banner/ina-slide.jpg|/assets/images/banner/kronii.webp|/assets/images/banner/dreamspark.webp|/assets/images/banner/regloss_ar_live.webp|/assets/images/banner/travel_to_indo.webp" aria-hidden="true">
+                    <div class="hero-slide is-active" data-slideshow-layer style="background-image: url('/assets/images/banner/seasonaldays.webp');"></div>
+                    <div class="hero-slide" data-slideshow-layer></div>
+                </div>
                 <div class="hero-shade" data-home-reveal="shade"></div>
                 <div class="hero-copy" data-home-reveal>
                     <p class="hero-kicker">Your oshi. Your collection.</p>
@@ -1311,6 +1314,7 @@ require __DIR__ . '/app/views/layout/head.php';
             });
         })();
     </script>
+    <script src="assets/js/art-slideshow.js?v=<?= filemtime(__DIR__ . '/assets/js/art-slideshow.js') ?>" defer></script>
     <script src="assets/js/home-page.js?v=<?= filemtime(__DIR__ . '/assets/js/home-page.js') ?>" defer></script>
     <?php
     $cartHref = 'cart';
