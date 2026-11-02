@@ -117,6 +117,9 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= $siteRoot ?>assets/css/tailwind.css?v=<?= filemtime(__DIR__ . '/../../../assets/css/tailwind.css') ?>">
+    <?php if (isset($pageStylesheet) && is_string($pageStylesheet) && $pageStylesheet !== ''): ?>
+        <link rel="stylesheet" href="<?= htmlspecialchars($pageStylesheet, ENT_QUOTES, 'UTF-8') ?>">
+    <?php endif; ?>
     <script src="<?= $siteRoot ?>assets/js/catalog-search-suggestions.js" defer></script>
     <script src="<?= $siteRoot ?>assets/js/collector-favorites.js?v=<?= filemtime(__DIR__ . '/../../../assets/js/collector-favorites.js') ?>" defer></script>
     <script>
