@@ -16,9 +16,10 @@ $now = new DateTimeImmutable('now', $timezone);
 if (!store_flash_sale_table_exists($conn)) {
     $pageTitle = 'Set Up Flash Sale Scheduling | HoloVerse';
     $siteRoot = '../';
+    $pageStylesheet = $siteRoot . 'assets/css/admin-management.css?v=' . filemtime(__DIR__ . '/../assets/css/admin-management.css');
     require __DIR__ . '/../app/views/layout/head.php';
     ?>
-    <body>
+    <body class="admin-management-page">
         <div class="page-shell">
             <?php
             $activePage = 'flash_sale';
@@ -234,10 +235,11 @@ usort($scheduledDrops, static function (array $left, array $right) use ($stateOr
 
 $pageTitle = 'Manage Flash Sales | HoloVerse';
 $siteRoot = '../';
+$pageStylesheet = $siteRoot . 'assets/css/admin-management.css?v=' . filemtime(__DIR__ . '/../assets/css/admin-management.css');
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="admin-management-page">
     <div class="page-shell admin-dashboard-shell flash-sale-admin-shell">
         <?php
         $activePage = 'flash_sale';
@@ -266,19 +268,27 @@ require __DIR__ . '/../app/views/layout/head.php';
 
             <section class="flash-sale-overview" aria-label="Flash sale overview">
                 <article class="flash-sale-overview-card flash-sale-overview-card--live">
-                    <span class="flash-sale-overview-icon" aria-hidden="true">●</span>
+                    <span class="flash-sale-overview-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><path d="M8.5 12h7"></path></svg>
+                    </span>
                     <div><p>Live now</p><strong><?= (int) $flashSaleCounts['live'] ?></strong><small>Offers customers can shop</small></div>
                 </article>
                 <article class="flash-sale-overview-card">
-                    <span class="flash-sale-overview-icon" aria-hidden="true">◷</span>
+                    <span class="flash-sale-overview-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><path d="M12 7v5l3 2"></path></svg>
+                    </span>
                     <div><p>Upcoming</p><strong><?= (int) $flashSaleCounts['upcoming'] ?></strong><small>Scheduled to start later</small></div>
                 </article>
                 <article class="flash-sale-overview-card">
-                    <span class="flash-sale-overview-icon" aria-hidden="true">✓</span>
+                    <span class="flash-sale-overview-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 12 4 4 8-8"></path></svg>
+                    </span>
                     <div><p>Ended</p><strong><?= (int) $flashSaleCounts['ended'] ?></strong><small>Completed drops</small></div>
                 </article>
                 <article class="flash-sale-overview-card">
-                    <span class="flash-sale-overview-icon" aria-hidden="true">%</span>
+                    <span class="flash-sale-overview-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5 5 19"></path><circle cx="7.5" cy="7.5" r="2.5"></circle><circle cx="16.5" cy="16.5" r="2.5"></circle></svg>
+                    </span>
                     <div><p>Ready to schedule</p><strong><?= count($eligibleProducts) ?></strong><small>Discounted variants in stock</small></div>
                 </article>
             </section>
@@ -330,8 +340,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                         </div>
                         <div class="flash-sale-form-footer">
                             <p>All dates and times use <?= store_escape($timezone->getName()) ?>.</p>
-                            <button type="submit" name="action" value="schedule">Schedule drop <span aria-hidden="true">→</span></button>
-                            <button type="submit" name="action" value="flash_sale_now" formnovalidate>Flash sale now · 1 hour <span aria-hidden="true">→</span></button>
+                            <button type="submit" name="action" value="schedule">Schedule drop</button>
+                            <button type="submit" name="action" value="flash_sale_now" formnovalidate>Flash sale now for 1 hour</button>
                         </div>
                     </form>
                 <?php endif; ?>
@@ -344,7 +354,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <h2 id="scheduled-drops-title">All flash sales</h2>
                         <p>Review pricing, inventory, timing, and status. Scheduled drops can be cancelled before they end.</p>
                     </div>
-                    <a class="flash-sale-secondary-action" href="flash-sale">View storefront <span aria-hidden="true">↗</span></a>
+                    <a class="flash-sale-secondary-action" href="flash-sale">View storefront</a>
                 </div>
                 <div class="flash-sale-toolbar">
                     <label class="flash-sale-search" for="sale-search">
@@ -362,11 +372,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <option value="cancelled">Cancelled (<?= (int) $flashSaleCounts['cancelled'] ?>)</option>
                         </select>
                     </label>
-                    <a class="flash-sale-create-link" href="#create-drop">+ New drop</a>
+                    <a class="flash-sale-create-link" href="#create-drop">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                        New drop
+                    </a>
                 </div>
                 <?php if (!$scheduledDrops): ?>
                     <div class="flash-sale-empty-state">
-                        <span aria-hidden="true">✦</span>
+                        <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"></path></svg></span>
                         <h3>No campaigns yet</h3>
                         <p>Your scheduled, live, and completed drops will appear here.</p>
                         <?php if ($eligibleProducts): ?><a href="#create-drop">Schedule your first drop</a><?php endif; ?>

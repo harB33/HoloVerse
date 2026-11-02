@@ -479,10 +479,11 @@ $inventoryOverview = $conn->query(
 
 $siteRoot = '../';
 $pageTitle = 'Inventory | HoloVerse';
+$pageStylesheet = $siteRoot . 'assets/css/admin-management.css?v=' . filemtime(__DIR__ . '/../assets/css/admin-management.css');
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body>
+<body class="admin-management-page">
     <main class="page-shell admin-dashboard-shell">
         <?php require __DIR__ . '/../app/views/components/site-header.php'; ?>
 
@@ -491,6 +492,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 <div>
                     <p class="admin-kicker">Operations control</p>
                     <h1>Inventory</h1>
+                    <p class="admin-inventory-subtitle">Track stock, adjust quantities, and review pricing history.</p>
                 </div>
                 <div class="admin-inventory-header-actions">
                     <span class="admin-inventory-count" id="inventory-result-count"><?= number_format($inventoryTotalCount) ?> matching variants</span>

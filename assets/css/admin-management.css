@@ -1,0 +1,1202 @@
+body.admin-management-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #101829;
+}
+
+body.admin-management-page > .site-header-wrap {
+  position: relative;
+  z-index: 20;
+}
+
+body.admin-management-page .admin-dashboard-shell {
+  padding-bottom: 0;
+}
+
+body.admin-management-page > .site-footer {
+  margin: 0;
+  padding: 64px 24px 22px;
+  background: #071321;
+  color: #d7e5f2;
+}
+
+body.admin-management-page .footer-main {
+  display: grid;
+  width: min(100%, 1440px);
+  grid-template-columns: minmax(0, 1.8fr) repeat(3, minmax(0, .85fr));
+  gap: 40px;
+  margin: 0 auto;
+  padding: 0 0 54px;
+}
+
+body.admin-management-page .footer-brand-column {
+  max-width: 390px;
+}
+
+body.admin-management-page .footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: #fff;
+  transition: opacity .18s ease;
+}
+
+body.admin-management-page .footer-brand:hover {
+  opacity: .84;
+}
+
+body.admin-management-page .footer-brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+body.admin-management-page .footer-brand > span {
+  color: #fff;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -.06em;
+}
+
+body.admin-management-page .footer-brand > span span {
+  color: #05a9cf;
+}
+
+body.admin-management-page .footer-brand small {
+  margin-left: 5px;
+  border: 1px solid rgb(5 169 207 / 28%);
+  border-radius: 3px;
+  padding: 4px 7px;
+  background: rgb(5 169 207 / 12%);
+  color: #67d8f1;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+body.admin-management-page .footer-tagline {
+  max-width: 350px;
+  margin: 0 0 13px;
+  color: #b7c8d9;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+body.admin-management-page .footer-hubs {
+  color: #849bb1;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+body.admin-management-page .footer-main > div:not(.footer-brand-column) {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.admin-management-page .footer-main > div:not(.footer-brand-column) h3 {
+  margin: 2px 0 18px;
+  color: #fff;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+body.admin-management-page .footer-main > div:not(.footer-brand-column) a {
+  color: #b7c8d9;
+  font-size: 11px;
+  line-height: 1.5;
+  transition: color .18s ease, transform .18s ease;
+}
+
+body.admin-management-page .footer-main > div:not(.footer-brand-column) a:hover,
+body.admin-management-page .footer-main > div:not(.footer-brand-column) a:focus-visible {
+  transform: translateX(3px);
+  color: #67d8f1;
+}
+
+body.admin-management-page .footer-bottom {
+  display: flex;
+  width: min(100%, 1440px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto;
+  border-top: 1px solid rgb(215 229 242 / 17%);
+  padding: 18px 0 0;
+}
+
+body.admin-management-page .footer-bottom p,
+body.admin-management-page .footer-bottom nav {
+  margin: 0;
+  color: #8fa4b8;
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+body.admin-management-page .footer-bottom nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+body.admin-management-page .footer-bottom a {
+  color: #b7c8d9;
+  transition: color .18s ease;
+}
+
+body.admin-management-page .footer-bottom a:hover,
+body.admin-management-page .footer-bottom a:focus-visible {
+  color: #67d8f1;
+}
+
+.product-input-main {
+  max-width: 1200px;
+  padding-top: 40px;
+  padding-bottom: 64px;
+}
+
+.product-input-heading {
+  margin-bottom: 28px;
+}
+
+.product-input-heading h1 {
+  letter-spacing: -.035em;
+}
+
+.product-input-heading > a,
+.admin-inventory-back {
+  transition: color .18s ease, transform .18s ease;
+}
+
+.product-input-heading > a:hover,
+.admin-inventory-back:hover {
+  transform: translateY(-1px);
+}
+
+.product-input-panel {
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgb(16 40 68 / 7%);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.product-input-panel:hover {
+  border-color: #cbdce8;
+  box-shadow: 0 18px 42px rgb(16 40 68 / 9%);
+}
+
+.product-input-panel-heading {
+  background: linear-gradient(110deg, #f1faff, #fff 62%);
+}
+
+.product-input-section legend {
+  padding-bottom: 8px;
+}
+
+.product-input-form input:not([type="checkbox"]):focus-visible,
+.product-input-form select:focus-visible,
+.product-input-form textarea:focus-visible {
+  border-color: #168fba;
+  box-shadow: 0 0 0 4px rgb(22 143 186 / 12%);
+}
+
+.product-input-file-row {
+  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.product-input-file-row:hover {
+  border-color: #a9d8e6;
+  background: #f4fbfe;
+}
+
+.product-input-submit {
+  min-height: 42px;
+  transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.product-input-submit:hover {
+  box-shadow: 0 7px 16px rgb(16 40 68 / 15%);
+  transform: translateY(-1px);
+}
+
+.admin-dashboard.flash-sale-admin,
+.admin-dashboard.admin-inventory-dashboard {
+  width: min(calc(100% - 32px), 1360px);
+  max-width: 1360px;
+}
+
+.admin-dashboard.flash-sale-admin {
+  margin-top: 32px;
+  border-radius: 24px;
+  box-shadow: 0 18px 48px rgb(27 48 73 / 8%);
+}
+
+.flash-sale-admin-header {
+  padding-right: 32px;
+  padding-left: 32px;
+}
+
+.flash-sale-overview-card,
+.flash-sale-panel,
+.admin-inventory-overview-card,
+.admin-inventory-history {
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.flash-sale-panel:hover,
+.admin-inventory-history:hover {
+  border-color: #d1e0e9;
+  box-shadow: 0 8px 24px rgb(27 48 73 / 6%);
+}
+
+.flash-sale-overview-card:hover,
+.admin-inventory-overview-card:hover {
+  border-color: #b9dce8;
+  box-shadow: 0 8px 22px rgb(5 80 110 / 7%);
+  transform: translateY(-2px);
+}
+
+.flash-sale-overview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flash-sale-overview-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.flash-sale-create-link svg,
+.flash-sale-empty-state > span svg {
+  width: 18px;
+  height: 18px;
+}
+
+.flash-sale-empty-state > span svg {
+  width: 22px;
+  height: 22px;
+}
+
+.flash-sale-table tbody tr {
+  transition: background-color .16s ease;
+}
+
+.flash-sale-table tbody tr:hover {
+  background: #f1faff;
+}
+
+.flash-sale-schedule-form input:focus-visible,
+.flash-sale-schedule-form select:focus-visible,
+.flash-sale-toolbar input:focus-visible,
+.flash-sale-toolbar select:focus-visible,
+.admin-inventory-search input:focus-visible {
+  border-color: #0ea5d6;
+  box-shadow: 0 0 0 4px rgb(14 165 214 / 12%);
+  outline: 0;
+}
+
+.admin-inventory-dashboard {
+  box-shadow: 0 18px 48px rgb(27 48 73 / 8%);
+}
+
+.admin-inventory-overview-card {
+  background: linear-gradient(145deg, #f5fbff, #fff 75%);
+}
+
+.admin-inventory-dashboard .admin-inventory-table tbody tr {
+  transition: background-color .16s ease;
+}
+
+.admin-inventory-dashboard .admin-inventory-table tbody tr:hover {
+  background: #f0faff;
+}
+
+.admin-inventory-dashboard .admin-inventory-table button,
+.admin-inventory-dashboard .admin-inventory-table a,
+.admin-price-history-add summary,
+.admin-price-history-form button {
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.admin-inventory-dashboard .admin-inventory-table button:hover,
+.admin-price-history-form button:hover {
+  box-shadow: 0 5px 13px rgb(16 40 68 / 10%);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1000px) {
+  body.admin-management-page > .site-footer {
+    padding-top: 48px;
+  }
+
+  body.admin-management-page .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px;
+    padding-bottom: 38px;
+  }
+
+  body.admin-management-page .footer-brand-column {
+    grid-column: 1 / -1;
+    max-width: 520px;
+  }
+
+  body.admin-management-page .footer-main > div:not(.footer-brand-column) {
+    gap: 10px;
+  }
+
+  body.admin-management-page .footer-main > div:not(.footer-brand-column) h3 {
+    margin-bottom: 10px;
+  }
+
+  .flash-sale-admin-header {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 650px) {
+  body.admin-management-page > .site-footer {
+    padding: 34px 18px 20px;
+  }
+
+  body.admin-management-page .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 18px;
+    padding-bottom: 28px;
+  }
+
+  body.admin-management-page .footer-brand > span {
+    font-size: 20px;
+  }
+
+  body.admin-management-page .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 14px;
+  }
+
+  body.admin-management-page .footer-bottom nav {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .product-input-main {
+    padding-top: 28px;
+    padding-bottom: 40px;
+  }
+
+  .product-input-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-dashboard.flash-sale-admin,
+  .admin-dashboard.admin-inventory-dashboard {
+    width: 100%;
+    margin-top: 16px;
+    border-radius: 16px;
+  }
+
+  .flash-sale-admin-header {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-input-panel,
+  .product-input-file-row,
+  .flash-sale-overview-card,
+  .flash-sale-panel,
+  .flash-sale-table tbody tr,
+  .admin-inventory-overview-card,
+  .admin-inventory-history {
+    transition: none;
+  }
+}
+
+.admin-management-page {
+  --management-ink: #101829;
+  --management-muted: #687b8f;
+  --management-line: #dce5ed;
+  --management-cyan: #05a9cf;
+  --management-navy: #163d6b;
+  color: var(--management-ink);
+  font-family: var(--font-site), "Kanit", sans-serif;
+}
+
+.admin-management-page .product-input-main,
+.admin-management-page .admin-dashboard.flash-sale-admin,
+.admin-management-page .admin-dashboard.admin-inventory-dashboard {
+  width: min(100% - 40px, 1400px);
+  max-width: 1400px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.admin-management-page .product-input-main {
+  padding: 28px 20px 52px;
+}
+
+.admin-management-page .product-input-heading,
+.admin-management-page .admin-dashboard-header {
+  align-items: flex-end;
+  margin: 0 0 22px;
+  border-bottom: 1px solid var(--management-line);
+  padding: 0 0 22px;
+  background: transparent;
+}
+
+.admin-management-page .product-input-heading > div > span,
+.admin-management-page .admin-kicker,
+.admin-management-page .flash-sale-section-kicker {
+  color: #087fa8;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.admin-management-page .product-input-heading > div > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-management-page .product-input-heading > div > span::before {
+  width: 18px;
+  height: 2px;
+  background: var(--management-cyan);
+  content: "";
+}
+
+.admin-management-page .product-input-heading h1,
+.admin-management-page .admin-dashboard-header h1 {
+  margin: 14px 0 6px;
+  color: var(--management-ink);
+  font-family: var(--font-site), "Kanit", sans-serif;
+  font-size: clamp(35px, 3.4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -.055em;
+  line-height: 1.06;
+}
+
+.admin-management-page .product-input-heading p,
+.admin-management-page .flash-sale-admin-subtitle,
+.admin-management-page .admin-inventory-subtitle {
+  margin: 0;
+  color: var(--management-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-management-page .product-input-heading > a,
+.admin-management-page .admin-inventory-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--management-line);
+  border-radius: 0;
+  padding: 10px 13px;
+  background: #fff;
+  color: var(--management-navy);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-management-page .product-input-heading > a:hover,
+.admin-management-page .admin-inventory-back:hover {
+  border-color: #9bd6e5;
+  background: #f2fbfe;
+  color: #087fa8;
+}
+
+.admin-management-page .product-input-panel {
+  overflow: visible;
+  border: 1px solid var(--management-line);
+  border-top: 3px solid var(--management-cyan);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.admin-management-page .product-input-panel:hover {
+  border-color: #c6d9e3;
+  border-top-color: var(--management-cyan);
+  box-shadow: 0 8px 22px rgb(16 40 68 / 5%);
+}
+
+.admin-management-page .product-input-panel-heading {
+  align-items: center;
+  border-bottom: 1px solid var(--management-line);
+  padding: 18px 26px;
+  background: #f8fafc;
+}
+
+.admin-management-page .product-input-panel-heading h2 {
+  color: var(--management-ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.admin-management-page .product-input-panel-heading > span {
+  color: #8290a0;
+  font-size: 10px;
+}
+
+.admin-management-page .product-input-section {
+  padding: 24px 26px;
+}
+
+.admin-management-page .product-input-section legend {
+  padding-bottom: 8px;
+  color: #62788b;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.admin-management-page .product-input-form label {
+  color: #33495d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-management-page .product-input-form input:not([type="checkbox"]),
+.admin-management-page .product-input-form select,
+.admin-management-page .product-input-form textarea {
+  min-height: 42px;
+  border-color: #d6e1ea;
+  border-radius: 2px;
+  background: #fbfdff;
+  font-size: 12px;
+}
+
+.admin-management-page .product-input-form textarea {
+  min-height: 100px;
+}
+
+.admin-management-page .product-input-file-row {
+  border-radius: 0;
+  background: #f8fafc;
+  padding: 18px;
+}
+
+.admin-management-page .product-input-file-row:hover,
+.admin-management-page .product-input-file-row.is-dragover {
+  border-color: #80cfe2;
+  background: #f1fbfe;
+}
+
+.admin-management-page .product-input-actions {
+  border-top: 1px solid var(--management-line);
+  padding: 18px 26px;
+  background: #f8fafc;
+}
+
+.admin-management-page .product-input-submit,
+.admin-management-page .flash-sale-form-footer button,
+.admin-management-page .admin-inventory-search > button[type="submit"],
+.admin-management-page .admin-price-history-add summary {
+  min-height: 42px;
+  border: 1px solid var(--management-navy);
+  border-radius: 0;
+  padding: 10px 17px;
+  background: var(--management-navy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .02em;
+  box-shadow: none;
+}
+
+.admin-management-page .product-input-submit:hover,
+.admin-management-page .flash-sale-form-footer button:hover,
+.admin-management-page .admin-inventory-search > button[type="submit"]:hover,
+.admin-management-page .admin-price-history-add summary:hover {
+  border-color: #0c2e56;
+  background: #0c2e56;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.admin-management-page .product-input-actions > a {
+  color: var(--management-muted);
+  font-size: 11px;
+}
+
+.admin-management-page .product-input-actions > a:hover {
+  color: #087fa8;
+}
+
+.admin-management-page .flash-sale-admin-shell {
+  padding-bottom: 0;
+  background:
+    linear-gradient(#f4f7fb, #f4f7fb);
+}
+
+.admin-management-page .admin-dashboard.flash-sale-admin,
+.admin-management-page .admin-dashboard.admin-inventory-dashboard {
+  margin-top: 26px;
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 42px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-management-page .flash-sale-admin-header {
+  position: static;
+  padding: 0 0 22px;
+}
+
+.admin-management-page .flash-sale-admin-header::after {
+  display: none;
+}
+
+.admin-management-page .flash-sale-admin-header h1 {
+  margin: 14px 0 6px;
+  font-size: clamp(35px, 3.4vw, 48px);
+  letter-spacing: -.055em;
+}
+
+.admin-management-page .flash-sale-admin-subtitle {
+  margin-top: 0;
+  max-width: 680px;
+}
+
+.admin-management-page .flash-sale-admin-header-actions {
+  gap: 10px;
+}
+
+.admin-management-page .flash-sale-admin-header-actions .admin-badge {
+  border: 1px solid #ccecf5;
+  border-radius: 0;
+  padding: 9px 11px;
+  background: #effaff;
+  color: #087fa8;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+  box-shadow: none;
+}
+
+.admin-management-page .flash-sale-overview {
+  gap: 0;
+  margin: 0 0 26px;
+  border: 1px solid var(--management-line);
+  padding: 0;
+  background: #fff;
+}
+
+.admin-management-page .flash-sale-overview-card {
+  position: relative;
+  min-height: 145px;
+  align-items: flex-start;
+  border: 0;
+  border-right: 1px solid var(--management-line);
+  border-radius: 0;
+  padding: 20px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.admin-management-page .flash-sale-overview-card:last-child {
+  border-right: 0;
+}
+
+.admin-management-page .flash-sale-overview-card::before,
+.admin-management-page .admin-inventory-overview-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--management-cyan);
+  content: "";
+}
+
+.admin-management-page .flash-sale-overview-card--live::before {
+  background: #38a886;
+}
+
+.admin-management-page .flash-sale-overview-card:hover {
+  border-color: var(--management-line);
+  background: #f7fbfd;
+  box-shadow: inset 0 0 0 1px rgb(5 169 207 / 16%);
+  transform: none;
+}
+
+.admin-management-page .flash-sale-overview-card--live {
+  border-color: var(--management-line);
+  background: #fff;
+}
+
+.admin-management-page .flash-sale-overview-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #dceaf0;
+  border-radius: 0;
+  background: #f2fbfe;
+  color: #087fa8;
+  box-shadow: none;
+}
+
+.admin-management-page .flash-sale-overview-card p {
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+}
+
+.admin-management-page .flash-sale-overview-card strong {
+  font-size: 34px;
+  letter-spacing: -.05em;
+}
+
+.admin-management-page .flash-sale-overview-card small {
+  color: #8290a0;
+  font-size: 9px;
+}
+
+.admin-management-page .flash-sale-panel {
+  margin: 0 0 22px;
+  border: 1px solid var(--management-line);
+  border-top: 2px solid var(--management-cyan);
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+.admin-management-page .flash-sale-panel:hover {
+  border-color: #c7dce6;
+  border-top-color: var(--management-cyan);
+  box-shadow: 0 8px 22px rgb(16 40 68 / 5%);
+}
+
+.admin-management-page .flash-sale-panel-heading {
+  padding: 20px 24px;
+  background: #f8fafc;
+}
+
+.admin-management-page .flash-sale-panel-heading h2 {
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+
+.admin-management-page .flash-sale-panel-heading p:last-child {
+  max-width: 760px;
+  font-size: 11px;
+}
+
+.admin-management-page .flash-sale-step-mark {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ccecf5;
+  border-radius: 0;
+  background: #effaff;
+  font-family: ui-monospace, "Courier New", monospace;
+}
+
+.admin-management-page .flash-sale-schedule-form {
+  gap: 18px;
+  padding: 22px 24px;
+}
+
+.admin-management-page .flash-sale-field {
+  gap: 7px;
+  color: #526b7d;
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.admin-management-page .flash-sale-field input,
+.admin-management-page .flash-sale-field select,
+.admin-management-page .flash-sale-toolbar input,
+.admin-management-page .flash-sale-filter select {
+  min-height: 42px;
+  border-radius: 2px;
+  background: #fbfdff;
+  font-size: 12px;
+  text-transform: none;
+}
+
+.admin-management-page .flash-sale-product-summary {
+  border-radius: 0;
+  border-left: 3px solid var(--management-cyan);
+  background: #f4fbfe;
+}
+
+.admin-management-page .flash-sale-summary-label {
+  font-family: ui-monospace, "Courier New", monospace;
+}
+
+.admin-management-page .flash-sale-form-footer {
+  border-top: 1px solid #e8edf2;
+  padding-top: 16px;
+}
+
+.admin-management-page .flash-sale-form-footer p {
+  margin-right: auto;
+}
+
+.admin-management-page .flash-sale-form-footer button + button {
+  border-color: #b8dce8;
+  background: #f0faff;
+  color: #087fa8;
+}
+
+.admin-management-page .flash-sale-form-footer button + button:hover {
+  border-color: #8bcadd;
+  background: #e4f7fc;
+  color: #075879;
+}
+
+.admin-management-page .flash-sale-empty-notice {
+  margin: 20px 24px;
+  border-radius: 0;
+}
+
+.admin-management-page .flash-sale-secondary-action,
+.admin-management-page .flash-sale-create-link {
+  min-height: 38px;
+  border-radius: 0;
+  font-size: 10px;
+}
+
+.admin-management-page .flash-sale-toolbar {
+  border-bottom: 1px solid var(--management-line);
+  background: #fff;
+}
+
+.admin-management-page .flash-sale-table {
+  min-width: 900px;
+}
+
+.admin-management-page .flash-sale-table th {
+  background: #f4f7fa;
+  color: #718497;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+}
+
+.admin-management-page .flash-sale-table td {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.admin-management-page .flash-sale-table tbody tr:hover {
+  background: #f1faff;
+}
+
+.admin-management-page .flash-sale-empty-state {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+.admin-management-page .flash-sale-empty-state > span {
+  border: 1px solid #ccecf5;
+  border-radius: 0;
+}
+
+.admin-management-page .admin-dashboard.admin-inventory-dashboard {
+  padding-top: 28px;
+}
+
+.admin-management-page .admin-inventory-dashboard .admin-dashboard-header {
+  margin-bottom: 22px;
+}
+
+.admin-management-page .admin-inventory-dashboard > .admin-dashboard-header h1 {
+  margin: 14px 0 6px;
+  font-size: clamp(35px, 3.4vw, 48px);
+  letter-spacing: -.055em;
+}
+
+.admin-management-page .admin-inventory-subtitle {
+  margin-top: 3px;
+}
+
+.admin-management-page .admin-inventory-count {
+  border-radius: 0;
+  padding: 8px 11px;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: .04em;
+}
+
+.admin-management-page .admin-inventory-overview {
+  gap: 0;
+  margin-bottom: 26px;
+  border: 1px solid var(--management-line);
+  background: #fff;
+}
+
+.admin-management-page .admin-inventory-overview-card {
+  position: relative;
+  min-height: 128px;
+  border: 0;
+  border-right: 1px solid var(--management-line);
+  border-radius: 0;
+  padding: 20px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.admin-management-page .admin-inventory-overview-card:last-child {
+  border-right: 0;
+}
+
+.admin-management-page .admin-inventory-overview-card:hover {
+  border-color: var(--management-line);
+  background: #f7fbfd;
+  box-shadow: inset 0 0 0 1px rgb(5 169 207 / 16%);
+  transform: none;
+}
+
+.admin-management-page .admin-inventory-overview-card span {
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+}
+
+.admin-management-page .admin-inventory-overview-card strong {
+  margin-top: 16px;
+  font-size: 36px;
+  letter-spacing: -.05em;
+}
+
+.admin-management-page .admin-inventory-overview-card.is-alert::before {
+  background: #d9775f;
+}
+
+.admin-management-page .admin-inventory-toolbar {
+  align-items: flex-end;
+  margin: 0;
+  border: 1px solid var(--management-line);
+  border-bottom: 0;
+  padding: 20px;
+  background: #fff;
+}
+
+.admin-management-page .admin-inventory-toolbar-copy h2 {
+  margin-bottom: 5px;
+  color: var(--management-ink);
+  font-size: 18px;
+}
+
+.admin-management-page .admin-inventory-toolbar-copy .admin-panel-description {
+  margin: 0;
+  max-width: 760px;
+  color: var(--management-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.admin-management-page .admin-inventory-search input {
+  min-height: 42px;
+  border-radius: 2px;
+  background: #fbfdff;
+  font-size: 12px;
+}
+
+.admin-management-page .admin-inventory-dashboard .admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--management-line);
+  background: #fff;
+}
+
+.admin-management-page .admin-inventory-dashboard .admin-inventory-table {
+  border: 0;
+  border-radius: 0;
+}
+
+.admin-management-page .admin-inventory-table th {
+  background: #f4f7fa;
+  color: #718497;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 9px;
+}
+
+.admin-management-page .admin-inventory-table tbody tr:hover {
+  background: #f1faff;
+}
+
+.admin-management-page .admin-inventory-pagination {
+  margin: 0;
+  border: 1px solid var(--management-line);
+  border-top: 0;
+  padding: 13px 18px;
+  background: #fff;
+  font-size: 10px;
+}
+
+.admin-management-page .admin-inventory-history {
+  margin-top: 28px;
+  border: 1px solid var(--management-line);
+  border-top: 2px solid var(--management-cyan);
+  padding: 22px;
+  background: #fff;
+}
+
+.admin-management-page .admin-inventory-section-header {
+  margin-bottom: 16px;
+}
+
+.admin-management-page .admin-inventory-section-header h2 {
+  margin: 8px 0 0;
+  color: var(--management-ink);
+  font-size: 19px;
+  letter-spacing: -.02em;
+}
+
+.admin-management-page .admin-inventory-section-header p:last-child {
+  color: var(--management-muted);
+  font-size: 10px;
+}
+
+.admin-management-page .admin-price-history-add summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-management-page .admin-price-history-add summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .admin-management-page .flash-sale-overview-card {
+    border-bottom: 1px solid var(--management-line);
+  }
+
+  .admin-management-page .flash-sale-overview-card:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .admin-management-page .flash-sale-overview-card:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-management-page .admin-dashboard.flash-sale-admin,
+  .admin-management-page .admin-dashboard.admin-inventory-dashboard {
+    width: calc(100% - 32px);
+    margin-top: 22px;
+  }
+
+  .admin-management-page .flash-sale-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-management-page .flash-sale-overview-card:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .admin-management-page .admin-dashboard-header {
+    align-items: flex-start;
+  }
+
+  .admin-management-page .flash-sale-admin-header-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-management-page .product-input-main {
+    padding: 24px 16px 38px;
+  }
+
+  .admin-management-page .product-input-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px 18px;
+  }
+
+  .admin-management-page .product-input-section {
+    padding: 20px 18px;
+  }
+
+  .admin-management-page .product-input-actions {
+    padding: 16px 18px;
+  }
+
+  .admin-management-page .admin-dashboard.flash-sale-admin,
+  .admin-management-page .admin-dashboard.admin-inventory-dashboard {
+    width: calc(100% - 24px);
+    margin-top: 18px;
+  }
+
+  .admin-management-page .flash-sale-admin-header {
+    align-items: flex-start;
+  }
+
+  .admin-management-page .flash-sale-overview-card {
+    min-height: 128px;
+    padding: 15px;
+  }
+
+  .admin-management-page .flash-sale-panel-heading,
+  .admin-management-page .flash-sale-schedule-form {
+    padding: 17px;
+  }
+
+  .admin-management-page .flash-sale-form-footer {
+    align-items: stretch;
+  }
+
+  .admin-management-page .flash-sale-form-footer p {
+    width: 100%;
+  }
+
+  .admin-management-page .flash-sale-form-footer button {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .admin-management-page .admin-inventory-dashboard .admin-dashboard-header {
+    align-items: flex-start;
+  }
+
+  .admin-management-page .admin-inventory-header-actions {
+    align-items: flex-start;
+  }
+
+  .admin-management-page .admin-inventory-overview-card {
+    min-height: 108px;
+    padding: 15px;
+  }
+
+  .admin-management-page .admin-inventory-overview-card strong {
+    margin-top: 11px;
+    font-size: 29px;
+  }
+
+  .admin-management-page .admin-inventory-toolbar {
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .admin-management-page .admin-inventory-history {
+    padding: 16px;
+  }
+}

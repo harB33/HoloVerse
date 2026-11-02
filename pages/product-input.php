@@ -366,10 +366,11 @@ if (!$accessDenied) {
 
 $pageTitle = $accessDenied ? 'Access denied | HoloVerse' : 'Add a product | HoloVerse';
 $siteRoot = '../';
+$pageStylesheet = $siteRoot . 'assets/css/admin-management.css?v=' . filemtime(__DIR__ . '/../assets/css/admin-management.css');
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
-<body class="product-input-page">
+<body class="product-input-page admin-management-page">
     <?php
     $activePage = '';
     require __DIR__ . '/../app/views/components/site-header.php';
