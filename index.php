@@ -460,7 +460,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php foreach ($talentTickerItems as $talent): ?>
                             <li>
                                 <span class="talent-marquee-dot" aria-hidden="true"></span>
-                                <a class="talent-marquee-link" href="/talents">
+                                <a class="talent-marquee-link" href="/products/<?= rawurlencode($talent['slug']) ?>">
                                     <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
                                     <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
                                 </a>
@@ -471,7 +471,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php foreach ($talentTickerItems as $talent): ?>
                             <li>
                                 <span class="talent-marquee-dot" aria-hidden="true"></span>
-                                <a class="talent-marquee-link" href="/talents" tabindex="-1">
+                                <a class="talent-marquee-link" href="/products/<?= rawurlencode($talent['slug']) ?>" tabindex="-1">
                                     <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
                                     <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
                                 </a>

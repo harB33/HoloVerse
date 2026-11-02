@@ -93,7 +93,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 : '';
                             ?>
                             <a class="talent-poster-item" href="/products/<?= rawurlencode($talent['slug']) ?>" aria-label="Browse products for <?= store_escape($talent['name']) ?>">
-                                <figure class="talent-poster-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
+                                <figure class="talent-poster-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>" data-search="<?= store_escape($talent['name'] . ' ' . $talent['group_names']) ?>">
                                     <div class="talent-poster-media">
                                         <span class="talent-poster-initials" aria-hidden="true"><?= store_escape($talentInitials) ?></span>
                                         <?php if ($portraitUrl !== ''): ?>
@@ -254,7 +254,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                 const card = link.querySelector('.talent-poster-card');
                 const groups = (card?.dataset.generations || '').split(' ');
                 const matchesGeneration = selectedGeneration === 'all' || groups.includes(selectedGeneration);
-                const matchesSearch = (card?.textContent || '').toLocaleLowerCase().includes(query);
+                const matchesSearch = (card?.dataset.search || '').toLocaleLowerCase().includes(query);
                 if (matchesGeneration && matchesSearch) {
                     matchingTalents.push(link);
                 }
