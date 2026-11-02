@@ -242,6 +242,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body class="checkout-page home-landing">
     <div class="page-shell checkout-page">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = '';
         require __DIR__ . '/../app/views/components/site-header.php';

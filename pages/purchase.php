@@ -10,6 +10,8 @@ $userId = (int) $_SESSION['user_id'];
 $requestedOrder = isset($_GET['order']) && is_string($_GET['order'])
     ? trim($_GET['order'])
     : '';
+$purchaseTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+$orderTimestampTimezone = new DateTimeZone('UTC');
 $pageSize = 5;
 $requestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
 $currentPage = $requestedPage === false || $requestedPage === null ? 1 : max(1, $requestedPage);
@@ -106,9 +108,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <p>Review the products you’ve purchased and check each order’s status.</p>
                 </div>
                 <?php if (!$purchaseLoadError && $purchases !== []): ?>
-                    <div class="section-heading-aside">
-                        <span class="all-products-count"><?= $purchaseProductCount ?> <?= $purchaseProductCount === 1 ? 'product' : 'products' ?> purchased · <?= $pageSize ?> per page</span>
-                    </div>
+                    <span class="all-products-count"><?= $purchaseProductCount ?> <?= $purchaseProductCount === 1 ? 'product' : 'products' ?> purchased</span>
                 <?php endif; ?>
             </header>
 
@@ -137,6 +137,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                             ? store_asset_url($purchase['product_image_url'], '../')
                             : null;
                         $itemTotal = (float) $purchase['unit_price'] * (int) $purchase['quantity'];
+                        $orderPlacedAt = (new DateTimeImmutable((string) $purchase['created_at'], $orderTimestampTimezone))
+                            ->setTimezone($purchaseTimezone);
                         $orderDetailsUrl = '../purchase/orders?order=' . rawurlencode((string) $purchase['order_number'])
                             . '&item=' . (int) $purchase['order_item_id'];
                         ?>
@@ -145,8 +147,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <div>
                                     <span class="order-history-label">Order placed</span>
                                     <h2><?= store_escape($purchase['order_number']) ?></h2>
-                                    <time datetime="<?= store_escape(date('Y-m-d\TH:i:s', strtotime($purchase['created_at']))) ?>">
-                                        <?= store_escape(date('M j, Y · g:i A', strtotime($purchase['created_at']))) ?>
+                                    <time datetime="<?= store_escape($orderPlacedAt->format(DateTimeInterface::ATOM)) ?>">
+                                        <?= store_escape($orderPlacedAt->format('M j, Y · g:i A')) ?>
                                     </time>
                                 </div>
                                 <div class="purchase-detail-status">

@@ -4646,12 +4646,32 @@ body.talents-page,
 body.preorder-page,
 body.flash-sale-page,
 body.cart-page,
-body.checkout-page,
 body.collector-showcase-page,
 body.order-history-page,
 body.about-page {
   background: #ffffff;
   color: var(--ink);
+}
+
+body.checkout-page.home-landing {
+  background: transparent !important;
+  color: var(--ink);
+}
+
+body.checkout-page.home-landing > .page-shell.checkout-page {
+  background: transparent !important;
+}
+
+body.order-history-page.orders-history-page {
+  background: transparent !important;
+}
+
+body.order-history-page.orders-history-page > .page-shell {
+  background: transparent !important;
+}
+
+body.order-history-page.orders-history-page > .page-shell > .watermark {
+  z-index: 0;
 }
 
 body.order-history-page,
@@ -4767,7 +4787,7 @@ html[data-reduce-motion="true"] .orders-history-page .is-visible {
 
 body.order-history-page .order-history-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
   margin-top: 48px;
@@ -4783,6 +4803,7 @@ body.order-history-page .order-history-heading-copy {
 body.order-history-page .order-history-back-link {
   display: inline-flex;
   align-items: center;
+  align-self: flex-end;
   gap: 6px;
   flex: 0 0 auto;
   color: var(--holo-deep);
@@ -4814,9 +4835,22 @@ body.order-history-page .order-history-heading p:not(.eyebrow) {
   margin-top: 12px;
 }
 
+body.order-history-page .order-history-heading .all-products-count {
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  align-self: flex-end;
+  margin-bottom: -18px;
+}
+
 body.order-history-page .order-history-list {
   display: grid;
-  gap: 1px;
+  gap: 4px;
+}
+
+body.order-history-page .order-history-list > .order-history-card {
+  margin-block: 0 !important;
 }
 
 body.order-history-page .order-history-card {
@@ -4982,6 +5016,33 @@ body.order-history-page .order-history-summary {
 
 body.order-history-page .order-history-store {
   background: #f8fafc;
+}
+
+body.order-history-page .order-history-store .order-history-store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid currentColor;
+  padding: 5px 0;
+  color: #038bbd;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  text-underline-offset: 0;
+}
+
+body.order-history-page .order-history-store .order-history-store-link:hover {
+  color: #038bbd;
+  text-decoration: none;
+}
+
+body.order-history-page .order-history-store .order-history-store-link svg {
+  transition: transform 200ms ease;
+}
+
+body.order-history-page .order-history-store .order-history-store-link:hover svg,
+body.order-history-page .order-history-store .order-history-store-link:focus-visible svg {
+  transform: translateX(5px);
 }
 
 body.order-history-page .order-history-payment {
@@ -6894,6 +6955,16 @@ body.flash-sale-page.home-landing .flash-mechanics-card p {
   grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.85fr);
   align-items: start;
   gap: 36px;
+}
+
+@media (min-width: 1024px) {
+  .checkout-layout {
+    align-items: stretch;
+  }
+
+  .checkout-layout > .checkout-order-summary {
+    max-height: none;
+  }
 }
 
 .cart-list-panel,

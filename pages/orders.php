@@ -133,6 +133,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body class="order-history-page orders-history-page home-landing">
     <div class="page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'orders';
         $showLogin = true;
@@ -306,10 +307,10 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                             <div class="order-history-store">
                                 <span>HoloVerse Store</span>
-                                <a href="/products">
-                                    Products
-                                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M4 10h12M10 4l6 6-6 6" />
+                                <a class="order-history-store-link" href="/products">
+                                    View all products
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M5 12h14m-7-7 7 7-7 7"></path>
                                     </svg>
                                 </a>
                             </div>
