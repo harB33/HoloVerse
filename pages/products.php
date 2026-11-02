@@ -41,6 +41,24 @@ $selectedGeneration = is_string($generationParameter)
     && in_array($generationParameter, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? $generationParameter
         : '';
+$selectedTalentSlug = '';
+$selectedTalentId = 0;
+$selectedTalentName = '';
+$isTalentCatalogRoute = false;
+if ($routeSegment !== '') {
+    $talentStatement = $conn->prepare('SELECT talent_id, talent_slug, talent_name FROM talent_tbl WHERE talent_slug = ? LIMIT 1');
+    $talentStatement->bind_param('s', $routeSegment);
+    $talentStatement->execute();
+    $talentRow = $talentStatement->get_result()->fetch_assoc();
+    $talentStatement->close();
+    if ($talentRow) {
+        $selectedTalentSlug = (string) $talentRow['talent_slug'];
+        $selectedTalentId = (int) $talentRow['talent_id'];
+        $selectedTalentName = (string) $talentRow['talent_name'];
+        $routeSegment = '';
+        $isTalentCatalogRoute = true;
+    }
+}
 $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
 $requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '';
 $routeSegments = array_filter(explode('/', trim($requestPath, '/')), static fn (string $segment): bool => $segment !== '');
@@ -105,12 +123,16 @@ if ($selectedCategory > 0) {
         }
     }
 }
-$catalogBasePath = $selectedGeneration !== ''
-    ? '/products/generation/' . rawurlencode($selectedGeneration)
-    : '/products';
-$catalogPath = $selectedCategorySlug !== ''
-    ? $catalogBasePath . '/category/' . rawurlencode($selectedCategorySlug)
-    : $catalogBasePath;
+$catalogBasePath = $selectedTalentSlug !== ''
+    ? '/products/' . rawurlencode($selectedTalentSlug)
+    : ($selectedGeneration !== ''
+        ? '/products/generation/' . rawurlencode($selectedGeneration)
+        : '/products');
+$catalogPath = $selectedTalentSlug !== ''
+    ? $catalogBasePath
+    : ($selectedCategorySlug !== ''
+        ? $catalogBasePath . '/category/' . rawurlencode($selectedCategorySlug)
+        : $catalogBasePath);
 
 $hasQueryFilters = array_key_exists('generation', $_GET)
     || array_key_exists('category', $_GET)
@@ -137,6 +159,7 @@ if (
 if (
     !$isCatalogSearchRequest
     && $hasQueryFilters
+    && !$isTalentCatalogRoute
     && $requestPath !== $catalogPath
 ) {
     $catalogQuery = $_GET;
@@ -159,7 +182,8 @@ if ($isCatalogSearchRequest) {
         $selectedCategory,
         $selectedAvailability,
         $flashProductIds,
-        $favoriteProductIds
+        $favoriteProductIds,
+        $selectedTalentId
     );
     $searchPageCount = max(1, (int) ceil($searchTotalCount / $searchPageSize));
     $searchRequestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
@@ -177,7 +201,8 @@ if ($isCatalogSearchRequest) {
         availability: $selectedAvailability,
         sort: $selectedSort,
         flashProductIds: $flashProductIds,
-        favoriteProductIds: $favoriteProductIds
+        favoriteProductIds: $favoriteProductIds,
+        talentId: $selectedTalentId
     );
     ob_start();
     $products = $searchProducts;
@@ -205,7 +230,8 @@ $totalProductCount = store_catalog_product_count(
     $selectedCategory,
     $selectedAvailability,
     $flashProductIds,
-    $favoriteProductIds
+    $favoriteProductIds,
+    $selectedTalentId
 );
 $pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
@@ -223,7 +249,8 @@ $products = store_catalog_product_rows(
     availability: $selectedAvailability,
     sort: $selectedSort,
     flashProductIds: $flashProductIds,
-    favoriteProductIds: $favoriteProductIds
+    favoriteProductIds: $favoriteProductIds,
+    talentId: $selectedTalentId
 );
 $catalogPaginationBasePath = $catalogPath;
 $pageTitle = 'All Products | HoloVerse';
@@ -293,6 +320,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                     if ($selectedSort !== 'featured') {
                         $catalogSearchHiddenFields['sort'] = $selectedSort;
                     }
+                    if ($selectedGeneration !== '' && $selectedTalentSlug !== '') {
+                        $catalogSearchHiddenFields['generation'] = $selectedGeneration;
+                    }
+                    if ($selectedCategorySlug !== '' && $selectedTalentSlug !== '') {
+                        $catalogSearchHiddenFields['category_slug'] = $selectedCategorySlug;
+                    }
                     require __DIR__ . '/../app/views/components/catalog-search.php';
                     ?>
                     <form class="category-filter" method="get" action="<?= store_escape($catalogBasePath) ?>" data-catalog-base-path="<?= store_escape($catalogBasePath) ?>">
@@ -305,6 +338,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php endif; ?>
                         <?php if ($selectedSort !== 'featured'): ?>
                             <input type="hidden" name="sort" value="<?= store_escape($selectedSort) ?>">
+                        <?php endif; ?>
+                        <?php if ($selectedGeneration !== '' && $selectedTalentSlug !== ''): ?>
+                            <input type="hidden" name="generation" value="<?= store_escape($selectedGeneration) ?>">
                         <?php endif; ?>
                         <input id="catalog-category" type="hidden" name="category" value="<?= $selectedCategory > 0 ? $selectedCategory : '' ?>">
                         <div class="category-filter-dropdown" data-category-dropdown>
@@ -358,14 +394,34 @@ require __DIR__ . '/../app/views/layout/head.php';
                         if ($productSearch !== '') { $genParams['search'] = $productSearch; }
                         $genQuery = $genParams ? '?' . http_build_query($genParams) : '';
 
-                        $allGenerationsHref = '/products' . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '') . $genQuery;
+                        if ($selectedTalentSlug !== '') {
+                            $allGenerationParams = $genParams;
+                            if ($selectedCategorySlug !== '') {
+                                $allGenerationParams['category_slug'] = $selectedCategorySlug;
+                            }
+                            $allGenerationsHref = $catalogBasePath
+                                . ($allGenerationParams ? '?' . http_build_query($allGenerationParams) : '');
+                        } else {
+                            $allGenerationsHref = '/products'
+                                . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '')
+                                . $genQuery;
+                        }
                         ?>
                         <a class="generation-filter-option<?= $selectedGeneration === '' ? ' is-active' : '' ?>" href="<?= store_escape($allGenerationsHref) ?>" data-generation-slug=""<?= $selectedGeneration === '' ? ' aria-current="true"' : '' ?>>All Generations</a>
                         <?php foreach ($generations as $generation): ?>
                             <?php
-                            $generationHref = '/products/generation/' . rawurlencode($generation['group_slug'])
-                                . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '')
-                                . $genQuery;
+                            if ($selectedTalentSlug !== '') {
+                                $talentParams = $genParams;
+                                $talentParams['generation'] = $generation['group_slug'];
+                                if ($selectedCategorySlug !== '') {
+                                    $talentParams['category_slug'] = $selectedCategorySlug;
+                                }
+                                $generationHref = $catalogBasePath . '?' . http_build_query($talentParams);
+                            } else {
+                                $generationHref = '/products/generation/' . rawurlencode($generation['group_slug'])
+                                    . ($selectedCategorySlug !== '' ? '/category/' . rawurlencode($selectedCategorySlug) : '')
+                                    . $genQuery;
+                            }
                             ?>
                             <a class="generation-filter-option<?= $selectedGeneration === $generation['group_slug'] ? ' is-active' : '' ?>" href="<?= store_escape($generationHref) ?>" data-generation-slug="<?= store_escape($generation['group_slug']) ?>"<?= $selectedGeneration === $generation['group_slug'] ? ' aria-current="true"' : '' ?>><?= store_escape($generation['group_name']) ?></a>
                         <?php endforeach; ?>
@@ -417,11 +473,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                     const categorySlug = option.dataset.categorySlug || "";
                     const currentUrl = new URL(window.location.href);
                     const generation = currentUrl.pathname.match(/\/generation\/([^/]+)/)?.[1] || "";
-                    const newPath = `/products${generation ? `/generation/${encodeURIComponent(generation)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
+                    const talentPath = currentUrl.pathname.match(/^\/products\/([^/]+)\/?$/)?.[0] || "";
+                    const newPath = talentPath
+                        ? talentPath
+                        : `/products${generation ? `/generation/${encodeURIComponent(generation)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
                     const newUrl = new URL(newPath, window.location.origin);
                     const avail = currentUrl.searchParams.get("availability");
                     const sort = currentUrl.searchParams.get("sort");
                     const search = currentUrl.searchParams.get("search") || currentUrl.searchParams.get("global_search");
+                    const activeGeneration = currentUrl.searchParams.get("generation");
+                    if (talentPath && activeGeneration) newUrl.searchParams.set("generation", activeGeneration);
+                    if (talentPath && categorySlug) newUrl.searchParams.set("category_slug", categorySlug);
                     if (avail && avail !== "all") newUrl.searchParams.set("availability", avail);
                     if (sort && sort !== "featured") newUrl.searchParams.set("sort", sort);
                     if (search) newUrl.searchParams.set("search", search);
@@ -549,17 +611,22 @@ require __DIR__ . '/../app/views/layout/head.php';
         let updateCatalogResults;
 
         const getActiveStateFromUrl = (url) => {
-            const generation = url.pathname.match(/\/generation\/([^/]+)/)?.[1] || "";
-            const categorySlug = url.pathname.match(/\/category\/([^/]+)/)?.[1] || "";
+            const talentRoute = url.pathname.match(/^\/products\/([^/]+)\/?$/);
+            const generation = url.searchParams.get("generation")
+                || url.pathname.match(/\/generation\/([^/]+)/)?.[1]
+                || "";
+            const categorySlug = url.searchParams.get("category_slug")
+                || url.pathname.match(/\/category\/([^/]+)/)?.[1]
+                || "";
             const availability = url.searchParams.get("availability") || "all";
             const sort = url.searchParams.get("sort") || "featured";
             const search = url.searchParams.get("search") || url.searchParams.get("global_search") || "";
             const page = Number(url.searchParams.get("page")) || 1;
-            return { generation, categorySlug, availability, sort, search, page };
+            return { generation, categorySlug, availability, sort, search, talentRoute, page };
         };
 
         const syncAllCatalogControls = (url) => {
-            const { generation, categorySlug, availability, sort, search } = getActiveStateFromUrl(url);
+            const { generation, categorySlug, availability, sort, search, talentRoute } = getActiveStateFromUrl(url);
 
             // 1. Sync Availability Buttons
             document.querySelectorAll("[data-availability-filter]").forEach((btn) => {
@@ -612,8 +679,12 @@ require __DIR__ . '/../app/views/layout/head.php';
             // 5. Sync Generation Links & preserve active query params
             document.querySelectorAll(".generation-filter-option").forEach((link) => {
                 const linkGen = link.dataset.generationSlug || "";
-                const linkPath = `/products${linkGen ? `/generation/${encodeURIComponent(linkGen)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
+                const linkPath = talentRoute
+                    ? talentRoute[0]
+                    : `/products${linkGen ? `/generation/${encodeURIComponent(linkGen)}` : ""}${categorySlug ? `/category/${encodeURIComponent(categorySlug)}` : ""}`;
                 const linkUrl = new URL(linkPath, window.location.origin);
+                if (talentRoute && linkGen) { linkUrl.searchParams.set("generation", linkGen); }
+                if (talentRoute && categorySlug) { linkUrl.searchParams.set("category_slug", categorySlug); }
                 if (availability !== "all") { linkUrl.searchParams.set("availability", availability); }
                 if (sort !== "featured") { linkUrl.searchParams.set("sort", sort); }
                 if (search) { linkUrl.searchParams.set("search", search); }

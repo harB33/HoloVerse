@@ -1409,8 +1409,7 @@
     @apply border-transparent bg-[#e7f7fc] text-[#087fa8];
   }
 
-  .talent-directory-results,
-  .talent-merch-layout .products-catalog-results {
+  .talent-directory-results {
     @apply min-w-0;
   }
 
@@ -1424,26 +1423,6 @@
 
   .talent-pagination button {
     @apply rounded-md border border-[#d6e1ea] bg-white px-3 py-2 font-semibold text-[#087fa8] transition hover:border-[#1da3d8] hover:bg-[#f0faff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087fa8] disabled:cursor-not-allowed disabled:opacity-45;
-  }
-
-  .talent-merch-filter-search {
-    @apply mb-0 mt-0 max-w-none gap-1.5;
-  }
-
-  .catalog-search.talent-merch-filter-search input[type="search"] {
-    @apply h-9 px-3 py-1.5 text-xs;
-  }
-
-  .catalog-search.talent-merch-filter-search button {
-    @apply size-9 p-1.5;
-  }
-
-  .catalog-search.talent-merch-filter-search button svg {
-    @apply size-3.5;
-  }
-
-  .talent-merch-filter .talent-merch-category-title {
-    @apply mt-4;
   }
 
   .flash-sale-search-wrap {
@@ -1592,17 +1571,8 @@
     @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
   }
 
-  .catalog-search.talent-merch-filter-search button {
-    @apply size-9 rounded-md border-[#152238] bg-[#152238] p-1.5 hover:bg-[#243b59] focus-visible:outline-[#152238];
-  }
-
-  .catalog-search.filter-panel-search button svg,
-  .catalog-search.talent-merch-filter-search button svg {
+  .catalog-search.filter-panel-search button svg {
     @apply size-3.5;
-  }
-
-  .catalog-search.talent-merch-filter-search input[type="search"] {
-    @apply h-9 rounded-md border-[#cbd5e1] bg-[#f1f5f9] px-3 py-1.5 text-xs shadow-inner focus-visible:border-[#087fa8] focus-visible:bg-white focus-visible:outline-offset-0;
   }
 
   .generation-filter-option {

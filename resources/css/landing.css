@@ -5173,7 +5173,7 @@ body.order-history-page .order-history-summary-total strong {
   color: var(--cyan-dark);
 }
 
-/* 2-Column Catalog Layout (/products, /talent-merch, /talents) */
+/* 2-Column Catalog Layout (/products, /talents) */
 .products-catalog-layout,
 .talents-catalog-layout {
   display: grid;
@@ -5390,8 +5390,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search,
 .talents-page .catalog-search.talent-directory-search,
 .preorder-page .catalog-search.filter-panel-search,
-.home-landing .catalog-search.filter-panel-search,
-.home-landing .catalog-search.talent-merch-filter-search {
+.home-landing .catalog-search.filter-panel-search {
   display: flex;
   align-items: stretch;
   gap: 8px;
@@ -5411,8 +5410,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search input[type="search"],
 .talents-page .catalog-search.talent-directory-search input[type="search"],
 .preorder-page .catalog-search.filter-panel-search input[type="search"],
-.home-landing .catalog-search.filter-panel-search input[type="search"],
-.home-landing .catalog-search.talent-merch-filter-search input[type="search"] {
+.home-landing .catalog-search.filter-panel-search input[type="search"] {
   flex: 1;
   width: 100%;
   min-height: 38px;
@@ -5433,8 +5431,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search input[type="search"]:focus,
 .talents-page .catalog-search.talent-directory-search input[type="search"]:focus,
 .preorder-page .catalog-search.filter-panel-search input[type="search"]:focus,
-.home-landing .catalog-search.filter-panel-search input[type="search"]:focus,
-.home-landing .catalog-search.talent-merch-filter-search input[type="search"]:focus {
+.home-landing .catalog-search.filter-panel-search input[type="search"]:focus {
   border-color: var(--cyan-dark);
   background: #fff;
 }
@@ -5443,8 +5440,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search button,
 .talents-page .catalog-search.talent-directory-search button,
 .preorder-page .catalog-search.filter-panel-search button,
-.home-landing .catalog-search.filter-panel-search button,
-.home-landing .catalog-search.talent-merch-filter-search button {
+.home-landing .catalog-search.filter-panel-search button {
   min-width: 38px;
   width: 38px;
   height: 38px;
@@ -5464,8 +5460,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search button:hover,
 .talents-page .catalog-search.talent-directory-search button:hover,
 .preorder-page .catalog-search.filter-panel-search button:hover,
-.home-landing .catalog-search.filter-panel-search button:hover,
-.home-landing .catalog-search.talent-merch-filter-search button:hover {
+.home-landing .catalog-search.filter-panel-search button:hover {
   background: var(--cyan-dark);
   border-color: var(--cyan-dark);
 }
@@ -5474,8 +5469,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page .catalog-search.filter-panel-search button svg,
 .talents-page .catalog-search.talent-directory-search button svg,
 .preorder-page .catalog-search.filter-panel-search button svg,
-.home-landing .catalog-search.filter-panel-search button svg,
-.home-landing .catalog-search.talent-merch-filter-search button svg {
+.home-landing .catalog-search.filter-panel-search button svg {
   width: 16px;
   height: 16px;
 }
@@ -5834,6 +5828,12 @@ body.order-history-page .order-history-summary-total strong {
   gap: 12px;
 }
 
+.talent-poster-item {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .talent-poster-card {
   margin: 0;
   display: block;
@@ -5844,7 +5844,7 @@ body.order-history-page .order-history-summary-total strong {
 .talents-page.talent-reveal-ready :is(
   .all-products-intro,
   .talent-directory-filter,
-  .talent-card-link,
+  .talent-poster-item,
   .talent-pagination
 ):not(.is-visible) {
   opacity: 0;
@@ -5853,13 +5853,13 @@ body.order-history-page .order-history-summary-total strong {
 
 .talents-page .all-products-intro,
 .talents-page .talent-directory-filter,
-.talents-page .talent-card-link,
+.talents-page .talent-poster-item,
 .talents-page .talent-pagination {
   transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.25, 1),
     transform 600ms cubic-bezier(0.2, 0.7, 0.25, 1);
 }
 
-.talents-page .talent-card-link {
+.talents-page .talent-poster-item {
   transition-delay: var(--talent-reveal-delay, 0ms);
 }
 
@@ -5900,15 +5900,14 @@ body.order-history-page .order-history-summary-total strong {
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.talent-card-link:hover .talent-poster-photo,
-.talent-card-link:focus-visible .talent-poster-photo {
+.talent-poster-item:hover .talent-poster-photo {
   transform: scale(1.05);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .talents-page .all-products-intro,
   .talents-page .talent-directory-filter,
-  .talents-page .talent-card-link,
+  .talents-page .talent-poster-item,
   .talents-page .talent-pagination {
     transition: none;
     transform: none;
@@ -5957,8 +5956,7 @@ body.order-history-page .order-history-summary-total strong {
   font-weight: 600;
 }
 
-.talent-card-link:hover .talent-poster-caption small,
-.talent-card-link:focus-visible .talent-poster-caption small {
+.talent-poster-item:hover .talent-poster-caption small {
   color: #078bbd;
 }
 

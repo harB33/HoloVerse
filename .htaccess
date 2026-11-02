@@ -26,8 +26,6 @@
     RewriteRule ^flash_sale/?$ flash-sale [R=308,L]
     RewriteRule ^flash-sale/?$ pages/flash_sale.php [L,QSA]
     RewriteRule ^product/([^/]+)/?$ pages/product.php?slug=$1 [L,QSA]
-    RewriteRule ^talent-merch/([^/]+)/([^/]+)/?$ pages/talent-merch.php?talent_slug=$1&category_slug=$2 [L,QSA]
-    RewriteRule ^talent-merch/([^/]+)/?$ pages/talent-merch.php?talent_slug=$1 [L,QSA]
     RewriteRule ^products/category/([0-9]+)/?$ pages/products.php?category=$1 [L,QSA]
     RewriteRule ^products/generation/([A-Za-z0-9_-]+)/category/([0-9]+)/?$ pages/products.php?generation=$1&category=$2 [L,QSA]
     RewriteRule ^products/([A-Za-z0-9_-]+)/category/([0-9]+)/?$ pages/products.php?generation=$1&category=$2 [L,QSA]

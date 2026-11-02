@@ -57,17 +57,6 @@ if ($requestPath === '/') {
     $_GET['slug'] = $matches[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/product.php';
     $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
-} elseif (preg_match('~^/talent-merch/([^/]+)/?$~', $requestPath, $matches) === 1) {
-    $scriptPath = __DIR__ . '/pages/talent-merch.php';
-    $_GET['talent_slug'] = $matches[1];
-    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
-    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
-} elseif (preg_match('~^/talent-merch/([^/]+)/([^/]+)/?$~', $requestPath, $matches) === 1) {
-    $scriptPath = __DIR__ . '/pages/talent-merch.php';
-    $_GET['talent_slug'] = $matches[1];
-    $_GET['category_slug'] = $matches[2];
-    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
-    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 } elseif (preg_match('~^/products/category/([^/]+)/?$~', $requestPath, $matches) === 1) {
     $scriptPath = __DIR__ . '/pages/products.php';
     $_GET['category_slug'] = $matches[1];

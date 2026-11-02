@@ -64,7 +64,7 @@ function store_collector_showcase_url(): string
     }
 
     if (preg_match(
-        '~^(.*?)(?:/home|/index\.php|/products(?:/.*)?|/product/[^/]+|/talent-merch/[^/]+(?:/[^/]+)?|/collector[-_]showcase|/(?:pages/)?flash[-_]sale(?:\.php)?|/(?:pages/)?pre[-_]order(?:\.php)?)/?$~',
+        '~^(.*?)(?:/home|/index\.php|/products(?:/.*)?|/product/[^/]+|/collector[-_]showcase|/(?:pages/)?flash[-_]sale(?:\.php)?|/(?:pages/)?pre[-_]order(?:\.php)?)/?$~',
         $requestPath,
         $matches
     ) !== 1) {

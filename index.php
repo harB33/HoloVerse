@@ -57,25 +57,6 @@ if (preg_match('~^/product/([^/]+)$~', $requestPath, $productRoute) === 1) {
     exit;
 }
 
-if (preg_match('~^/talent-merch/([^/]+)/?$~', $requestPath, $talentMerchRoute) === 1) {
-    $_GET['talent_slug'] = $talentMerchRoute[1];
-    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
-    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
-    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/talent-merch.php';
-    require $_SERVER['SCRIPT_FILENAME'];
-    exit;
-}
-
-if (preg_match('~^/talent-merch/([^/]+)/([^/]+)/?$~', $requestPath, $talentCategoryRoute) === 1) {
-    $_GET['talent_slug'] = $talentCategoryRoute[1];
-    $_GET['category_slug'] = $talentCategoryRoute[2];
-    $_SERVER['SCRIPT_NAME'] = '/pages/talent-merch.php';
-    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
-    $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/pages/talent-merch.php';
-    require $_SERVER['SCRIPT_FILENAME'];
-    exit;
-}
-
 if (preg_match('~^/products/category/([^/]+)/?$~', $requestPath, $categoryRoute) === 1) {
     $_GET['category_slug'] = $categoryRoute[1];
     $_SERVER['SCRIPT_NAME'] = '/pages/products.php';
@@ -479,7 +460,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php foreach ($talentTickerItems as $talent): ?>
                             <li>
                                 <span class="talent-marquee-dot" aria-hidden="true"></span>
-                                <a class="talent-marquee-link" href="/talent-merch/<?= rawurlencode($talent['slug']) ?>">
+                                <a class="talent-marquee-link" href="/talents">
                                     <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
                                     <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
                                 </a>
@@ -490,7 +471,7 @@ require __DIR__ . '/app/views/layout/head.php';
                         <?php foreach ($talentTickerItems as $talent): ?>
                             <li>
                                 <span class="talent-marquee-dot" aria-hidden="true"></span>
-                                <a class="talent-marquee-link" href="/talent-merch/<?= rawurlencode($talent['slug']) ?>" tabindex="-1">
+                                <a class="talent-marquee-link" href="/talents" tabindex="-1">
                                     <span class="talent-marquee-name"><?= store_escape($talent['name']) ?></span>
                                     <span class="talent-marquee-japanese" lang="ja"><?= store_escape($talent['japanese']) ?></span>
                                 </a>

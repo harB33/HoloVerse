@@ -70,7 +70,8 @@ function store_catalog_product_rows(
     string $availability = 'all',
     string $sort = 'featured',
     array $flashProductIds = [],
-    array $favoriteProductIds = []
+    array $favoriteProductIds = [],
+    int $talentId = 0
 ): array {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
@@ -83,6 +84,9 @@ function store_catalog_product_rows(
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
         : '';
     $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
+    $talentWhere = $talentId !== 0
+        ? ' AND EXISTS (SELECT 1 FROM product_talents_tbl talent_filter WHERE talent_filter.product_id = p.product_id AND talent_filter.talent_id = ' . (int) $talentId . ')'
+        : '';
     $relatedProductWhere = $relatedProductId > 0
         ? " AND EXISTS (
             SELECT 1
@@ -156,7 +160,7 @@ function store_catalog_product_rows(
                       INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                       INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                       WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
-                  ){$categoryWhere}{$relatedProductWhere}{$availabilityWhere}{$searchWhere}
+                  ){$categoryWhere}{$talentWhere}{$relatedProductWhere}{$availabilityWhere}{$searchWhere}
                 ORDER BY p.product_id DESC, {$availableStock} DESC, v.variant_id ASC
             ) AS catalog_products
             ORDER BY {$orderClause}";
@@ -186,7 +190,8 @@ function store_catalog_product_count(
     int $categoryId = 0,
     string $availability = 'all',
     array $flashProductIds = [],
-    array $favoriteProductIds = []
+    array $favoriteProductIds = [],
+    int $talentId = 0
 ): int {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
@@ -194,6 +199,9 @@ function store_catalog_product_count(
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
         : '';
     $categoryWhere = $categoryId > 0 ? ' AND c.category_id = ' . $categoryId : '';
+    $talentWhere = $talentId !== 0
+        ? ' AND EXISTS (SELECT 1 FROM product_talents_tbl talent_filter WHERE talent_filter.product_id = p.product_id AND talent_filter.talent_id = ' . (int) $talentId . ')'
+        : '';
     $availabilityWhere = '';
     if ($availability === 'ready') {
         $availabilityWhere = " AND p.is_preorder = 0 AND ({$availableStock}) > 0";
@@ -236,7 +244,7 @@ function store_catalog_product_count(
                   INNER JOIN talent_group_members_tbl gm ON gm.talent_id = pt.talent_id
                   INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
                   WHERE pt.product_id = p.product_id AND tg.group_slug IN ({$eligibleGroupSlugs}){$groupWhere}
-              ){$categoryWhere}{$availabilityWhere}{$searchWhere}";
+              ){$categoryWhere}{$talentWhere}{$availabilityWhere}{$searchWhere}";
     if ($search !== '') {
         $pattern = '%' . $search . '%';
         $statement = $conn->prepare($sql);

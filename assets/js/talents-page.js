@@ -11,7 +11,7 @@
   }
 
   const targets = page.querySelectorAll(
-    ".all-products-intro, .talent-directory-filter, .talent-card-link, .talent-pagination"
+    ".all-products-intro, .talent-directory-filter, .talent-poster-item, .talent-pagination"
   );
 
   if (targets.length === 0) {
@@ -29,7 +29,7 @@
 
   page.classList.add("talent-reveal-ready");
   targets.forEach((target, index) => {
-    if (target.matches(".talent-card-link")) {
+    if (target.matches(".talent-poster-item")) {
       target.style.setProperty("--talent-reveal-delay", `${(index % 4) * 70}ms`);
     }
     observer.observe(target);

@@ -10,6 +10,8 @@ $selectedSort = isset($selectedSort) && is_string($selectedSort) ? $selectedSort
 $selectedCategory = isset($selectedCategory) ? (int) $selectedCategory : 0;
 $selectedCategorySlug = isset($selectedCategorySlug) && is_string($selectedCategorySlug) ? $selectedCategorySlug : '';
 $selectedGeneration = isset($selectedGeneration) && is_string($selectedGeneration) ? $selectedGeneration : '';
+$selectedTalentSlug = isset($selectedTalentSlug) && is_string($selectedTalentSlug) ? $selectedTalentSlug : '';
+$selectedTalentName = isset($selectedTalentName) && is_string($selectedTalentName) ? $selectedTalentName : $selectedTalentSlug;
 $categories = isset($categories) && is_array($categories) ? $categories : [];
 $generations = isset($generations) && is_array($generations) ? $generations : [];
 
@@ -46,6 +48,7 @@ $availabilityLabels = [
 $hasActiveFilters = $productSearch !== ''
     || $selectedCategory > 0
     || $selectedGeneration !== ''
+    || $selectedTalentSlug !== ''
     || $selectedAvailability !== 'all';
 
 $buildFilterUrl = static function (array $overrides) use (
@@ -54,21 +57,27 @@ $buildFilterUrl = static function (array $overrides) use (
     $selectedAvailability,
     $selectedSort,
     $selectedGeneration,
-    $selectedCategorySlug
+    $selectedCategorySlug,
+    $selectedTalentSlug
 ): string {
     $gen = array_key_exists('generation', $overrides) ? $overrides['generation'] : $selectedGeneration;
     $catSlug = array_key_exists('category_slug', $overrides) ? $overrides['category_slug'] : $selectedCategorySlug;
     $search = array_key_exists('search', $overrides) ? $overrides['search'] : $productSearch;
     $avail = array_key_exists('availability', $overrides) ? $overrides['availability'] : $selectedAvailability;
     $sort = array_key_exists('sort', $overrides) ? $overrides['sort'] : $selectedSort;
+    $talent = array_key_exists('talent', $overrides) ? $overrides['talent'] : $selectedTalentSlug;
     $page = array_key_exists('page', $overrides) ? $overrides['page'] : 1;
 
-    $base = '/products';
-    if ($gen !== '') {
-        $base .= '/generation/' . rawurlencode($gen);
-    }
-    if ($catSlug !== '') {
-        $base .= '/category/' . rawurlencode($catSlug);
+    if ($talent !== '') {
+        $base = '/products/' . rawurlencode($talent);
+    } else {
+        $base = '/products';
+        if ($gen !== '') {
+            $base .= '/generation/' . rawurlencode($gen);
+        }
+        if ($catSlug !== '') {
+            $base .= '/category/' . rawurlencode($catSlug);
+        }
     }
 
     $params = [];
@@ -84,6 +93,14 @@ $buildFilterUrl = static function (array $overrides) use (
     if ($sort !== 'featured') {
         $params['sort'] = $sort;
     }
+    if ($talent !== '') {
+        if ($gen !== '') {
+            $params['generation'] = $gen;
+        }
+        if ($catSlug !== '') {
+            $params['category_slug'] = $catSlug;
+        }
+    }
 
     $qs = http_build_query($params);
     return $base . ($qs !== '' ? '?' . $qs : '');
@@ -91,16 +108,23 @@ $buildFilterUrl = static function (array $overrides) use (
 ?>
 
 <?php if ($hasActiveFilters): ?>
+    <?php if ($selectedTalentSlug !== ''): ?>
+        <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['talent' => '', 'page' => 1])) ?>" data-remove-filter="talent" aria-label="Remove <?= store_escape($selectedTalentName) ?> talent filter">
+            <span><?= store_escape($selectedTalentName) ?></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </a>
+    <?php endif; ?>
+
     <?php if ($selectedGeneration !== ''): ?>
         <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['generation' => '', 'page' => 1])) ?>" data-remove-filter="generation" aria-label="Remove <?= store_escape($generationName) ?> generation filter">
-            <span>Generation: <?= store_escape($generationName) ?></span>
+            <span><?= store_escape($generationName) ?></span>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </a>
     <?php endif; ?>
 
     <?php if ($selectedCategory > 0 && $categoryName !== ''): ?>
         <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['category_slug' => '', 'page' => 1])) ?>" data-remove-filter="category" aria-label="Remove <?= store_escape($categoryName) ?> category filter">
-            <span>Category: <?= store_escape($categoryName) ?></span>
+            <span><?= store_escape($categoryName) ?></span>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </a>
     <?php endif; ?>

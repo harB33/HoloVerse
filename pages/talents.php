@@ -87,13 +87,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <div class="talent-poster-grid" aria-live="polite">
                         <?php foreach ($talents as $talent): ?>
                             <?php
-                            $talentLink = '/talent-merch/' . rawurlencode($talent['slug']);
                             $talentInitials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $talent['name']), 0, 2));
                             $portraitUrl = !empty($talent['portrait'])
                                 ? store_asset_url((string) $talent['portrait'], $siteRoot)
                                 : '';
                             ?>
-                            <a class="talent-card-link" href="<?= store_escape($talentLink) ?>" aria-label="View merchandise for <?= store_escape($talent['name']) ?>">
+                            <a class="talent-poster-item" href="/products/<?= rawurlencode($talent['slug']) ?>" aria-label="Browse products for <?= store_escape($talent['name']) ?>">
                                 <figure class="talent-poster-card" data-generations="<?= store_escape(implode(' ', $talent['groups'])) ?>">
                                     <div class="talent-poster-media">
                                         <span class="talent-poster-initials" aria-hidden="true"><?= store_escape($talentInitials) ?></span>
@@ -167,7 +166,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
     <script>
         const exploreFilters = document.querySelectorAll('[data-explore-filter]');
-        const talentCards = document.querySelectorAll('.talent-card-link');
+        const talentCards = document.querySelectorAll('.talent-poster-item');
         const exploreEmpty = document.querySelector('.explore-empty');
         const talentSearch = document.querySelector('#talent-search');
         const talentSearchForm = document.querySelector('.talent-directory-search');

@@ -10,7 +10,7 @@ $catalogSearchInputName = isset($catalogSearchInputName) && is_string($catalogSe
     : 'search';
 $catalogSearchShowSuggestions = $catalogSearchClassName === 'site-header-search';
 $catalogSearchIsGlobal = $catalogSearchInputName === 'global_search';
-$catalogSearchIsFilter = in_array($catalogSearchClassName, ['filter-panel-search', 'talent-merch-filter-search'], true);
+$catalogSearchIsFilter = $catalogSearchClassName === 'filter-panel-search';
 $catalogSearchClass = $catalogSearchClassName !== ''
     ? ' ' . store_escape($catalogSearchClassName)
     : '';
