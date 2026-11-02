@@ -552,40 +552,33 @@ require __DIR__ . '/app/views/layout/head.php';
                             </button>
                         <?php endforeach; ?>
                     </div>
-                    <div class="shop-filter-control">
-                        <button class="button-text" type="button" data-shop-filter-toggle aria-expanded="false" aria-controls="home-shop-filter-panel">
-                            <span>Filter</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M7 12h10"/><path d="M10 17h4"/></svg>
-                        </button>
-                        <div class="shop-filter-panel" id="home-shop-filter-panel" data-shop-filter-panel hidden>
-                            <div class="availability-filters" role="group" aria-label="Filter by availability">
-                                <span class="filter-hint">Availability</span>
-                                <button type="button" class="active" data-availability-filter="all" aria-pressed="true">Everything</button>
-                                <button type="button" data-availability-filter="ready" aria-pressed="false">In stock</button>
-                                <button type="button" data-availability-filter="preorder" aria-pressed="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                                    Pre-order <span class="filter-count"><?= $preorderCountInShop ?></span>
-                                </button>
-                                <button type="button" data-availability-filter="flash" aria-pressed="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                                    Flash drop
-                                </button>
-                                <button type="button" class="saved-filter" data-saved-filter aria-pressed="false">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                                    Saved <span class="filter-count" data-saved-filter-count><?= count($favoriteProductIds) ?></span>
-                                </button>
+                    <div class="sort-control shop-toolbar-sort-control">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                        <span>Sort by</span>
+                        <div class="shop-sort-dropdown" data-shop-sort-dropdown>
+                            <button
+                                class="shop-sort-trigger"
+                                type="button"
+                                data-shop-sort-trigger
+                                aria-haspopup="listbox"
+                                aria-expanded="false"
+                                aria-controls="home-shop-sort-options"
+                            >
+                                <span data-shop-sort-label>Featured</span>
+                            </button>
+                            <div class="shop-sort-options" id="home-shop-sort-options" data-shop-sort-options role="listbox" aria-label="Sort products" hidden>
+                                <button type="button" role="option" data-shop-sort-option="featured" aria-selected="true">Featured</button>
+                                <button type="button" role="option" data-shop-sort-option="price-low" aria-selected="false">Low to high</button>
+                                <button type="button" role="option" data-shop-sort-option="price-high" aria-selected="false">High to low</button>
+                                <button type="button" role="option" data-shop-sort-option="name" aria-selected="false">A to Z</button>
                             </div>
-                            <label class="sort-control">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                                <span>Sort by</span>
-                                <select data-shop-sort>
-                                    <option value="featured">Featured</option>
-                                    <option value="price-low">Price: low to high</option>
-                                    <option value="price-high">Price: high to low</option>
-                                    <option value="name">Name: A to Z</option>
-                                </select>
-                            </label>
                         </div>
+                        <select data-shop-sort aria-label="Sort products" hidden>
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Low to high</option>
+                            <option value="price-high">High to low</option>
+                            <option value="name">A to Z</option>
+                        </select>
                     </div>
                 </div>
 
@@ -661,7 +654,6 @@ require __DIR__ . '/app/views/layout/head.php';
                             data-price="<?= $price ?>"
                             data-name="<?= store_escape(strtolower($productName)) ?>"
                             data-talent="<?= store_escape(strtolower($talentName)) ?>"
-                            data-saved="<?= $isFavorite ? 'true' : 'false' ?>"
                             data-featured-index="<?= $index ?>"
                             data-quick-view="<?= store_escape((string) json_encode($quickViewPayload, JSON_UNESCAPED_SLASHES)) ?>"
                         >
@@ -934,12 +926,12 @@ require __DIR__ . '/app/views/layout/head.php';
             const shopGrid = document.querySelector("[data-shop-grid]");
             const productCards = shopGrid ? Array.from(shopGrid.querySelectorAll("[data-product-card]")) : [];
             const categoryTabs = Array.from(document.querySelectorAll("[data-category-tab]"));
-            const shopFilterToggle = document.querySelector("[data-shop-filter-toggle]");
-            const shopFilterPanel = document.querySelector("[data-shop-filter-panel]");
-            const availabilityBtns = Array.from(document.querySelectorAll("[data-availability-filter]"));
-            const savedFilterBtn = document.querySelector("[data-saved-filter]");
-            const savedFilterCountEl = document.querySelector("[data-saved-filter-count]");
             const sortSelect = document.querySelector("[data-shop-sort]");
+            const sortDropdown = document.querySelector("[data-shop-sort-dropdown]");
+            const sortTrigger = document.querySelector("[data-shop-sort-trigger]");
+            const sortLabel = document.querySelector("[data-shop-sort-label]");
+            const sortOptionsPanel = document.querySelector("[data-shop-sort-options]");
+            const sortOptionButtons = Array.from(document.querySelectorAll("[data-shop-sort-option]"));
             const resultsCaption = document.querySelector("[data-shop-results-caption]");
             const emptyState = document.querySelector("[data-shop-empty]");
             const resetBtn = document.querySelector("[data-shop-reset]");
@@ -950,34 +942,94 @@ require __DIR__ . '/app/views/layout/head.php';
 
             let activeCategory = "All merch";
             let availabilityFilter = "all";
-            let savedOnly = false;
             let sortOrder = "featured";
             let searchQuery = "";
             let currentShopPage = 1;
             const shopPageSize = 8;
 
-            const setShopFilterPanelOpen = (open) => {
-                if (!shopFilterToggle || !shopFilterPanel) {
+            const setSortDropdownOpen = (open, focusSelected = false) => {
+                if (!sortTrigger || !sortOptionsPanel) {
                     return;
                 }
-                shopFilterToggle.setAttribute("aria-expanded", String(open));
-                shopFilterPanel.hidden = !open;
+                sortTrigger.setAttribute("aria-expanded", String(open));
+                sortOptionsPanel.hidden = !open;
+                if (open && focusSelected) {
+                    const selectedOption = sortOptionButtons.find((option) => option.dataset.shopSortOption === sortOrder);
+                    (selectedOption || sortOptionButtons[0])?.focus();
+                }
             };
 
-            shopFilterToggle?.addEventListener("click", () => {
-                setShopFilterPanelOpen(shopFilterToggle.getAttribute("aria-expanded") !== "true");
+            const syncSortDropdown = () => {
+                const selectedOption = sortOptionButtons.find((option) => option.dataset.shopSortOption === sortOrder);
+                if (sortLabel && selectedOption) {
+                    sortLabel.textContent = selectedOption.textContent?.trim() || "";
+                }
+                sortOptionButtons.forEach((option) => {
+                    const isSelected = option.dataset.shopSortOption === sortOrder;
+                    option.setAttribute("aria-selected", String(isSelected));
+                    option.tabIndex = isSelected ? 0 : -1;
+                });
+            };
+
+            sortTrigger?.addEventListener("click", () => {
+                setSortDropdownOpen(sortTrigger.getAttribute("aria-expanded") !== "true", true);
+            });
+
+            sortOptionButtons.forEach((option) => {
+                option.addEventListener("click", () => {
+                    sortOrder = option.dataset.shopSortOption || "featured";
+                    if (sortSelect) {
+                        sortSelect.value = sortOrder;
+                    }
+                    syncSortDropdown();
+                    setSortDropdownOpen(false);
+                    sortTrigger?.focus();
+                    applyShopFilters();
+                });
+            });
+
+            sortDropdown?.addEventListener("keydown", (event) => {
+                if (!(event instanceof KeyboardEvent) || sortOptionButtons.length === 0) {
+                    return;
+                }
+                if (event.key === "Tab" && sortTrigger?.getAttribute("aria-expanded") === "true") {
+                    setSortDropdownOpen(false);
+                    return;
+                }
+                if (
+                    event.target === sortTrigger
+                    && (event.key === "ArrowDown" || event.key === "ArrowUp")
+                    && sortTrigger?.getAttribute("aria-expanded") !== "true"
+                ) {
+                    event.preventDefault();
+                    setSortDropdownOpen(true, true);
+                    return;
+                }
+                const focusedIndex = sortOptionButtons.indexOf(document.activeElement);
+                let nextIndex = focusedIndex;
+                if (event.key === "ArrowDown") {
+                    nextIndex = focusedIndex < 0 ? 0 : (focusedIndex + 1) % sortOptionButtons.length;
+                } else if (event.key === "ArrowUp") {
+                    nextIndex = focusedIndex < 0 ? sortOptionButtons.length - 1 : (focusedIndex - 1 + sortOptionButtons.length) % sortOptionButtons.length;
+                } else if (event.key === "Home") {
+                    nextIndex = 0;
+                } else if (event.key === "End") {
+                    nextIndex = sortOptionButtons.length - 1;
+                } else if (event.key === "Escape") {
+                    setSortDropdownOpen(false);
+                    sortTrigger?.focus();
+                    event.preventDefault();
+                    return;
+                } else {
+                    return;
+                }
+                event.preventDefault();
+                sortOptionButtons[nextIndex]?.focus();
             });
 
             document.addEventListener("click", (event) => {
-                if (event.target instanceof Node && !shopFilterToggle?.parentElement?.contains(event.target)) {
-                    setShopFilterPanelOpen(false);
-                }
-            });
-
-            document.addEventListener("keydown", (event) => {
-                if (event.key === "Escape" && shopFilterToggle?.getAttribute("aria-expanded") === "true") {
-                    setShopFilterPanelOpen(false);
-                    shopFilterToggle.focus();
+                if (event.target instanceof Node && !sortDropdown?.contains(event.target)) {
+                    setSortDropdownOpen(false);
                 }
             });
 
@@ -990,7 +1042,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 const matchingCards = productCards.filter((card) => {
                     const cardCategory = card.dataset.category || "";
                     const cardStatus = card.dataset.status || "ready";
-                    const cardSaved = card.dataset.saved === "true";
                     const cardName = card.dataset.name || "";
                     const cardTalent = card.dataset.talent || "";
 
@@ -998,13 +1049,12 @@ require __DIR__ . '/app/views/layout/head.php';
                         || cardCategory.toLowerCase() === activeCategory.toLowerCase()
                         || cardCategory.toLowerCase().includes(activeCategory.toLowerCase());
                     const matchesAvailability = availabilityFilter === "all" || cardStatus === availabilityFilter;
-                    const matchesSaved = !savedOnly || cardSaved;
                     const matchesSearch = !normalizedQuery
                         || cardName.includes(normalizedQuery)
                         || cardTalent.includes(normalizedQuery)
                         || cardCategory.toLowerCase().includes(normalizedQuery);
 
-                    return matchesCategory && matchesAvailability && matchesSaved && matchesSearch;
+                    return matchesCategory && matchesAvailability && matchesSearch;
                 });
 
                 matchingCards.sort((a, b) => {
@@ -1076,26 +1126,6 @@ require __DIR__ . '/app/views/layout/head.php';
                     tab.setAttribute("aria-selected", String(isCurrent));
                 });
 
-                availabilityBtns.forEach((btn) => {
-                    const isCurrent = (btn.dataset.availabilityFilter || "") === availabilityFilter;
-                    btn.classList.toggle("active", isCurrent);
-                    btn.setAttribute("aria-pressed", String(isCurrent));
-                });
-
-                if (savedFilterBtn) {
-                    savedFilterBtn.classList.toggle("active", savedOnly);
-                    savedFilterBtn.setAttribute("aria-pressed", String(savedOnly));
-                    const heartSvg = savedFilterBtn.querySelector("svg");
-                    if (heartSvg) {
-                        heartSvg.setAttribute("fill", savedOnly ? "currentColor" : "none");
-                    }
-                }
-
-                shopFilterToggle?.classList.toggle(
-                    "is-active",
-                    availabilityFilter !== "all" || savedOnly || sortOrder !== "featured"
-                );
-
                 return matchingCards.length;
             };
 
@@ -1142,20 +1172,9 @@ require __DIR__ . '/app/views/layout/head.php';
                 });
             });
 
-            availabilityBtns.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    availabilityFilter = btn.dataset.availabilityFilter || "all";
-                    applyShopFilters();
-                });
-            });
-
-            savedFilterBtn?.addEventListener("click", () => {
-                savedOnly = !savedOnly;
-                applyShopFilters();
-            });
-
             sortSelect?.addEventListener("change", () => {
                 sortOrder = sortSelect.value || "featured";
+                syncSortDropdown();
                 applyShopFilters();
             });
 
@@ -1163,7 +1182,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 searchQuery = "";
                 activeCategory = "All merch";
                 availabilityFilter = "all";
-                savedOnly = false;
                 if (sortSelect) {
                     sortSelect.value = "featured";
                 }
@@ -1172,6 +1190,7 @@ require __DIR__ . '/app/views/layout/head.php';
                 if (searchOverlayInput) {
                     searchOverlayInput.value = "";
                 }
+                syncSortDropdown();
                 applyShopFilters();
             });
 
@@ -1188,35 +1207,12 @@ require __DIR__ . '/app/views/layout/head.php';
                         ? (categoryTabs.find((tab) => (tab.dataset.categoryTab || "").toLowerCase() === targetCategory.toLowerCase())?.dataset.categoryTab || "All merch")
                         : "All merch";
                     availabilityFilter = targetStatus || "all";
-                    savedOnly = false;
                     applyShopFilters();
                     shopElement.scrollIntoView({ behavior: "smooth" });
                 });
             });
 
-            window.addEventListener("holoverse:favorite-updated", (event) => {
-                if (!(event instanceof CustomEvent) || !event.detail) {
-                    return;
-                }
-                const { productId, isFavorite, favoriteCount } = event.detail;
-                productCards.forEach((card) => {
-                    if (Number(card.dataset.productId || 0) === Number(productId)) {
-                        card.dataset.saved = isFavorite ? "true" : "false";
-                    }
-                });
-                if (savedFilterCountEl) {
-                    if (typeof favoriteCount === "number") {
-                        savedFilterCountEl.textContent = String(favoriteCount);
-                    } else {
-                        const savedCardsCount = productCards.filter((c) => c.dataset.saved === "true").length;
-                        savedFilterCountEl.textContent = String(savedCardsCount);
-                    }
-                }
-                if (savedOnly) {
-                    applyShopFilters();
-                }
-            });
-
+            syncSortDropdown();
             applyShopFilters();
 
             // Quick View Modal
