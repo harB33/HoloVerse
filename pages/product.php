@@ -225,7 +225,7 @@ require __DIR__ . '/../app/views/layout/head.php';
             align-items: stretch;
             gap: clamp(32px, 5vw, 68px);
             border: 1px solid var(--line);
-            border-radius: 8px;
+            border-radius: 0;
             background: #fff;
             padding: clamp(20px, 2.5vw, 36px);
             box-shadow: 0 18px 42px rgba(15, 29, 51, 0.06);
@@ -235,7 +235,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-recommendations-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
         .product-recommendations-heading h2 { margin: 6px 0 0; color: var(--ink); font-family: var(--font-display); font-size: clamp(1.6rem, 2.6vw, 2.3rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; }
         .product-recommendations-controls { display: flex; flex: 0 0 auto; gap: 8px; }
-        .product-recommendations-controls button { display: grid; width: 40px; height: 40px; cursor: pointer; place-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); transition: border-color .18s, color .18s, background-color .18s; }
+        .product-recommendations-controls button { display: grid; width: 40px; height: 40px; cursor: pointer; place-items: center; border: 1px solid var(--line); border-radius: 0; background: var(--bg); color: var(--ink); transition: border-color .18s, color .18s, background-color .18s; }
         .product-recommendations-controls button:hover:not(:disabled) { border-color: var(--holo-cyan); background: var(--surface); color: var(--holo-deep); }
         .product-recommendations-controls button:disabled { cursor: not-allowed; opacity: .4; }
         .product-recommendations-controls button:focus-visible { outline: 2px solid var(--holo-cyan); outline-offset: 2px; }
@@ -588,6 +588,13 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-not-found { max-width: 680px; margin: 64px auto 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 48px 32px; text-align: center; }
         .product-not-found h1 { margin: 0 0 10px; color: var(--ink); font-family: var(--font-display); font-size: 2rem; }
         .product-not-found p { margin: 0 0 22px; color: var(--muted); }
+
+        .product-layout,
+        .product-layout *,
+        .product-recommendations-controls,
+        .product-recommendations-controls * {
+            border-radius: 0;
+        }
 
         @media (max-width: 1100px) {
             .product-recommendations-track > .product-card { flex-basis: calc((100% - 40px) / 3); }

@@ -58,6 +58,10 @@ const showCollectorFeedback = (message, loginUrl = '', type = 'success') => {
     toast.classList.toggle('is-success', !isError);
     toast.setAttribute('role', isError ? 'alert' : 'status');
     toast.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+    const iconPath = toast.querySelector('.collector-feedback-toast-icon path');
+    if (iconPath) {
+        iconPath.setAttribute('d', isError ? 'M15 9l-6 6M9 9l6 6' : 'm8 12 2.5 2.5L16 9');
+    }
     const copy = toast.querySelector('.collector-feedback-toast-copy');
     copy.replaceChildren(document.createTextNode(message));
     if (loginUrl) {

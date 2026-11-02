@@ -35,6 +35,8 @@ if ($cardStockQuantity <= 0) {
 } elseif ($cardStockQuantity > 0 && $cardStockQuantity <= 5) {
     $cardBadge = $cardStockQuantity . ' left';
 }
+$cardCatalogStatus = $cardBadge === 'Sold out' ? 'sold-out' : $cardStatus;
+$cardCatalogStatusLabel = $cardBadge === 'Sold out' ? 'Sold out' : $cardStatusLabel;
 $cardRawImageUrl = (string) ($product['image_url'] ?? '');
 $cardImageUrl = $cardRawImageUrl !== ''
     ? store_asset_url($cardRawImageUrl, $cardSiteRoot)
@@ -167,13 +169,13 @@ if (isset($productCardAttributes) && is_array($productCardAttributes)) {
                     <del><?= store_escape(store_format_price($cardCompareAtPrice)) ?></del>
                 <?php endif; ?>
             <?php else: ?>
-                <span class="merch-status status-<?= store_escape($cardStatus) ?>">
-                    <?php if ($cardStatus === 'flash'): ?>
+                <span class="merch-status status-<?= store_escape($cardCatalogStatus) ?>">
+                    <?php if ($cardCatalogStatus === 'flash'): ?>
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                    <?php elseif ($cardStatus === 'preorder'): ?>
+                    <?php elseif ($cardCatalogStatus === 'preorder'): ?>
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                     <?php endif; ?>
-                    <?= store_escape($cardStatusLabel) ?><?= $cardShipWindow !== '' ? ' · ' . store_escape($cardShipWindow) : '' ?>
+                    <?= store_escape($cardCatalogStatusLabel) ?><?= $cardCatalogStatus === 'preorder' && $cardShipWindow !== '' ? ' · ' . store_escape($cardShipWindow) : '' ?>
                 </span>
             <?php endif; ?>
             <span><?= store_escape($cardVariantNote) ?></span>

@@ -143,9 +143,8 @@ $headerCsrfToken = store_csrf_token();
                         <div class="account-dropdown">
                             <div class="account-dropdown-identity">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <circle cx="12" cy="10" r="3" />
-                                    <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                                    <circle cx="12" cy="8" r="5" />
+                                    <path d="M20 21a8 8 0 0 0-16 0" />
                                 </svg>
                                 <span class="account-dropdown-name">Guest mode</span>
                             </div>
@@ -584,12 +583,46 @@ $headerCsrfToken = store_csrf_token();
         const cartSubtotalElement = document.querySelector("[data-cart-drawer-subtotal]");
         const cartPreorderNote = document.querySelector("[data-cart-drawer-preorder-note]");
         const cartPreorderCopy = document.querySelector("[data-cart-drawer-preorder-copy]");
+        let cartDrawerCloseTimer;
+
+        const finishCartDrawerClose = () => {
+            if (!cartDrawer?.classList.contains("is-closing")) {
+                return;
+            }
+            cartDrawer.hidden = true;
+            cartDrawer.classList.remove("is-closing");
+            cartDrawer.removeAttribute("aria-hidden");
+            cartDrawerCloseTimer = undefined;
+        };
+
+        cartDrawer?.addEventListener("animationend", (event) => {
+            if (event.target === cartDrawer && event.animationName === "cart-drawer-slide-out") {
+                finishCartDrawerClose();
+            }
+        });
 
         const setCartDrawerOpen = (open) => {
             if (!cartDrawer || !cartBackdrop) {
                 return;
             }
-            cartDrawer.hidden = !open;
+            if (cartDrawerCloseTimer !== undefined) {
+                window.clearTimeout(cartDrawerCloseTimer);
+                cartDrawerCloseTimer = undefined;
+            }
+            if (open) {
+                cartDrawer.hidden = false;
+                cartDrawer.classList.remove("is-closing");
+                cartDrawer.removeAttribute("aria-hidden");
+            } else if (!cartDrawer.hidden) {
+                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                    cartDrawer.hidden = true;
+                    cartDrawer.classList.remove("is-closing");
+                } else {
+                    cartDrawer.setAttribute("aria-hidden", "true");
+                    cartDrawer.classList.add("is-closing");
+                    cartDrawerCloseTimer = window.setTimeout(finishCartDrawerClose, 300);
+                }
+            }
             cartBackdrop.hidden = !open;
             cartOpenButtons.forEach((btn) => btn.setAttribute("aria-expanded", String(open)));
         };
