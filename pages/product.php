@@ -216,7 +216,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         }
 
         .product-breadcrumb a:hover { color: var(--holo-deep); }
-        .product-breadcrumb span:last-child { color: var(--ink); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+        .product-breadcrumb span:last-child { color: var(--muted); font-weight: inherit; overflow: hidden; text-overflow: ellipsis; }
         .product-breadcrumb-separator { width: 14px; height: 14px; flex: 0 0 14px; color: var(--muted); }
 
         .product-layout {
@@ -585,7 +585,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         .product-add-button { display: inline-flex; min-height: 48px; cursor: pointer; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 8px; background: var(--ink); padding: 12px 20px; color: #fff; font: 800 0.92rem var(--font-sans); transition: background-color 160ms ease, transform 160ms ease; }
         .product-add-button:hover:not(:disabled) { background: var(--holo-deep); transform: translateY(-1px); }
         .product-add-button:disabled { cursor: not-allowed; background: #aab5bd; }
-        .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; margin: 0; color: var(--ink); font-size: 0.85rem; font-weight: 800; line-height: 1.5; text-decoration: none; }
+        .product-back-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; margin: 0; color: var(--muted); font-size: 0.84rem; font-weight: 600; line-height: 1.5; text-decoration: none; }
         .product-back-link svg { display: block; width: 15px; height: 15px; flex: 0 0 15px; }
         .product-back-link:hover { color: var(--holo-deep); }
         .product-not-found { max-width: 680px; margin: 64px auto 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 48px 32px; text-align: center; }
