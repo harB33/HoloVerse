@@ -443,8 +443,8 @@ require __DIR__ . '/app/views/layout/head.php';
 
         <main id="top">
             <section class="hero" aria-label="HoloVerse official shop introduction">
-                <div class="hero-image" data-image-slideshow data-slideshow-images="/assets/images/banner/seasonaldays.webp|/assets/images/banner/ina-slide.jpg|/assets/images/banner/kronii.webp|/assets/images/banner/dreamspark.webp|/assets/images/banner/regloss_ar_live.webp|/assets/images/banner/travel_to_indo.webp" aria-hidden="true">
-                    <div class="hero-slide is-active" data-slideshow-layer style="background-image: url('/assets/images/banner/seasonaldays.webp');"></div>
+                <div class="hero-image" data-image-slideshow data-slideshow-images="/Assets/images/banner/landing-allforone.webp|/Assets/images/banner/landing-flowglow.webp|/Assets/images/banner/landing-justice.png|/Assets/images/banner/landing-compas-horizon.webp|/Assets/images/banner/landing-regloss-ar-live.webp|/Assets/images/banner/landing-travel-to-indo.webp" aria-hidden="true">
+                    <div class="hero-slide is-active" data-slideshow-layer style="background-image: url('/Assets/images/banner/landing-allforone.webp');"></div>
                     <div class="hero-slide" data-slideshow-layer></div>
                 </div>
                 <div class="hero-shade" data-home-reveal="shade"></div>
