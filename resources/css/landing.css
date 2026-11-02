@@ -433,7 +433,7 @@ body.home-landing main.landing-shell,
 
 .hero-image {
   position: absolute;
-  inset: -2%;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -443,25 +443,18 @@ body.home-landing main.landing-shell,
   background-position: center;
   background-size: cover;
   opacity: 0;
-  transform: scale(1.015);
-  transition: opacity 850ms ease, transform 7s linear;
-  will-change: opacity, transform;
+  transition: opacity 850ms ease;
+  will-change: opacity;
 }
 
 .hero-slide.is-active {
   opacity: 1;
-  transform: scale(1.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-slide,
   .collector-showcase-art-slide {
     transition: none;
-  }
-
-  .hero-slide,
-  .collector-showcase-art-slide {
-    transform: none;
   }
 }
 

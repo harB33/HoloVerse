@@ -7395,14 +7395,12 @@ body.collector-showcase-page .collector-showcase-intro {
   background-position: center;
   background-size: cover;
   opacity: 0;
-  transform: scale(1.015);
-  transition: opacity 850ms ease, transform 7s linear;
-  will-change: opacity, transform;
+  transition: opacity 850ms ease;
+  will-change: opacity;
 }
 
 .collector-showcase-art-slide.is-active {
   opacity: 1;
-  transform: scale(1.08);
 }
 
 .collector-showcase-hero-art-caption {
