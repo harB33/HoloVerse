@@ -2256,12 +2256,27 @@ footer.site-footer {
   }
 }
 
+@keyframes cart-drawer-slide-out {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
 .cart-drawer:not([hidden]) {
   animation: cart-drawer-slide-in 260ms ease-out both;
 }
 
+.cart-drawer.is-closing {
+  animation: cart-drawer-slide-out 260ms ease-in both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cart-drawer:not([hidden]) {
+  .cart-drawer:not([hidden]),
+  .cart-drawer.is-closing {
     animation: none;
   }
 }

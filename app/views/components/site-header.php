@@ -584,12 +584,46 @@ $headerCsrfToken = store_csrf_token();
         const cartSubtotalElement = document.querySelector("[data-cart-drawer-subtotal]");
         const cartPreorderNote = document.querySelector("[data-cart-drawer-preorder-note]");
         const cartPreorderCopy = document.querySelector("[data-cart-drawer-preorder-copy]");
+        let cartDrawerCloseTimer;
+
+        const finishCartDrawerClose = () => {
+            if (!cartDrawer?.classList.contains("is-closing")) {
+                return;
+            }
+            cartDrawer.hidden = true;
+            cartDrawer.classList.remove("is-closing");
+            cartDrawer.removeAttribute("aria-hidden");
+            cartDrawerCloseTimer = undefined;
+        };
+
+        cartDrawer?.addEventListener("animationend", (event) => {
+            if (event.target === cartDrawer && event.animationName === "cart-drawer-slide-out") {
+                finishCartDrawerClose();
+            }
+        });
 
         const setCartDrawerOpen = (open) => {
             if (!cartDrawer || !cartBackdrop) {
                 return;
             }
-            cartDrawer.hidden = !open;
+            if (cartDrawerCloseTimer !== undefined) {
+                window.clearTimeout(cartDrawerCloseTimer);
+                cartDrawerCloseTimer = undefined;
+            }
+            if (open) {
+                cartDrawer.hidden = false;
+                cartDrawer.classList.remove("is-closing");
+                cartDrawer.removeAttribute("aria-hidden");
+            } else if (!cartDrawer.hidden) {
+                if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                    cartDrawer.hidden = true;
+                    cartDrawer.classList.remove("is-closing");
+                } else {
+                    cartDrawer.setAttribute("aria-hidden", "true");
+                    cartDrawer.classList.add("is-closing");
+                    cartDrawerCloseTimer = window.setTimeout(finishCartDrawerClose, 300);
+                }
+            }
             cartBackdrop.hidden = !open;
             cartOpenButtons.forEach((btn) => btn.setAttribute("aria-expanded", String(open)));
         };
