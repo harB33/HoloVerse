@@ -467,10 +467,10 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .admin-kicker,
 .admin-management-page .flash-sale-section-kicker {
   color: #087fa8;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .15em;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .07em;
   text-transform: uppercase;
 }
 
@@ -571,10 +571,10 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .product-input-section legend {
   padding-bottom: 8px;
   color: #62788b;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .13em;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .07em;
   text-transform: uppercase;
 }
 
@@ -596,6 +596,64 @@ body.admin-management-page .footer-bottom a:focus-visible {
 
 .admin-management-page .product-input-form textarea {
   min-height: 100px;
+}
+
+.admin-management-page .product-input-sku-control {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.admin-management-page .product-input-sku-control input {
+  min-width: 0;
+  flex: 1;
+  margin-top: 6px;
+}
+
+.admin-management-page .product-input-sku-control button {
+  display: inline-flex;
+  min-height: 42px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  align-self: flex-end;
+  border: 1px solid #b8dce8;
+  border-radius: 2px;
+  padding: 0 12px;
+  background: #effaff;
+  color: #087fa8;
+  font: 700 10px var(--font-montserrat), "Montserrat", sans-serif;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, color .18s ease;
+}
+
+.admin-management-page .product-input-sku-control button:hover {
+  border-color: #80cfe2;
+  background: #e2f6fb;
+  color: #075879;
+}
+
+.admin-management-page .product-input-sku-control button:focus-visible {
+  outline: 2px solid #087fa8;
+  outline-offset: 2px;
+}
+
+.admin-management-page .product-input-sku-control button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-management-page .product-input-sku-help,
+.admin-management-page .product-input-sku-status {
+  margin: 7px 0 0;
+  color: #718096;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.admin-management-page .product-input-sku-status:empty {
+  display: none;
 }
 
 .admin-management-page .product-input-file-row {
@@ -697,8 +755,8 @@ body.admin-management-page .footer-bottom a:focus-visible {
   padding: 9px 11px;
   background: #effaff;
   color: #087fa8;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
   box-shadow: none;
 }
 
@@ -762,9 +820,9 @@ body.admin-management-page .footer-bottom a:focus-visible {
 }
 
 .admin-management-page .flash-sale-overview-card p {
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
-  letter-spacing: .1em;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .06em;
 }
 
 .admin-management-page .flash-sale-overview-card strong {
@@ -813,7 +871,7 @@ body.admin-management-page .footer-bottom a:focus-visible {
   border: 1px solid #ccecf5;
   border-radius: 0;
   background: #effaff;
-  font-family: ui-monospace, "Courier New", monospace;
+  font-family: Arial, sans-serif;
 }
 
 .admin-management-page .flash-sale-schedule-form {
@@ -824,7 +882,8 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .flash-sale-field {
   gap: 7px;
   color: #526b7d;
-  font-size: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
   letter-spacing: .04em;
   text-transform: uppercase;
 }
@@ -847,7 +906,7 @@ body.admin-management-page .footer-bottom a:focus-visible {
 }
 
 .admin-management-page .flash-sale-summary-label {
-  font-family: ui-monospace, "Courier New", monospace;
+  font-family: Arial, sans-serif;
 }
 
 .admin-management-page .flash-sale-form-footer {
@@ -895,8 +954,8 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .flash-sale-table th {
   background: #f4f7fa;
   color: #718497;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
 }
 
 .admin-management-page .flash-sale-table td {
@@ -939,8 +998,8 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .admin-inventory-count {
   border-radius: 0;
   padding: 8px 11px;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
   letter-spacing: .04em;
 }
 
@@ -974,9 +1033,9 @@ body.admin-management-page .footer-bottom a:focus-visible {
 }
 
 .admin-management-page .admin-inventory-overview-card span {
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
-  letter-spacing: .1em;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .06em;
 }
 
 .admin-management-page .admin-inventory-overview-card strong {
@@ -1033,8 +1092,8 @@ body.admin-management-page .footer-bottom a:focus-visible {
 .admin-management-page .admin-inventory-table th {
   background: #f4f7fa;
   color: #718497;
-  font-family: ui-monospace, "Courier New", monospace;
-  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
 }
 
 .admin-management-page .admin-inventory-table tbody tr:hover {
@@ -1134,6 +1193,14 @@ body.admin-management-page .footer-bottom a:focus-visible {
 
   .admin-management-page .product-input-section {
     padding: 20px 18px;
+  }
+
+  .admin-management-page .product-input-sku-control {
+    flex-wrap: wrap;
+  }
+
+  .admin-management-page .product-input-sku-control button {
+    min-height: 40px;
   }
 
   .admin-management-page .product-input-actions {

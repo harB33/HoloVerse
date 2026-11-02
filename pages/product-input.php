@@ -470,9 +470,17 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 <label for="variant-name">Variant name</label>
                                 <input id="variant-name" name="variant_name" type="text" maxlength="100" required value="<?= store_escape($form['variant_name']) ?>">
                             </div>
-                            <div>
+                            <div class="product-input-sku-field">
                                 <label for="sku">SKU</label>
-                                <input id="sku" name="sku" type="text" maxlength="50" required value="<?= store_escape($form['sku']) ?>">
+                                <div class="product-input-sku-control">
+                                    <input id="sku" name="sku" type="text" maxlength="50" required value="<?= store_escape($form['sku']) ?>" autocomplete="off" aria-describedby="sku-help sku-status">
+                                    <button type="button" id="generate-sku">
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 12h16M4 17h10"></path><path d="m17 4 3 3-3 3M7 14l-3 3 3 3"></path></svg>
+                                        Generate
+                                    </button>
+                                </div>
+                                <p id="sku-help" class="product-input-sku-help">Builds a suggested SKU from the product and variant names. The database checks uniqueness when saved.</p>
+                                <p id="sku-status" class="product-input-sku-status" role="status" aria-live="polite"></p>
                             </div>
                             <div>
                                 <label for="price">Price (PHP)</label>
@@ -538,6 +546,57 @@ require __DIR__ . '/../app/views/layout/head.php';
         <?php endif; ?>
     </main>
     <?php require __DIR__ . '/../app/views/components/site-footer.php'; ?>
+    <script>
+        (() => {
+            const productName = document.querySelector('#product-name');
+            const variantName = document.querySelector('#variant-name');
+            const skuInput = document.querySelector('#sku');
+            const generateButton = document.querySelector('#generate-sku');
+            const status = document.querySelector('#sku-status');
+            if (!productName || !variantName || !skuInput || !generateButton || !status) {
+                return;
+            }
+
+            const slug = (value, fallback, maxLength) => {
+                const words = value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                    .split('-')
+                    .filter(Boolean);
+                const parts = [];
+
+                for (const word of words) {
+                    const candidate = [...parts, word].join('-');
+                    if (candidate.length <= maxLength) {
+                        parts.push(word);
+                    } else if (parts.length === 0) {
+                        parts.push(word.slice(0, maxLength));
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+
+                return parts.join('-') || fallback;
+            };
+
+            generateButton.addEventListener('click', () => {
+                const productPart = slug(productName.value, 'PRODUCT', 12);
+                const variantPart = slug(variantName.value, 'VARIANT', 8);
+                const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+                    .map((value) => value.toString(16).padStart(2, '0'))
+                    .join('')
+                    .slice(0, 6)
+                    .toUpperCase();
+
+                skuInput.value = `HV-${productPart}-${variantPart}-${randomPart}`;
+                skuInput.dispatchEvent(new Event('input', { bubbles: true }));
+                status.textContent = 'SKU suggestion generated. You can edit it before saving.';
+                skuInput.focus();
+            });
+        })();
+    </script>
     <script>
         (() => {
             const imageList = document.querySelector('#additional-product-images');
