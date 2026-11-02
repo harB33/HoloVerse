@@ -3124,6 +3124,46 @@ footer.site-footer {
   gap: 20px;
 }
 
+.availability-toolbar-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.availability-toolbar-content > .availability-filters {
+  max-width: 100%;
+}
+
+.availability-active-filters {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.availability-active-filters[hidden] {
+  display: none;
+}
+
+.all-products-page .availability-active-filters .filter-chip {
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+
+.all-products-page .availability-active-filters .filter-chip:hover {
+  border-bottom-color: var(--cyan-dark);
+  background: transparent;
+  color: var(--cyan-dark);
+}
+
 .filter-hint {
   color: #94a2b1;
   font-size: 9px;
@@ -4642,7 +4682,6 @@ body.order-history-page * {
   .all-products-heading,
   .availability-toolbar,
   .products-catalog-layout > .generation-filter,
-  .products-catalog-results > .catalog-results-bar,
   .products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card,
   .products-catalog-results > .all-products-pagination,
   .products-catalog-results > .empty-search
@@ -4655,7 +4694,6 @@ body.order-history-page * {
   .all-products-heading,
   .availability-toolbar,
   .products-catalog-layout > .generation-filter,
-  .products-catalog-results > .catalog-results-bar,
   .products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card,
   .products-catalog-results > .all-products-pagination,
   .products-catalog-results > .empty-search
@@ -4987,6 +5025,11 @@ body.order-history-page .order-history-summary-total strong {
   padding-inline: 0 !important;
 }
 
+.all-products-main.landing-shell {
+  padding-top: 40px;
+  background: transparent;
+}
+
 /* Ensure inner sections span 100% of .landing-shell without introducing conflicting max-width caps or padding */
 .landing-shell > .explore,
 .landing-shell .explore.talent-directory-explore {
@@ -5149,7 +5192,7 @@ body.order-history-page .order-history-summary-total strong {
 /* All Products Catalog Redesign */
 .all-products-heading {
   margin-top: 48px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .all-products-heading h1 {
@@ -5159,6 +5202,11 @@ body.order-history-page .order-history-summary-total strong {
   line-height: 0.98;
   letter-spacing: -0.055em;
   color: var(--ink);
+}
+
+.all-products-heading > div > p:not(.eyebrow) {
+  margin-top: 10px;
+  color: #657487;
 }
 
 .all-products-heading .section-heading-aside {
@@ -5211,7 +5259,8 @@ body.order-history-page .order-history-summary-total strong {
 }
 
 .all-products-page .availability-toolbar {
-  margin-top: 36px;
+  margin-top: 15px;
+  justify-content: flex-start;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -5265,6 +5314,11 @@ body.order-history-page .order-history-summary-total strong {
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.all-products-page .generation-filter > .generation-filter-title {
+  margin-top: 12px;
+  padding-top: 10px;
 }
 
 .all-products-page .generation-filter .catalog-search + h2,
@@ -5355,6 +5409,11 @@ body.order-history-page .order-history-summary-total strong {
   background: transparent;
 }
 
+.all-products-page .catalog-search.filter-panel-search {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
 .all-products-page .catalog-search.filter-panel-search input[type="search"],
 .talents-page .catalog-search.filter-panel-search input[type="search"],
 .talents-page .catalog-search.talent-directory-search input[type="search"],
@@ -5433,6 +5492,12 @@ body.order-history-page .order-history-summary-total strong {
   margin: 0;
   display: grid;
   gap: 8px;
+}
+
+.all-products-page .category-filter:not(.sort-filter) {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .all-products-page .category-filter > label,
@@ -5903,10 +5968,6 @@ body.order-history-page .order-history-summary-total strong {
 .talent-card-link:focus-visible .talent-poster-caption small {
   color: #078bbd;
 }
-
-/* ==========================================================================
-   Pre-Order Page (/pre_order) — home-landing Redesign
-   ========================================================================== */
 
 body.preorder-page.home-landing .preorder-hero-banner {
   margin-bottom: 36px;

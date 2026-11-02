@@ -45,6 +45,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body class="talents-page home-landing">
     <div class="page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'talents';
         require __DIR__ . '/../app/views/components/site-header.php';
@@ -57,9 +58,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <p class="eyebrow">Talent Vault Directory</p>
                         <h1 id="explore-title">Explore merchandise by oshi</h1>
                         <p>Filter official apparel, plushies, voice packs, and figures directly tied to your favorite hololive production talent.</p>
-                    </div>
-                    <div class="all-products-intro-actions">
-                        <span class="all-products-count" data-talent-total-count><?= count($talents) ?> talents</span>
                     </div>
                 </div>
             </section>

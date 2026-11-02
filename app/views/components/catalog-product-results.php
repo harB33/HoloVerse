@@ -90,53 +90,37 @@ $buildFilterUrl = static function (array $overrides) use (
 };
 ?>
 
-<div class="catalog-results-bar">
-    <p class="results-caption" data-catalog-results-caption>
-        <?php if ($totalProductCount > 0): ?>
-            <?php
-            $showingStart = ($currentPage - 1) * $pageSize + 1;
-            $showingEnd = min($totalProductCount, $currentPage * $pageSize);
-            ?>
-            Showing <?= $showingStart ?>–<?= $showingEnd ?> of <?= number_format($totalProductCount) ?> <?= $totalProductCount === 1 ? 'piece' : 'pieces' ?> &middot; Official character goods
-        <?php else: ?>
-            0 pieces &middot; Official character goods
-        <?php endif; ?>
-    </p>
-
-    <?php if ($hasActiveFilters): ?>
-        <div class="active-filter-chips" aria-label="Active filters">
-            <?php if ($selectedGeneration !== ''): ?>
-                <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['generation' => '', 'page' => 1])) ?>" data-remove-filter="generation" aria-label="Remove <?= store_escape($generationName) ?> generation filter">
-                    <span>Generation: <?= store_escape($generationName) ?></span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </a>
-            <?php endif; ?>
-
-            <?php if ($selectedCategory > 0 && $categoryName !== ''): ?>
-                <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['category_slug' => '', 'page' => 1])) ?>" data-remove-filter="category" aria-label="Remove <?= store_escape($categoryName) ?> category filter">
-                    <span>Category: <?= store_escape($categoryName) ?></span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </a>
-            <?php endif; ?>
-
-            <?php if ($selectedAvailability !== 'all' && isset($availabilityLabels[$selectedAvailability])): ?>
-                <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['availability' => 'all', 'page' => 1])) ?>" data-remove-filter="availability" aria-label="Remove <?= store_escape($availabilityLabels[$selectedAvailability]) ?> availability filter">
-                    <span><?= store_escape($availabilityLabels[$selectedAvailability]) ?></span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </a>
-            <?php endif; ?>
-
-            <?php if ($productSearch !== ''): ?>
-                <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['search' => '', 'page' => 1])) ?>" data-remove-filter="search" aria-label="Remove search query">
-                    <span>&ldquo;<?= store_escape($productSearch) ?>&rdquo;</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </a>
-            <?php endif; ?>
-
-            <a class="filter-clear-all" href="/products" data-clear-all-filters>Clear all</a>
-        </div>
+<?php if ($hasActiveFilters): ?>
+    <?php if ($selectedGeneration !== ''): ?>
+        <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['generation' => '', 'page' => 1])) ?>" data-remove-filter="generation" aria-label="Remove <?= store_escape($generationName) ?> generation filter">
+            <span>Generation: <?= store_escape($generationName) ?></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </a>
     <?php endif; ?>
-</div>
+
+    <?php if ($selectedCategory > 0 && $categoryName !== ''): ?>
+        <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['category_slug' => '', 'page' => 1])) ?>" data-remove-filter="category" aria-label="Remove <?= store_escape($categoryName) ?> category filter">
+            <span>Category: <?= store_escape($categoryName) ?></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </a>
+    <?php endif; ?>
+
+    <?php if ($selectedAvailability !== 'all' && isset($availabilityLabels[$selectedAvailability])): ?>
+        <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['availability' => 'all', 'page' => 1])) ?>" data-remove-filter="availability" aria-label="Remove <?= store_escape($availabilityLabels[$selectedAvailability]) ?> availability filter">
+            <span><?= store_escape($availabilityLabels[$selectedAvailability]) ?></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </a>
+    <?php endif; ?>
+
+    <?php if ($productSearch !== ''): ?>
+        <a class="filter-chip" href="<?= store_escape($buildFilterUrl(['search' => '', 'page' => 1])) ?>" data-remove-filter="search" aria-label="Remove search query">
+            <span>&ldquo;<?= store_escape($productSearch) ?>&rdquo;</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </a>
+    <?php endif; ?>
+
+    <a class="filter-clear-all" href="/products" data-clear-all-filters>Clear all</a>
+<?php endif; ?>
 
 <?php if (!empty($products)): ?>
     <section class="product-grid all-products-grid" aria-label="All available products">

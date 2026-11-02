@@ -62,8 +62,6 @@ $generationResult = $conn->query(
 );
 $generations = $generationResult->fetch_all(PDO::FETCH_ASSOC);
 
-$preorderCatalogCount = store_catalog_product_count($conn, availability: 'preorder');
-
 if (
     $generalProductSearch === ''
     && $routeSegment !== ''
@@ -187,11 +185,7 @@ if ($isCatalogSearchRequest) {
     $pageCount = $searchPageCount;
     $currentPage = $searchCurrentPage;
     $catalogPaginationBasePath = $catalogPath;
-    echo '<div class="catalog-product-results-fragment"><span id="all-products-count">'
-        . number_format($totalProductCount)
-        . ' ' . ($totalProductCount === 1 ? 'product' : 'products')
-        . ($productSearch !== '' ? ' found' : '')
-        . '</span>';
+    echo '<div class="catalog-product-results-fragment">';
     require __DIR__ . '/../app/views/components/catalog-product-results.php';
     echo '</div>';
     $resultsHtml = ob_get_clean();
@@ -239,6 +233,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 <body class="all-products-page home-landing">
     <script>document.body.classList.add("products-page-loading");</script>
     <div class="page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'products';
         require __DIR__ . '/../app/views/components/site-header.php';
@@ -251,12 +246,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <h1 id="all-products-title">Shop all products</h1>
                     <p>Browse the full collection of official character apparel, plushies, scale figures, and collectibles.</p>
                 </div>
-                <div class="section-heading-aside">
-                    <span class="all-products-count" id="all-products-count"><?= number_format($totalProductCount) ?> <?= $totalProductCount === 1 ? 'product' : 'products' ?><?= $productSearch !== '' ? ' found' : '' ?></span>
-                </div>
             </section>
 
             <div class="availability-toolbar">
+                <div class="availability-toolbar-content">
                 <div class="availability-filters" role="group" aria-label="Filter by availability">
                     <span class="filter-hint">Availability</span>
                     <button type="button" class="<?= $selectedAvailability === 'all' ? 'active' : '' ?>" data-availability-filter="all" aria-pressed="<?= $selectedAvailability === 'all' ? 'true' : 'false' ?>">
@@ -265,32 +258,21 @@ require __DIR__ . '/../app/views/layout/head.php';
                     <button type="button" class="<?= $selectedAvailability === 'ready' ? 'active' : '' ?>" data-availability-filter="ready" aria-pressed="<?= $selectedAvailability === 'ready' ? 'true' : 'false' ?>">
                         In stock
                     </button>
-                    <a href="<?= store_escape($siteRoot . 'pre-order') ?>">
+                    <button type="button" class="<?= $selectedAvailability === 'preorder' ? 'active' : '' ?>" data-availability-filter="preorder" aria-pressed="<?= $selectedAvailability === 'preorder' ? 'true' : 'false' ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                         Pre-order
-                        <?php if ($preorderCatalogCount > 0): ?>
-                            <span class="filter-count"><?= $preorderCatalogCount ?></span>
-                        <?php endif; ?>
-                    </a>
+                    </button>
                     <a href="<?= store_escape($siteRoot . 'flash-sale') ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
                         Flash sale
                     </a>
                     <button type="button" class="saved-filter<?= $selectedAvailability === 'saved' ? ' active' : '' ?>" data-availability-filter="saved" data-saved-filter aria-pressed="<?= $selectedAvailability === 'saved' ? 'true' : 'false' ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                        Saved <span class="filter-count" data-saved-filter-count><?= count($favoriteProductIds) ?></span>
+                        Saved
                     </button>
                 </div>
-                <label class="sort-control">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                    <span>Sort</span>
-                    <select data-shop-sort name="sort" aria-label="Sort products">
-                        <option value="featured"<?= $selectedSort === 'featured' ? ' selected' : '' ?>>Featured</option>
-                        <option value="price-low"<?= $selectedSort === 'price-low' ? ' selected' : '' ?>>Price: low to high</option>
-                        <option value="price-high"<?= $selectedSort === 'price-high' ? ' selected' : '' ?>>Price: high to low</option>
-                        <option value="name"<?= $selectedSort === 'name' ? ' selected' : '' ?>>Name: A to Z</option>
-                    </select>
-                </label>
+                <div class="availability-active-filters" data-active-filter-chips role="group" aria-label="Active filters" hidden></div>
+                </div>
             </div>
 
             <div class="products-catalog-layout">
@@ -341,6 +323,32 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
                         </div>
                     </form>
+                    <div class="category-filter sort-filter">
+                        <label class="category-filter-label" for="catalog-sort-trigger">Sort by</label>
+                        <div class="category-filter-dropdown" data-sort-dropdown>
+                            <button class="category-filter-trigger" id="catalog-sort-trigger" type="button" aria-expanded="false" aria-controls="catalog-sort-options" data-sort-trigger>
+                                <span data-sort-label><?= match ($selectedSort) {
+                                    'price-low' => 'Price: low to high',
+                                    'price-high' => 'Price: high to low',
+                                    'name' => 'Name: A to Z',
+                                    default => 'Featured',
+                                } ?></span>
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                            </button>
+                            <div class="category-filter-options" id="catalog-sort-options" role="listbox" aria-label="Sort products" hidden>
+                                <button class="category-filter-option<?= $selectedSort === 'featured' ? ' is-selected' : '' ?>" type="button" role="option" data-sort-option="featured" aria-selected="<?= $selectedSort === 'featured' ? 'true' : 'false' ?>">Featured</button>
+                                <button class="category-filter-option<?= $selectedSort === 'price-low' ? ' is-selected' : '' ?>" type="button" role="option" data-sort-option="price-low" aria-selected="<?= $selectedSort === 'price-low' ? 'true' : 'false' ?>">Price: low to high</button>
+                                <button class="category-filter-option<?= $selectedSort === 'price-high' ? ' is-selected' : '' ?>" type="button" role="option" data-sort-option="price-high" aria-selected="<?= $selectedSort === 'price-high' ? 'true' : 'false' ?>">Price: high to low</button>
+                                <button class="category-filter-option<?= $selectedSort === 'name' ? ' is-selected' : '' ?>" type="button" role="option" data-sort-option="name" aria-selected="<?= $selectedSort === 'name' ? 'true' : 'false' ?>">Name: A to Z</button>
+                            </div>
+                            <select data-shop-sort name="sort" aria-label="Sort products" hidden>
+                                <option value="featured"<?= $selectedSort === 'featured' ? ' selected' : '' ?>>Featured</option>
+                                <option value="price-low"<?= $selectedSort === 'price-low' ? ' selected' : '' ?>>Price: low to high</option>
+                                <option value="price-high"<?= $selectedSort === 'price-high' ? ' selected' : '' ?>>Price: high to low</option>
+                                <option value="name"<?= $selectedSort === 'name' ? ' selected' : '' ?>>Name: A to Z</option>
+                            </select>
+                        </div>
+                    </div>
                     <h2 class="generation-filter-title" id="generation-filter-title">Generation</h2>
                     <nav class="generation-filter-list" aria-label="Product generations">
                         <?php
@@ -428,14 +436,64 @@ require __DIR__ . '/../app/views/layout/head.php';
             });
         }
 
+        const sortFilter = document.querySelector(".sort-filter");
+        if (sortFilter) {
+            const sortTrigger = sortFilter.querySelector("[data-sort-trigger]");
+            const sortOptions = sortFilter.querySelector("#catalog-sort-options");
+            const sortSelect = sortFilter.querySelector("select[data-shop-sort]");
+            const setSortMenuOpen = (open) => {
+                sortTrigger?.setAttribute("aria-expanded", String(open));
+                if (sortOptions) sortOptions.hidden = !open;
+            };
+
+            sortTrigger?.addEventListener("click", () => {
+                setSortMenuOpen(sortTrigger.getAttribute("aria-expanded") !== "true");
+            });
+
+            sortFilter.querySelectorAll("[data-sort-option]").forEach((option) => {
+                option.addEventListener("click", () => {
+                    if (!sortSelect) {
+                        return;
+                    }
+                    sortSelect.value = option.dataset.sortOption || "featured";
+                    setSortMenuOpen(false);
+                    sortSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+            });
+
+            document.addEventListener("click", (event) => {
+                if (event.target instanceof Node && !sortFilter.contains(event.target)) {
+                    setSortMenuOpen(false);
+                }
+            });
+
+            sortTrigger?.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    setSortMenuOpen(false);
+                }
+            });
+        }
+
         const catalogResults = document.querySelector(".products-catalog-results");
+        const activeFilterChipSlot = document.querySelector("[data-active-filter-chips]");
+        const syncActiveFilterChips = (root = catalogResults) => {
+            if (!activeFilterChipSlot || !root) {
+                return;
+            }
+
+            const chips = root.querySelectorAll(".filter-chip, .filter-clear-all");
+            activeFilterChipSlot.replaceChildren();
+            activeFilterChipSlot.hidden = chips.length === 0;
+            activeFilterChipSlot.append(...chips);
+        };
+        syncActiveFilterChips();
+
         const catalogRevealReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
             || document.documentElement.dataset.reduceMotion === "true";
         const catalogRevealTargets = [
             ".all-products-heading",
             ".availability-toolbar",
             ".products-catalog-layout > .generation-filter",
-            ".products-catalog-results > .catalog-results-bar",
             ".products-catalog-results > .product-grid:not(.products-loading-skeleton) > .catalog-product-card",
             ".products-catalog-results > .all-products-pagination",
             ".products-catalog-results > .empty-search",
@@ -516,6 +574,20 @@ require __DIR__ . '/../app/views/layout/head.php';
             if (sortSelect && sortSelect.value !== sort) {
                 sortSelect.value = sort;
             }
+            const sortFilter = document.querySelector(".sort-filter");
+            const sortOption = [...(sortFilter?.querySelectorAll("[data-sort-option]") || [])]
+                .find((option) => option.dataset.sortOption === sort);
+            if (sortOption) {
+                sortFilter.querySelectorAll("[data-sort-option]").forEach((option) => {
+                    const isSelected = option === sortOption;
+                    option.classList.toggle("is-selected", isSelected);
+                    option.setAttribute("aria-selected", String(isSelected));
+                });
+                const sortLabel = sortFilter.querySelector("[data-sort-label]");
+                if (sortLabel) {
+                    sortLabel.textContent = sortOption.textContent.trim();
+                }
+            }
 
             // 4. Sync Left Sidebar Category Dropdown
             const categoryForm = document.querySelector(".category-filter");
@@ -588,7 +660,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                 }
                 const resultDocument = new DOMParser().parseFromString(data.html, "text/html");
                 const nextResults = resultDocument.querySelector(".catalog-product-results-fragment");
-                const nextCount = resultDocument.querySelector("#all-products-count");
                 if (!nextResults || !catalogResults) {
                     throw new Error("Product catalog returned incomplete results.");
                 }
@@ -602,12 +673,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                     ...(loadingSkeleton ? [loadingSkeleton] : []),
                     ...nextResults.childNodes
                 );
+                syncActiveFilterChips(catalogResults);
                 observeCatalogRevealTargets(catalogResults);
-
-                const countEl = document.querySelector("#all-products-count");
-                if (countEl && nextCount) {
-                    countEl.textContent = nextCount.textContent;
-                }
 
                 const nextUrl = new URL(fetchUrl);
                 nextUrl.searchParams.delete("ajax");

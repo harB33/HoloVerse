@@ -7,7 +7,7 @@ if ($pageScriptName === '') {
 }
 $pageLayout = $pageLayout ?? match ($pageScriptName) {
     'index.php' => 'home',
-    'products.php', 'product.php', 'pre_order.php', 'talent-merch.php', 'flash_sale.php' => 'catalog',
+    'products.php', 'product.php', 'talent-merch.php', 'flash_sale.php' => 'catalog',
     'cart.php', 'checkout.php' => 'commerce',
     'login.php', 'logout.php' => 'account',
     'admin-dashboard.php', 'inventory.php', 'product-input.php', 'flash-sale-admin.php',
