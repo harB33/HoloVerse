@@ -8,14 +8,14 @@ function store_refresh_authenticated_user(DatabaseConnection $conn): void
     }
 
     $userId = (int) $_SESSION['user_id'];
-    $statement = $conn->prepare('SELECT username, email, user_role FROM user_tbl WHERE user_id = ? LIMIT 1');
+    $statement = $conn->prepare('SELECT username, email, user_role, profile_picture FROM user_tbl WHERE user_id = ? LIMIT 1');
     $statement->bind_param('i', $userId);
     $statement->execute();
     $user = $statement->get_result()->fetch_assoc();
     $statement->close();
 
     if (!$user) {
-        unset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['user_email'], $_SESSION['user_role']);
+        unset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['user_email'], $_SESSION['user_role'], $_SESSION['profile_picture']);
         session_regenerate_id(true);
         return;
     }
@@ -23,6 +23,11 @@ function store_refresh_authenticated_user(DatabaseConnection $conn): void
     $_SESSION['username'] = $user['username'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['user_role'];
+    if (is_string($user['profile_picture'] ?? null) && $user['profile_picture'] !== '') {
+        $_SESSION['profile_picture'] = $user['profile_picture'];
+    } else {
+        unset($_SESSION['profile_picture']);
+    }
 }
 
 function store_has_role(string $role): bool

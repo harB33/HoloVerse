@@ -255,6 +255,14 @@
     @apply size-7 shrink-0;
   }
 
+  .account-dropdown-identity > .account-dropdown-avatar {
+    @apply size-7 shrink-0 rounded-full object-cover;
+  }
+
+  .account-button-avatar {
+    @apply size-8 rounded-full object-cover;
+  }
+
   .account-dropdown-user {
     @apply flex min-w-0 flex-col;
   }
