@@ -342,6 +342,7 @@ const saleNext = document.querySelector("[data-sale-next]");
 const saleCarousel = document.querySelector("[data-sale-carousel]");
 const saleCarouselControls = document.querySelector(".flash-sale-carousel-controls");
 const flashSaleCard = document.querySelector("#flash-drop-spotlight, .flash-spotlight-card, .flash-sale-card");
+const flashSaleHeroBackdrop = document.querySelector(".flash-sale-hero-backdrop");
 const saleEmptyState = document.querySelector("[data-sale-empty]");
 const saleDetail = (name) => document.querySelector(`[data-sale-detail="${name}"]`);
 
@@ -618,9 +619,10 @@ const applySaleProductToHero = (product, sourceEl = null) => {
     const accentColor = product.accentColor || "#38BDF8";
     const glowColor = product.glowColor || "rgba(38, 183, 255, 0.45)";
 
-    flashSaleCard.style.setProperty("--hero-theme", themeColor);
-    flashSaleCard.style.setProperty("--hero-accent", accentColor);
-    flashSaleCard.style.setProperty("--hero-glow", glowColor);
+    const heroStyleTarget = flashSaleHeroBackdrop || flashSaleCard;
+    heroStyleTarget.style.setProperty("--hero-theme", themeColor);
+    heroStyleTarget.style.setProperty("--hero-accent", accentColor);
+    heroStyleTarget.style.setProperty("--hero-glow", glowColor);
 
     const capacity = Math.max(Number(product.capacity) || 24, stock + 6);
     const claimedPercent = Number(product.claimedPercent)
@@ -654,7 +656,7 @@ const applySaleProductToHero = (product, sourceEl = null) => {
         "fan-name": product.fanName || "Official Holofan",
         rarity: product.rarity || "SSR LIMITED",
         quote: product.quote || "Limited official hololive flash drop!",
-        "quote-speaker": `${talent}'s Flash Message:`,
+        "quote-speaker": `// INCOMING TRANSMISSION: ${talent.toUpperCase()}`, 
         "approx-price": `(~${approxUsd} USD · ~${approxJpy} JPY)`,
         "stock-capacity": `/ ${capacity} total`,
         "stock-percent-label": `${claimedPercent}% CLAIMED`,
@@ -778,7 +780,7 @@ const applySaleProductToHero = (product, sourceEl = null) => {
     galleryThumbnailStrip?.replaceChildren();
     visualModes.forEach((mode, index) => {
         const thumbnail = document.createElement("button");
-        thumbnail.className = `product-gallery-thumbnail w-11 h-11 rounded-xl border p-1 bg-slate-950/85 cursor-pointer transition-all shrink-0 ${index === 0 ? "is-active border-cyan-400 shadow-[0_0_10px_rgba(0,195,255,0.4)]" : "border-slate-800 opacity-75 hover:opacity-100"}`;
+        thumbnail.className = `product-gallery-thumbnail w-11 h-11 rounded-none border p-1 bg-slate-950/85 cursor-pointer transition-all shrink-0 ${index === 0 ? "is-active border-cyan-400 shadow-[0_0_10px_rgba(0,195,255,0.4)]" : "border-slate-800 opacity-75 hover:opacity-100"}`;
         thumbnail.type = "button";
         thumbnail.dataset.galleryImage = "";
         thumbnail.dataset.imageSrc = mode.image_url;
@@ -1072,4 +1074,3 @@ if (systemClock) {
     updateSystemClock();
     window.setInterval(updateSystemClock, 1000);
 }
-

@@ -548,12 +548,14 @@ function store_flash_sale_build_selection_data(
 
     $approxUsd = '$' . number_format(max(1, round($price * (STORE_CURRENCY_RATES['USD'] ?? 0.017))), 0);
     $approxJpy = '¥' . number_format(max(100, round($price * (STORE_CURRENCY_RATES['JPY'] ?? 2.64))), 0);
+    $savings = max(0, $comparePrice - $price);
 
     return [
         'name' => (string) ($product['product_name'] ?? ''),
         'description' => (string) ($product['description'] ?? ''),
         'talent' => $talentMeta['name'],
         'talentSlug' => $talentMeta['id'],
+        'talentAvatar' => $talentMeta['avatarThumb'] ?? $talentImg ?? '',
         'japaneseName' => $talentMeta['japaneseName'],
         'unit' => $talentMeta['unit'],
         'generation' => $talentMeta['generation'],
@@ -569,11 +571,16 @@ function store_flash_sale_build_selection_data(
         'badge' => $badgeLabel,
         'category' => (string) ($product['category_name'] ?? 'Official Merch'),
         'variant' => (string) ($product['variant_name'] ?? ''),
+        'variantName' => (string) ($product['variant_name'] ?? ''),
         'stock' => $stock,
         'capacity' => $capacity,
         'claimedPercent' => $claimedPercent,
         'price' => store_format_price($price),
+        'salePriceFormatted' => store_format_price($price),
         'comparePrice' => store_format_price($comparePrice),
+        'originalPriceFormatted' => store_format_price($comparePrice),
+        'savings' => store_format_price($savings),
+        'savingsFormatted' => store_format_price($savings),
         'approxUsd' => $approxUsd,
         'approxJpy' => $approxJpy,
         'discount' => $discountPercent,
