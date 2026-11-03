@@ -203,6 +203,8 @@ require __DIR__ . '/../app/views/layout/head.php';
                         aria-hidden="true"
                     ></div>
 
+                    <div class="flash-hero-edge-timer" data-countdown-edge role="timer" aria-label="Time remaining" aria-live="off">00:00:00</div>
+
                     <!-- Main Grid Container -->
                     <div class="flash-sale-hero-content landing-shell relative mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center z-10">
 
@@ -276,7 +278,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                             <!-- High-Urgency Countdown & Live Stock Allocation -->
                             <div
-                                class="w-full rounded-none backdrop-blur-md"
+                                class="w-full rounded-none"
                                 aria-label="Flash drop countdown and allocation"
                                 data-sale-countdown-wrap
                             >
@@ -332,7 +334,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             </div>
 
                             <!-- Cyber-Holographic Pricing HUD -->
-                            <div class="rounded-none backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-sale-price-wrap>
+                            <div class="rounded-none flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-sale-price-wrap>
                                 <div class="flex items-center gap-3">
                                     <div class="flex flex-col">
                                         <div class="flex items-baseline gap-2.5">
@@ -394,11 +396,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <section class="flash-gallery lg:col-span-5 relative flex flex-col items-center justify-center min-h-[460px] sm:min-h-[540px] lg:min-h-[600px]" aria-label="Product and character gallery">
 
                             <!-- Vertical Japanese Character Name Background Watermark -->
-                            <div class="absolute right-0 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-15 text-right" aria-hidden="true">
+                            <div class="absolute right-0 top-1/2 -translate-y-1/2 select-none pointer-events-none text-right" aria-hidden="true">
                                 <span
                                     class="text-6xl sm:text-7xl lg:text-8xl font-black font-jp tracking-tighter block leading-none"
                                     data-sale-detail="jp-watermark"
-                                    style="color: var(--hero-theme); writing-mode: vertical-rl;"
+                                    style="color: color-mix(in srgb, var(--hero-theme) 55%, #000000); writing-mode: vertical-rl;"
                                 >
                                     <?= store_escape($saleSelection['japaneseName']) ?>
                                 </span>
