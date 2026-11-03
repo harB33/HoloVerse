@@ -14,64 +14,57 @@ $flashSaleProducts = $flashSaleSchedulingAvailable
     : ['live' => [], 'starting' => [], 'tomorrow' => [], 'archive' => []];
 
 $favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
-$heroDrops = [];
-$seenHeroVariants = [];
+$heroDrop = null;
 foreach ($flashSaleProducts['live'] as $liveRow) {
     $liveVariantId = (int) ($liveRow['variant_id'] ?? 0);
-    if ($liveVariantId > 0 && !isset($seenHeroVariants[$liveVariantId])) {
+    if ($liveVariantId > 0) {
         $liveRow['_drop_state'] = 'live';
-        $heroDrops[] = $liveRow;
-        $seenHeroVariants[$liveVariantId] = true;
+        $heroDrop = $liveRow;
+        break;
     }
 }
 
-$isLiveScheduledFlash = $heroDrops !== [];
+$isLiveScheduledFlash = $heroDrop !== null;
 
-if (count($heroDrops) < 7) {
-    $fallbackRows = store_flash_sale_fallback_rows($conn, 7);
+if ($heroDrop === null) {
+    $fallbackRows = store_flash_sale_fallback_rows($conn, 1);
     foreach ($fallbackRows as $fallbackRow) {
         $fbVariantId = (int) ($fallbackRow['variant_id'] ?? 0);
-        if ($fbVariantId > 0 && !isset($seenHeroVariants[$fbVariantId])) {
+        if ($fbVariantId > 0) {
             $fallbackRow['_drop_state'] = 'live';
-            $heroDrops[] = $fallbackRow;
-            $seenHeroVariants[$fbVariantId] = true;
-            if (count($heroDrops) >= 7) {
-                break;
-            }
+            $heroDrop = $fallbackRow;
+            break;
         }
     }
 }
 
-foreach ($heroDrops as &$heroDropRef) {
-    if (empty($heroDropRef['talent_name']) || empty($heroDropRef['talent_slug'])) {
-        $talentStmt = $conn->prepare(
-            'SELECT t.talent_name, t.talent_slug, t.talent_img,
-                    (
-                        SELECT tg.group_name
-                        FROM talent_group_members_tbl gm
-                        INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-                        WHERE gm.talent_id = t.talent_id
-                        ORDER BY tg.group_id ASC
-                        LIMIT 1
-                    ) AS talent_group
-             FROM product_talents_tbl pt
-             INNER JOIN talent_tbl t ON t.talent_id = pt.talent_id
-             WHERE pt.product_id = ?
-             ORDER BY t.talent_id ASC
-             LIMIT 1'
-        );
-        $flashProdId = (int) $heroDropRef['product_id'];
-        $talentStmt->bind_param('i', $flashProdId);
-        $talentStmt->execute();
-        $talentRow = $talentStmt->get_result()->fetch_assoc();
-        $talentStmt->close();
-        $heroDropRef['talent_name'] = $talentRow['talent_name'] ?? $heroDropRef['category_name'] ?? 'hololive production';
-        $heroDropRef['talent_slug'] = $talentRow['talent_slug'] ?? '';
-        $heroDropRef['talent_img'] = $talentRow['talent_img'] ?? '';
-        $heroDropRef['talent_group'] = $talentRow['talent_group'] ?? '';
-    }
+if ($heroDrop !== null && (empty($heroDrop['talent_name']) || empty($heroDrop['talent_slug']))) {
+    $talentStmt = $conn->prepare(
+        'SELECT t.talent_name, t.talent_slug, t.talent_img,
+                (
+                    SELECT tg.group_name
+                    FROM talent_group_members_tbl gm
+                    INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
+                    WHERE gm.talent_id = t.talent_id
+                    ORDER BY tg.group_id ASC
+                    LIMIT 1
+                ) AS talent_group
+         FROM product_talents_tbl pt
+         INNER JOIN talent_tbl t ON t.talent_id = pt.talent_id
+         WHERE pt.product_id = ?
+         ORDER BY t.talent_id ASC
+         LIMIT 1'
+    );
+    $flashProdId = (int) $heroDrop['product_id'];
+    $talentStmt->bind_param('i', $flashProdId);
+    $talentStmt->execute();
+    $talentRow = $talentStmt->get_result()->fetch_assoc();
+    $talentStmt->close();
+    $heroDrop['talent_name'] = $talentRow['talent_name'] ?? $heroDrop['category_name'] ?? 'hololive production';
+    $heroDrop['talent_slug'] = $talentRow['talent_slug'] ?? '';
+    $heroDrop['talent_img'] = $talentRow['talent_img'] ?? '';
+    $heroDrop['talent_group'] = $talentRow['talent_group'] ?? '';
 }
-unset($heroDropRef);
 
 $flashSaleProductImages = [];
 $flashSaleProductIds = [];
@@ -80,7 +73,7 @@ foreach ($flashSaleProducts as $products) {
         $flashSaleProductIds[] = (int) $product['product_id'];
     }
 }
-foreach ($heroDrops as $heroDrop) {
+if ($heroDrop !== null) {
     $flashSaleProductIds[] = (int) $heroDrop['product_id'];
 }
 $flashSaleProductIds = array_values(array_unique(array_filter($flashSaleProductIds)));
@@ -103,21 +96,16 @@ if ($flashSaleProductIds) {
     $saleImagesStatement->close();
 }
 
-$heroDropPayloads = [];
-foreach ($heroDrops as $heroDrop) {
-    $dropProdId = (int) $heroDrop['product_id'];
-    $dropImages = $flashSaleProductImages[$dropProdId] ?? [];
-    $heroDropPayloads[] = store_flash_sale_build_selection_data(
-        $heroDrop,
-        (string) ($heroDrop['_drop_state'] ?? 'live'),
-        $dropImages,
+$saleProduct = $heroDrop;
+$saleSelection = $saleProduct
+    ? store_flash_sale_build_selection_data(
+        $saleProduct,
+        (string) ($saleProduct['_drop_state'] ?? 'live'),
+        $flashSaleProductImages[(int) $saleProduct['product_id']] ?? [],
         $flashSaleTimezone,
         '../'
-    );
-}
-
-$saleProduct = $heroDrops[0] ?? null;
-$saleSelection = $heroDropPayloads[0] ?? null;
+    )
+    : null;
 
 if ($saleProduct && $saleSelection) {
     $saleGalleryImages = $saleSelection['images'];
@@ -301,60 +289,33 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                             <!-- High-Urgency Countdown & Live Stock Allocation -->
                             <div
-                                class="w-full bg-[#0a0f1d]/90 border border-slate-800 rounded-none p-3.5 sm:p-4 backdrop-blur-md shadow-[0_0_25px_rgba(0,195,255,0.12)]"
+                                class="w-full rounded-none backdrop-blur-md"
                                 aria-label="Flash drop countdown and allocation"
                                 data-sale-countdown-wrap
                             >
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="p-1.5 rounded-none bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-                                        </div>
-                                        <div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs font-black uppercase tracking-wider text-red-400" data-sale-countdown-text>
-                                                    FLASH SALE ENDS IN
-                                                </span>
-                                                <span class="flex h-2 w-2 relative" aria-hidden="true">
-                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-none bg-red-400 opacity-75"></span>
-                                                    <span class="relative inline-flex rounded-none h-2 w-2 bg-red-500"></span>
-                                                </span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-400 m-0" data-sale-detail="countdown-footnote">Limited-Time Cover Corp Official Drop</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Live Watching Count -->
-                                    <div class="flex items-center gap-1.5 text-xs text-slate-300 bg-[#0c1424]/90 px-2.5 py-1 rounded-none border border-slate-800 self-start sm:self-auto">
-                                        <svg class="w-3.5 h-3.5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                        <span class="font-bold text-cyan-300 font-outfit" data-hero-viewers>4,819</span>
-                                        <span class="text-slate-400 text-[11px]">fans viewing</span>
-                                    </div>
-                                </div>
-
                                 <!-- Digits Grid -->
                                 <div
-                                    class="countdown-timer flash-countdown-clock grid grid-cols-5 gap-2 mb-3 font-outfit"
+                                    class="!mt-0 countdown-timer flash-countdown-clock grid grid-cols-5 gap-2 font-outfit"
                                     aria-live="off"
                                     data-countdown="<?= store_escape($flashDeadlineIso) ?>"
                                 >
-                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] border border-slate-800 shadow-inner">
+                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] shadow-inner">
                                         <strong class="text-lg sm:text-2xl font-black text-white tracking-wider" data-countdown-days>00</strong>
                                         <span class="text-[9px] uppercase tracking-wider text-slate-400 font-medium">DAYS</span>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] border border-slate-800 shadow-inner">
+                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] shadow-inner">
                                         <strong class="text-lg sm:text-2xl font-black text-white tracking-wider" data-countdown-hours>00</strong>
                                         <span class="text-[9px] uppercase tracking-wider text-slate-400 font-medium">HOURS</span>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] border border-slate-800 shadow-inner">
+                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] shadow-inner">
                                         <strong class="text-lg sm:text-2xl font-black text-white tracking-wider" data-countdown-minutes>00</strong>
                                         <span class="text-[9px] uppercase tracking-wider text-slate-400 font-medium">MINUTES</span>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] border border-slate-800 shadow-inner">
+                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] shadow-inner">
                                         <strong class="text-lg sm:text-2xl font-black text-cyan-300 tracking-wider" data-countdown-seconds>00</strong>
                                         <span class="text-[9px] uppercase tracking-wider text-slate-400 font-medium">SECONDS</span>
                                     </div>
-                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] border border-cyan-500/30 shadow-inner">
+                                    <div class="flex flex-col items-center justify-center py-2 px-1 rounded-none bg-[#0c1424] shadow-inner">
                                         <strong class="text-lg sm:text-2xl font-black text-pink-400 tracking-wider font-mono" data-countdown-ms>74</strong>
                                         <span class="text-[9px] uppercase tracking-wider text-slate-400 font-medium">MS</span>
                                     </div>
@@ -383,60 +344,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </div>
                             </div>
 
-                            <!-- Interactive Talent / Flash Drop Selector (Switch Your Oshi) -->
-                            <?php if (count($heroDropPayloads) > 0): ?>
-                                <div class="space-y-2 pt-0.5">
-                                    <div class="flex items-center justify-between text-xs">
-                                        <span class="font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                                            <svg class="w-3.5 h-3.5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                                            <span>Select Featured Oshi Vault (<?= count($heroDropPayloads) ?> Drops):</span>
-                                        </span>
-                                        <span class="text-[11px] text-cyan-400 font-medium">
-                                            Click avatar to preview
-                                        </span>
-                                    </div>
-
-                                    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" role="tablist" aria-label="Featured Oshi Flash Drops" data-hero-oshi-list>
-                                        <?php foreach ($heroDropPayloads as $dropIndex => $dropData):
-                                            $isDropSelected = $dropIndex === 0;
-                                            $talentAvatar = !empty($dropData['talentAvatar'])
-                                                ? $dropData['talentAvatar']
-                                                : ($dropData['images'][0]['image_url'] ?? '../assets/images/logo.png');
-                                        ?>
-                                            <button
-                                                type="button"
-                                                role="tab"
-                                                class="flash-oshi-pill flex items-center gap-2 px-3 py-1.5 rounded-none border transition-all cursor-pointer whitespace-nowrap shrink-0 group <?= $isDropSelected ? 'is-active bg-[#0c1424] border-cyan-400 shadow-[0_0_15px_rgba(0,195,255,0.4)]' : 'bg-[#0a0f1d]/90 border-slate-800 hover:border-slate-700 opacity-75 hover:opacity-100' ?>"
-                                                data-hero-oshi-btn
-                                                data-drop-index="<?= $dropIndex ?>"
-                                                data-drop-id="<?= (int) $dropData['variantId'] ?>"
-                                                data-drop-product='<?= json_encode($dropData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>'
-                                                aria-selected="<?= $isDropSelected ? 'true' : 'false' ?>"
-                                                title="<?= store_escape($dropData['talent']) ?> - <?= store_escape($dropData['name']) ?>"
-                                            >
-                                                <span class="relative w-8 h-8 rounded-none overflow-hidden border border-slate-700 block shrink-0 bg-slate-900">
-                                                    <img
-                                                        src="<?= store_escape($talentAvatar) ?>"
-                                                        alt="<?= store_escape($dropData['talent']) ?>"
-                                                        class="w-full h-full object-cover transition-transform group-hover:scale-110 rounded-none"
-                                                        loading="lazy"
-                                                        onerror="this.onerror=null;this.src='../assets/images/logo.png';"
-                                                    >
-                                                </span>
-                                                <div class="text-left leading-tight">
-                                                    <div class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
-                                                        <?= store_escape($dropData['talent']) ?>
-                                                    </div>
-                                                    <div class="text-[10px] text-pink-400 font-mono font-bold">
-                                                        -<?= (int) $dropData['discount'] ?>% OFF
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
                             <!-- Cyber-Holographic Pricing HUD -->
                             <div class="p-4 rounded-none bg-[#0a0f1d]/95 border border-cyan-500/30 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
                                 <div class="flex items-center gap-3">
@@ -464,21 +371,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </div>
                                 </div>
 
-                                <!-- Quick Benefits -->
-                                <div class="flex flex-col text-xs text-slate-300 space-y-1">
-                                    <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
-                                        <svg class="w-3.5 h-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                                        <span>Worldwide Express Airmail Dispatch</span>
-                                    </span>
-                                    <span class="flex items-center gap-1.5 text-cyan-300 font-medium">
-                                        <svg class="w-3.5 h-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                                        <span>5-Minute Bag Hold &amp; Holographic Seal</span>
-                                    </span>
-                                </div>
                             </div>
 
                             <!-- Action CTAs Row -->
-                            <div class="flash-cta-row flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+                            <div class="flash-cta-row flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                 <!-- Primary Claim Form -->
                                 <form
                                     action="cart"
@@ -534,33 +430,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <svg data-reminder-icon-check hidden class="w-4 h-4 text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
                                     <span data-reminder-label>Remind me</span>
                                 </button>
-                            </div>
-
-                            <!-- Tech Transmission Feed (Talent Voice Quote) -->
-                            <div class="p-3.5 rounded-none bg-[#0a0f1d]/90 border-l-4 border-cyan-400 border-y border-r border-slate-800 backdrop-blur-sm flex items-start gap-3">
-                                <div class="p-2 rounded-none bg-cyan-950/80 text-cyan-400 border border-cyan-800/40 shrink-0 mt-0.5">
-                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                                </div>
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between gap-2 mb-0.5">
-                                        <span class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider" data-sale-detail="quote-speaker">
-                                            // INCOMING TRANSMISSION: <?= store_escape(strtoupper($flashTalent)) ?>
-                                        </span>
-                                        <button
-                                            type="button"
-                                            data-hero-play-quote
-                                            class="text-[10px] text-slate-300 hover:text-cyan-300 flex items-center gap-1 cursor-pointer bg-[#0c1424] border border-slate-700 px-2.5 py-1 rounded-none transition-colors"
-                                        >
-                                            <svg class="w-2.5 h-2.5 text-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                                            <span data-hero-play-quote-label>Play Audio Tone</span>
-                                        </button>
-                                    </div>
-
-                                    <p class="text-xs text-slate-300 italic leading-relaxed m-0" data-sale-detail="quote">
-                                        <?= store_escape($saleSelection['quote']) ?>
-                                    </p>
-                                </div>
                             </div>
 
                         </div>

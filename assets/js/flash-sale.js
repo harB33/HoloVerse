@@ -63,18 +63,6 @@ const playFlashSound = (type) => {
                 osc.start(now + idx * 0.04);
                 osc.stop(now + idx * 0.04 + 0.45);
             });
-        } else if (type === "sparkle") {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(1318.51, now); // E6
-            osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15); // A6
-            gain.gain.setValueAtTime(0.08, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.22);
         } else if (type === "click") {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -310,32 +298,12 @@ galleryImage?.addEventListener("keydown", (event) => {
     }
 });
 
-// Talent Voice Quote Sparkle Button
-const heroPlayQuoteBtn = document.querySelector("[data-hero-play-quote]");
-const heroPlayQuoteLabel = document.querySelector("[data-hero-play-quote-label]");
-let quoteTimerId = null;
-heroPlayQuoteBtn?.addEventListener("click", () => {
-    playFlashSound("sparkle");
-    if (heroPlayQuoteLabel) {
-        heroPlayQuoteLabel.textContent = "Playing...";
-    }
-    if (quoteTimerId) {
-        window.clearTimeout(quoteTimerId);
-    }
-    quoteTimerId = window.setTimeout(() => {
-        if (heroPlayQuoteLabel) {
-            heroPlayQuoteLabel.textContent = "Play Audio Tone";
-        }
-    }, 2400);
-});
-
 const saleFilter = document.querySelector("[data-sale-filter]");
 const saleTabs = [...document.querySelectorAll("[data-sale-tab]")];
 const saleFilterTrigger = document.querySelector("[data-sale-filter-trigger]");
 const saleFilterOptions = document.querySelector("[data-sale-filter-options]");
 const saleFilterCurrent = document.querySelector("[data-sale-filter-current]");
 const saleCards = [...document.querySelectorAll(".flash-sale-drop-card[data-sale-state]")];
-const heroDropPills = [...document.querySelectorAll("[data-hero-drop-pill]")];
 const saleGrid = document.querySelector("#flash-sale-products");
 const salePrevious = document.querySelector("[data-sale-previous]");
 const saleNext = document.querySelector("[data-sale-next]");
@@ -353,7 +321,6 @@ const syncProductBadgeWidth = () => {
 const saleDescriptionToggle = document.querySelector("[data-sale-description-toggle]");
 const countdownWrap = document.querySelector("[data-sale-countdown-wrap]");
 const countdown = document.querySelector("[data-countdown]");
-const countdownText = document.querySelector("[data-sale-countdown-text]");
 let countdownDeadline = countdown ? new Date(countdown.dataset.countdown).getTime() : 0;
 
 const updateCountdown = () => {
@@ -545,37 +512,9 @@ const buildHeroVisualModes = (product) => {
     return modes;
 };
 
-const syncActiveHeroPillsAndCards = (product, sourceEl = null) => {
+const syncActiveSaleCard = (product, sourceEl = null) => {
     const targetVariantId = String(product.variantId ?? "");
     const targetProductId = String(product.id ?? "");
-
-    heroDropPills.forEach((pill) => {
-        let isMatch = pill === sourceEl;
-        if (!isMatch && pill.dataset.saleProduct) {
-            try {
-                const pillData = JSON.parse(pill.dataset.saleProduct);
-                isMatch = (targetVariantId && String(pillData.variantId ?? "") === targetVariantId)
-                    || (targetProductId && String(pillData.id ?? "") === targetProductId);
-            } catch {
-                isMatch = false;
-            }
-        }
-        pill.classList.toggle("is-active", isMatch);
-        pill.classList.toggle("bg-slate-900", isMatch);
-        pill.classList.toggle("border-cyan-400", isMatch);
-        pill.classList.toggle("shadow-[0_0_15px_rgba(0,195,255,0.4)]", isMatch);
-        pill.classList.toggle("scale-105", isMatch);
-        pill.classList.toggle("bg-slate-950/80", !isMatch);
-        pill.classList.toggle("border-slate-800", !isMatch);
-        pill.classList.toggle("opacity-75", !isMatch);
-        pill.setAttribute("aria-selected", String(isMatch));
-
-        const pillName = pill.querySelector("[data-pill-name]");
-        if (pillName) {
-            pillName.classList.toggle("text-white", isMatch);
-            pillName.classList.toggle("text-slate-300", !isMatch);
-        }
-    });
 
     saleCards.forEach((saleCard) => {
         let isMatch = saleCard === sourceEl;
@@ -655,8 +594,6 @@ const applySaleProductToHero = (product, sourceEl = null) => {
         generation: product.generation || "Special Drop",
         "fan-name": product.fanName || "Official Holofan",
         rarity: product.rarity || "SSR LIMITED",
-        quote: product.quote || "Limited official hololive flash drop!",
-        "quote-speaker": `// INCOMING TRANSMISSION: ${talent.toUpperCase()}`, 
         "approx-price": `(~${approxUsd} USD · ~${approxJpy} JPY)`,
         "stock-capacity": `/ ${capacity} total`,
         "stock-percent-label": `${claimedPercent}% CLAIMED`,
@@ -765,14 +702,6 @@ const applySaleProductToHero = (product, sourceEl = null) => {
             updateCountdown();
         }
     }
-    if (countdownText) {
-        countdownText.textContent = product.state === "live"
-            ? "FLASH SALE ENDS IN"
-            : product.state === "archive"
-                ? "FLASH SALE ENDED"
-                : "FLASH DROP STARTS IN";
-    }
-
     const visualModes = buildHeroVisualModes(product);
     const fallbackMerchSrc = product.images?.[0]?.image_url || "../assets/images/logo.png";
     galleryImage.dataset.fallbackSrc = fallbackMerchSrc;
@@ -815,7 +744,7 @@ const applySaleProductToHero = (product, sourceEl = null) => {
     }
     showGalleryImage(0);
 
-    syncActiveHeroPillsAndCards(product, sourceEl);
+    syncActiveSaleCard(product, sourceEl);
 };
 
 const updateSaleProductDetails = (card) => {
@@ -828,19 +757,6 @@ const updateSaleProductDetails = (card) => {
         applySaleProductToHero(product, card);
     } catch {}
 };
-
-heroDropPills.forEach((pill) => {
-    pill.addEventListener("click", () => {
-        if (!pill.dataset.saleProduct) {
-            return;
-        }
-        try {
-            const product = JSON.parse(pill.dataset.saleProduct);
-            playFlashSound("switch");
-            applySaleProductToHero(product, pill);
-        } catch {}
-    });
-});
 
 const heroBuyBtn = document.querySelector("[data-flash-buy-btn]");
 if (heroBuyBtn) {
@@ -999,16 +915,6 @@ if (saleFilter) {
 if (countdown) {
     updateCountdown();
     window.setInterval(updateCountdown, 40);
-}
-
-const heroViewersEl = document.querySelector("[data-hero-viewers]");
-if (heroViewersEl) {
-    let currentViewers = Number(String(heroViewersEl.textContent || "2841").replace(/[^0-9]/g, "")) || 2841;
-    window.setInterval(() => {
-        const delta = Math.floor(Math.random() * 15) - 6;
-        currentViewers = Math.max(1200, currentViewers + delta);
-        heroViewersEl.textContent = currentViewers.toLocaleString();
-    }, 3200);
 }
 
 // Drop reminder button

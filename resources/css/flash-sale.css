@@ -4353,6 +4353,17 @@ body.flash-sale-page .flash-cyber-hero .flash-countdown-clock {
     font-family: 'Outfit', 'Kanit', sans-serif;
 }
 
+body.flash-sale-page .flash-cyber-hero .countdown-timer {
+    width: 100%;
+    margin-top: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+body.flash-sale-page .flash-cyber-hero .countdown-timer > div {
+    min-width: 0;
+    width: 100%;
+}
+
 body.flash-sale-page .flash-cyber-hero .flash-countdown-clock span {
     background: transparent;
     color: #94a3b8;
