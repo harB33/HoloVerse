@@ -415,6 +415,15 @@ require __DIR__ . '/app/views/layout/head.php';
 ?>
 
 <body class="home-page home-landing">
+    <div class="home-loading-overlay" role="status" aria-label="Loading HoloVerse">
+        <span class="home-loading-panel home-loading-panel--top-left" aria-hidden="true"></span>
+        <span class="home-loading-panel home-loading-panel--top-right" aria-hidden="true"></span>
+        <span class="home-loading-panel home-loading-panel--bottom-left" aria-hidden="true"></span>
+        <span class="home-loading-panel home-loading-panel--bottom-right" aria-hidden="true"></span>
+        <span class="home-loading-mark" aria-hidden="true">
+            <img src="assets/images/logo.svg" alt="">
+        </span>
+    </div>
     <div class="page-shell home-landing">
         <?php require __DIR__ . '/app/views/components/watermark.php'; ?>
         <?php
