@@ -404,20 +404,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </span>
                             </div>
 
-                            <!-- Floating Top-Left Badge on Visual -->
-                            <div class="absolute top-2 left-2 sm:left-4 z-20 flex flex-col gap-2">
-                                <div class="bg-[#0a0f1d]/90 backdrop-blur-md border border-cyan-500/40 text-cyan-300 px-3 py-1.5 rounded-none shadow-lg flex items-center gap-2 text-xs font-bold">
-                                    <span class="w-1.5 h-1.5 rounded-none bg-cyan-400" aria-hidden="true"></span>
-                                    <span data-sale-detail="generation"><?= store_escape($saleSelection['generation']) ?></span>
-                                </div>
-
-                            </div>
-
                             <!-- Floating Main Visual -->
                             <div class="relative z-10 w-full max-w-[320px] sm:max-w-[390px] lg:max-w-[430px] flex items-center justify-center animate-float-subtle mt-8">
                                 <a href="<?= store_escape($flashProductUrl) ?>" data-sale-detail="product-link" aria-label="View <?= store_escape($saleSelection['name']) ?>" class="block">
                                     <img
-                                        class="flash-product-main-image w-auto h-[340px] sm:h-[420px] lg:h-[460px] object-contain filter drop-shadow-[0_10px_35px_rgba(0,195,255,0.3)] transition-all duration-500 rounded-none"
+                                        class="flash-product-main-image w-auto h-[340px] sm:h-[420px] lg:h-[460px] object-contain transition-all duration-500 rounded-none"
                                         src="<?= store_escape($saleImageUrl) ?>"
                                         alt="<?= store_escape($saleImageAlt) ?>"
                                         data-fallback-src="<?= store_escape($merchFallbackUrl) ?>"
