@@ -1,8 +1,8 @@
 <?php
 
-function store_escape(string $value): string
+function store_escape(?string $value): string
 {
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
 function store_current_currency(): string

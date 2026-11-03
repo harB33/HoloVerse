@@ -5899,6 +5899,10 @@ body.order-history-page .order-history-summary-total strong {
   display: none;
 }
 
+.talents-page .talent-poster-item.hidden {
+  display: none;
+}
+
 .talent-poster-card {
   margin: 0;
   display: block;
