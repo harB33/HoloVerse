@@ -25,6 +25,73 @@ function store_checkout_address_line2(array $shipping): string
     return $formattedAddressLine2;
 }
 
+function store_checkout_save_profile_address(
+    DatabaseConnection $conn,
+    int $userId,
+    array $shipping
+): void {
+    $addressStatement = $conn->prepare(
+        'SELECT address_id FROM address_tbl WHERE user_id = ? ORDER BY address_id LIMIT 1'
+    );
+    $addressStatement->bind_param('i', $userId);
+    $addressStatement->execute();
+    $existingAddress = $addressStatement->get_result()->fetch_assoc();
+    $addressStatement->close();
+
+    $conn->begin_transaction();
+    try {
+        if ($existingAddress) {
+            $addressId = (int) $existingAddress['address_id'];
+            $statement = $conn->prepare(
+                'UPDATE address_tbl
+                 SET recipient_name = ?, phone = ?, address_line1 = ?, address_line2 = ?,
+                     barangay = ?, city = ?, region = ?, postal_code = ?, country_code = ?
+                 WHERE address_id = ? AND user_id = ?'
+            );
+            $statement->bind_param(
+                'sssssssssii',
+                $shipping['recipient_name'],
+                $shipping['phone'],
+                $shipping['address_line1'],
+                $shipping['address_line2'],
+                $shipping['barangay'],
+                $shipping['city'],
+                $shipping['region'],
+                $shipping['postal_code'],
+                $shipping['country_code'],
+                $addressId,
+                $userId
+            );
+        } else {
+            $statement = $conn->prepare(
+                'INSERT INTO address_tbl
+                    (user_id, recipient_name, phone, address_line1, address_line2, barangay,
+                     city, region, postal_code, country_code)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            );
+            $statement->bind_param(
+                'isssssssss',
+                $userId,
+                $shipping['recipient_name'],
+                $shipping['phone'],
+                $shipping['address_line1'],
+                $shipping['address_line2'],
+                $shipping['barangay'],
+                $shipping['city'],
+                $shipping['region'],
+                $shipping['postal_code'],
+                $shipping['country_code']
+            );
+        }
+        $statement->execute();
+        $statement->close();
+        $conn->commit();
+    } catch (Throwable $error) {
+        $conn->rollback();
+        throw $error;
+    }
+}
+
 function store_checkout_place_order(
     DatabaseConnection $conn,
     int $userId,
