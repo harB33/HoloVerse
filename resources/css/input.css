@@ -4790,8 +4790,7 @@
     @apply space-y-6;
   }
 
-  .order-history-card,
-  .order-history-empty {
+  .order-history-card {
     @apply overflow-hidden rounded-xl border border-[#ccecf5] bg-white shadow-[0_12px_30px_rgba(22,61,107,0.08)];
   }
 
