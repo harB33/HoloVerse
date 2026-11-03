@@ -17,6 +17,7 @@ $isPasswordResetResend = $requestMode === 'resend_reset_otp';
 $isPasswordReset = in_array($requestMode, ['reset_password', 'verify_reset_otp'], true);
 $isOtpVerification = $requestMode === 'verify_reset_otp';
 $returnTo = ($_GET['return_to'] ?? $_POST['return_to'] ?? '') === 'checkout' ? 'checkout' : '';
+$loginUrl = is_string($_SERVER['SCRIPT_NAME'] ?? null) ? $_SERVER['SCRIPT_NAME'] : '/pages/login.php';
 $message = '';
 $loginRateLimitSeconds = 0;
 $notice = is_string($_SESSION['auth_notice'] ?? null) ? $_SESSION['auth_notice'] : '';
@@ -115,10 +116,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $codeIssued = $resetStatement->get_result()->fetch_assoc() !== null;
             $resetStatement->close();
 
+            $emailSent = false;
             if ($codeIssued && $resetUserId !== null) {
                 try {
                     require_once __DIR__ . '/../phpmailer.php';
                     sendPasswordResetOtp($email, $otp);
+                    $emailSent = true;
                 } catch (Throwable $error) {
                     error_log('HoloVerse password reset email could not be sent: ' . $error->getMessage());
                     $deleteFailedCode = $conn->prepare(
@@ -131,15 +134,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
 
             $_SESSION['password_reset_email'] = $email;
-            if ($codeIssued || !isset($_SESSION['password_reset_expires_at'])) {
+            if ($emailSent) {
                 $_SESSION['password_reset_expires_at'] = time() + 600;
+            } elseif ($codeIssued) {
+                unset($_SESSION['password_reset_expires_at']);
             }
             unset($_SESSION['password_reset_verified']);
             $_SESSION['auth_notice'] = !$codeIssued
                 ? 'A code was not issued because a request was made recently. Wait one minute before requesting another code, and use the code from the previous request if it is still valid.'
-                : 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.';
-            $_SESSION['auth_notice_type'] = !$codeIssued ? 'error' : 'success';
-            header('Location: login?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+                : ($resetUserId !== null && !$emailSent
+                    ? 'We could not send the reset code right now. Please try again in a minute. If the problem continues, contact support.'
+                    : 'If an account exists for that email, we’ll send a reset code. Check your spam folder if you do not see it.');
+            $_SESSION['auth_notice_type'] = !$codeIssued || ($resetUserId !== null && !$emailSent)
+                ? 'error'
+                : 'success';
+            header('Location: ' . $loginUrl . '?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
             exit;
         }
     } elseif ($isOtpVerification) {
@@ -198,7 +207,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                         'email_hash' => $emailHash,
                         'otp_hash' => $reset['otp_hash'],
                     ];
-                    header('Location: login?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
+                    header('Location: ' . $loginUrl . '?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : ''));
                     exit;
                 }
             } catch (Throwable $error) {
@@ -275,7 +284,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                     unset($_SESSION['password_reset_email'], $_SESSION['password_reset_verified'], $_SESSION['password_reset_expires_at']);
                     $_SESSION['auth_notice'] = 'Your password has been reset. Sign in with your new password.';
                     $_SESSION['auth_notice_type'] = 'success';
-                    header('Location: login' . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
+                    header('Location: ' . $loginUrl . ($returnTo === 'checkout' ? '?return_to=checkout' : ''));
                     exit;
                 }
             } catch (Throwable $error) {
@@ -402,7 +411,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <?php if ($message !== ''): ?>
                                 <p class="auth-alert auth-alert-error reset-request-error" role="alert"><?= store_escape($message) ?></p>
                             <?php endif; ?>
-                            <form action="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>" method="post" class="reset-request-form space-y-5 auth-form">
+                            <form action="<?= store_escape($loginUrl . ($returnTo === 'checkout' ? '?return_to=checkout' : '')) ?>" method="post" class="reset-request-form space-y-5 auth-form">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="mode" value="forgot_password">
                                 <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -416,7 +425,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </button>
                             </form>
                             <p class="auth-switch-prompt">
-                                <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                                <a class="auth-mode-button" href="<?= store_escape($loginUrl . ($returnTo === 'checkout' ? '?return_to=checkout' : '')) ?>">Back to sign in</a>
                             </p>
                         <?php elseif ($isPasswordReset): ?>
                             <header class="auth-header">
@@ -431,14 +440,14 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </p>
                             </header>
                             <?php if ($notice !== ''): ?>
-                                <p<?= $noticeType === 'error' ? ' role="alert"' : '' ?>><?= store_escape($notice) ?></p>
+                                <p<?= $noticeType === 'error' ? ' class="auth-alert auth-alert-error" role="alert"' : ' role="status"' ?>><?= store_escape($notice) ?></p>
                             <?php endif; ?>
                             <?php if ($message !== '' && ($isResetPasswordVerified || $resetEmail === '')): ?>
                                 <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
                             <?php endif; ?>
                             <?php if ($resetEmail !== ''): ?>
                                 <?php if ($isResetPasswordVerified): ?>
-                                <form action="login?mode=reset_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="space-y-5 auth-form">
+                                <form action="<?= store_escape($loginUrl . '?mode=reset_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : '')) ?>" method="post" class="space-y-5 auth-form">
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                     <input type="hidden" name="mode" value="reset_password">
                                     <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -479,7 +488,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </button>
                                 </form>
                                 <?php else: ?>
-                                <form action="login?mode=verify_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" method="post" class="otp-verify-form space-y-5 auth-form">
+                                <form action="<?= store_escape($loginUrl . '?mode=verify_reset_otp' . ($returnTo === 'checkout' ? '&return_to=checkout' : '')) ?>" method="post" class="otp-verify-form space-y-5 auth-form">
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                     <input type="hidden" name="mode" value="verify_reset_otp">
                                     <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -498,7 +507,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         </div>
                                         <div class="otp-meta-row">
                                             <p class="otp-timer">Remaining time: <span id="reset-otp-timer" data-expires-at="<?= $resetOtpExpiresAt ?>">--:--</span></p>
-                                            <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="login?mode=resend_reset_otp<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>" formmethod="post" formnovalidate>Resend</button></p>
+                                            <p class="otp-resend-prompt">Didn't get the code? <button type="submit" class="otp-resend-link" formaction="<?= store_escape($loginUrl . '?mode=resend_reset_otp' . ($returnTo === 'checkout' ? '&return_to=checkout' : '')) ?>" formmethod="post" formnovalidate>Resend</button></p>
                                         </div>
                                     </div>
                                     <button type="submit" class="otp-verify-button auth-submit-button">
@@ -510,7 +519,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         <p class="otp-error" role="alert"><?= store_escape($message) ?></p>
                                     <?php endif; ?>
                                     <p class="otp-signin-link">
-                                        <a class="auth-mode-button" href="login<?= $returnTo === 'checkout' ? '?return_to=checkout' : '' ?>">Back to sign in</a>
+                                        <a class="auth-mode-button" href="<?= store_escape($loginUrl . ($returnTo === 'checkout' ? '?return_to=checkout' : '')) ?>">Back to sign in</a>
                                     </p>
                                 </div>
                                 <?php endif; ?>
@@ -530,7 +539,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php if ($notice !== ''): ?>
                             <p<?= $noticeType === 'error' ? ' role="alert"' : '' ?>><?= store_escape($notice) ?></p>
                         <?php endif; ?>
-                        <form action="login" method="post" class="login-form space-y-5 auth-form">
+                        <form action="<?= store_escape($loginUrl) ?>" method="post" class="login-form space-y-5 auth-form">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="login">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
@@ -558,7 +567,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     </div>
                                 <?php endif; ?>
                                 <p class="login-forgot-password">
-                                    <a class="auth-mode-button" href="login?mode=forgot_password<?= $returnTo === 'checkout' ? '&return_to=checkout' : '' ?>">Forgot password?</a>
+                                    <a class="auth-mode-button" href="<?= store_escape($loginUrl . '?mode=forgot_password' . ($returnTo === 'checkout' ? '&return_to=checkout' : '')) ?>">Forgot password?</a>
                                 </p>
                             </div>
                             <button type="submit" class="auth-submit-button">
@@ -593,7 +602,7 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <p class="auth-alert auth-alert-error" role="alert"><?= store_escape($message) ?></p>
                         <?php endif; ?>
 
-                        <form action="login?mode=register" method="post" class="space-y-5 auth-form">
+                        <form action="<?= store_escape($loginUrl . '?mode=register') ?>" method="post" class="space-y-5 auth-form">
                             <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                             <input type="hidden" name="mode" value="register">
                             <input type="hidden" name="return_to" value="<?= store_escape($returnTo) ?>">
