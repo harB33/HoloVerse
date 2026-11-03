@@ -16,7 +16,6 @@
     --color-amber-800: oklch(47.3% 0.137 46.201);
     --color-yellow-400: oklch(85.2% 0.199 91.936);
     --color-emerald-50: oklch(97.9% 0.021 166.113);
-    --color-emerald-400: oklch(76.5% 0.177 163.223);
     --color-emerald-500: oklch(69.6% 0.17 162.48);
     --color-emerald-700: oklch(50.8% 0.118 165.612);
     --color-cyan-200: oklch(91.7% 0.08 205.041);
@@ -28,14 +27,9 @@
     --color-sky-500: oklch(68.5% 0.169 237.323);
     --color-sky-700: oklch(50% 0.134 242.749);
     --color-sky-900: oklch(39.1% 0.09 240.876);
-    --color-blue-500: oklch(62.3% 0.214 259.815);
-    --color-blue-600: oklch(54.6% 0.245 262.881);
-    --color-pink-200: oklch(89.9% 0.061 343.231);
     --color-pink-300: oklch(82.3% 0.12 346.018);
     --color-pink-400: oklch(71.8% 0.202 349.761);
     --color-pink-500: oklch(65.6% 0.241 354.308);
-    --color-pink-900: oklch(40.8% 0.153 2.432);
-    --color-pink-950: oklch(28.4% 0.109 3.907);
     --color-rose-50: oklch(96.9% 0.015 12.422);
     --color-rose-500: oklch(64.5% 0.246 16.439);
     --color-rose-600: oklch(58.6% 0.253 17.585);
@@ -314,9 +308,6 @@
   }
   .right-1\/4 {
     right: calc(1 / 4 * 100%);
-  }
-  .right-2 {
-    right: calc(var(--spacing) * 2);
   }
   .bottom-8 {
     bottom: calc(var(--spacing) * 8);
@@ -654,12 +645,6 @@
   .border-slate-700 {
     border-color: var(--color-slate-700);
   }
-  .border-slate-700\/80 {
-    border-color: color-mix(in srgb, oklch(37.2% 0.044 257.287) 80%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      border-color: color-mix(in oklab, var(--color-slate-700) 80%, transparent);
-    }
-  }
   .border-slate-800 {
     border-color: var(--color-slate-800);
   }
@@ -973,10 +958,6 @@
   .opacity-75 {
     opacity: 75%;
   }
-  .shadow-2xl {
-    --tw-shadow: 0 25px 50px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25));
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
   .shadow-\[0_0_10px_rgba\(0\,195\,255\,0\.4\)\] {
     --tw-shadow: 0 0 10px var(--tw-shadow-color, rgba(0,195,255,0.4));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -1064,9 +1045,6 @@
     .hover\:bg-cyan-500:hover {
       background-color: var(--color-cyan-500);
     }
-    .hover\:bg-slate-800:hover {
-      background-color: var(--color-slate-800);
-    }
     .hover\:bg-slate-900:hover {
       background-color: var(--color-slate-900);
     }
@@ -1090,9 +1068,6 @@
     opacity: 50%;
   }
   @media (width >= 40rem) {
-    .sm\:right-4 {
-      right: calc(var(--spacing) * 4);
-    }
     .sm\:left-4 {
       left: calc(var(--spacing) * 4);
     }
@@ -3316,7 +3291,7 @@
 }
 .flash-product-description-block {
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
 }
 .flash-product-actions {
   display: flex;
@@ -3352,16 +3327,28 @@
   font-size: 14px;
   line-height: 1.7;
 }
+.flash-product-description-preview-wrap {
+  position: relative;
+}
+.flash-product-description-full {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  z-index: 30;
+  color: #66717d;
+}
+.flash-product-description-block.is-expanded .flash-product-description-actions {
+  position: relative;
+  z-index: 31;
+  transform: translateY(var(--description-popup-offset));
+}
 .flash-product-description {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
-}
-.flash-product-description-full {
-  margin-bottom: 12px;
-  color: #66717d;
 }
 .flash-product-description-block [hidden] {
   display: none;
@@ -4785,7 +4772,6 @@
   border-right: none !important;
   border-top: 1px solid rgba(40, 200, 255, 0.22);
   border-bottom: 1px solid rgba(40, 200, 255, 0.22);
-  box-shadow: 0 24px 64px -16px rgba(2, 6, 23, 0.85), 0 0 35px -5px rgba(0, 195, 255, 0.16);
   margin-top: 0;
   margin-bottom: 0;
   padding: clamp(28px, 4vw, 52px) 0;

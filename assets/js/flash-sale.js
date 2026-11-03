@@ -78,8 +78,6 @@ const launchHeroConfetti = () => {
 const galleryImage = document.querySelector(".flash-product-main-image");
 const galleryBackdrop = document.querySelector(".flash-product-backdrop");
 const galleryThumbnailStrip = document.querySelector(".flash-gallery .product-gallery-thumbnails");
-const heroPoseToggleBtn = document.querySelector("[data-hero-pose-toggle]");
-const heroPoseLabelEl = document.querySelector("[data-hero-pose-label]");
 let galleryThumbnails = [...document.querySelectorAll(".flash-gallery [data-gallery-image]")];
 let activeGalleryIndex = 0;
 
@@ -101,19 +99,6 @@ galleryThumbnailStrip?.addEventListener("wheel", (event) => {
     }
 }, { passive: false });
 
-const syncPoseToggleLabel = () => {
-    if (!heroPoseToggleBtn) {
-        return;
-    }
-    const visibleThumbnails = galleryThumbnails.filter((btn) => !btn.hidden);
-    heroPoseToggleBtn.hidden = visibleThumbnails.length < 2;
-    if (heroPoseLabelEl && visibleThumbnails.length >= 2) {
-        const nextIndex = (activeGalleryIndex + 1) % galleryThumbnails.length;
-        const nextBtn = galleryThumbnails[nextIndex];
-        heroPoseLabelEl.textContent = nextBtn?.dataset.modeLabel || "Switch Visual";
-    }
-};
-
 const bindGalleryThumbnails = () => {
     galleryThumbnails = [...document.querySelectorAll(".flash-gallery [data-gallery-image]")];
     galleryThumbnails.forEach((thumbnail, index) => {
@@ -122,7 +107,6 @@ const bindGalleryThumbnails = () => {
             showGalleryImage(index);
         });
     });
-    syncPoseToggleLabel();
 };
 
 const showGalleryImage = (index, scrollThumbnail = false) => {
@@ -147,8 +131,6 @@ const showGalleryImage = (index, scrollThumbnail = false) => {
         thumbnail.classList.toggle("opacity-75", !selected);
         thumbnail.setAttribute("aria-pressed", String(selected));
     });
-    syncPoseToggleLabel();
-
     if (scrollThumbnail) {
         activeThumbnail.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }
@@ -255,10 +237,6 @@ galleryImage?.addEventListener("load", updateStockBarGradientFromImage);
 updateStockBarGradientFromImage();
 
 bindGalleryThumbnails();
-
-heroPoseToggleBtn?.addEventListener("click", () => {
-    showGalleryImage(activeGalleryIndex + 1, true);
-});
 
 document.querySelector("[data-gallery-previous]")?.addEventListener("click", () => {
     showGalleryImage(activeGalleryIndex - 1, true);
@@ -403,12 +381,22 @@ saleDescriptionToggle?.addEventListener("click", () => {
         return;
     }
 
+    const descriptionBlock = saleDescriptionToggle.closest(".flash-product-description-block");
     saleDescriptionToggle.setAttribute("aria-expanded", String(expanded));
     const label = saleDescriptionToggle.querySelector("span") || saleDescriptionToggle;
     label.textContent = expanded
         ? "Hide full product details"
         : "Read full product details";
     full.hidden = !expanded;
+    if (descriptionBlock) {
+        descriptionBlock.classList.toggle("is-expanded", expanded);
+        const actions = descriptionBlock.querySelector(".flash-product-description-actions");
+        if (expanded) {
+            actions?.style.setProperty("--description-popup-offset", `${full.offsetHeight + 8}px`);
+        } else {
+            actions?.style.removeProperty("--description-popup-offset");
+        }
+    }
 });
 
 document.addEventListener("wheel", (event) => {
@@ -627,6 +615,9 @@ const applySaleProductToHero = (product, sourceEl = null) => {
         fullInner.textContent = product.description || "";
         descriptionPreview.hidden = false;
         descriptionFull.hidden = true;
+        const descriptionBlock = saleDescriptionToggle.closest(".flash-product-description-block");
+        descriptionBlock?.classList.remove("is-expanded");
+        descriptionBlock?.querySelector(".flash-product-description-actions")?.style.removeProperty("--description-popup-offset");
         saleDescriptionToggle.hidden = (product.description || "").length <= 160;
         saleDescriptionToggle.setAttribute("aria-expanded", "false");
         const label = saleDescriptionToggle.querySelector("span") || saleDescriptionToggle;

@@ -181,7 +181,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         >
             <section
                     id="flash-drop-spotlight"
-                    class="flash-cyber-hero relative overflow-hidden w-full py-8 sm:py-10 lg:py-12 text-slate-100 shadow-2xl rounded-none"
+                    class="flash-cyber-hero relative overflow-hidden w-full py-8 sm:py-10 lg:py-12 text-slate-100 rounded-none"
                     data-flash-drop-section
                     aria-labelledby="flash-product-title"
                 >
@@ -256,11 +256,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </h1>
 
                                 <div class="flash-product-description-block pt-1 max-w-2xl">
-                                    <p class="text-sm sm:text-base text-slate-300 font-normal leading-relaxed line-clamp-2" data-sale-detail="description-preview"><?= store_escape($saleSelection['description']) ?></p>
-                                    <div class="flash-product-description-full mt-2 p-3 rounded-none bg-[#0a0f1d]/90 border border-cyan-500/30 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-40 overflow-y-auto" id="flash-product-description-full" data-sale-detail="description-full" hidden>
-                                        <div class="description-full-text"><?= nl2br(store_escape($saleSelection['description'])) ?></div>
+                                    <div class="flash-product-description-preview-wrap">
+                                        <p class="text-sm sm:text-base text-slate-300 font-normal leading-relaxed line-clamp-2" data-sale-detail="description-preview"><?= store_escape($saleSelection['description']) ?></p>
+                                        <div class="flash-product-description-full p-3 rounded-none bg-[#0a0f1d]/90 border border-cyan-500/30 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-40 overflow-y-auto" id="flash-product-description-full" data-sale-detail="description-full" hidden>
+                                            <div class="description-full-text"><?= nl2br(store_escape($saleSelection['description'])) ?></div>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-wrap items-center gap-3 mt-1.5">
+                                    <div class="flash-product-description-actions flex flex-wrap items-center gap-3 mt-1.5">
                                         <button class="inline-flex items-center gap-1 text-xs font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer" type="button" aria-expanded="false" aria-controls="flash-product-description-full" data-sale-description-toggle>
                                             <span>Read full product details</span>
                                             <svg class="toggle-chevron w-3.5 h-3.5 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -402,26 +404,13 @@ require __DIR__ . '/../app/views/layout/head.php';
                                 </span>
                             </div>
 
-                            <!-- Floating Top-Left Badges on Visual -->
+                            <!-- Floating Top-Left Badge on Visual -->
                             <div class="absolute top-2 left-2 sm:left-4 z-20 flex flex-col gap-2">
                                 <div class="bg-[#0a0f1d]/90 backdrop-blur-md border border-cyan-500/40 text-cyan-300 px-3 py-1.5 rounded-none shadow-lg flex items-center gap-2 text-xs font-bold">
                                     <span class="w-1.5 h-1.5 rounded-none bg-cyan-400" aria-hidden="true"></span>
                                     <span data-sale-detail="generation"><?= store_escape($saleSelection['generation']) ?></span>
                                 </div>
 
-                            </div>
-
-                            <!-- Floating Top-Right Standing / PR Costume / Merch Visual Switcher -->
-                            <div class="absolute top-2 right-2 sm:right-4 z-20">
-                                <button
-                                    type="button"
-                                    data-hero-pose-toggle
-                                    class="bg-[#0a0f1d]/90 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-cyan-300 px-3 py-1.5 rounded-none shadow-lg flex items-center gap-1.5 cursor-pointer transition-all<?= count($heroVisualModes) < 2 ? ' hidden' : '' ?>"
-                                    title="Toggle between character standing pose and merch visual"
-                                >
-                                    <svg class="w-3.5 h-3.5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                                    <span data-hero-pose-label><?= store_escape($heroVisualModes[1]['mode_label'] ?? 'Switch Visual') ?></span>
-                                </button>
                             </div>
 
                             <!-- Floating Main Visual -->
@@ -452,7 +441,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                             data-gallery-image
                                             data-image-src="<?= store_escape($image['image_url']) ?>"
                                             data-image-alt="<?= store_escape($image['alt_text']) ?>"
-                                            data-mode-label="<?= store_escape($image['mode_label']) ?>"
                                             aria-label="Show <?= store_escape($image['mode_label']) ?>"
                                             aria-pressed="<?= $imageIndex === 0 ? 'true' : 'false' ?>"
                                         >
