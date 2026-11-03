@@ -128,12 +128,11 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <div class="collector-showcase-stat">
                             <span class="collector-showcase-stat-label">Saved</span>
                             <span class="collector-showcase-stat-value">
-                                <svg class="collector-showcase-stat-heart" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg>
                                 <strong><?= $favoriteProductCount ?></strong>
                             </span>
                         </div>
                         <div class="collector-showcase-stat">
-                            <span class="collector-showcase-stat-label">Collected</span>
+                            <span class="collector-showcase-stat-label">Purchased</span>
                             <span class="collector-showcase-stat-value"><strong><?= count($purchasedProducts) ?></strong></span>
                         </div>
                         <div class="collector-showcase-stat">
@@ -189,8 +188,9 @@ require __DIR__ . '/../app/views/layout/head.php';
                         <?php foreach ($favoriteProducts as $product): ?>
                             <?php
                             $productCardAttributes = ['data-favorite-product-id' => (string) (int) $product['product_id']];
+                            $catalogProductCardDesign = true;
                             require __DIR__ . '/../app/views/components/product-card.php';
-                            unset($productCardAttributes);
+                            unset($productCardAttributes, $catalogProductCardDesign);
                             ?>
                         <?php endforeach; ?>
                     </div>
