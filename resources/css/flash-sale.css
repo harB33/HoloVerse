@@ -4371,9 +4371,22 @@ body.flash-sale-page .flash-cyber-hero .flash-countdown-clock span {
     border-radius: 0;
 }
 
+body.flash-sale-page .flash-cyber-hero .flash-stock {
+    width: 100%;
+    max-width: none;
+}
+
+body.flash-sale-page .flash-cyber-hero [data-sale-countdown-wrap] {
+    margin-block-end: 0;
+}
+
+body.flash-sale-page .flash-cyber-hero [data-sale-price-wrap] {
+    margin-block-end: 0;
+}
+
 body.flash-sale-page .flash-cyber-hero .flash-stock-track {
-    height: 10px;
-    background: #0f172a;
+    height: 20px;
+    background: #0c1424;
 }
 
 body.flash-sale-page .flash-cyber-hero [hidden] {

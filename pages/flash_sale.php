@@ -229,21 +229,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <span data-sale-detail="hero-badge"><?= store_escape($saleSelection['badge']) ?></span>
                                 </div>
 
-                                <div class="hidden sm:inline-flex items-center gap-1.5 text-[11px] text-slate-300 font-mono bg-[#0c1424]/90 border border-slate-800 px-2.5 py-1 rounded-none">
-                                    <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-                                    <span data-sale-detail="state-label"><?= $isLiveScheduledFlash ? 'LIVE FLASH DROP' : 'AUTHENTICITY VERIFIED' ?></span>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    data-hero-audio-toggle
-                                    aria-pressed="false"
-                                    class="inline-flex items-center gap-1.5 bg-[#0c1424]/90 hover:bg-slate-800 border border-slate-700/80 px-2.5 py-1 rounded-none text-[11px] font-bold text-cyan-300 hover:text-white transition-colors cursor-pointer"
-                                    title="Toggle Web Audio Synth FX"
-                                >
-                                    <svg class="w-3.5 h-3.5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                                    <span data-hero-audio-label>SFX ON</span>
-                                </button>
                             </div>
 
                             <!-- Headline & Character Titles -->
@@ -334,22 +319,21 @@ require __DIR__ . '/../app/views/layout/head.php';
                                         </span>
                                     </div>
 
-                                    <div class="flash-stock-track w-full h-2 bg-[#0c1424] rounded-none overflow-hidden border border-slate-800" role="progressbar" aria-label="Flash drop availability claimed" aria-valuenow="<?= $flashClaimedPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="flash-stock-track w-full h-2 bg-[#0c1424] rounded-none overflow-hidden" role="progressbar" aria-label="Flash drop availability claimed" aria-valuenow="<?= $flashClaimedPercent ?>" aria-valuemin="0" aria-valuemax="100">
                                         <span
                                             class="block h-full rounded-none transition-all duration-500 relative"
                                             data-sale-detail="stock-bar"
-                                            style="width: <?= $flashClaimedPercent ?>%; background: linear-gradient(90deg, #10b981 0%, #3b82f6 50%, var(--hero-theme) 100%);"
+                                            style="width: <?= $flashClaimedPercent ?>%; background: linear-gradient(90deg, var(--hero-accent) 0%, var(--hero-theme) 100%);"
                                         ></span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Cyber-Holographic Pricing HUD -->
-                            <div class="p-4 rounded-none bg-[#0a0f1d]/95 border border-cyan-500/30 backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+                            <div class="rounded-none backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-sale-price-wrap>
                                 <div class="flex items-center gap-3">
                                     <div class="flex flex-col">
                                         <div class="flex items-baseline gap-2.5">
-                                            <span class="text-xs text-slate-400 font-medium">Flash Price:</span>
                                             <span class="text-3xl sm:text-4xl font-black text-cyan-400 font-outfit tracking-tight" data-sale-detail="price">
                                                 <?= store_escape($saleSelection['salePriceFormatted']) ?>
                                             </span>
@@ -357,17 +341,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                                 <?= store_escape($saleSelection['originalPriceFormatted']) ?>
                                             </span>
                                         </div>
-                                        <div class="flex items-center gap-2 mt-0.5">
-                                            <span class="px-2.5 py-1 rounded-none bg-pink-500 text-white font-black text-xs font-outfit uppercase tracking-wider shadow-sm animate-pulse" data-sale-detail="discount-badge">
-                                                SAVE <?= $discountPercent ?>%
-                                            </span>
-                                            <span class="text-xs text-emerald-400 font-medium" data-sale-detail="savings">
-                                                You save <?= store_escape($saleSelection['savingsFormatted']) ?>
-                                            </span>
-                                        </div>
-                                        <span class="text-[11px] text-slate-400 mt-1" data-sale-detail="approx-pricing">
-                                            (~<?= store_escape($saleSelection['approxUsd']) ?> USD &middot; ~<?= store_escape($saleSelection['approxJpy']) ?> JPY)
-                                        </span>
                                     </div>
                                 </div>
 
@@ -386,11 +359,12 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                     <input type="hidden" name="variant_id" value="<?= (int) $saleSelection['variantId'] ?>" data-sale-detail="variant-id">
                                     <button
-                                        class="w-full py-4 px-6 rounded-none bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-sm sm:text-base shadow-[0_0_30px_rgba(0,195,255,0.45)] flex items-center justify-center gap-2.5 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer group relative overflow-hidden border-0"
+                                        class="w-full py-4 px-6 rounded-none text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer group relative overflow-hidden border-0"
                                         type="submit"
                                         name="action"
                                         value="add"
                                         data-flash-buy-btn
+                                        style="background: linear-gradient(90deg, var(--hero-accent) 0%, var(--hero-theme) 100%);"
                                     >
                                         <span class="absolute inset-0 animate-holo-shimmer pointer-events-none" aria-hidden="true"></span>
                                         <svg class="w-5 h-5 transition-transform group-hover:scale-110 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
@@ -410,26 +384,6 @@ require __DIR__ . '/../app/views/layout/head.php';
 
                                 <p data-sale-detail="cart-message" role="status" hidden></p>
 
-                                <!-- View Product Page CTA -->
-                                <a
-                                    href="<?= store_escape($flashProductUrl) ?>"
-                                    data-sale-detail="product-link"
-                                    class="py-4 px-5 rounded-none bg-[#0a0f1d]/90 hover:bg-slate-800 text-cyan-300 hover:text-white border border-cyan-500/30 hover:border-cyan-400 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md no-underline"
-                                >
-                                    <svg class="w-4 h-4 text-cyan-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-                                    <span>View Product</span>
-                                </a>
-
-                                <!-- Remind Me Alert Button -->
-                                <button
-                                    class="drop-reminder py-4 px-4 rounded-none bg-pink-950/40 hover:bg-pink-900/50 text-pink-300 hover:text-pink-200 border border-pink-500/40 text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md"
-                                    type="button"
-                                    data-drop-reminder-btn
-                                >
-                                    <svg data-reminder-icon-bell class="w-4 h-4 text-pink-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                                    <svg data-reminder-icon-check hidden class="w-4 h-4 text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                                    <span data-reminder-label>Remind me</span>
-                                </button>
                             </div>
 
                         </div>
@@ -455,11 +409,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <span data-sale-detail="generation"><?= store_escape($saleSelection['generation']) ?></span>
                                 </div>
 
-                                <div class="bg-[#0a0f1d]/90 backdrop-blur-md border border-slate-800 text-slate-300 px-2.5 py-1 rounded-none shadow-lg flex items-center gap-1.5 text-[11px]">
-                                    <svg class="w-3 h-3 text-yellow-400 fill-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                    <span class="font-bold text-white">4.98/5</span>
-                                    <span class="text-slate-400">(Verified Official)</span>
-                                </div>
                             </div>
 
                             <!-- Floating Top-Right Standing / PR Costume / Merch Visual Switcher -->
@@ -512,25 +461,6 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <?php endforeach; ?>
                                 </div>
                                 <button class="product-gallery-arrow w-7 h-7 rounded-none bg-[#0c1424] border border-slate-700 text-cyan-300 hover:bg-cyan-500 hover:text-slate-950 flex items-center justify-center cursor-pointer transition-colors" type="button" data-gallery-next aria-label="Show next image"<?= count($heroVisualModes) < 2 ? ' hidden' : '' ?>>&gt;</button>
-                            </div>
-
-                            <!-- Bottom Talent Info Strip -->
-                            <div class="relative z-20 mt-2.5 flex items-center gap-3 bg-[#0a0f1d]/90 backdrop-blur-md px-4 py-2 rounded-none border border-slate-800 shadow-xl">
-                                <div class="text-right">
-                                    <div class="text-xs font-bold text-white">
-                                        Fan Club: <span data-sale-detail="fan-name"><?= store_escape($saleSelection['fanName']) ?></span>
-                                    </div>
-                                    <div class="text-[10px] text-cyan-400" data-sale-detail="variant-caption">
-                                        Official Cover Corp Key Visual
-                                    </div>
-                                </div>
-                                <div class="w-1 h-6 bg-cyan-500 rounded-none" aria-hidden="true"></div>
-                                <div class="text-left">
-                                    <div class="text-[10px] text-slate-400 uppercase" data-sale-detail="stock-badge">Rarity Tier</div>
-                                    <div class="text-xs font-black text-yellow-400 font-outfit" data-sale-detail="rarity">
-                                        <?= store_escape($saleSelection['rarity']) ?>
-                                    </div>
-                                </div>
                             </div>
 
                         </section>

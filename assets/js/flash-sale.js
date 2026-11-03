@@ -1,100 +1,3 @@
-// Web Audio API Synthesizer for HoloVerse Cyber & Idol Sound FX
-let flashAudioCtx = null;
-const audioMuteStorageKey = "holoverse.flash-audio-muted";
-let flashAudioMuted = false;
-try {
-    flashAudioMuted = JSON.parse(window.localStorage.getItem(audioMuteStorageKey) || "false") === true;
-} catch {
-    flashAudioMuted = false;
-}
-
-const getFlashAudioContext = () => {
-    if (typeof window === "undefined") {
-        return null;
-    }
-    if (!flashAudioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-            flashAudioCtx = new AudioContextClass();
-        }
-    }
-    if (flashAudioCtx && flashAudioCtx.state === "suspended") {
-        flashAudioCtx.resume().catch(() => {});
-    }
-    return flashAudioCtx;
-};
-
-const playFlashSound = (type) => {
-    if (flashAudioMuted || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        return;
-    }
-    const ctx = getFlashAudioContext();
-    if (!ctx) {
-        return;
-    }
-
-    const now = ctx.currentTime;
-    try {
-        if (type === "switch") {
-            const notes = [587.33, 880, 1174.66]; // D5, A5, D6
-            notes.forEach((freq, idx) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(freq, now + idx * 0.05);
-                gain.gain.setValueAtTime(0.08, now + idx * 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.18);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now + idx * 0.05);
-                osc.stop(now + idx * 0.05 + 0.2);
-            });
-        } else if (type === "deal") {
-            const chord = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-            chord.forEach((freq, idx) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = "triangle";
-                osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-                gain.gain.setValueAtTime(0.12, now + idx * 0.04);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now + idx * 0.04);
-                osc.stop(now + idx * 0.04 + 0.45);
-            });
-        } else if (type === "click") {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(900, now);
-            osc.frequency.exponentialRampToValueAtTime(450, now + 0.04);
-            gain.gain.setValueAtTime(0.05, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.05);
-        } else if (type === "cart") {
-            const notes = [659.25, 987.77];
-            notes.forEach((freq, idx) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                gain.gain.setValueAtTime(0.09, now + idx * 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now + idx * 0.08);
-                osc.stop(now + idx * 0.08 + 0.22);
-            });
-        }
-    } catch {
-        // Ignore audio context autoplay restrictions
-    }
-};
-
 // Dependency-free Canvas Confetti Burst
 const launchHeroConfetti = () => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -172,30 +75,6 @@ const launchHeroConfetti = () => {
     window.requestAnimationFrame(animate);
 };
 
-// Audio Toggle Button
-const heroAudioToggle = document.querySelector("[data-hero-audio-toggle]");
-const heroAudioLabel = document.querySelector("[data-hero-audio-label]");
-const syncHeroAudioToggle = () => {
-    if (!heroAudioToggle) {
-        return;
-    }
-    heroAudioToggle.setAttribute("aria-pressed", String(flashAudioMuted));
-    if (heroAudioLabel) {
-        heroAudioLabel.textContent = flashAudioMuted ? "SFX MUTED" : "SFX ON";
-    }
-};
-syncHeroAudioToggle();
-heroAudioToggle?.addEventListener("click", () => {
-    flashAudioMuted = !flashAudioMuted;
-    try {
-        window.localStorage.setItem(audioMuteStorageKey, JSON.stringify(flashAudioMuted));
-    } catch {}
-    syncHeroAudioToggle();
-    if (!flashAudioMuted) {
-        playFlashSound("click");
-    }
-});
-
 const galleryImage = document.querySelector(".flash-product-main-image");
 const galleryBackdrop = document.querySelector(".flash-product-backdrop");
 const galleryThumbnailStrip = document.querySelector(".flash-gallery .product-gallery-thumbnails");
@@ -240,7 +119,6 @@ const bindGalleryThumbnails = () => {
     galleryThumbnails.forEach((thumbnail, index) => {
         thumbnail.addEventListener("mouseenter", () => showGalleryImage(index));
         thumbnail.addEventListener("click", () => {
-            playFlashSound("click");
             showGalleryImage(index);
         });
     });
@@ -256,6 +134,7 @@ const showGalleryImage = (index, scrollThumbnail = false) => {
     const activeThumbnail = galleryThumbnails[activeGalleryIndex];
     galleryImage.src = activeThumbnail.dataset.imageSrc;
     galleryImage.alt = activeThumbnail.dataset.imageAlt || "";
+    updateStockBarGradientFromImage();
     if (galleryBackdrop) {
         galleryBackdrop.src = activeThumbnail.dataset.imageSrc;
     }
@@ -275,19 +154,116 @@ const showGalleryImage = (index, scrollThumbnail = false) => {
     }
 };
 
+const imagePaletteWarnings = new Set();
+const updateStockBarGradientFromImage = () => {
+    const stockBar = document.querySelector('[data-sale-detail="stock-bar"]');
+    const buyButton = document.querySelector("[data-flash-buy-btn]");
+    const salePrice = document.querySelector('[data-sale-detail="price"]');
+    if ((!stockBar && !buyButton && !salePrice) || !galleryImage) {
+        return;
+    }
+
+    const setGradient = (gradient, priceColor = "var(--hero-theme)") => {
+        if (stockBar) {
+            stockBar.style.background = gradient;
+        }
+        if (buyButton) {
+            buyButton.style.background = gradient;
+        }
+        if (salePrice) {
+            salePrice.style.color = priceColor;
+        }
+    };
+    const setThemeGradient = () => setGradient("linear-gradient(90deg, var(--hero-accent) 0%, var(--hero-theme) 100%)");
+
+    if (!galleryImage.complete || !galleryImage.naturalWidth) {
+        setThemeGradient();
+        return;
+    }
+
+    try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 48;
+        canvas.height = 48;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) {
+            setThemeGradient();
+            return;
+        }
+
+        context.drawImage(galleryImage, 0, 0, canvas.width, canvas.height);
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        const buckets = new Map();
+        for (let index = 0; index < pixels.length; index += 4) {
+            const red = pixels[index];
+            const green = pixels[index + 1];
+            const blue = pixels[index + 2];
+            const alpha = pixels[index + 3];
+            const max = Math.max(red, green, blue);
+            const min = Math.min(red, green, blue);
+            const saturation = max === 0 ? 0 : (max - min) / max;
+            if (alpha < 128 || max < 40 || max > 242 || saturation < 0.2) {
+                continue;
+            }
+
+            const key = [red, green, blue].map((channel) => Math.round(channel / 32)).join(",");
+            const bucket = buckets.get(key) || { red: 0, green: 0, blue: 0, count: 0, saturation: 0 };
+            bucket.red += red;
+            bucket.green += green;
+            bucket.blue += blue;
+            bucket.count += 1;
+            bucket.saturation += saturation;
+            buckets.set(key, bucket);
+        }
+
+        const colors = [...buckets.values()]
+            .sort((a, b) => b.saturation - a.saturation)
+            .reduce((selected, bucket) => {
+                if (selected.length >= 3) {
+                    return selected;
+                }
+                const color = [bucket.red, bucket.green, bucket.blue].map((value) => Math.round(value / bucket.count));
+                const isDistinct = selected.every((existing) => {
+                    const distance = color.reduce((sum, channel, channelIndex) => sum + (channel - existing[channelIndex]) ** 2, 0);
+                    return distance > 45 ** 2;
+                });
+                if (isDistinct) {
+                    selected.push(color);
+                }
+                return selected;
+            }, [])
+            .map((color) => `#${color.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`);
+
+        if (colors.length < 2) {
+            setThemeGradient();
+            return;
+        }
+
+        const stops = colors.map((color, index) => `${color} ${(index / (colors.length - 1)) * 100}%`).join(", ");
+        setGradient(`linear-gradient(90deg, ${stops})`, colors[0]);
+    } catch (error) {
+        setThemeGradient();
+        const imageSource = galleryImage.currentSrc || galleryImage.src;
+        if (!imagePaletteWarnings.has(imageSource)) {
+            imagePaletteWarnings.add(imageSource);
+            console.warn("Could not sample colors from the flash-sale image; using its product theme colors.", error);
+        }
+    }
+};
+
+galleryImage?.addEventListener("load", updateStockBarGradientFromImage);
+updateStockBarGradientFromImage();
+
 bindGalleryThumbnails();
 
 heroPoseToggleBtn?.addEventListener("click", () => {
-    playFlashSound("click");
     showGalleryImage(activeGalleryIndex + 1, true);
 });
 
 document.querySelector("[data-gallery-previous]")?.addEventListener("click", () => {
-    playFlashSound("click");
     showGalleryImage(activeGalleryIndex - 1, true);
 });
 document.querySelector("[data-gallery-next]")?.addEventListener("click", () => {
-    playFlashSound("click");
     showGalleryImage(activeGalleryIndex + 1, true);
 });
 galleryImage?.addEventListener("keydown", (event) => {
@@ -753,7 +729,6 @@ const updateSaleProductDetails = (card) => {
     }
     try {
         const product = JSON.parse(card.dataset.saleProduct);
-        playFlashSound("switch");
         applySaleProductToHero(product, card);
     } catch {}
 };
@@ -761,7 +736,6 @@ const updateSaleProductDetails = (card) => {
 const heroBuyBtn = document.querySelector("[data-flash-buy-btn]");
 if (heroBuyBtn) {
     heroBuyBtn.addEventListener("click", () => {
-        playFlashSound("deal");
         launchHeroConfetti();
     });
 }
@@ -941,7 +915,6 @@ if (reminderBtn) {
 
     reminderBtn.addEventListener("click", () => {
         dropAlertSaved = !dropAlertSaved;
-        playFlashSound("click");
         try {
             window.localStorage.setItem(alertStorageKey, JSON.stringify(dropAlertSaved));
         } catch {}
