@@ -85,28 +85,13 @@ $flashSaleFilterLabels = [
                         : '';
                     $productTalent = (string) (!empty($product['talent_name']) ? $product['talent_name'] : ($product['category_name'] ?? 'hololive production'));
                     $productUrl = store_product_url((string) $product['product_name']);
-                    $saleSelectionData = [
-                        'name' => $product['product_name'],
-                        'description' => $product['description'] ?? '',
-                        'talent' => $productTalent,
-                        'category' => $product['category_name'],
-                        'variant' => $product['variant_name'],
-                        'stock' => $stock,
-                        'price' => store_format_price($price),
-                        'comparePrice' => store_format_price($comparePrice),
-                        'discount' => $discountPercent,
-                        'state' => $state,
-                        'variantId' => (int) $product['variant_id'],
-                        'startsLabel' => $saleStartLabel,
-                        'startsAt' => !empty($product['starts_at'])
-                            ? (new DateTimeImmutable($product['starts_at'], $flashSaleTimezone))->format(DateTimeInterface::ATOM)
-                            : '',
-                        'endsAt' => !empty($product['ends_at'])
-                            ? (new DateTimeImmutable($product['ends_at'], $flashSaleTimezone))->format(DateTimeInterface::ATOM)
-                            : '',
-                        'images' => $productImages,
-                        'productUrl' => $productUrl,
-                    ];
+                    $saleSelectionData = store_flash_sale_build_selection_data(
+                        $product,
+                        (string) $state,
+                        $productImages,
+                        $flashSaleTimezone,
+                        '../'
+                    );
                     ?>
                     <article
                         class="product-card flash-sale-drop-card"

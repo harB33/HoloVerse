@@ -1,6 +1,218 @@
+// Web Audio API Synthesizer for HoloVerse Cyber & Idol Sound FX
+let flashAudioCtx = null;
+const audioMuteStorageKey = "holoverse.flash-audio-muted";
+let flashAudioMuted = false;
+try {
+    flashAudioMuted = JSON.parse(window.localStorage.getItem(audioMuteStorageKey) || "false") === true;
+} catch {
+    flashAudioMuted = false;
+}
+
+const getFlashAudioContext = () => {
+    if (typeof window === "undefined") {
+        return null;
+    }
+    if (!flashAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            flashAudioCtx = new AudioContextClass();
+        }
+    }
+    if (flashAudioCtx && flashAudioCtx.state === "suspended") {
+        flashAudioCtx.resume().catch(() => {});
+    }
+    return flashAudioCtx;
+};
+
+const playFlashSound = (type) => {
+    if (flashAudioMuted || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+    const ctx = getFlashAudioContext();
+    if (!ctx) {
+        return;
+    }
+
+    const now = ctx.currentTime;
+    try {
+        if (type === "switch") {
+            const notes = [587.33, 880, 1174.66]; // D5, A5, D6
+            notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                gain.gain.setValueAtTime(0.08, now + idx * 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.05);
+                osc.stop(now + idx * 0.05 + 0.2);
+            });
+        } else if (type === "deal") {
+            const chord = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+            chord.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+                gain.gain.setValueAtTime(0.12, now + idx * 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.04);
+                osc.stop(now + idx * 0.04 + 0.45);
+            });
+        } else if (type === "sparkle") {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(1318.51, now); // E6
+            osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15); // A6
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+        } else if (type === "click") {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(900, now);
+            osc.frequency.exponentialRampToValueAtTime(450, now + 0.04);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } else if (type === "cart") {
+            const notes = [659.25, 987.77];
+            notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                gain.gain.setValueAtTime(0.09, now + idx * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.08);
+                osc.stop(now + idx * 0.08 + 0.22);
+            });
+        }
+    } catch {
+        // Ignore audio context autoplay restrictions
+    }
+};
+
+// Dependency-free Canvas Confetti Burst
+const launchHeroConfetti = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;";
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+        canvas.remove();
+        return;
+    }
+
+    const heroEl = document.querySelector("#flash-drop-spotlight");
+    const heroStyles = heroEl ? getComputedStyle(heroEl) : null;
+    const themeColor = heroStyles?.getPropertyValue("--hero-theme").trim() || "#00c3ff";
+    const accentColor = heroStyles?.getPropertyValue("--hero-accent").trim() || "#ec4899";
+    const colors = [themeColor, accentColor, "#22d3ee", "#f472b6", "#facc15", "#ffffff", "#34d399"];
+
+    const originX = canvas.width * 0.45;
+    const originY = canvas.height * 0.6;
+    const particles = Array.from({ length: 110 }, () => {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.35;
+        const speed = 7 + Math.random() * 12;
+        return {
+            x: originX + (Math.random() - 0.5) * 80,
+            y: originY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 5 + Math.random() * 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * Math.PI * 2,
+            vr: (Math.random() - 0.5) * 0.25,
+            opacity: 1,
+        };
+    });
+
+    let frame = 0;
+    const animate = () => {
+        frame += 1;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeCount = 0;
+
+        particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.34;
+            p.vx *= 0.99;
+            p.rotation += p.vr;
+            if (frame > 45) {
+                p.opacity = Math.max(0, p.opacity - 0.024);
+            }
+            if (p.opacity > 0 && p.y < canvas.height + 40) {
+                activeCount += 1;
+                ctx.save();
+                ctx.globalAlpha = p.opacity;
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.66);
+                ctx.restore();
+            }
+        });
+
+        if (activeCount > 0 && frame < 120) {
+            window.requestAnimationFrame(animate);
+        } else {
+            canvas.remove();
+        }
+    };
+    window.requestAnimationFrame(animate);
+};
+
+// Audio Toggle Button
+const heroAudioToggle = document.querySelector("[data-hero-audio-toggle]");
+const heroAudioLabel = document.querySelector("[data-hero-audio-label]");
+const syncHeroAudioToggle = () => {
+    if (!heroAudioToggle) {
+        return;
+    }
+    heroAudioToggle.setAttribute("aria-pressed", String(flashAudioMuted));
+    if (heroAudioLabel) {
+        heroAudioLabel.textContent = flashAudioMuted ? "SFX MUTED" : "SFX ON";
+    }
+};
+syncHeroAudioToggle();
+heroAudioToggle?.addEventListener("click", () => {
+    flashAudioMuted = !flashAudioMuted;
+    try {
+        window.localStorage.setItem(audioMuteStorageKey, JSON.stringify(flashAudioMuted));
+    } catch {}
+    syncHeroAudioToggle();
+    if (!flashAudioMuted) {
+        playFlashSound("click");
+    }
+});
+
 const galleryImage = document.querySelector(".flash-product-main-image");
 const galleryBackdrop = document.querySelector(".flash-product-backdrop");
 const galleryThumbnailStrip = document.querySelector(".flash-gallery .product-gallery-thumbnails");
+const heroPoseToggleBtn = document.querySelector("[data-hero-pose-toggle]");
+const heroPoseLabelEl = document.querySelector("[data-hero-pose-label]");
 let galleryThumbnails = [...document.querySelectorAll(".flash-gallery [data-gallery-image]")];
 let activeGalleryIndex = 0;
 
@@ -22,12 +234,29 @@ galleryThumbnailStrip?.addEventListener("wheel", (event) => {
     }
 }, { passive: false });
 
+const syncPoseToggleLabel = () => {
+    if (!heroPoseToggleBtn) {
+        return;
+    }
+    const visibleThumbnails = galleryThumbnails.filter((btn) => !btn.hidden);
+    heroPoseToggleBtn.hidden = visibleThumbnails.length < 2;
+    if (heroPoseLabelEl && visibleThumbnails.length >= 2) {
+        const nextIndex = (activeGalleryIndex + 1) % galleryThumbnails.length;
+        const nextBtn = galleryThumbnails[nextIndex];
+        heroPoseLabelEl.textContent = nextBtn?.dataset.modeLabel || "Switch Visual";
+    }
+};
+
 const bindGalleryThumbnails = () => {
     galleryThumbnails = [...document.querySelectorAll(".flash-gallery [data-gallery-image]")];
     galleryThumbnails.forEach((thumbnail, index) => {
         thumbnail.addEventListener("mouseenter", () => showGalleryImage(index));
-        thumbnail.addEventListener("click", () => showGalleryImage(index));
+        thumbnail.addEventListener("click", () => {
+            playFlashSound("click");
+            showGalleryImage(index);
+        });
     });
+    syncPoseToggleLabel();
 };
 
 const showGalleryImage = (index, scrollThumbnail = false) => {
@@ -45,8 +274,13 @@ const showGalleryImage = (index, scrollThumbnail = false) => {
     galleryThumbnails.forEach((thumbnail, thumbnailIndex) => {
         const selected = thumbnailIndex === activeGalleryIndex;
         thumbnail.classList.toggle("is-active", selected);
+        thumbnail.classList.toggle("border-cyan-400", selected);
+        thumbnail.classList.toggle("shadow-[0_0_10px_rgba(0,195,255,0.4)]", selected);
+        thumbnail.classList.toggle("border-slate-800", !selected);
+        thumbnail.classList.toggle("opacity-75", !selected);
         thumbnail.setAttribute("aria-pressed", String(selected));
     });
+    syncPoseToggleLabel();
 
     if (scrollThumbnail) {
         activeThumbnail.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
@@ -55,10 +289,17 @@ const showGalleryImage = (index, scrollThumbnail = false) => {
 
 bindGalleryThumbnails();
 
+heroPoseToggleBtn?.addEventListener("click", () => {
+    playFlashSound("click");
+    showGalleryImage(activeGalleryIndex + 1, true);
+});
+
 document.querySelector("[data-gallery-previous]")?.addEventListener("click", () => {
+    playFlashSound("click");
     showGalleryImage(activeGalleryIndex - 1, true);
 });
 document.querySelector("[data-gallery-next]")?.addEventListener("click", () => {
+    playFlashSound("click");
     showGalleryImage(activeGalleryIndex + 1, true);
 });
 galleryImage?.addEventListener("keydown", (event) => {
@@ -69,12 +310,32 @@ galleryImage?.addEventListener("keydown", (event) => {
     }
 });
 
+// Talent Voice Quote Sparkle Button
+const heroPlayQuoteBtn = document.querySelector("[data-hero-play-quote]");
+const heroPlayQuoteLabel = document.querySelector("[data-hero-play-quote-label]");
+let quoteTimerId = null;
+heroPlayQuoteBtn?.addEventListener("click", () => {
+    playFlashSound("sparkle");
+    if (heroPlayQuoteLabel) {
+        heroPlayQuoteLabel.textContent = "Playing...";
+    }
+    if (quoteTimerId) {
+        window.clearTimeout(quoteTimerId);
+    }
+    quoteTimerId = window.setTimeout(() => {
+        if (heroPlayQuoteLabel) {
+            heroPlayQuoteLabel.textContent = "Play Audio Tone";
+        }
+    }, 2400);
+});
+
 const saleFilter = document.querySelector("[data-sale-filter]");
 const saleTabs = [...document.querySelectorAll("[data-sale-tab]")];
 const saleFilterTrigger = document.querySelector("[data-sale-filter-trigger]");
 const saleFilterOptions = document.querySelector("[data-sale-filter-options]");
 const saleFilterCurrent = document.querySelector("[data-sale-filter-current]");
 const saleCards = [...document.querySelectorAll(".flash-sale-drop-card[data-sale-state]")];
+const heroDropPills = [...document.querySelectorAll("[data-hero-drop-pill]")];
 const saleGrid = document.querySelector("#flash-sale-products");
 const salePrevious = document.querySelector("[data-sale-previous]");
 const saleNext = document.querySelector("[data-sale-next]");
@@ -104,12 +365,14 @@ const updateCountdown = () => {
     const hoursEl = countdown.querySelector("[data-countdown-hours]");
     const minutesEl = countdown.querySelector("[data-countdown-minutes]");
     const secondsEl = countdown.querySelector("[data-countdown-seconds]");
+    const msEl = countdown.querySelector("[data-countdown-ms]");
 
     if (!deadlineTime || isNaN(deadlineTime)) {
         if (daysEl) daysEl.textContent = "00";
         if (hoursEl) hoursEl.textContent = "00";
         if (minutesEl) minutesEl.textContent = "00";
         if (secondsEl) secondsEl.textContent = "00";
+        if (msEl) msEl.textContent = "00";
         return;
     }
 
@@ -118,6 +381,10 @@ const updateCountdown = () => {
     if (hoursEl) hoursEl.textContent = String(Math.floor((remaining % 86400000) / 3600000)).padStart(2, "0");
     if (minutesEl) minutesEl.textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, "0");
     if (secondsEl) secondsEl.textContent = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
+    if (msEl) {
+        const centiseconds = remaining > 0 ? Math.floor((remaining % 1000) / 10) : 0;
+        msEl.textContent = String(centiseconds).padStart(2, "0");
+    }
 };
 
 let selectedSaleState = saleFilter?.value || "live";
@@ -233,12 +500,107 @@ saleGrid?.addEventListener("scroll", updateSaleCarouselControls, { passive: true
 saleCarousel && window.addEventListener("resize", updateSaleCarouselControls);
 saleCarousel && updateSaleCarouselControls();
 
-const updateSaleProductDetails = (card) => {
-    if (!flashSaleCard || !galleryImage) {
+const buildHeroVisualModes = (product) => {
+    const modes = [];
+    const seen = new Set();
+    const fallbackMerchUrl = product.images?.[0]?.image_url || "../assets/images/logo.png";
+
+    const pushMode = (url, alt, label) => {
+        const cleanUrl = (url || "").trim();
+        if (!cleanUrl || seen.has(cleanUrl)) {
+            return;
+        }
+        seen.add(cleanUrl);
+        modes.push({
+            image_url: cleanUrl,
+            alt_text: alt || product.name || "Flash drop visual",
+            mode_label: label,
+            fallback_url: fallbackMerchUrl,
+        });
+    };
+
+    const talentLabel = product.talent || "Talent";
+    if (product.standingVisual) {
+        pushMode(product.standingVisual, `${talentLabel} — Full Standing Visual`, "STANDING VISUAL");
+    }
+    if (product.prVisualAlt && product.prVisualAlt !== product.standingVisual) {
+        pushMode(product.prVisualAlt, `${talentLabel} — Alt Visual`, "ALT POSE / THUMB");
+    }
+
+    if (Array.isArray(product.images) && product.images.length) {
+        product.images.forEach((img, idx) => {
+            pushMode(
+                img.image_url,
+                img.alt_text || `${product.name} — View ${idx + 1}`,
+                idx === 0 ? "MERCH BUNDLE" : `GALLERY #${idx + 1}`
+            );
+        });
+    }
+
+    if (!modes.length) {
+        pushMode("../assets/images/logo.png", product.name || "hololive drop", "MERCH BUNDLE");
+    }
+
+    return modes;
+};
+
+const syncActiveHeroPillsAndCards = (product, sourceEl = null) => {
+    const targetVariantId = String(product.variantId ?? "");
+    const targetProductId = String(product.id ?? "");
+
+    heroDropPills.forEach((pill) => {
+        let isMatch = pill === sourceEl;
+        if (!isMatch && pill.dataset.saleProduct) {
+            try {
+                const pillData = JSON.parse(pill.dataset.saleProduct);
+                isMatch = (targetVariantId && String(pillData.variantId ?? "") === targetVariantId)
+                    || (targetProductId && String(pillData.id ?? "") === targetProductId);
+            } catch {
+                isMatch = false;
+            }
+        }
+        pill.classList.toggle("is-active", isMatch);
+        pill.classList.toggle("bg-slate-900", isMatch);
+        pill.classList.toggle("border-cyan-400", isMatch);
+        pill.classList.toggle("shadow-[0_0_15px_rgba(0,195,255,0.4)]", isMatch);
+        pill.classList.toggle("scale-105", isMatch);
+        pill.classList.toggle("bg-slate-950/80", !isMatch);
+        pill.classList.toggle("border-slate-800", !isMatch);
+        pill.classList.toggle("opacity-75", !isMatch);
+        pill.setAttribute("aria-selected", String(isMatch));
+
+        const pillName = pill.querySelector("[data-pill-name]");
+        if (pillName) {
+            pillName.classList.toggle("text-white", isMatch);
+            pillName.classList.toggle("text-slate-300", !isMatch);
+        }
+    });
+
+    saleCards.forEach((saleCard) => {
+        let isMatch = saleCard === sourceEl;
+        if (!isMatch && saleCard.dataset.saleProduct) {
+            try {
+                const cardData = JSON.parse(saleCard.dataset.saleProduct);
+                isMatch = (targetVariantId && String(cardData.variantId ?? "") === targetVariantId)
+                    || (targetProductId && String(cardData.id ?? "") === targetProductId);
+            } catch {
+                isMatch = false;
+            }
+        }
+        saleCard.classList.toggle("is-selected", isMatch);
+        if (isMatch) {
+            saleCard.setAttribute("aria-current", "true");
+        } else {
+            saleCard.removeAttribute("aria-current");
+        }
+    });
+};
+
+const applySaleProductToHero = (product, sourceEl = null) => {
+    if (!flashSaleCard || !galleryImage || !product) {
         return;
     }
 
-    const product = JSON.parse(card.dataset.saleProduct);
     const stock = Number(product.stock) || 0;
     const live = product.state === "live" && stock > 0;
     const startStatus = product.startsLabel ? `Starts ${product.startsLabel}` : "Sale starts soon";
@@ -252,30 +614,64 @@ const updateSaleProductDetails = (card) => {
         ? "Live flash sale drop"
         : (product.state === "archive" ? "Vault Archive drop" : "Upcoming drop");
 
+    const themeColor = product.themeColor || "#26B7FF";
+    const accentColor = product.accentColor || "#38BDF8";
+    const glowColor = product.glowColor || "rgba(38, 183, 255, 0.45)";
+
+    flashSaleCard.style.setProperty("--hero-theme", themeColor);
+    flashSaleCard.style.setProperty("--hero-accent", accentColor);
+    flashSaleCard.style.setProperty("--hero-glow", glowColor);
+
+    const capacity = Math.max(Number(product.capacity) || 24, stock + 6);
+    const claimedPercent = Number(product.claimedPercent)
+        || Math.min(98, Math.max(12, Math.round(((capacity - stock) / capacity) * 100)));
+
+    const numericPrice = Number(product.priceRaw)
+        || Number(String(product.price || "").replace(/[^0-9.]/g, ""))
+        || 0;
+    const approxUsd = product.approxUsd || `$${(numericPrice / 56).toFixed(2)}`;
+    const approxJpy = product.approxJpy || `¥${Math.round(numericPrice * 2.7).toLocaleString()}`;
+
     const textValues = {
         breadcrumb: product.name,
-        "stock-badge": `${stock} units available`,
         "product-badge": product.name,
-        "variant-caption": product.variant,
+        "variant-caption": product.variant || "Official Cover Corp Key Visual",
         "category-caption": product.category,
         category: product.category,
         variant: product.variant,
         name: product.name,
         price: product.price,
         "compare-price": product.comparePrice,
-        discount: `${product.discount}% off`,
+        discount: `SAVE ${product.discount}%`,
         "sale-note": product.state === "archive" ? "This flash sale has ended" : product.state === "live" ? "While supplies last" : startStatus,
         "stock-text": stockStatus,
         talent: talent,
         "state-label": stateLabel,
+        "jp-name": product.japaneseName || "ホロライブ公式",
+        "jp-watermark": product.japaneseName || "ホロライブ公式",
+        unit: product.unit || product.category || "hololive Official",
+        generation: product.generation || "Special Drop",
+        "fan-name": product.fanName || "Official Holofan",
+        rarity: product.rarity || "SSR LIMITED",
+        quote: product.quote || "Limited official hololive flash drop!",
+        "quote-speaker": `${talent}'s Flash Message:`,
+        "approx-price": `(~${approxUsd} USD · ~${approxJpy} JPY)`,
+        "stock-capacity": `/ ${capacity} total`,
+        "stock-percent-label": `${claimedPercent}% CLAIMED`,
     };
 
     Object.entries(textValues).forEach(([name, value]) => {
-        const element = saleDetail(name);
-        if (element) {
+        const elements = document.querySelectorAll(`[data-sale-detail="${name}"]`);
+        elements.forEach((element) => {
             element.textContent = value;
-        }
+        });
     });
+
+    const variantWrap = saleDetail("variant-wrap");
+    if (variantWrap) {
+        variantWrap.hidden = !product.variant;
+    }
+
     syncProductBadgeWidth();
 
     const productLinks = document.querySelectorAll(`[data-sale-detail="product-link"]`);
@@ -295,15 +691,13 @@ const updateSaleProductDetails = (card) => {
         discountEl.hidden = !product.discount || product.discount <= 0;
     }
 
-    const capacity = Math.max(24, stock + 6);
-    const claimedPercent = Math.min(100, Math.max(12, Math.round(((capacity - stock) / capacity) * 100)));
     const stockBar = saleDetail("stock-bar");
     if (stockBar) {
         stockBar.style.width = `${claimedPercent}%`;
     }
     const stockClaimedLabel = saleDetail("stock-claimed-label");
     if (stockClaimedLabel) {
-        stockClaimedLabel.textContent = live ? `${stock} left` : (product.state === "archive" ? "Ended" : "0 left");
+        stockClaimedLabel.textContent = live ? `${stock} units left` : (product.state === "archive" ? "Sale ended" : "0 units left");
     }
     const stockTrack = document.querySelector(".flash-stock-track");
     if (stockTrack) {
@@ -313,12 +707,12 @@ const updateSaleProductDetails = (card) => {
     const descriptionPreview = saleDetail("description-preview");
     const descriptionFull = saleDetail("description-full");
     if (descriptionPreview && descriptionFull && saleDescriptionToggle) {
-        descriptionPreview.textContent = product.description;
+        descriptionPreview.textContent = product.description || "";
         const fullInner = descriptionFull.querySelector(".description-full-text") || descriptionFull;
-        fullInner.textContent = product.description;
+        fullInner.textContent = product.description || "";
         descriptionPreview.hidden = false;
         descriptionFull.hidden = true;
-        saleDescriptionToggle.hidden = product.description.length <= 160;
+        saleDescriptionToggle.hidden = (product.description || "").length <= 160;
         saleDescriptionToggle.setAttribute("aria-expanded", "false");
         const label = saleDescriptionToggle.querySelector("span") || saleDescriptionToggle;
         label.textContent = "Read full product details";
@@ -371,31 +765,40 @@ const updateSaleProductDetails = (card) => {
     }
     if (countdownText) {
         countdownText.textContent = product.state === "live"
-            ? "Drop window ends in"
+            ? "FLASH SALE ENDS IN"
             : product.state === "archive"
-                ? "Sale ended"
-                : "Drop window starts in";
+                ? "FLASH SALE ENDED"
+                : "FLASH DROP STARTS IN";
     }
 
-    const images = product.images?.length
-        ? product.images
-        : [{ image_url: "../assets/images/logo.png", alt_text: product.name }];
+    const visualModes = buildHeroVisualModes(product);
+    const fallbackMerchSrc = product.images?.[0]?.image_url || "../assets/images/logo.png";
+    galleryImage.dataset.fallbackSrc = fallbackMerchSrc;
+
     galleryThumbnailStrip?.replaceChildren();
-    images.forEach((image, index) => {
+    visualModes.forEach((mode, index) => {
         const thumbnail = document.createElement("button");
-        thumbnail.className = `product-gallery-thumbnail${index === 0 ? " is-active" : ""}`;
+        thumbnail.className = `product-gallery-thumbnail w-11 h-11 rounded-xl border p-1 bg-slate-950/85 cursor-pointer transition-all shrink-0 ${index === 0 ? "is-active border-cyan-400 shadow-[0_0_10px_rgba(0,195,255,0.4)]" : "border-slate-800 opacity-75 hover:opacity-100"}`;
         thumbnail.type = "button";
         thumbnail.dataset.galleryImage = "";
-        thumbnail.dataset.imageSrc = image.image_url;
-        thumbnail.dataset.imageAlt = image.alt_text || product.name;
-        thumbnail.setAttribute("aria-label", `Show product image ${index + 1}`);
+        thumbnail.dataset.imageSrc = mode.image_url;
+        thumbnail.dataset.imageAlt = mode.alt_text;
+        thumbnail.dataset.modeLabel = mode.mode_label;
+        thumbnail.setAttribute("aria-label", `Show ${mode.mode_label}`);
         thumbnail.setAttribute("aria-pressed", String(index === 0));
 
         const thumbnailImage = document.createElement("img");
-        thumbnailImage.src = image.image_url;
+        thumbnailImage.src = mode.image_url;
         thumbnailImage.alt = "";
+        thumbnailImage.className = "w-full h-full object-contain";
         thumbnailImage.loading = "lazy";
         thumbnailImage.decoding = "async";
+        thumbnailImage.onerror = () => {
+            if (thumbnailImage.src !== fallbackMerchSrc) {
+                thumbnailImage.src = fallbackMerchSrc;
+                thumbnail.dataset.imageSrc = fallbackMerchSrc;
+            }
+        };
         thumbnail.append(thumbnailImage);
         galleryThumbnailStrip?.append(thumbnail);
     });
@@ -403,22 +806,47 @@ const updateSaleProductDetails = (card) => {
     const galleryPrevious = document.querySelector("[data-gallery-previous]");
     const galleryNext = document.querySelector("[data-gallery-next]");
     if (galleryPrevious) {
-        galleryPrevious.hidden = images.length < 2;
+        galleryPrevious.hidden = visualModes.length < 2;
     }
     if (galleryNext) {
-        galleryNext.hidden = images.length < 2;
+        galleryNext.hidden = visualModes.length < 2;
     }
     showGalleryImage(0);
 
-    saleCards.forEach((saleCard) => {
-        saleCard.classList.toggle("is-selected", saleCard === card);
-        if (saleCard === card) {
-            saleCard.setAttribute("aria-current", "true");
-        } else {
-            saleCard.removeAttribute("aria-current");
-        }
-    });
+    syncActiveHeroPillsAndCards(product, sourceEl);
 };
+
+const updateSaleProductDetails = (card) => {
+    if (!card?.dataset?.saleProduct) {
+        return;
+    }
+    try {
+        const product = JSON.parse(card.dataset.saleProduct);
+        playFlashSound("switch");
+        applySaleProductToHero(product, card);
+    } catch {}
+};
+
+heroDropPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+        if (!pill.dataset.saleProduct) {
+            return;
+        }
+        try {
+            const product = JSON.parse(pill.dataset.saleProduct);
+            playFlashSound("switch");
+            applySaleProductToHero(product, pill);
+        } catch {}
+    });
+});
+
+const heroBuyBtn = document.querySelector("[data-flash-buy-btn]");
+if (heroBuyBtn) {
+    heroBuyBtn.addEventListener("click", () => {
+        playFlashSound("deal");
+        launchHeroConfetti();
+    });
+}
 
 saleCards.forEach((card) => {
     card.addEventListener("click", (event) => {
@@ -568,7 +996,17 @@ if (saleFilter) {
 
 if (countdown) {
     updateCountdown();
-    window.setInterval(updateCountdown, 1000);
+    window.setInterval(updateCountdown, 40);
+}
+
+const heroViewersEl = document.querySelector("[data-hero-viewers]");
+if (heroViewersEl) {
+    let currentViewers = Number(String(heroViewersEl.textContent || "2841").replace(/[^0-9]/g, "")) || 2841;
+    window.setInterval(() => {
+        const delta = Math.floor(Math.random() * 15) - 6;
+        currentViewers = Math.max(1200, currentViewers + delta);
+        heroViewersEl.textContent = currentViewers.toLocaleString();
+    }, 3200);
 }
 
 // Drop reminder button
@@ -595,6 +1033,7 @@ if (reminderBtn) {
 
     reminderBtn.addEventListener("click", () => {
         dropAlertSaved = !dropAlertSaved;
+        playFlashSound("click");
         try {
             window.localStorage.setItem(alertStorageKey, JSON.stringify(dropAlertSaved));
         } catch {}
@@ -633,3 +1072,4 @@ if (systemClock) {
     updateSystemClock();
     window.setInterval(updateSystemClock, 1000);
 }
+

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "./flash-sale.css";
 @import "./landing.css";
 
@@ -269,7 +269,13 @@
 
   .account-dropdown a,
   .account-dropdown button {
-    @apply block w-full rounded-xl px-3.5 py-3 text-left font-montserrat text-[15px] font-bold text-[#34415d] no-underline transition-colors hover:bg-[#f3f8fc] hover:text-[#1689b5] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#31b4cf];
+    @apply block w-full rounded-xl px-3.5 py-3 text-left font-montserrat text-[15px] font-bold text-[#34415d] no-underline transition-colors hover:bg-[#f3f8fc] hover:text-[#1689b5] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#31b4cf] hover:rounded-none;
+  }
+
+  .account-dropdown a:hover,
+  .account-dropdown button:hover,
+  .account-dropdown-action:hover {
+    border-radius: 0 !important;
   }
 
   .account-dropdown form {
