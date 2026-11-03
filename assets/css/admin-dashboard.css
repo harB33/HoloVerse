@@ -843,6 +843,21 @@
   font-weight: 700;
 }
 
+.ops-product-image {
+  width: 37px;
+  height: 37px;
+  flex: none;
+  border: 1px solid #e1e9ee;
+  background: #fff;
+  object-fit: contain;
+  transition: border-color .18s ease, transform .18s ease;
+}
+
+.ops-table tbody tr:hover .ops-product-image {
+  transform: translateY(-1px);
+  border-color: #9edcf0;
+}
+
 .ops-product-color-1 { border-color: #dde3f5; background: #eff1fc; color: #7387bf; }
 .ops-product-color-2 { border-color: #f5dce5; background: #fcedf1; color: #c76e8c; }
 .ops-product-color-3 { border-color: #d9eee4; background: #edf7f3; color: #559f84; }

@@ -181,7 +181,17 @@ if (store_flash_sale_table_exists($conn)) {
 $productsResult = $conn->query(
     'SELECT p.product_id, p.product_name, p.status, p.created_at,
             c.category_name, COALESCE(MIN(pv.price), 0) AS price,
-            COALESCE(SUM(pv.stock_quantity), 0) AS stock_quantity
+            COALESCE(SUM(pv.stock_quantity), 0) AS stock_quantity,
+            (SELECT pi.image_url
+             FROM product_image_tbl pi
+             WHERE pi.product_id = p.product_id
+             ORDER BY pi.sort_order, pi.image_id
+             LIMIT 1) AS image_url,
+            (SELECT pi.alt_text
+             FROM product_image_tbl pi
+             WHERE pi.product_id = p.product_id
+             ORDER BY pi.sort_order, pi.image_id
+             LIMIT 1) AS image_alt_text
      FROM product_tbl p
      LEFT JOIN category_tbl c ON c.category_id = p.category_id
      LEFT JOIN product_variants_tbl pv ON pv.product_id = p.product_id
@@ -348,9 +358,12 @@ $quickLinks = [
                                         $productName = (string) $product['product_name'];
                                         $productInitials = $dashboardInitials($productName, 2);
                                         $productStatus = preg_replace('/[^a-z0-9-]/', '-', strtolower((string) $product['status']));
+                                        $productImageUrl = is_string($product['image_url'] ?? null) && $product['image_url'] !== ''
+                                            ? store_asset_url($product['image_url'], $siteRoot)
+                                            : '';
                                         ?>
                                         <tr>
-                                            <td><div class="ops-product-cell"><span class="ops-product-monogram ops-product-color-<?= $index % 5 ?>"><?= store_escape($productInitials) ?></span><span class="ops-product-text"><strong title="<?= store_escape($productName) ?>"><?= store_escape($productName) ?></strong><small><?= store_escape((string) ($product['category_name'] ?? 'Uncategorised')) ?> / Added <?= store_escape(date('M j, Y', strtotime((string) $product['created_at']))) ?></small></span></div></td>
+                                            <td><div class="ops-product-cell"><?php if ($productImageUrl !== ''): ?><img class="ops-product-image" src="<?= store_escape($productImageUrl) ?>" alt="<?= store_escape(is_string($product['image_alt_text'] ?? null) && $product['image_alt_text'] !== '' ? $product['image_alt_text'] : $productName) ?>" loading="lazy" decoding="async"><?php else: ?><span class="ops-product-monogram ops-product-color-<?= $index % 5 ?>"><?= store_escape($productInitials) ?></span><?php endif; ?><span class="ops-product-text"><strong title="<?= store_escape($productName) ?>"><?= store_escape($productName) ?></strong><small><?= store_escape((string) ($product['category_name'] ?? 'Uncategorised')) ?> / Added <?= store_escape(date('M j, Y', strtotime((string) $product['created_at']))) ?></small></span></div></td>
                                             <td><span class="ops-status ops-status-<?= store_escape((string) $productStatus) ?>"><i aria-hidden="true"></i><?= store_escape((string) $product['status']) ?></span></td>
                                             <td class="ops-table-price"><?= store_escape(store_format_price((float) $product['price'])) ?></td>
                                             <td><span class="ops-stock-value<?= (int) $product['stock_quantity'] <= 5 ? ' ops-stock-critical' : '' ?>"><?= (int) $product['stock_quantity'] ?></span></td>
