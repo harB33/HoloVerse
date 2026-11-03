@@ -9,6 +9,12 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = (int) $_SESSION['user_id'];
 $intent = $_SESSION['checkout_intent'] ?? [];
+$selectedVariantIds = is_array($intent['variant_ids'] ?? null)
+    ? array_values(array_unique(array_filter(
+        $intent['variant_ids'],
+        static fn (mixed $variantId): bool => is_int($variantId) && $variantId > 0
+    )))
+    : [];
 $message = '';
 $orderNumber = '';
 $paymentMethod = '';
@@ -113,7 +119,7 @@ if (isset($_GET['order']) && is_string($_GET['order'])) {
     }
 }
 
-if ($orderNumber === '' && ($intent['scope'] ?? '') !== 'cart') {
+if ($orderNumber === '' && (($intent['scope'] ?? '') !== 'cart' || $selectedVariantIds === [])) {
     header('Location: /home');
     exit;
 }
@@ -185,7 +191,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                     throw new RuntimeException('Your cart is empty. Add an item before checkout.');
                 }
 
-                $order = store_checkout_place_order($conn, $userId, $cartId, $shipping, $paymentMethod);
+                $order = store_checkout_place_order(
+                    $conn,
+                    $userId,
+                    $cartId,
+                    $shipping,
+                    $paymentMethod,
+                    $selectedVariantIds
+                );
                 $orderNumber = $order['order_number'];
                 $items = $order['items'];
                 unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
@@ -252,7 +265,7 @@ if ($orderNumber === '') {
     store_clear_expired_cart_items($conn, $cartId);
     if ($cartId > 0) {
         $statement = $conn->prepare(
-            "SELECT p.product_name, p.is_preorder, p.expected_ship_date,
+            'SELECT p.product_name, p.is_preorder, p.expected_ship_date,
                     v.variant_name, v.price, v.currency, v.stock_quantity, ci.quantity,
                     EXTRACT(EPOCH FROM ci.hold_expires_at)::bigint AS hold_expires_at_epoch,
                     i.image_url, i.alt_text
@@ -260,8 +273,9 @@ if ($orderNumber === '') {
              INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
              INNER JOIN product_tbl p ON p.product_id = v.product_id
              LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
-             WHERE ci.cart_id = ? AND p.status = 'active'
-             ORDER BY ci.added_at DESC"
+             WHERE ci.cart_id = ? AND ci.variant_id IN (' . implode(',', $selectedVariantIds) . ')
+               AND p.status = \'active\'
+             ORDER BY ci.added_at DESC'
         );
         $statement->bind_param('i', $cartId);
         $statement->execute();

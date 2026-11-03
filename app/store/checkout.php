@@ -97,7 +97,8 @@ function store_checkout_place_order(
     int $userId,
     int $cartId,
     array $shipping,
-    string $paymentMethod
+    string $paymentMethod,
+    array $selectedVariantIds
 ): array {
     if ($cartId < 1) {
         throw new RuntimeException('Your cart is empty. Add an item before checkout.');
@@ -105,6 +106,17 @@ function store_checkout_place_order(
     if (!in_array($paymentMethod, ['card', 'e_wallet', 'cash_on_delivery'], true)) {
         throw new InvalidArgumentException('Choose a valid payment method before placing your order.');
     }
+    if ($selectedVariantIds === []) {
+        throw new RuntimeException('Select at least one item to check out.');
+    }
+
+    foreach ($selectedVariantIds as $variantId) {
+        if (!is_int($variantId) || $variantId < 1) {
+            throw new InvalidArgumentException('The selected cart items are invalid. Please try again.');
+        }
+    }
+    $selectedVariantIds = array_values(array_unique($selectedVariantIds));
+    $selectedVariantSql = implode(',', $selectedVariantIds);
 
     $orderStatus = 'confirmed';
     $shouldReserveStock = store_checkout_should_reserve_stock($paymentMethod);
@@ -115,7 +127,7 @@ function store_checkout_place_order(
         $statement = $conn->prepare(
             'SELECT DISTINCT variant_id
              FROM cart_items_tbl
-             WHERE cart_id = ?
+             WHERE cart_id = ? AND variant_id IN (' . $selectedVariantSql . ')
              ORDER BY variant_id'
         );
         $statement->bind_param('i', $cartId);
@@ -133,7 +145,8 @@ function store_checkout_place_order(
         $statement = $conn->prepare(
             'DELETE FROM cart_items_tbl
              WHERE cart_id = ? AND hold_expires_at IS NOT NULL
-               AND hold_expires_at <= statement_timestamp()'
+               AND hold_expires_at <= statement_timestamp()
+               AND variant_id IN (' . $selectedVariantSql . ')'
         );
         $statement->bind_param('i', $cartId);
         $statement->execute();
@@ -154,7 +167,7 @@ function store_checkout_place_order(
              FROM cart_items_tbl ci
              INNER JOIN product_variants_tbl v ON v.variant_id = ci.variant_id
              INNER JOIN product_tbl p ON p.product_id = v.product_id
-             WHERE ci.cart_id = ?
+             WHERE ci.cart_id = ? AND ci.variant_id IN (' . $selectedVariantSql . ')
              ORDER BY v.variant_id
              FOR UPDATE OF ci'
         );
@@ -282,13 +295,20 @@ function store_checkout_place_order(
             $stockStatement->close();
         }
 
-        $statement = $conn->prepare("UPDATE cart_tbl SET status = 'checked_out' WHERE cart_id = ? AND user_id = ?");
-        $statement->bind_param('ii', $cartId, $userId);
+        $statement = $conn->prepare(
+            'DELETE FROM cart_items_tbl WHERE cart_id = ? AND variant_id IN (' . $selectedVariantSql . ')'
+        );
+        $statement->bind_param('i', $cartId);
         $statement->execute();
         $statement->close();
 
-        $statement = $conn->prepare('DELETE FROM cart_items_tbl WHERE cart_id = ?');
-        $statement->bind_param('i', $cartId);
+        $statement = $conn->prepare(
+            "UPDATE cart_tbl
+             SET status = 'checked_out'
+             WHERE cart_id = ? AND user_id = ?
+               AND NOT EXISTS (SELECT 1 FROM cart_items_tbl WHERE cart_id = ?)"
+        );
+        $statement->bind_param('iii', $cartId, $userId, $cartId);
         $statement->execute();
         $statement->close();
 

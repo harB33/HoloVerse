@@ -44,23 +44,45 @@ if (!store_verify_csrf()) {
                 throw new RuntimeException('Add an item to your cart before checkout.');
             }
 
+            $selectedCartItemIds = $_POST['checkout_item_ids'] ?? null;
+            if (!is_array($selectedCartItemIds) || $selectedCartItemIds === []) {
+                throw new RuntimeException('Select at least one item to check out.');
+            }
+
+            $normalizedCartItemIds = [];
+            foreach ($selectedCartItemIds as $selectedCartItemId) {
+                if (!is_string($selectedCartItemId) || !ctype_digit($selectedCartItemId) || (int) $selectedCartItemId < 1) {
+                    throw new RuntimeException('The selected cart items are invalid. Please try again.');
+                }
+                $normalizedCartItemIds[] = (int) $selectedCartItemId;
+            }
+            if (count(array_unique($normalizedCartItemIds)) !== count($normalizedCartItemIds)) {
+                throw new RuntimeException('The selected cart items are invalid. Please try again.');
+            }
+
+            $selectedCartItemSql = implode(',', $normalizedCartItemIds);
             $statement = $conn->prepare(
-                'SELECT EXISTS (
-                     SELECT 1 FROM cart_items_tbl
-                     WHERE cart_id = ?
-                 ) AS has_items'
+                'SELECT cart_item_id, variant_id
+                 FROM cart_items_tbl
+                 WHERE cart_id = ? AND cart_item_id IN (' . $selectedCartItemSql . ')'
             );
             $statement->bind_param('i', $cartId);
             $statement->execute();
-            $hasItems = $statement->get_result()->fetch_assoc()['has_items'];
+            $selectedItems = $statement->get_result()->fetch_all(PDO::FETCH_ASSOC);
             $statement->close();
 
-            if (!in_array($hasItems, [true, 't', 1, '1'], true)) {
-                throw new RuntimeException('Add an item to your cart before checkout.');
+            if (count($selectedItems) !== count($normalizedCartItemIds)) {
+                throw new RuntimeException('One or more selected items are no longer in your cart. Refresh and try again.');
             }
 
             unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
-            $_SESSION['checkout_intent'] = ['scope' => 'cart'];
+            $_SESSION['checkout_intent'] = [
+                'scope' => 'cart',
+                'variant_ids' => array_map(
+                    static fn (array $item): int => (int) $item['variant_id'],
+                    $selectedItems
+                ),
+            ];
 
             if (!isset($_SESSION['user_id'])) {
                 header('Location: login?mode=register&return_to=checkout');

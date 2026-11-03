@@ -444,6 +444,7 @@ function store_cart_drawer_payload(DatabaseConnection $conn, int $cartId): array
             'stock_quantity' => (int) $item['stock_quantity'],
             'unit_price' => store_format_price($price),
             'line_total' => store_format_price($lineSubtotal),
+            'line_subtotal_amount' => $lineSubtotal,
             'image_url' => (string) ($item['image_url'] ?: 'assets/images/logo.png'),
             'status' => $status,
             'status_label' => $statusLabel,
@@ -469,6 +470,9 @@ function store_cart_drawer_payload(DatabaseConnection $conn, int $cartId): array
         'items' => $responseItems,
         'summaries' => $summaries,
         'subtotal' => store_format_price($totalSubtotal),
+        'currency_rate' => store_currency_rate(),
+        'currency_symbol' => store_currency_symbol(),
+        'currency_fraction_digits' => store_current_currency() === 'JPY' ? 0 : 2,
         'has_preorder' => $hasPreorder,
         'has_non_preorder' => $hasNonPreorder,
     ];

@@ -382,11 +382,11 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
             <p data-cart-drawer-preorder-copy></p>
         </div>
         <div>
-            <span>Subtotal</span>
+            <span data-cart-drawer-subtotal-label>Selected subtotal</span>
             <strong data-cart-drawer-subtotal><?= store_escape((string) ($headerCartPayload['subtotal'] ?? store_format_price(0))) ?></strong>
         </div>
         <p>Shipping and taxes are calculated at checkout.</p>
-        <form action="<?= store_escape($pageUrlPrefix . 'cart') ?>" method="post" class="cart-drawer-checkout-form">
+        <form id="cart-drawer-checkout-form" action="<?= store_escape($pageUrlPrefix . 'cart') ?>" method="post" class="cart-drawer-checkout-form">
             <input type="hidden" name="csrf_token" value="<?= store_escape($headerCsrfToken) ?>">
             <input type="hidden" name="action" value="checkout">
             <input type="hidden" name="checkout_scope" value="cart">
@@ -582,9 +582,13 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
         const cartLinesContainer = document.querySelector("[data-cart-drawer-lines]");
         const cartFooter = document.querySelector("[data-cart-drawer-footer]");
         const cartSubtotalElement = document.querySelector("[data-cart-drawer-subtotal]");
+        const cartSubtotalLabel = document.querySelector("[data-cart-drawer-subtotal-label]");
+        const cartCheckoutButton = document.querySelector(".cart-drawer-checkout-btn");
         const cartPreorderNote = document.querySelector("[data-cart-drawer-preorder-note]");
         const cartPreorderCopy = document.querySelector("[data-cart-drawer-preorder-copy]");
         let cartDrawerCloseTimer;
+        let currentCartItems = [];
+        let currentCartPayload = initialCartState;
 
         const finishCartDrawerClose = () => {
             if (!cartDrawer?.classList.contains("is-closing")) {
@@ -667,12 +671,51 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
             }
         };
 
+        const updateCartSelection = () => {
+            if (!cartLinesContainer || !cartCheckoutButton) {
+                return;
+            }
+
+            const selectedItems = [...cartLinesContainer.querySelectorAll("[data-cart-select-item]:checked")];
+            const selectAll = cartLinesContainer.querySelector("[data-cart-select-all]");
+            const allItems = [...cartLinesContainer.querySelectorAll("[data-cart-select-item]")];
+            if (selectAll) {
+                selectAll.checked = allItems.length > 0 && selectedItems.length === allItems.length;
+                selectAll.indeterminate = selectedItems.length > 0 && selectedItems.length < allItems.length;
+            }
+
+            const selectedIds = new Set(selectedItems.map((checkbox) => checkbox.value));
+            const selectedSubtotal = currentCartItems.reduce((total, item) => (
+                selectedIds.has(String(item.id)) ? total + Number(item.line_subtotal_amount || 0) : total
+            ), 0) * Number(currentCartPayload.currency_rate || 1);
+            const fractionDigits = Number(currentCartPayload.currency_fraction_digits ?? 2);
+            if (cartSubtotalElement) {
+                cartSubtotalElement.textContent = `${currentCartPayload.currency_symbol || ""}${selectedSubtotal.toLocaleString(undefined, {
+                    minimumFractionDigits: fractionDigits,
+                    maximumFractionDigits: fractionDigits,
+                })}`;
+            }
+            if (cartSubtotalLabel) {
+                cartSubtotalLabel.textContent = "Selected subtotal";
+            }
+
+            cartCheckoutButton.disabled = selectedItems.length === 0;
+            const buttonLabel = cartCheckoutButton.querySelector("span");
+            if (buttonLabel) {
+                buttonLabel.textContent = selectedItems.length > 0
+                    ? `Checkout (${selectedItems.length})`
+                    : "Select items to checkout";
+            }
+        };
+
         const renderCartState = (payload) => {
             if (!payload || typeof payload !== "object") {
                 return;
             }
             const count = Number(payload.count || 0);
             const items = Array.isArray(payload.items) ? payload.items : [];
+            currentCartPayload = payload;
+            currentCartItems = items;
 
             cartBadges.forEach((badge) => {
                 badge.textContent = count > 99 ? "99+" : String(count);
@@ -720,9 +763,29 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                 return;
             }
 
+            const selectionToolbar = document.createElement("label");
+            selectionToolbar.className = "cart-select-all";
+            const selectAllCheckbox = document.createElement("input");
+            selectAllCheckbox.type = "checkbox";
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.setAttribute("data-cart-select-all", "");
+            selectAllCheckbox.setAttribute("aria-label", "Select all cart items");
+            selectionToolbar.append(selectAllCheckbox, document.createTextNode("Select all items"));
+            cartLinesContainer.append(selectionToolbar);
+
             items.forEach((item) => {
                 const line = document.createElement("div");
                 line.className = "cart-line";
+
+                const itemCheckbox = document.createElement("input");
+                itemCheckbox.type = "checkbox";
+                itemCheckbox.className = "cart-line-select";
+                itemCheckbox.name = "checkout_item_ids[]";
+                itemCheckbox.value = String(item.id);
+                itemCheckbox.setAttribute("form", "cart-drawer-checkout-form");
+                itemCheckbox.setAttribute("data-cart-select-item", "");
+                itemCheckbox.checked = true;
+                itemCheckbox.setAttribute("aria-label", `Include ${item.product_name} in checkout`);
 
                 const image = document.createElement("img");
                 image.src = resolveAssetUrl(item.image_url);
@@ -784,7 +847,7 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
 
                 quantityControl.append(minusBtn, qtySpan, plusBtn, removeBtn);
                 details.append(talent, title, statusSpan, priceStrong, quantityControl);
-                line.append(image, details);
+                line.append(itemCheckbox, image, details);
                 cartLinesContainer.append(line);
             });
 
@@ -802,7 +865,23 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                     cartPreorderNote.hidden = true;
                 }
             }
+            updateCartSelection();
         };
+
+        cartLinesContainer?.addEventListener("change", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) {
+                return;
+            }
+            if (target.matches("[data-cart-select-all]")) {
+                cartLinesContainer.querySelectorAll("[data-cart-select-item]").forEach((checkbox) => {
+                    checkbox.checked = target.checked;
+                });
+            }
+            if (target.matches("[data-cart-select-all], [data-cart-select-item]")) {
+                updateCartSelection();
+            }
+        });
 
         renderCartState(initialCartState);
 
