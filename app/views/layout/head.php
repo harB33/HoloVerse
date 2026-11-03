@@ -9,7 +9,7 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
     'index.php' => 'home',
     'products.php', 'product.php', 'flash_sale.php' => 'catalog',
     'cart.php', 'checkout.php' => 'commerce',
-    'login.php', 'logout.php' => 'account',
+    'login.php', 'logout.php', 'profile.php' => 'account',
     'admin-dashboard.php', 'inventory.php', 'product-input.php', 'flash-sale-admin.php',
     'temp-import-official-catalog.php' => 'admin',
     'about-us.php', 'collector_showcase.php', 'personalized.php', 'talents.php' => 'editorial',

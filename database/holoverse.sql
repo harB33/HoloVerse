@@ -130,6 +130,7 @@ CREATE TABLE user_tbl (
     username varchar(50) NOT NULL,
     password_hash varchar(255) NOT NULL,
     email varchar(100) NOT NULL,
+    profile_picture varchar(255),
     user_role varchar(5) NOT NULL DEFAULT 'user',
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
