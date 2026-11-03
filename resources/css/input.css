@@ -6224,7 +6224,14 @@
   padding: 0;
   color: transparent;
   caret-color: transparent;
+  opacity: 0;
   box-shadow: none;
+}
+
+.auth-page.home-landing .otp-entry.is-enhanced .otp-input:focus {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none !important;
 }
 
 .otp-entry.is-enhanced .otp-boxes {
