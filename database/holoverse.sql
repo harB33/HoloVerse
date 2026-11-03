@@ -9,6 +9,7 @@ CREATE TABLE address_tbl (
     phone varchar(30) DEFAULT NULL,
     address_line1 varchar(255) NOT NULL,
     address_line2 varchar(255) DEFAULT NULL,
+    barangay varchar(100) DEFAULT NULL,
     city varchar(100) NOT NULL,
     region varchar(100) DEFAULT NULL,
     postal_code varchar(20) NOT NULL,

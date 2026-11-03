@@ -20,6 +20,19 @@ $confirmationItems = [];
 $confirmationAddress = [];
 $checkoutStep = $_SESSION['checkout_step'] ?? 'information';
 $savedShipping = $_SESSION['checkout_shipping'] ?? [];
+if (!is_array($savedShipping)) {
+    $savedShipping = [];
+}
+if ($savedShipping === []) {
+    $savedAddressStatement = $conn->prepare(
+        'SELECT recipient_name, address_line1, address_line2, barangay, city, region, postal_code, country_code
+         FROM address_tbl WHERE user_id = ? ORDER BY address_id LIMIT 1'
+    );
+    $savedAddressStatement->bind_param('i', $userId);
+    $savedAddressStatement->execute();
+    $savedShipping = $savedAddressStatement->get_result()->fetch_assoc() ?? [];
+    $savedAddressStatement->close();
+}
 $shipping = [
     'recipient_name' => (string) ($_POST['recipient_name'] ?? $savedShipping['recipient_name'] ?? $_SESSION['username'] ?? ''),
     'address_line1' => (string) ($_POST['address_line1'] ?? $savedShipping['address_line1'] ?? ''),
@@ -149,6 +162,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $order = store_checkout_place_order($conn, $userId, $cartId, $shipping, $paymentMethod);
                 $orderNumber = $order['order_number'];
                 $items = $order['items'];
+                unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
 
                 try {
                     $emailStatement = $conn->prepare('SELECT email FROM user_tbl WHERE user_id = ? LIMIT 1');

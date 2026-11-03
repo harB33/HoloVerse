@@ -43,7 +43,7 @@ For an existing database, run `Database/add-login-rate-limits.sql` before deploy
 
 For an existing database, run `Database/add-collector-favorites.sql` before deploying the Collector Showcase changes. Favorites are saved to the signed-in account; the showcase also lists the customer's confirmed purchases with a thank-you note.
 
-For an existing database, run `Database/migrations/20261103_user_profile.sql` before deploying profile settings. Signed-in users can update their display name and email, upload or remove a profile picture, and change their password.
+For an existing database, run `Database/migrations/20261103_add_address_barangay.sql` before deploying the saved-address profile and checkout changes. Signed-in users can update their display name, choose an official hololive talent portrait, save a checkout address, and change or reset their password from the Security settings. Account email addresses are read-only.
 
 For an existing database, run `Database/migrations/20261024_inventory_movement_history.sql` before deploying inventory management changes. It creates the inventory movement audit table. Existing stock levels are not backfilled because their prior adjustment history is unknown; new product stock, admin adjustments, and stock deducted for cash-on-delivery orders are recorded from deployment onward.
 
