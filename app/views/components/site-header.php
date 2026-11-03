@@ -839,8 +839,7 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                 const fieldValue = (field.getAttribute("value") || "").toLowerCase();
                 const textValue = (field.textContent || "").toLowerCase();
                 return (fieldName === "action" && fieldValue === "add")
-                    || (field.type === "submit" && (fieldValue === "add" || textValue.includes("add to cart") || textValue.includes("add to bag") || textValue.includes("reserve pre-order") || textValue.includes("claim flash price") || textValue.includes("get the drop")))
-                    || (fieldName === "action" && fieldValue.includes("add"));
+                    || (field.type === "submit" && (fieldValue === "add" || textValue.includes("add to cart") || textValue.includes("add to bag") || textValue.includes("reserve pre-order") || textValue.includes("claim flash price") || textValue.includes("get the drop")));
             });
         };
 

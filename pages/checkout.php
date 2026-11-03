@@ -19,9 +19,25 @@ $orderCurrency = 'PHP';
 $confirmationItems = [];
 $confirmationAddress = [];
 $checkoutStep = $_SESSION['checkout_step'] ?? 'information';
+$savedAddressStatement = $conn->prepare(
+    'SELECT recipient_name, phone, address_line1, address_line2, barangay, city, region, postal_code, country_code
+     FROM address_tbl WHERE user_id = ? ORDER BY address_id LIMIT 1'
+);
+$savedAddressStatement->bind_param('i', $userId);
+$savedAddressStatement->execute();
+$profileAddress = $savedAddressStatement->get_result()->fetch_assoc();
+$savedAddressStatement->close();
+$hasProfileAddress = is_array($profileAddress);
 $savedShipping = $_SESSION['checkout_shipping'] ?? [];
+if (!is_array($savedShipping)) {
+    $savedShipping = [];
+}
+if ($savedShipping === []) {
+    $savedShipping = $profileAddress ?? [];
+}
 $shipping = [
     'recipient_name' => (string) ($_POST['recipient_name'] ?? $savedShipping['recipient_name'] ?? $_SESSION['username'] ?? ''),
+    'phone' => (string) ($savedShipping['phone'] ?? $profileAddress['phone'] ?? ''),
     'address_line1' => (string) ($_POST['address_line1'] ?? $savedShipping['address_line1'] ?? ''),
     'address_line2' => (string) ($_POST['address_line2'] ?? $savedShipping['address_line2'] ?? ''),
     'city' => (string) ($_POST['city'] ?? $savedShipping['city'] ?? ''),
@@ -30,6 +46,22 @@ $shipping = [
     'postal_code' => (string) ($_POST['postal_code'] ?? $savedShipping['postal_code'] ?? ''),
     'country_code' => strtoupper((string) ($_POST['country_code'] ?? $savedShipping['country_code'] ?? 'PH')),
 ];
+$checkoutAddressLine2 = trim($shipping['address_line2']);
+$checkoutBarangay = trim($shipping['barangay']);
+$checkoutAddressSummaryParts = array_filter([
+    trim($shipping['address_line1']),
+    $checkoutAddressLine2,
+    $checkoutBarangay === ''
+        ? ''
+        : (preg_match('/^barangay\b/i', $checkoutBarangay) ? $checkoutBarangay : 'Barangay ' . $checkoutBarangay),
+    implode(', ', array_filter([
+        trim($shipping['city']),
+        trim($shipping['region']),
+        trim($shipping['postal_code']),
+    ], static fn (string $part): bool => $part !== '')),
+    trim($shipping['country_code']),
+], static fn (string $part): bool => $part !== '');
+$checkoutAddressSummary = implode(', ', $checkoutAddressSummaryParts);
 
 if (isset($_GET['order']) && is_string($_GET['order'])) {
     $requestedOrder = $_GET['order'];
@@ -99,6 +131,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
         $action = (string) $_POST['action'];
         $limits = [
             'recipient_name' => 150,
+            'phone' => 30,
             'address_line1' => 255,
             'address_line2' => 255,
             'city' => 100,
@@ -126,9 +159,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
         }
 
         if ($message === '' && $action === 'continue_to_payment') {
-            $_SESSION['checkout_shipping'] = $shipping;
-            $checkoutStep = 'payment_method';
-            $_SESSION['checkout_step'] = $checkoutStep;
+            try {
+                store_checkout_save_profile_address($conn, $userId, $shipping);
+                $_SESSION['checkout_shipping'] = $shipping;
+                $checkoutStep = 'payment_method';
+                $_SESSION['checkout_step'] = $checkoutStep;
+            } catch (Throwable $error) {
+                error_log('HoloVerse checkout address could not be saved to the profile: ' . $error->getMessage());
+                $message = 'Your address could not be saved. Please try again.';
+            }
         } elseif ($message === '' && $action === 'place_order') {
             $paymentMethod = (string) ($_POST['payment_method'] ?? '');
             if ($checkoutStep !== 'payment_method' || !in_array($paymentMethod, ['card', 'e_wallet', 'cash_on_delivery'], true)) {
@@ -149,6 +188,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && $orderNumber === '') {
                 $order = store_checkout_place_order($conn, $userId, $cartId, $shipping, $paymentMethod);
                 $orderNumber = $order['order_number'];
                 $items = $order['items'];
+                unset($_SESSION['checkout_shipping'], $_SESSION['checkout_step']);
 
                 try {
                     $emailStatement = $conn->prepare('SELECT email FROM user_tbl WHERE user_id = ? LIMIT 1');
@@ -237,6 +277,7 @@ $checkoutTax = store_calculate_sales_tax($items);
 
 $pageTitle = $orderNumber !== '' ? 'Order Confirmed | HoloVerse' : 'Checkout | HoloVerse';
 $siteRoot = '../';
+$pageStylesheet = $siteRoot . 'Assets/css/checkout.css?v=' . filemtime(__DIR__ . '/../Assets/css/checkout.css');
 require __DIR__ . '/../app/views/layout/head.php';
 ?>
 
@@ -344,30 +385,48 @@ require __DIR__ . '/../app/views/layout/head.php';
                             <form class="checkout-address-form" action="checkout" method="post">
                                 <input type="hidden" name="csrf_token" value="<?= store_escape(store_csrf_token()) ?>">
                                 <input type="hidden" name="action" value="continue_to_payment">
+                                <?php if ($hasProfileAddress): ?>
+                                    <div class="checkout-profile-address" data-checkout-saved-summary>
+                                        <div>
+                                            <strong><?= store_escape($shipping['recipient_name']) ?></strong>
+                                            <?php if (trim($shipping['phone']) !== ''): ?>
+                                                <span><?= store_escape($shipping['phone']) ?></span>
+                                            <?php endif; ?>
+                                            <p><?= store_escape($checkoutAddressSummary) ?></p>
+                                        </div>
+                                        <button class="checkout-address-edit-button" type="button" data-checkout-address-edit aria-expanded="false" aria-controls="checkout-address-fields">Change address</button>
+                                    </div>
+                                <?php endif; ?>
+                                <fieldset
+                                    class="checkout-address-fields"
+                                    id="checkout-address-fields"
+                                    data-checkout-address-fields
+                                    <?= $hasProfileAddress ? 'hidden disabled' : '' ?>
+                                >
                                 <label>
                                     Recipient name
-                                    <input type="text" name="recipient_name" maxlength="150" required value="<?= store_escape($shipping['recipient_name']) ?>">
+                                    <input type="text" name="recipient_name" maxlength="150" required value="<?= store_escape($shipping['recipient_name']) ?>" data-checkout-default="<?= store_escape($shipping['recipient_name']) ?>">
                                 </label>
                                 <label>
                                     Address
-                                    <input type="text" name="address_line1" maxlength="255" required autocomplete="address-line1" value="<?= store_escape($shipping['address_line1']) ?>">
+                                    <input type="text" name="address_line1" maxlength="255" required autocomplete="address-line1" value="<?= store_escape($shipping['address_line1']) ?>" data-checkout-default="<?= store_escape($shipping['address_line1']) ?>">
                                 </label>
                                 <label>
                                     Apartment, suite, etc. (optional)
-                                    <input type="text" name="address_line2" maxlength="255" autocomplete="address-line2" value="<?= store_escape($shipping['address_line2']) ?>">
+                                    <input type="text" name="address_line2" maxlength="255" autocomplete="address-line2" value="<?= store_escape($shipping['address_line2']) ?>" data-checkout-default="<?= store_escape($shipping['address_line2']) ?>">
                                 </label>
                                 <div class="checkout-address-row">
                                     <label>
                                         Region / province
                                         <span class="checkout-location-autocomplete">
-                                            <input type="text" id="checkout-region" name="region" required autocomplete="address-level1" aria-autocomplete="list" aria-controls="checkout-region-suggestions" aria-expanded="false" placeholder="Enter or select a region / province" value="<?= store_escape($shipping['region']) ?>">
+                                            <input type="text" id="checkout-region" name="region" required autocomplete="address-level1" aria-autocomplete="list" aria-controls="checkout-region-suggestions" aria-expanded="false" placeholder="Enter or select a region / province" value="<?= store_escape($shipping['region']) ?>" data-checkout-default="<?= store_escape($shipping['region']) ?>">
                                             <span id="checkout-region-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
                                         </span>
                                     </label>
                                     <label>
                                         City
                                         <span class="checkout-location-autocomplete">
-                                            <input type="text" id="checkout-city" name="city" required autocomplete="address-level2" aria-autocomplete="list" aria-controls="checkout-city-suggestions" aria-expanded="false" placeholder="Enter or select a city / municipality" value="<?= store_escape($shipping['city']) ?>">
+                                            <input type="text" id="checkout-city" name="city" required autocomplete="address-level2" aria-autocomplete="list" aria-controls="checkout-city-suggestions" aria-expanded="false" placeholder="Enter or select a city / municipality" value="<?= store_escape($shipping['city']) ?>" data-checkout-default="<?= store_escape($shipping['city']) ?>">
                                             <span id="checkout-city-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
                                         </span>
                                     </label>
@@ -377,15 +436,19 @@ require __DIR__ . '/../app/views/layout/head.php';
                                     <label>
                                         Barangay
                                         <span class="checkout-location-autocomplete">
-                                            <input type="text" id="checkout-barangay" name="barangay" required autocomplete="address-line3" aria-autocomplete="list" aria-controls="checkout-barangay-suggestions" aria-expanded="false" placeholder="Enter or select a barangay" value="<?= store_escape($shipping['barangay']) ?>">
+                                            <input type="text" id="checkout-barangay" name="barangay" required autocomplete="address-line3" aria-autocomplete="list" aria-controls="checkout-barangay-suggestions" aria-expanded="false" placeholder="Enter or select a barangay" value="<?= store_escape($shipping['barangay']) ?>" data-checkout-default="<?= store_escape($shipping['barangay']) ?>">
                                             <span id="checkout-barangay-suggestions" class="checkout-location-suggestions" role="listbox" hidden></span>
                                         </span>
                                     </label>
                                     <label>
                                         Postal code
-                                        <input type="text" name="postal_code" maxlength="20" required autocomplete="postal-code" value="<?= store_escape($shipping['postal_code']) ?>">
+                                        <input type="text" name="postal_code" maxlength="20" required autocomplete="postal-code" value="<?= store_escape($shipping['postal_code']) ?>" data-checkout-default="<?= store_escape($shipping['postal_code']) ?>">
                                     </label>
                                 </div>
+                                </fieldset>
+                                <?php if ($hasProfileAddress): ?>
+                                    <button class="checkout-address-edit-button" type="button" data-checkout-address-cancel hidden>Use saved address</button>
+                                <?php endif; ?>
                                 <button class="cart-checkout-button" type="submit">Proceed to payment method</button>
                             </form>
                         <?php else: ?>
@@ -476,6 +539,44 @@ require __DIR__ . '/../app/views/layout/head.php';
                 data-initial-barangay="<?= store_escape($shipping['barangay']) ?>"
                 defer
             ></script>
+            <?php if ($hasProfileAddress): ?>
+                <script>
+                    (() => {
+                        const fields = document.querySelector("[data-checkout-address-fields]");
+                        const summary = document.querySelector("[data-checkout-saved-summary]");
+                        const editButton = document.querySelector("[data-checkout-address-edit]");
+                        const cancelButton = document.querySelector("[data-checkout-address-cancel]");
+                        if (!(fields instanceof HTMLFieldSetElement)
+                            || !(summary instanceof HTMLElement)
+                            || !(editButton instanceof HTMLButtonElement)
+                            || !(cancelButton instanceof HTMLButtonElement)) {
+                            return;
+                        }
+
+                        editButton.addEventListener("click", () => {
+                            fields.disabled = false;
+                            fields.hidden = false;
+                            summary.hidden = true;
+                            editButton.hidden = true;
+                            cancelButton.hidden = false;
+                            fields.querySelector("input:not([type='hidden'])")?.focus();
+                        });
+                        cancelButton.addEventListener("click", () => {
+                            fields.querySelectorAll("input[data-checkout-default]").forEach((input) => {
+                                if (input instanceof HTMLInputElement) {
+                                    input.value = input.dataset.checkoutDefault || "";
+                                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                                }
+                            });
+                            fields.disabled = true;
+                            fields.hidden = true;
+                            summary.hidden = false;
+                            editButton.hidden = false;
+                            cancelButton.hidden = true;
+                        });
+                    })();
+                </script>
+            <?php endif; ?>
         <?php endif; ?>
         <script>
             const updateCheckoutHoldTimers = () => {

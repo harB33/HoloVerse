@@ -90,6 +90,16 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             const supportsPageTransitions = CSS.supports("view-transition-name: root");
             const disablePageTransitions = ["purchase", "purchase-detail"].includes(pageRoot.dataset.pageLayout);
+            if (pageRoot.dataset.pageLayout === "home" && !reducedMotion) {
+                pageRoot.dataset.homeLoading = "true";
+                window.addEventListener("load", () => {
+                    pageRoot.dataset.homeLoaderStarted = "true";
+                    window.setTimeout(() => {
+                        delete pageRoot.dataset.homeLoading;
+                        delete pageRoot.dataset.homeLoaderStarted;
+                    }, 1500);
+                }, { once: true });
+            }
             const cameFromSameOrigin = document.referrer !== "" &&
                 new URL(document.referrer).origin === window.location.origin;
             const shouldAnimateOpening = !disablePageTransitions && (!cameFromSameOrigin || !supportsPageTransitions);

@@ -8,7 +8,13 @@ function store_refresh_authenticated_user(DatabaseConnection $conn): void
     }
 
     $userId = (int) $_SESSION['user_id'];
-    $statement = $conn->prepare('SELECT username, email, user_role, profile_picture FROM user_tbl WHERE user_id = ? LIMIT 1');
+    $statement = $conn->prepare(
+        'SELECT u.username, u.email, u.user_role,
+                COALESCE(t.talent_img, (SELECT talent_img FROM talent_tbl ORDER BY talent_id LIMIT 1)) AS profile_picture
+         FROM user_tbl u
+         LEFT JOIN talent_tbl t ON t.talent_img = u.profile_picture
+         WHERE u.user_id = ? LIMIT 1'
+    );
     $statement->bind_param('i', $userId);
     $statement->execute();
     $user = $statement->get_result()->fetch_assoc();
