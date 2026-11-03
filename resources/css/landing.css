@@ -127,7 +127,7 @@ body.home-landing main.landing-shell,
   z-index: 1000;
   overflow: hidden;
   pointer-events: auto;
-  background: #fff;
+  background: transparent;
 }
 
 html[data-home-loading="true"] .home-loading-overlay {
@@ -166,7 +166,7 @@ html[data-home-loading="true"] .home-loading-overlay {
   width: clamp(88px, 12vw, 144px);
   aspect-ratio: 1;
   place-items: center;
-  background: #fff;
+  background: transparent;
   transform: rotate(45deg) scale(.7);
   opacity: 0;
 }
