@@ -345,7 +345,7 @@ $quickLinks = [
             <div class="ops-tables-grid">
                 <section class="ops-panel" id="latest-products" aria-labelledby="latest-products-title">
                     <div class="ops-section-head">
-                        <div class="ops-section-heading"><span class="ops-section-index">01</span><div><p>CATALOGUE</p><h2 id="latest-products-title">Latest products</h2><small>The five newest additions to your store</small></div></div>
+                        <div class="ops-section-heading"><div><p>CATALOGUE</p><h2 id="latest-products-title">Latest products</h2><small>The five newest additions to your store</small></div></div>
                         <a class="ops-text-link" href="<?= store_escape($siteRoot . 'product-input') ?>">Add product <svg class="ops-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg></a>
                     </div>
                     <div class="ops-table-scroll">
@@ -380,7 +380,7 @@ $quickLinks = [
 
                 <section class="ops-panel" id="recent-orders" aria-labelledby="recent-orders-title">
                     <div class="ops-section-head">
-                        <div class="ops-section-heading"><span class="ops-section-index">02</span><div><p>FULFILMENT</p><h2 id="recent-orders-title">Recent orders</h2><small>The five most recent transactions</small></div></div>
+                        <div class="ops-section-heading"><div><p>FULFILMENT</p><h2 id="recent-orders-title">Recent orders</h2><small>The five most recent transactions</small></div></div>
                         <span class="ops-section-count"><?= number_format($stats['orders']) ?> TOTAL</span>
                     </div>
                     <div class="ops-table-scroll">
@@ -413,7 +413,7 @@ $quickLinks = [
             <div class="ops-lower-grid">
                 <section class="ops-panel ops-privileges" id="user-privileges" aria-labelledby="privileges-title">
                     <div class="ops-section-head">
-                        <div class="ops-section-heading"><span class="ops-section-index">03</span><div><p>ACCESS CONTROL</p><h2 id="privileges-title">User privileges</h2><small>Manage who can access the admin console</small></div></div>
+                        <div class="ops-section-heading"><div><p>ACCESS CONTROL</p><h2 id="privileges-title">User privileges</h2><small>Manage who can access the admin console</small></div></div>
                         <span class="ops-privileges-total"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" /><path d="m9 12 2 2 4-4" /></svg> <?= $adminCount ?> ADMINISTRATOR<?= $adminCount === 1 ? '' : 'S' ?></span>
                     </div>
                     <div class="ops-privileges-filters" role="tablist" aria-label="Filter accounts">
@@ -466,7 +466,7 @@ $quickLinks = [
 
                 <section class="ops-panel ops-health-panel" id="stock-health-panel" aria-labelledby="stock-health-title">
                     <div class="ops-section-head">
-                        <div class="ops-section-heading"><span class="ops-section-index">04</span><div><p>INVENTORY SIGNAL</p><h2 id="stock-health-title">Stock health</h2><small><?= number_format((int) $inventory['total_variants']) ?> variants tracked</small></div></div>
+                        <div class="ops-section-heading"><div><p>INVENTORY SIGNAL</p><h2 id="stock-health-title">Stock health</h2><small><?= number_format((int) $inventory['total_variants']) ?> variants tracked</small></div></div>
                         <a class="ops-text-link" href="<?= store_escape($siteRoot . 'inventory') ?>">View inventory <svg class="ops-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg></a>
                     </div>
                     <div class="ops-health-content">
