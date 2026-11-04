@@ -2891,6 +2891,7 @@ footer.site-footer {
   display: flex;
   align-items: center;
   gap: 9px;
+  border-radius: 0 !important;
   color: #fff;
   background: var(--ink);
   box-shadow: 0 15px 40px rgba(10, 22, 39, 0.25);
