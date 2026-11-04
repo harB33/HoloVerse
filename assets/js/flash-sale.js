@@ -275,6 +275,7 @@ const syncProductBadgeWidth = () => {
 const saleDescriptionToggle = document.querySelector("[data-sale-description-toggle]");
 const countdownWrap = document.querySelector("[data-sale-countdown-wrap]");
 const countdown = document.querySelector("[data-countdown]");
+const edgeCountdown = document.querySelector("[data-countdown-edge]");
 let countdownDeadline = countdown ? new Date(countdown.dataset.countdown).getTime() : 0;
 
 const updateCountdown = () => {
@@ -295,6 +296,7 @@ const updateCountdown = () => {
         if (minutesEl) minutesEl.textContent = "00";
         if (secondsEl) secondsEl.textContent = "00";
         if (msEl) msEl.textContent = "00";
+        if (edgeCountdown) edgeCountdown.textContent = "00:00:00";
         return;
     }
 
@@ -303,6 +305,14 @@ const updateCountdown = () => {
     if (hoursEl) hoursEl.textContent = String(Math.floor((remaining % 86400000) / 3600000)).padStart(2, "0");
     if (minutesEl) minutesEl.textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, "0");
     if (secondsEl) secondsEl.textContent = String(Math.floor((remaining % 60000) / 1000)).padStart(2, "0");
+    if (edgeCountdown) {
+        const timeParts = [
+            Math.floor((remaining % 86400000) / 3600000),
+            Math.floor((remaining % 3600000) / 60000),
+            Math.floor((remaining % 60000) / 1000),
+        ];
+        edgeCountdown.textContent = timeParts.map((part) => String(part).padStart(2, "0")).join(":");
+    }
     if (msEl) {
         const centiseconds = remaining > 0 ? Math.floor((remaining % 1000) / 10) : 0;
         msEl.textContent = String(centiseconds).padStart(2, "0");
@@ -660,6 +670,9 @@ const applySaleProductToHero = (product, sourceEl = null) => {
             : (product.startsAt || defaultMidnightIso.toISOString());
     if (countdownWrap) {
         countdownWrap.hidden = !nextDeadline;
+    }
+    if (edgeCountdown) {
+        edgeCountdown.hidden = !nextDeadline;
     }
     if (countdown) {
         countdown.hidden = !nextDeadline;

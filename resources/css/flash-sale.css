@@ -1,4 +1,4 @@
-﻿.vault-inventory-ration {
+.vault-inventory-ration {
     max-width: none;
     margin: 28px auto 0;
     padding: 10px 0 0;
@@ -4271,6 +4271,21 @@ body.flash-sale-page.home-landing #flash-drop-spotlight.flash-cyber-hero {
     color: #f1f5f9;
 }
 
+.flash-hero-edge-timer {
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    left: 0;
+    color: color-mix(in srgb, var(--hero-theme) 55%, #000000);
+    font-family: 'Outfit', 'Kanit', sans-serif;
+    font-size: clamp(2.5rem, 20vw, 20rem);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
 @media (max-width: 900px) {
     #flash-drop-spotlight.flash-cyber-hero {
         min-height: calc(100svh - 70px);
@@ -4357,6 +4372,8 @@ body.flash-sale-page.home-landing #flash-drop-spotlight.flash-cyber-hero #flash-
     font-size: clamp(1.85rem, 3.4vw, 3.1rem);
     font-weight: 900;
     line-height: 1.06;
+    max-height: 1lh;
+    overflow: hidden;
     letter-spacing: -0.03em;
     color: #ffffff;
 }
