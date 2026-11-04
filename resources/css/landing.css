@@ -7315,6 +7315,7 @@ body.flash-sale-page.home-landing .flash-mechanics-card p {
 
 .about-page .about-principles {
   border: 0;
+  border-top: 1px solid var(--line);
 }
 
 /* Responsive Media Queries for Inner Pages */

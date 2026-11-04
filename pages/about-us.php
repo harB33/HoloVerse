@@ -65,6 +65,10 @@ require __DIR__ . '/../app/views/layout/head.php';
                 </article>
             </section>
 
+            <section class="about-interlude" aria-label="Animated HoloVerse visual">
+                <video src="../assets/images/design/Suisei-Ghost.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated blue-haired HoloVerse visual"></video>
+            </section>
+
             <section class="about-team" id="about-team" aria-labelledby="about-team-title">
                 <header class="about-section-heading">
                     <div>

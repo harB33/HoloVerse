@@ -3995,16 +3995,17 @@
   }
 
   .about-interlude {
-    @apply my-8 overflow-hidden border-b border-[#dfe4e9] pb-8 sm:my-10 sm:pb-10;
+    @apply my-8 overflow-hidden border-t border-[#dfe4e9] pt-8 sm:my-10 sm:pt-10;
   }
 
-  .about-interlude img {
-    @apply block max-h-[520px] w-full object-cover object-center;
+  .about-interlude img,
+  .about-interlude video {
+    @apply block max-h-[520px] w-full max-w-[100vw] object-cover object-center;
     aspect-ratio: 16 / 8;
   }
 
   .about-principles {
-    @apply mt-6 mb-14 grid grid-cols-1 gap-7 py-6 sm:mt-8 sm:mb-16 sm:grid-cols-3 sm:gap-6 sm:py-8;
+    @apply mt-6 mb-14 grid grid-cols-1 gap-7 border-t border-[#dfe4e9] py-6 sm:mt-8 sm:mb-16 sm:grid-cols-3 sm:gap-6 sm:py-8;
   }
 
   .about-principles article {
