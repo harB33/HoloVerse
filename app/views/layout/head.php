@@ -96,11 +96,11 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
                     pageRoot.dataset.homeLoaderStarted = "true";
                     window.setTimeout(() => {
                         window.dispatchEvent(new Event("home-loader-reveal"));
-                    }, 1320);
+                    }, 3500);
                     window.setTimeout(() => {
                         delete pageRoot.dataset.homeLoading;
                         delete pageRoot.dataset.homeLoaderStarted;
-                    }, 2120);
+                    }, 4260);
                 }, { once: true });
             }
             const cameFromSameOrigin = document.referrer !== "" &&

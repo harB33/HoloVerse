@@ -128,10 +128,8 @@ body.home-landing main.landing-shell,
   overflow: hidden;
   pointer-events: auto;
   isolation: isolate;
-  color: #fff;
-  background:
-    radial-gradient(ellipse at 50% 48%, rgba(19, 77, 117, 0.28), transparent 44%),
-    linear-gradient(135deg, #07111f 0%, #0a1a2c 52%, #07111f 100%);
+  color: #102b3c;
+  background: transparent;
 }
 
 html[data-home-loading="true"] .home-loading-overlay {
@@ -149,8 +147,8 @@ html[data-home-loading="true"] .home-loading-overlay {
 }
 
 .home-loading-overlay::before {
-  opacity: 0.32;
-  background-image: radial-gradient(rgba(159, 225, 255, 0.52) 0.7px, transparent 0.7px);
+  opacity: 0.28;
+  background-image: radial-gradient(rgba(20, 118, 157, 0.24) 0.7px, transparent 0.7px);
   background-size: 24px 24px;
   mask-image: radial-gradient(ellipse at center, #000 0%, transparent 74%);
 }
@@ -159,38 +157,23 @@ html[data-home-loading="true"] .home-loading-overlay {
   inset: auto auto 50% 50%;
   width: min(76vw, 760px);
   aspect-ratio: 1;
-  border: 1px solid rgba(114, 219, 255, 0.09);
+  border: 1px solid rgba(8, 145, 178, 0.1);
   border-radius: 50%;
   box-shadow:
-    0 0 0 48px rgba(114, 219, 255, 0.025),
-    0 0 0 96px rgba(114, 219, 255, 0.018);
+    0 0 0 48px rgba(8, 145, 178, 0.035),
+    0 0 0 96px rgba(8, 145, 178, 0.022);
   transform: translate(-50%, 50%);
 }
 
-.home-loading-panel {
+.home-loading-curtain {
   position: absolute;
   inset: 0;
-  opacity: 0.48;
-}
-
-.home-loading-panel--top-left {
-  background: linear-gradient(145deg, rgba(9, 164, 213, 0.3), transparent 64%);
-  clip-path: polygon(0 0, 100% 0, 50% 50%);
-}
-
-.home-loading-panel--top-right {
-  background: linear-gradient(215deg, rgba(57, 174, 240, 0.24), transparent 68%);
-  clip-path: polygon(100% 0, 100% 100%, 50% 50%);
-}
-
-.home-loading-panel--bottom-right {
-  background: linear-gradient(35deg, rgba(5, 107, 151, 0.34), transparent 68%);
-  clip-path: polygon(100% 100%, 0 100%, 50% 50%);
-}
-
-.home-loading-panel--bottom-left {
-  background: linear-gradient(325deg, rgba(57, 174, 240, 0.22), transparent 68%);
-  clip-path: polygon(0 100%, 0 0, 50% 50%);
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(104, 221, 246, 0.17), transparent 43%),
+    linear-gradient(135deg, #fff 0%, #f8fcff 54%, #fff 100%);
+  transform: scaleX(0);
+  transform-origin: left center;
 }
 
 .home-loading-orbit {
@@ -199,9 +182,9 @@ html[data-home-loading="true"] .home-loading-overlay {
   left: 50%;
   width: clamp(136px, 18vw, 204px);
   aspect-ratio: 1;
-  border: 1px solid rgba(124, 221, 255, 0.23);
+  border: 1px solid rgba(8, 145, 178, 0.26);
   border-radius: 50%;
-  box-shadow: 0 0 42px rgba(12, 180, 230, 0.08), inset 0 0 32px rgba(12, 180, 230, 0.06);
+  box-shadow: 0 0 42px rgba(12, 180, 230, 0.08), inset 0 0 32px rgba(12, 180, 230, 0.035);
   transform: translate(-50%, -50%) scale(0.82);
   opacity: 0;
 }
@@ -239,10 +222,7 @@ html[data-home-loading="true"] .home-loading-overlay {
   width: clamp(66px, 8vw, 92px);
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgba(131, 224, 255, 0.35);
-  border-radius: 27px;
-  background: linear-gradient(145deg, rgba(22, 68, 96, 0.86), rgba(7, 23, 39, 0.9));
-  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.34), 0 0 42px rgba(0, 181, 232, 0.2);
+  background: transparent;
   transform: rotate(-12deg) scale(0.68);
   opacity: 0;
 }
@@ -268,7 +248,7 @@ html[data-home-loading="true"] .home-loading-overlay {
   display: grid;
   justify-items: center;
   gap: 5px;
-  color: #fff;
+  color: #102b3c;
   font-family: "Montserrat", sans-serif;
   font-size: clamp(19px, 2.2vw, 25px);
   font-weight: 900;
@@ -279,7 +259,7 @@ html[data-home-loading="true"] .home-loading-overlay {
 }
 
 .home-loading-wordmark small {
-  color: #81dfff;
+  color: #087fa8;
   font-family: "Kanit", sans-serif;
   font-size: 9px;
   font-weight: 700;
@@ -288,7 +268,7 @@ html[data-home-loading="true"] .home-loading-overlay {
 
 .home-loading-caption {
   bottom: 12%;
-  color: rgba(221, 242, 255, 0.68);
+  color: rgba(16, 43, 60, 0.62);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.17em;
@@ -302,7 +282,7 @@ html[data-home-loading="true"] .home-loading-overlay {
   width: 112px;
   height: 2px;
   overflow: hidden;
-  background: rgba(126, 213, 241, 0.18);
+  background: rgba(8, 127, 168, 0.18);
   transform: translateX(-50%);
 }
 
@@ -314,77 +294,64 @@ html[data-home-loading="true"] .home-loading-overlay {
   content: "";
 }
 
-html[data-home-loader-started="true"] .home-loading-panel--top-left {
-  animation: home-loading-panel-top-left 760ms cubic-bezier(.78, 0, .22, 1) 1180ms forwards;
+html[data-home-loading="true"] .home-loading-curtain {
+  animation: home-loading-curtain-enter 700ms cubic-bezier(.76, 0, .24, 1) forwards;
 }
 
-html[data-home-loader-started="true"] .home-loading-panel--top-right {
-  animation: home-loading-panel-top-right 760ms cubic-bezier(.78, 0, .22, 1) 1180ms forwards;
-}
-
-html[data-home-loader-started="true"] .home-loading-panel--bottom-left {
-  animation: home-loading-panel-bottom-left 760ms cubic-bezier(.78, 0, .22, 1) 1180ms forwards;
-}
-
-html[data-home-loader-started="true"] .home-loading-panel--bottom-right {
-  animation: home-loading-panel-bottom-right 760ms cubic-bezier(.78, 0, .22, 1) 1180ms forwards;
+html[data-home-loader-started="true"] .home-loading-curtain {
+  transform-origin: right center;
+  animation: home-loading-curtain-exit 760ms cubic-bezier(.76, 0, .24, 1) 3500ms both;
 }
 
 html[data-home-loader-started="true"] .home-loading-orbit--outer {
-  animation: home-loading-orbit 2.6s linear 1 forwards;
+  animation: home-loading-orbit 2.6s linear 700ms 1 forwards;
 }
 
 html[data-home-loader-started="true"] .home-loading-mark {
-  animation: home-loading-mark-reveal 1.8s cubic-bezier(.2, .8, .2, 1) both;
+  animation: home-loading-mark-reveal 1.5s cubic-bezier(.2, .8, .2, 1) 700ms both;
 }
 
 html[data-home-loader-started="true"] .home-loading-wordmark {
-  animation: home-loading-copy-reveal 560ms cubic-bezier(.2, .8, .2, 1) 260ms both;
+  animation:
+    home-loading-copy-reveal 560ms cubic-bezier(.2, .8, .2, 1) 900ms both,
+    home-loading-copy-dismiss 240ms ease 3500ms forwards;
 }
 
 html[data-home-loader-started="true"] .home-loading-caption {
-  animation: home-loading-copy-fade 420ms ease 480ms both;
+  animation:
+    home-loading-copy-fade 420ms ease 1050ms both,
+    home-loading-copy-dismiss 240ms ease 3500ms forwards;
 }
 
 html[data-home-loader-started="true"] .home-loading-signal {
-  animation: home-loading-copy-fade 320ms ease 520ms both;
+  animation:
+    home-loading-copy-fade 320ms ease 1100ms both,
+    home-loading-copy-dismiss 240ms ease 3500ms forwards;
 }
 
 html[data-home-loader-started="true"] .home-loading-signal::after {
-  animation: home-loading-signal 1.2s ease-in-out 560ms infinite;
+  animation: home-loading-signal 1.2s ease-in-out 1140ms infinite;
 }
 
-html[data-home-loader-started="true"] .home-loading-overlay {
-  animation: home-loading-overlay-dismiss 800ms cubic-bezier(.76, 0, .24, 1) 1320ms forwards;
-}
-
-@keyframes home-loading-panel-top-left {
+@keyframes home-loading-curtain-enter {
   to {
-    transform: translate(-100%, -100%);
+    transform: scaleX(1);
   }
 }
 
-@keyframes home-loading-panel-top-right {
-  to {
-    transform: translate(100%, -100%);
+@keyframes home-loading-curtain-exit {
+  from {
+    transform: scaleX(1);
   }
-}
 
-@keyframes home-loading-panel-bottom-left {
   to {
-    transform: translate(-100%, 100%);
-  }
-}
-
-@keyframes home-loading-panel-bottom-right {
-  to {
-    transform: translate(100%, 100%);
+    transform: scaleX(0);
   }
 }
 
 @keyframes home-loading-mark-reveal {
-  16%,
-  66% {
+  18%,
+  82% {
     transform: rotate(0) scale(1);
     opacity: 1;
   }
@@ -425,20 +392,15 @@ html[data-home-loader-started="true"] .home-loading-overlay {
   }
 }
 
-@keyframes home-loading-signal {
+@keyframes home-loading-copy-dismiss {
   to {
-    transform: translateX(330%);
+    opacity: 0;
   }
 }
 
-@keyframes home-loading-overlay-dismiss {
-  from {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-
+@keyframes home-loading-signal {
   to {
-    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
-    pointer-events: none;
+    transform: translateX(330%);
   }
 }
 
