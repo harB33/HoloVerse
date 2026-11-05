@@ -397,7 +397,7 @@ $quickLinks = [
                                         ?>
                                         <tr>
                                             <td><div class="ops-order-cell"><strong><?= store_escape((string) $order['order_number']) ?></strong><small><?= store_escape(date('M j, Y', strtotime((string) $order['created_at']))) ?></small></div></td>
-                                            <td><span class="ops-order-customer"><i><?= store_escape($dashboardInitials($customerName)) ?></i><span title="<?= store_escape($customerName) ?>"><?= store_escape($customerName) ?></span></span></td>
+                                            <td><span class="ops-order-customer" title="<?= store_escape($customerName) ?>"><?= store_escape($customerName) ?></span></td>
                                             <td><span class="ops-status ops-status-<?= store_escape((string) $orderStatus) ?>"><i aria-hidden="true"></i><?= store_escape((string) $order['status']) ?></span></td>
                                             <td class="ops-order-count"><?= (int) $order['item_count'] ?></td>
                                         </tr>

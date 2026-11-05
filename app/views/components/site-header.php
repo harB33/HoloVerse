@@ -182,24 +182,6 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                         </button>
                     </header>
 
-                    <section class="accessibility-section" aria-labelledby="accessibility-theme-title">
-                        <h3 id="accessibility-theme-title">Theme Preference</h3>
-                        <div class="accessibility-theme-options" role="group" aria-label="Theme preference">
-                            <button class="accessibility-theme-option" type="button" data-accessibility-theme="light" aria-pressed="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
-                                <span>Light Mode</span>
-                            </button>
-                            <button class="accessibility-theme-option" type="button" data-accessibility-theme="dark" aria-pressed="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
-                                <span>Dark Mode</span>
-                            </button>
-                            <button class="accessibility-theme-option" type="button" data-accessibility-theme="system" aria-pressed="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
-                                <span>System Default</span>
-                            </button>
-                        </div>
-                    </section>
-
                     <section class="accessibility-section" aria-labelledby="accessibility-display-title">
                         <h3 id="accessibility-display-title">Display &amp; Text</h3>
                         <div class="accessibility-setting-heading">
@@ -234,7 +216,6 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                     const dialog = document.querySelector("[data-accessibility-dialog]");
                     const openButtons = document.querySelectorAll("[data-accessibility-dialog-open]");
                     const closeButton = document.querySelector("[data-accessibility-dialog-close]");
-                    const themeButtons = document.querySelectorAll("[data-accessibility-theme]");
                     const scaleInput = document.querySelector("[data-accessibility-scale]");
                     const scaleValue = document.querySelector("[data-accessibility-scale-value]");
                     const reduceMotionInput = document.querySelector("[data-accessibility-reduce-motion]");
@@ -244,18 +225,21 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                         return;
                     }
 
-                    let settings = { theme: "light", scale: 90, reduceMotion: false };
+                    let settings = { scale: 90, reduceMotion: false };
                     try {
-                        settings = { ...settings, ...JSON.parse(localStorage.getItem(storageKey) || "{}") };
+                        const savedSettings = JSON.parse(localStorage.getItem(storageKey) || "{}");
+                        settings = {
+                            ...settings,
+                            scale: savedSettings?.scale ?? settings.scale,
+                            reduceMotion: savedSettings?.reduceMotion ?? settings.reduceMotion,
+                        };
                     } catch (error) {
                         console.warn("Could not load accessibility settings.", error);
                     }
 
                     const applySettings = () => {
                         const scale = Math.min(120, Math.max(80, Number(settings.scale) || 90));
-                        const theme = ["light", "dark", "system"].includes(settings.theme) ? settings.theme : "light";
-                        settings = { ...settings, scale, theme, reduceMotion: Boolean(settings.reduceMotion) };
-                        document.documentElement.dataset.theme = theme;
+                        settings = { scale, reduceMotion: Boolean(settings.reduceMotion) };
                         document.documentElement.style.zoom = String(scale / 100);
                         document.documentElement.dataset.reduceMotion = String(settings.reduceMotion);
                         scaleInput.value = String(scale);
@@ -265,9 +249,6 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                         scaleValue.value = `${scale}%`;
                         scaleValue.textContent = `${scale}%`;
                         reduceMotionInput.checked = settings.reduceMotion;
-                        themeButtons.forEach((button) => {
-                            button.setAttribute("aria-pressed", String(button.dataset.accessibilityTheme === theme));
-                        });
                         try {
                             localStorage.setItem(storageKey, JSON.stringify(settings));
                         } catch (error) {
@@ -283,10 +264,6 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                     dialog.addEventListener("click", (event) => {
                         if (event.target === dialog) dialog.close();
                     });
-                    themeButtons.forEach((button) => button.addEventListener("click", () => {
-                        settings.theme = button.dataset.accessibilityTheme;
-                        applySettings();
-                    }));
                     scaleInput.addEventListener("input", () => {
                         settings.scale = scaleInput.value;
                         applySettings();
