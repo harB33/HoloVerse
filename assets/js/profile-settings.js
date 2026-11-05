@@ -4,6 +4,11 @@
     return;
   }
 
+  const profileNotice = main.dataset.profileNotice;
+  if (profileNotice) {
+    window.showHoloVerseToast(profileNotice, main.dataset.profileNoticeType === 'error');
+  }
+
   const talentAvatar = main.querySelector('#talent-avatar');
   const talentOptions = Array.from(main.querySelectorAll('[data-talent-id]'));
   const avatarImages = Array.from(main.querySelectorAll('[data-profile-avatar]'));
