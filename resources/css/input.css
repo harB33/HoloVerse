@@ -256,7 +256,9 @@
   }
 
   .account-dropdown-identity > .account-dropdown-avatar {
-    @apply size-7 shrink-0 rounded-full object-cover;
+    @apply size-11 shrink-0 rounded-[10px] border-[3px] border-white object-cover;
+    background: rgb(255 255 255 / 24%);
+    box-shadow: 0 3px 12px rgb(0 83 136 / 16%);
   }
 
   .account-button-avatar {
