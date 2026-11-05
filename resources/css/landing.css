@@ -129,7 +129,7 @@ body.home-landing main.landing-shell,
   pointer-events: auto;
   isolation: isolate;
   color: #102b3c;
-  background: transparent;
+  background: #030609;
 }
 
 html[data-home-loading="true"] .home-loading-overlay {
@@ -137,8 +137,7 @@ html[data-home-loading="true"] .home-loading-overlay {
   place-items: center;
 }
 
-.home-loading-overlay::before,
-.home-loading-overlay::after {
+.home-loading-overlay::before {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -151,18 +150,6 @@ html[data-home-loading="true"] .home-loading-overlay {
   background-image: radial-gradient(rgba(20, 118, 157, 0.24) 0.7px, transparent 0.7px);
   background-size: 24px 24px;
   mask-image: radial-gradient(ellipse at center, #000 0%, transparent 74%);
-}
-
-.home-loading-overlay::after {
-  inset: auto auto 50% 50%;
-  width: min(76vw, 760px);
-  aspect-ratio: 1;
-  border: 1px solid rgba(8, 145, 178, 0.1);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 48px rgba(8, 145, 178, 0.035),
-    0 0 0 96px rgba(8, 145, 178, 0.022);
-  transform: translate(-50%, 50%);
 }
 
 .home-loading-curtain {
@@ -298,9 +285,13 @@ html[data-home-loading="true"] .home-loading-curtain {
   animation: home-loading-curtain-enter 700ms cubic-bezier(.76, 0, .24, 1) forwards;
 }
 
-html[data-home-loader-started="true"] .home-loading-curtain {
+html[data-home-loader-exiting="true"] .home-loading-curtain {
   transform-origin: right center;
-  animation: home-loading-curtain-exit 760ms cubic-bezier(.76, 0, .24, 1) 3500ms both;
+  animation: home-loading-curtain-exit 760ms cubic-bezier(.76, 0, .24, 1) both;
+}
+
+html[data-home-loader-exiting="true"] .home-loading-overlay {
+  animation: home-loading-backdrop-to-white 760ms ease both;
 }
 
 html[data-home-loader-started="true"] .home-loading-orbit--outer {
@@ -346,6 +337,16 @@ html[data-home-loader-started="true"] .home-loading-signal::after {
 
   to {
     transform: scaleX(0);
+  }
+}
+
+@keyframes home-loading-backdrop-to-white {
+  from {
+    background-color: #030609;
+  }
+
+  to {
+    background-color: #fff;
   }
 }
 

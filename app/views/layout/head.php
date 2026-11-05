@@ -83,6 +83,12 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
             animation: none;
             transition: none;
         }
+
+        <?php if ($pageLayout === 'home'): ?>
+        html[data-home-loading="true"] body > .page-shell {
+            visibility: hidden;
+        }
+        <?php endif; ?>
     </style>
     <script>
         (() => {
@@ -95,11 +101,13 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
                 window.addEventListener("load", () => {
                     pageRoot.dataset.homeLoaderStarted = "true";
                     window.setTimeout(() => {
+                        pageRoot.dataset.homeLoaderExiting = "true";
                         window.dispatchEvent(new Event("home-loader-reveal"));
                     }, 3500);
                     window.setTimeout(() => {
                         delete pageRoot.dataset.homeLoading;
                         delete pageRoot.dataset.homeLoaderStarted;
+                        delete pageRoot.dataset.homeLoaderExiting;
                     }, 4260);
                 }, { once: true });
             }
