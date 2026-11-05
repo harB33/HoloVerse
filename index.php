@@ -167,26 +167,8 @@ foreach ($liveFlashSales as $saleRow) {
     $liveFlashProductIds[(int) $saleRow['product_id']] = $saleRow;
 }
 
-// Determine spotlight flash drop product (live flash sale or fallback discounted/featured item from DB)
+// Only scheduled live drops should be featured as flash sales.
 $flashDropProduct = $liveFlashSales[0] ?? null;
-
-if ($flashDropProduct === null) {
-    $discountedRows = store_product_rows(
-        $conn,
-        'AND v.compare_at_price IS NOT NULL AND v.compare_at_price > v.price AND v.stock_quantity > 0',
-        'v.compare_at_price - v.price DESC, p.product_id DESC',
-        1
-    );
-    if ($discountedRows !== []) {
-        $flashDropProduct = $discountedRows[0];
-    } else {
-        $fallbackRows = store_catalog_product_rows($conn, limit: 1);
-        $flashDropProduct = $fallbackRows[0] ?? null;
-    }
-    if ($flashDropProduct !== null) {
-        $liveFlashProductIds[(int) $flashDropProduct['product_id']] = $flashDropProduct;
-    }
-}
 
 if ($flashDropProduct !== null && empty($flashDropProduct['talent_name'])) {
     $talentStmt = $conn->prepare(

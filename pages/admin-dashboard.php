@@ -214,10 +214,12 @@ $recentOrders = $ordersResult ? $ordersResult->fetch_all(PDO::FETCH_ASSOC) : [];
 
 $usersResult = $conn->query(
     'SELECT u.user_id, u.username, u.email, u.user_role, u.created_at,
+            COALESCE(t.talent_img, (SELECT talent_img FROM talent_tbl ORDER BY talent_id LIMIT 1)) AS profile_picture,
             COUNT(o.order_id) AS order_count
      FROM user_tbl u
+     LEFT JOIN talent_tbl t ON t.talent_img = u.profile_picture
      LEFT JOIN order_tbl o ON o.user_id = u.user_id
-     GROUP BY u.user_id, u.username, u.email, u.user_role, u.created_at
+     GROUP BY u.user_id, u.username, u.email, u.user_role, u.created_at, u.profile_picture, t.talent_img
      ORDER BY (u.user_id = ' . (int) $_SESSION['user_id'] . ') DESC, u.created_at DESC'
 );
 $recentUsers = $usersResult ? $usersResult->fetch_all(PDO::FETCH_ASSOC) : [];
@@ -431,9 +433,10 @@ $quickLinks = [
                                         $isCurrentUser = (int) $user['user_id'] === (int) $_SESSION['user_id'];
                                         $isLastAdmin = $user['user_role'] === 'admin' && $adminCount <= 1;
                                         $accountInitial = $dashboardInitials((string) $user['username']);
+                                        $accountPicture = (string) ($user['profile_picture'] ?? '');
                                         ?>
                                         <tr data-account-row data-role="<?= store_escape((string) $user['user_role']) ?>">
-                                            <td><div class="ops-account-cell"><span class="ops-account-monogram"><?= store_escape($accountInitial) ?></span><span><strong><?= store_escape((string) $user['username']) ?><?= $isCurrentUser ? ' <em>YOU</em>' : '' ?></strong><small><?= store_escape((string) $user['email']) ?></small><small>Joined <?= store_escape(date('M j, Y', strtotime((string) $user['created_at']))) ?></small></span></div></td>
+                                            <td><div class="ops-account-cell"><?php if ($accountPicture !== ''): ?><img class="ops-account-picture" src="<?= store_escape(store_asset_url($accountPicture, $siteRoot)) ?>" alt="" loading="lazy"><?php else: ?><span class="ops-account-monogram"><?= store_escape($accountInitial) ?></span><?php endif; ?><span><strong><?= store_escape((string) $user['username']) ?><?= $isCurrentUser ? ' <em>YOU</em>' : '' ?></strong><small><?= store_escape((string) $user['email']) ?></small><small>Joined <?= store_escape(date('M j, Y', strtotime((string) $user['created_at']))) ?></small></span></div></td>
                                             <td class="ops-account-orders"><strong><?= (int) $user['order_count'] ?></strong><small>orders</small></td>
                                             <?php if ($isCurrentUser): ?>
                                                 <td><span class="ops-role-current ops-role-self">ADMINISTRATOR</span><small class="ops-role-lock">Your access is locked</small></td>
