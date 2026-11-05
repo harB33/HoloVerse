@@ -103,63 +103,6 @@ function store_flash_sale_rows(DatabaseConnection $conn, string $state, DateTime
     return $rows;
 }
 
-function store_flash_sale_fallback_rows(DatabaseConnection $conn, int $limit = 7): array
-{
-    $availableStock = store_available_stock_sql();
-    $limit = max(1, $limit);
-    $innerSql = "SELECT DISTINCT ON (COALESCE(t.talent_id, p.product_id))
-                        p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
-                        c.category_id, c.category_name, v.variant_id, v.variant_name, v.price, v.compare_at_price,
-                        v.currency, {$availableStock} AS stock_quantity, i.image_url, i.alt_text,
-                        t.talent_name, t.talent_slug, t.talent_img,
-                        (
-                            SELECT tg.group_name
-                            FROM talent_group_members_tbl gm
-                            INNER JOIN talent_group_tbl tg ON tg.group_id = gm.group_id
-                            WHERE gm.talent_id = t.talent_id
-                            ORDER BY tg.group_id ASC
-                            LIMIT 1
-                        ) AS talent_group,
-                        CASE t.talent_slug
-                            WHEN 'gawr-gura' THEN 1
-                            WHEN 'houshou-marine' THEN 2
-                            WHEN 'usada-pekora' THEN 3
-                            WHEN 'hoshimachi-suisei' THEN 4
-                            WHEN 'mori-calliope' THEN 5
-                            WHEN 'sakura-miko' THEN 6
-                            WHEN 'inugami-korone' THEN 7
-                            ELSE 99
-                        END AS hero_priority
-                 FROM product_tbl p
-                 INNER JOIN category_tbl c ON c.category_id = p.category_id
-                 INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
-                 LEFT JOIN product_image_tbl i ON i.product_id = p.product_id AND i.sort_order = 0
-                 LEFT JOIN LATERAL (
-                     SELECT t_inner.talent_id, t_inner.talent_name, t_inner.talent_slug, t_inner.talent_img
-                     FROM product_talents_tbl pt_inner
-                     INNER JOIN talent_tbl t_inner ON t_inner.talent_id = pt_inner.talent_id
-                     WHERE pt_inner.product_id = p.product_id
-                     ORDER BY t_inner.talent_id ASC
-                     LIMIT 1
-                 ) t ON TRUE
-                 WHERE p.status = 'active'
-                   AND v.compare_at_price IS NOT NULL
-                   AND v.compare_at_price > v.price
-                   AND ({$availableStock}) > 0
-                 ORDER BY COALESCE(t.talent_id, p.product_id),
-                          (v.compare_at_price - v.price) DESC,
-                          p.product_id DESC";
-    $outerSql = "SELECT * FROM ({$innerSql}) AS distinct_talent_drops
-                 ORDER BY hero_priority ASC, (compare_at_price - price) DESC, product_id DESC
-                 LIMIT {$limit}";
-    $rows = $conn->query($outerSql)->fetch_all(PDO::FETCH_ASSOC);
-    if ($rows !== []) {
-        return $rows;
-    }
-
-    return store_catalog_product_rows($conn, limit: $limit);
-}
-
 function store_flash_sale_talent_meta(
     string $talentSlug,
     string $talentName,
@@ -593,4 +536,3 @@ function store_flash_sale_build_selection_data(
         'productUrl' => store_product_url((string) $product['product_name']),
     ];
 }
-

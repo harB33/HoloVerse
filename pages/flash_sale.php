@@ -24,20 +24,6 @@ foreach ($flashSaleProducts['live'] as $liveRow) {
     }
 }
 
-$isLiveScheduledFlash = $heroDrop !== null;
-
-if ($heroDrop === null) {
-    $fallbackRows = store_flash_sale_fallback_rows($conn, 1);
-    foreach ($fallbackRows as $fallbackRow) {
-        $fbVariantId = (int) ($fallbackRow['variant_id'] ?? 0);
-        if ($fbVariantId > 0) {
-            $fallbackRow['_drop_state'] = 'live';
-            $heroDrop = $fallbackRow;
-            break;
-        }
-    }
-}
-
 if ($heroDrop !== null && (empty($heroDrop['talent_name']) || empty($heroDrop['talent_slug']))) {
     $talentStmt = $conn->prepare(
         'SELECT t.talent_name, t.talent_slug, t.talent_img,

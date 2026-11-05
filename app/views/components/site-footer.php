@@ -3,11 +3,11 @@ $siteRoot = $siteRoot ?? '';
 $footerLogoUrl = $siteRoot === '/' ? '/assets/images/logo.png' : ($siteRoot . 'assets/images/logo.png');
 $footerCartAction = $siteRoot === '/' ? '/cart' : ($siteRoot . 'cart');
 $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
-$footerSuiseiUrl = $siteRoot === '/' ? '/assets/images/suichanfooter.png' : ($siteRoot . 'assets/images/suichanfooter.png');
+$footerSuiseiUrl = $siteRoot === '/' ? '/assets/images/suichanfooter-transparent.png' : ($siteRoot . 'assets/images/suichanfooter-transparent.png');
 $footerParallaxScript = $siteRoot === '/' ? '/assets/js/footer-parallax.js' : ($siteRoot . 'assets/js/footer-parallax.js');
 ?>
 <footer class="footer site-footer">
-    <img class="footer-suisei-art" src="<?= store_escape($footerSuiseiUrl) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
+    <img class="footer-suisei-art" src="<?= store_escape($footerSuiseiUrl) ?>" alt="" aria-hidden="true" width="1024" height="1024" loading="eager" fetchpriority="low" decoding="async">
     <div class="footer-main landing-shell">
         <div class="footer-brand-column">
             <a class="footer-brand" href="<?= store_escape(($siteRoot === '/' ? '/home' : $siteRoot . 'home') . '#top') ?>" aria-label="HoloVerse Store home">

@@ -1137,6 +1137,18 @@
   font-weight: 700;
 }
 
+.ops-account-picture {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: #f0f7f9;
+  box-shadow: 0 0 0 1px #d8e6eb;
+  object-fit: cover;
+}
+
 .ops-account-cell > span:last-child {
   display: flex;
   min-width: 0;

@@ -2417,7 +2417,7 @@ footer.site-footer {
   max-width: none;
   opacity: calc(var(--footer-art-progress) * 0.84);
   pointer-events: none;
-  mix-blend-mode: multiply;
+
   transform: translate3d(calc((1 - var(--footer-art-progress)) * 36px), var(--footer-art-parallax), 0);
   transform-origin: bottom center;
   transition: opacity 120ms linear;

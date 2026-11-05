@@ -1,13 +1,17 @@
 (() => {
     const footer = document.querySelector(".site-footer");
     const art = footer?.querySelector(".footer-suisei-art");
-
-    if (
-        !footer ||
-        !art ||
+    const reduceMotion =
         window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-        document.documentElement.dataset.reduceMotion === "true"
-    ) {
+        document.documentElement.dataset.reduceMotion === "true";
+
+    if (!footer || !art) {
+        return;
+    }
+
+    if (reduceMotion) {
+        footer.style.setProperty("--footer-art-progress", "1");
+        footer.style.setProperty("--footer-art-parallax", "0px");
         return;
     }
 
