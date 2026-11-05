@@ -2,18 +2,26 @@
 require_once __DIR__ . '/../app/store.php';
 
 $userId = (int) ($_SESSION['user_id'] ?? 0);
-$favoriteProductIds = store_collector_favorite_ids($conn, $userId);
 $pageSize = 20;
 
-$flashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
-$flashSaleNow = new DateTimeImmutable('now', $flashSaleTimezone);
-$flashSaleAvailable = store_flash_sale_table_exists($conn);
-$liveFlashSales = $flashSaleAvailable ? store_flash_sale_rows($conn, 'live', $flashSaleNow) : [];
-$liveFlashProductIds = [];
-foreach ($liveFlashSales as $saleRow) {
-    $liveFlashProductIds[(int) $saleRow['product_id']] = $saleRow;
+$validAvailabilities = ['all', 'ready', 'preorder', 'flash', 'saved'];
+$availabilityParam = $_GET['availability'] ?? 'all';
+$selectedAvailability = is_string($availabilityParam) && in_array($availabilityParam, $validAvailabilities, true)
+    ? $availabilityParam
+    : 'all';
+$favoriteProductIds = $selectedAvailability === 'saved'
+    ? store_collector_favorite_ids($conn, $userId)
+    : [];
+$flashProductIds = [];
+if ($selectedAvailability === 'flash' && store_flash_sale_table_exists($conn)) {
+    $flashSaleTimezone = new DateTimeZone(getenv('HOLOVERSE_TIMEZONE') ?: 'Asia/Manila');
+    $flashSaleNow = new DateTimeImmutable('now', $flashSaleTimezone);
+    $liveFlashSales = store_flash_sale_rows($conn, 'live', $flashSaleNow);
+    foreach ($liveFlashSales as $saleRow) {
+        $flashProductIds[(int) $saleRow['product_id']] = (int) $saleRow['product_id'];
+    }
+    $flashProductIds = array_values($flashProductIds);
 }
-$flashProductIds = array_keys($liveFlashProductIds);
 
 $searchParameter = $_GET['search'] ?? '';
 $filterSearch = is_string($searchParameter) ? trim($searchParameter) : '';
@@ -21,12 +29,6 @@ $generalSearchParameter = $_GET['global_search'] ?? '';
 $generalProductSearch = is_string($generalSearchParameter) ? trim($generalSearchParameter) : '';
 $isCatalogSearchRequest = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
     && ($_GET['ajax'] ?? '') === 'search';
-
-$validAvailabilities = ['all', 'ready', 'preorder', 'flash', 'saved'];
-$availabilityParam = $_GET['availability'] ?? 'all';
-$selectedAvailability = is_string($availabilityParam) && in_array($availabilityParam, $validAvailabilities, true)
-    ? $availabilityParam
-    : 'all';
 
 $validSorts = ['featured', 'price-low', 'price-high', 'name'];
 $sortParam = $_GET['sort'] ?? 'featured';
@@ -175,23 +177,11 @@ if (
 
 if ($isCatalogSearchRequest) {
     $searchPageSize = $pageSize;
-    $searchTotalCount = store_catalog_product_count(
-        $conn,
-        $productSearch,
-        $selectedGeneration,
-        $selectedCategory,
-        $selectedAvailability,
-        $flashProductIds,
-        $favoriteProductIds,
-        $selectedTalentId
-    );
-    $searchPageCount = max(1, (int) ceil($searchTotalCount / $searchPageSize));
-    $searchRequestedPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
-    $searchCurrentPage = min(max(1, $searchRequestedPage), $searchPageCount);
+    $searchRequestedPage = max(1, filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1);
     $searchProducts = store_catalog_product_rows(
         $conn,
         $searchPageSize,
-        ($searchCurrentPage - 1) * $searchPageSize,
+        ($searchRequestedPage - 1) * $searchPageSize,
         $productSearch,
         $selectedGeneration,
         $selectedCategory,
@@ -202,8 +192,49 @@ if ($isCatalogSearchRequest) {
         sort: $selectedSort,
         flashProductIds: $flashProductIds,
         favoriteProductIds: $favoriteProductIds,
-        talentId: $selectedTalentId
+        talentId: $selectedTalentId,
+        includeTotalCount: true
     );
+    $searchTotalCount = isset($searchProducts[0]['total_product_count'])
+        ? (int) $searchProducts[0]['total_product_count']
+        : 0;
+    if ($searchProducts === [] && $searchRequestedPage > 1) {
+        $searchTotalCount = store_catalog_product_count(
+            $conn,
+            $productSearch,
+            $selectedGeneration,
+            $selectedCategory,
+            $selectedAvailability,
+            $flashProductIds,
+            $favoriteProductIds,
+            $selectedTalentId
+        );
+    }
+    $searchPageCount = max(1, (int) ceil($searchTotalCount / $searchPageSize));
+    $searchCurrentPage = min($searchRequestedPage, $searchPageCount);
+    if ($searchCurrentPage !== $searchRequestedPage) {
+        $searchProducts = store_catalog_product_rows(
+            $conn,
+            $searchPageSize,
+            ($searchCurrentPage - 1) * $searchPageSize,
+            $productSearch,
+            $selectedGeneration,
+            $selectedCategory,
+            randomize: false,
+            includeImageGallery: false,
+            relatedProductId: 0,
+            availability: $selectedAvailability,
+            sort: $selectedSort,
+            flashProductIds: $flashProductIds,
+            favoriteProductIds: $favoriteProductIds,
+            talentId: $selectedTalentId,
+            includeTotalCount: true
+        );
+    }
+    foreach ($searchProducts as &$searchProduct) {
+        unset($searchProduct['total_product_count']);
+    }
+    unset($searchProduct);
     ob_start();
     $products = $searchProducts;
     $totalProductCount = $searchTotalCount;
@@ -223,19 +254,7 @@ if ($isCatalogSearchRequest) {
     exit;
 }
 
-$totalProductCount = store_catalog_product_count(
-    $conn,
-    $productSearch,
-    $selectedGeneration,
-    $selectedCategory,
-    $selectedAvailability,
-    $flashProductIds,
-    $favoriteProductIds,
-    $selectedTalentId
-);
-$pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
-$currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
-$currentPage = min(max(1, $currentPage), $pageCount);
+$currentPage = max(1, filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1);
 $products = store_catalog_product_rows(
     $conn,
     $pageSize,
@@ -250,8 +269,50 @@ $products = store_catalog_product_rows(
     sort: $selectedSort,
     flashProductIds: $flashProductIds,
     favoriteProductIds: $favoriteProductIds,
-    talentId: $selectedTalentId
+    talentId: $selectedTalentId,
+    includeTotalCount: true
 );
+$totalProductCount = isset($products[0]['total_product_count'])
+    ? (int) $products[0]['total_product_count']
+    : 0;
+if ($products === [] && $currentPage > 1) {
+    $totalProductCount = store_catalog_product_count(
+        $conn,
+        $productSearch,
+        $selectedGeneration,
+        $selectedCategory,
+        $selectedAvailability,
+        $flashProductIds,
+        $favoriteProductIds,
+        $selectedTalentId
+    );
+}
+$pageCount = max(1, (int) ceil($totalProductCount / $pageSize));
+$normalizedPage = min($currentPage, $pageCount);
+if ($normalizedPage !== $currentPage) {
+    $currentPage = $normalizedPage;
+    $products = store_catalog_product_rows(
+        $conn,
+        $pageSize,
+        ($currentPage - 1) * $pageSize,
+        $productSearch,
+        $selectedGeneration,
+        $selectedCategory,
+        randomize: false,
+        includeImageGallery: false,
+        relatedProductId: 0,
+        availability: $selectedAvailability,
+        sort: $selectedSort,
+        flashProductIds: $flashProductIds,
+        favoriteProductIds: $favoriteProductIds,
+        talentId: $selectedTalentId,
+        includeTotalCount: true
+    );
+}
+foreach ($products as &$product) {
+    unset($product['total_product_count']);
+}
+unset($product);
 $catalogPaginationBasePath = $catalogPath;
 $pageTitle = 'All Products | HoloVerse';
 require __DIR__ . '/../app/views/layout/head.php';

@@ -37,7 +37,12 @@ if (!store_verify_csrf()) {
 
     try {
         if ($action === 'add') {
-            store_add_to_cart($conn, (int) ($_POST['variant_id'] ?? 0), (int) ($_POST['quantity'] ?? 1));
+            $cartId = store_add_to_cart(
+                $conn,
+                (int) ($_POST['variant_id'] ?? 0),
+                (int) ($_POST['quantity'] ?? 1),
+                $cartId
+            );
         } elseif ($action === 'checkout') {
             store_clear_expired_cart_items($conn, $cartId);
             if (($_POST['checkout_scope'] ?? '') !== 'cart' || $cartId < 1) {
@@ -140,7 +145,7 @@ if ($message !== '') {
 
 if ($isAjaxRequest) {
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(store_cart_drawer_payload($conn, store_current_cart_id($conn, false)));
+    echo json_encode(store_cart_drawer_payload($conn, $cartId));
     exit;
 }
 

@@ -71,7 +71,8 @@ function store_catalog_product_rows(
     string $sort = 'featured',
     array $flashProductIds = [],
     array $favoriteProductIds = [],
-    int $talentId = 0
+    int $talentId = 0,
+    bool $includeTotalCount = false
 ): array {
     $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
@@ -134,8 +135,9 @@ function store_catalog_product_rows(
         default => '(catalog_products.stock_quantity > 0) DESC, catalog_products.product_id DESC',
     };
     $orderClause = $randomize ? 'RANDOM()' : $outerOrder;
+    $totalCountSelect = $includeTotalCount ? ', COUNT(*) OVER() AS total_product_count' : '';
 
-    $sql = "SELECT catalog_products.*
+    $sql = "SELECT catalog_products.*{$totalCountSelect}
             FROM (
                 SELECT DISTINCT ON (p.product_id)
                        p.product_id, p.product_name, p.description, p.is_preorder, p.expected_ship_date,
@@ -193,7 +195,6 @@ function store_catalog_product_count(
     array $favoriteProductIds = [],
     int $talentId = 0
 ): int {
-    $availableStock = store_available_stock_sql();
     $eligibleGroupSlugs = store_talent_filter_group_slugs_sql();
     $groupWhere = in_array($groupSlug, STORE_TALENT_FILTER_GROUP_SLUGS, true)
         ? " AND tg.group_slug = '" . str_replace("'", "''", $groupSlug) . "'"
@@ -204,7 +205,17 @@ function store_catalog_product_count(
         : '';
     $availabilityWhere = '';
     if ($availability === 'ready') {
-        $availabilityWhere = " AND p.is_preorder = 0 AND ({$availableStock}) > 0";
+        $availabilityWhere = " AND p.is_preorder = 0 AND EXISTS (
+            SELECT 1
+            FROM product_variants_tbl stock_v
+            WHERE stock_v.product_id = p.product_id
+              AND GREATEST(stock_v.stock_quantity - COALESCE((
+                  SELECT SUM(ci.quantity)
+                  FROM cart_items_tbl ci
+                  WHERE ci.variant_id = stock_v.variant_id
+                    AND ci.hold_expires_at > statement_timestamp()
+              ), 0), 0) > 0
+        )";
     } elseif ($availability === 'preorder') {
         $availabilityWhere = ' AND p.is_preorder = 1';
     } elseif ($availability === 'flash') {
@@ -224,7 +235,11 @@ function store_catalog_product_count(
             p.product_name ILIKE ?
             OR p.description ILIKE ?
             OR c.category_name ILIKE ?
-            OR v.variant_name ILIKE ?
+            OR EXISTS (
+                SELECT 1
+                FROM product_variants_tbl search_v
+                WHERE search_v.product_id = p.product_id AND search_v.variant_name ILIKE ?
+            )
             OR EXISTS (
                 SELECT 1
                 FROM product_talents_tbl search_pt
@@ -233,11 +248,15 @@ function store_catalog_product_count(
             )
         )";
     }
-    $sql = "SELECT COUNT(DISTINCT p.product_id) AS product_count
+    $sql = "SELECT COUNT(*) AS product_count
             FROM product_tbl p
             INNER JOIN category_tbl c ON c.category_id = p.category_id
-            INNER JOIN product_variants_tbl v ON v.product_id = p.product_id
             WHERE p.status = 'active'
+              AND EXISTS (
+                  SELECT 1
+                  FROM product_variants_tbl base_v
+                  WHERE base_v.product_id = p.product_id
+              )
               AND EXISTS (
                   SELECT 1
                   FROM product_talents_tbl pt

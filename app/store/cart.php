@@ -193,13 +193,15 @@ function store_merge_guest_cart(DatabaseConnection $conn, int $userId): void
     }
 }
 
-function store_add_to_cart(DatabaseConnection $conn, int $variantId, int $quantity): void
+function store_add_to_cart(DatabaseConnection $conn, int $variantId, int $quantity, int $cartId = 0): int
 {
     if ($variantId < 1 || $quantity < 1 || $quantity > 99) {
         throw new InvalidArgumentException('Choose a valid item quantity.');
     }
 
-    $cartId = store_current_cart_id($conn);
+    if ($cartId < 1) {
+        $cartId = store_current_cart_id($conn);
+    }
     $conn->begin_transaction();
 
     try {
@@ -280,6 +282,7 @@ function store_add_to_cart(DatabaseConnection $conn, int $variantId, int $quanti
         $statement->execute();
         $statement->close();
         $conn->commit();
+        return $cartId;
     } catch (Throwable $error) {
         $conn->rollback();
         throw $error;
