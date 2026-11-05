@@ -422,8 +422,7 @@ require __DIR__ . '/app/views/layout/head.php';
             <img src="assets/images/logo.svg" alt="">
         </span>
         <span class="home-loading-wordmark" aria-hidden="true">
-            <span>HoloVerse</span>
-            <small>OFFICIAL SHOP</small>
+            <span>holo<span>verse</span></span>
         </span>
         <span class="home-loading-caption" aria-hidden="true">Your oshi. Your collection.</span>
         <span class="home-loading-signal" aria-hidden="true"></span>
