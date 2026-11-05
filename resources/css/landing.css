@@ -163,7 +163,7 @@ html[data-home-loading="true"] .home-loading-overlay {
 
 .home-loading-orbit {
   position: absolute;
-  top: 50%;
+  top: calc(50% - 52px);
   left: 50%;
   width: clamp(136px, 18vw, 204px);
   aspect-ratio: 1;
@@ -202,6 +202,7 @@ html[data-home-loading="true"] .home-loading-overlay {
 
 .home-loading-mark {
   position: relative;
+  top: -52px;
   z-index: 1;
   display: grid;
   width: clamp(66px, 8vw, 92px);
@@ -229,10 +230,10 @@ html[data-home-loading="true"] .home-loading-overlay {
 }
 
 .home-loading-wordmark {
-  top: calc(50% + clamp(94px, 11vw, 126px));
+  top: calc(50% + clamp(36px, 6vw, 64px));
   display: grid;
   justify-items: center;
-  gap: 5px;
+  gap: 14px;
   color: #101829;
   font-family: "Montserrat", sans-serif;
   font-size: 26px;
