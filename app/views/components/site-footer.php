@@ -32,7 +32,6 @@ $footerParallaxScript = $siteRoot === '/' ? '/assets/js/footer-parallax.js' : ($
             <a class="footer-brand" href="<?= store_escape(($siteRoot === '/' ? '/home' : $siteRoot . 'home') . '#top') ?>" aria-label="HoloVerse Store home">
                 <img src="<?= store_escape($footerLogoUrl) ?>" alt="">
                 <span>holo<span>verse</span></span>
-                <small>Official Shop</small>
             </a>
             <p class="footer-tagline">Authentic apparel, plushies, scale figures, and collectibles from hololive production, delivered to fans around the world.</p>
             <span class="footer-hubs">Tokyo &bull; Los Angeles &bull; Manila &bull; Singapore Fulfillment Hubs</span>

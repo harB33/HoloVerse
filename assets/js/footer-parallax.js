@@ -24,10 +24,12 @@
         const footerBounds = footer.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         const revealDistance = Math.max(footerBounds.height * 0.72, viewportHeight * 0.45);
-        const progress = Math.min(1, Math.max(0, (viewportHeight - footerBounds.top) / revealDistance));
+        const progress = footerBounds.bottom <= viewportHeight
+            ? 1
+            : Math.min(1, Math.max(0, (viewportHeight - footerBounds.top) / revealDistance));
 
         footer.style.setProperty("--footer-art-progress", progress.toFixed(3));
-        footer.style.setProperty("--footer-art-parallax", `${((1 - progress) * 28).toFixed(2)}px`);
+        footer.style.setProperty("--footer-art-parallax", `${((1 - progress) * 120).toFixed(2)}px`);
         footer.dataset.footerArtRevealed = progress >= 0.35 ? "true" : "false";
     };
 
