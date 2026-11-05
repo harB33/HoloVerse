@@ -779,14 +779,12 @@
 }
 
 .ops-product-monogram,
-.ops-account-monogram,
-.ops-order-customer i {
+.ops-account-monogram {
   transition: border-color .18s ease, background-color .18s ease, color .18s ease, transform .18s ease;
 }
 
 .ops-table tbody tr:hover .ops-product-monogram,
-.ops-table tbody tr:hover .ops-account-monogram,
-.ops-table tbody tr:hover .ops-order-customer i {
+.ops-table tbody tr:hover .ops-account-monogram {
   transform: translateY(-1px);
   border-color: #9edcf0;
   background: #e0f7ff;
@@ -795,14 +793,19 @@
 
 .ops-product-table {
   min-width: 510px;
+  text-align: center;
+}
+
+.ops-product-table th:last-child,
+.ops-product-table td:last-child {
+  text-align: center;
 }
 
 .ops-product-table th:first-child {
   width: 52%;
+  text-align: left;
 }
 
-.ops-product-table th:last-child,
-.ops-product-table td:last-child,
 .ops-orders-table th:last-child,
 .ops-orders-table td:last-child {
   text-align: right;
@@ -854,6 +857,7 @@
   min-width: 0;
   flex-direction: column;
   gap: 6px;
+  text-align: left;
 }
 
 .ops-product-text strong {
@@ -894,18 +898,30 @@
   text-align: right;
 }
 
+.ops-product-table .ops-table-price {
+  text-align: center;
+}
+
 .ops-stock-critical {
   color: #c46751;
 }
 
 .ops-orders-table {
   min-width: 470px;
+  text-align: center;
+}
+
+.ops-orders-table th:last-child,
+.ops-orders-table td:last-child {
+  text-align: center;
 }
 
 .ops-order-cell {
   display: flex;
+  align-items: center;
   flex-direction: column;
   gap: 6px;
+  text-align: center;
 }
 
 .ops-order-cell strong {
@@ -922,32 +938,15 @@
 }
 
 .ops-order-customer {
-  display: flex;
+  display: block;
   max-width: 140px;
-  align-items: center;
-  gap: 7px;
-  white-space: nowrap;
-}
-
-.ops-order-customer > span {
+  margin: 0 auto;
   overflow: hidden;
   font-size: 11px;
   font-weight: 700;
   text-overflow: ellipsis;
-}
-
-.ops-order-customer i {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  flex: none;
-  place-items: center;
-  background: #e8f3f7;
-  color: #2685a4;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .ops-status {
@@ -955,6 +954,7 @@
   width: max-content;
   min-height: 25px;
   align-items: center;
+  margin: 0 auto;
   gap: 5px;
   border: 1px solid #d8eee4;
   padding: 4px 8px;
@@ -1102,10 +1102,16 @@
 
 .ops-accounts-table {
   min-width: 650px;
+  text-align: center;
 }
 
 .ops-accounts-table th:first-child {
   width: 38%;
+}
+
+.ops-accounts-table th:last-child,
+.ops-accounts-table td:last-child {
+  text-align: center;
 }
 
 .ops-accounts-table tbody td {
@@ -1120,7 +1126,9 @@
 .ops-account-cell {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 11px;
+  text-align: left;
 }
 
 .ops-account-monogram {
@@ -1189,10 +1197,12 @@
 
 .ops-privilege-form {
   margin: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .ops-privilege-form select {
-  width: 100%;
+  width: min(100%, 190px);
   min-width: 140px;
   min-height: 38px;
   border: 1px solid #d5e0e8;
