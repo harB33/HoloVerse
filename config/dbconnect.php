@@ -1,4 +1,10 @@
 <?php
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+$dotenv = \Dotenv\Dotenv::createUnsafeImmutable(dirname(__DIR__), '.env.local');
+$dotenv->safeLoad();
+\Dotenv\Dotenv::createUnsafeImmutable(dirname(__DIR__))->safeLoad();
+
 final class DatabaseResult
 {
     public function __construct(private PDOStatement $statement)
