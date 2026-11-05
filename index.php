@@ -787,25 +787,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 </div>
             </section>
 
-            <section class="newsletter">
-                <div data-home-reveal>
-                    <p class="eyebrow">Never miss a drop</p>
-                    <h2>Merch news, direct from hololive.</h2>
-                </div>
-                <form data-home-reveal data-newsletter-form>
-                    <label for="newsletter-email">Email address</label>
-                    <div class="email-field">
-                        <input id="newsletter-email" type="email" placeholder="you@example.com" required>
-                        <button type="submit" aria-label="Subscribe to newsletter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                        </button>
-                    </div>
-                    <p class="newsletter-success" data-newsletter-success hidden>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                        <span>You are on the list. Watch your inbox for merch drops.</span>
-                    </p>
-                </form>
-            </section>
         </main>
 
         <?php require __DIR__ . '/app/views/components/site-footer.php'; ?>
@@ -1118,16 +1099,6 @@ require __DIR__ . '/app/views/layout/head.php';
                 }
             });
 
-            // Newsletter form
-            const newsletterForm = document.querySelector("[data-newsletter-form]");
-            const newsletterSuccess = document.querySelector("[data-newsletter-success]");
-            newsletterForm?.addEventListener("submit", (event) => {
-                event.preventDefault();
-                if (newsletterSuccess) {
-                    newsletterSuccess.hidden = false;
-                }
-                newsletterForm.reset();
-            });
         })();
     </script>
     <script src="assets/js/art-slideshow.js?v=<?= filemtime(__DIR__ . '/assets/js/art-slideshow.js') ?>" defer></script>

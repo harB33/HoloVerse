@@ -12,6 +12,7 @@
     if (reduceMotion) {
         footer.style.setProperty("--footer-art-progress", "1");
         footer.style.setProperty("--footer-art-parallax", "0px");
+        footer.dataset.footerArtRevealed = "true";
         return;
     }
 
@@ -27,6 +28,7 @@
 
         footer.style.setProperty("--footer-art-progress", progress.toFixed(3));
         footer.style.setProperty("--footer-art-parallax", `${((1 - progress) * 28).toFixed(2)}px`);
+        footer.dataset.footerArtRevealed = progress >= 0.35 ? "true" : "false";
     };
 
     const requestUpdate = () => {

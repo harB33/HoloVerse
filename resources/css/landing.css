@@ -2329,9 +2329,8 @@ html[data-theme="dark"] .home-product-card .product-meta {
 .newsletter {
   padding: 92px max(48px, calc((100vw - 1440px) / 2));
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  align-items: end;
-  gap: 100px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
   color: #fff;
   background: #0d1829;
 }
@@ -2342,6 +2341,7 @@ html[data-theme="dark"] .home-product-card .product-meta {
 }
 
 .newsletter form {
+  max-width: 760px;
   position: relative;
 }
 
@@ -2410,9 +2410,9 @@ footer.site-footer {
 
 .site-footer .footer-suisei-art {
   position: absolute;
-  z-index: 0;
+  z-index: 2;
   right: clamp(18px, 8vw, 150px);
-  bottom: -34%;
+  top: 10%;
   width: clamp(250px, 30vw, 430px);
   max-width: none;
   opacity: calc(var(--footer-art-progress) * 0.84);
@@ -2423,15 +2423,26 @@ footer.site-footer {
   transition: opacity 120ms linear;
 }
 
-.site-footer .footer-main {
+.site-footer .newsletter {
   position: relative;
   z-index: 1;
+}
+
+.site-footer .footer-main {
+  position: relative;
+  z-index: 3;
+  width: 100% !important;
   max-width: none;
-  padding-top: 78px;
-  padding-bottom: 70px;
+  margin-inline: 0 !important;
+  padding: 78px max(48px, calc((100vw - 1440px) / 2)) 70px !important;
   display: grid;
   grid-template-columns: 2.2fr repeat(3, 1fr);
   gap: 70px;
+  background: #08111e;
+}
+
+.site-footer .footer-bottom {
+  background: #08111e;
 }
 
 .site-footer .footer-brand-column {
@@ -4468,6 +4479,7 @@ html[data-theme="dark"] .talent-art::before {
   }
 
   .site-footer .footer-main {
+    padding-inline: 28px !important;
     grid-template-columns: 1.5fr repeat(3, 1fr);
     gap: 28px;
   }
@@ -4751,6 +4763,7 @@ html[data-theme="dark"] .talent-art::before {
   }
 
   .site-footer .footer-main {
+    padding-inline: 28px !important;
     grid-template-columns: repeat(2, 1fr);
     gap: 45px 25px;
   }

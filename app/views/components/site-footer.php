@@ -8,7 +8,26 @@ $footerParallaxScript = $siteRoot === '/' ? '/assets/js/footer-parallax.js' : ($
 ?>
 <footer class="footer site-footer">
     <img class="footer-suisei-art" src="<?= store_escape($footerSuiseiUrl) ?>" alt="" aria-hidden="true" width="1024" height="1024" loading="eager" fetchpriority="low" decoding="async">
-    <div class="footer-main landing-shell">
+    <section class="newsletter">
+        <div>
+            <p class="eyebrow">Never miss a drop</p>
+            <h2>Merch news, direct from hololive.</h2>
+            <form data-newsletter-form>
+            <label for="newsletter-email">Email address</label>
+            <div class="email-field">
+                <input id="newsletter-email" type="email" placeholder="you@example.com" required>
+                <button type="submit" aria-label="Subscribe to newsletter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+            <p class="newsletter-success" data-newsletter-success hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>You are on the list. Watch your inbox for merch drops.</span>
+            </p>
+            </form>
+        </div>
+    </section>
+    <div class="footer-main">
         <div class="footer-brand-column">
             <a class="footer-brand" href="<?= store_escape(($siteRoot === '/' ? '/home' : $siteRoot . 'home') . '#top') ?>" aria-label="HoloVerse Store home">
                 <img src="<?= store_escape($footerLogoUrl) ?>" alt="">
@@ -57,6 +76,19 @@ $footerParallaxScript = $siteRoot === '/' ? '/assets/js/footer-parallax.js' : ($
 </footer>
 
 <script src="<?= store_escape($footerParallaxScript) ?>?v=<?= filemtime(__DIR__ . '/../../../assets/js/footer-parallax.js') ?>" defer></script>
+<script>
+    (() => {
+        const newsletterForm = document.querySelector("[data-newsletter-form]");
+        const newsletterSuccess = document.querySelector("[data-newsletter-success]");
+        newsletterForm?.addEventListener("submit", (event) => {
+            event.preventDefault();
+            if (newsletterSuccess) {
+                newsletterSuccess.hidden = false;
+            }
+            newsletterForm.reset();
+        });
+    })();
+</script>
 
 <?php if (($activePage ?? '') !== 'home' && function_exists('store_csrf_token')): ?>
 <div class="modal-wrap" data-quick-view-modal hidden role="dialog" aria-modal="true" aria-labelledby="global-quick-view-title">
