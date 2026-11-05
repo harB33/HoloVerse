@@ -121,17 +121,25 @@
         return;
     }
 
-    const targets = page.querySelectorAll('[data-home-reveal]');
-    if (targets.length === 0) {
-        return;
+    const initializeHomeReveals = () => {
+        const targets = page.querySelectorAll('[data-home-reveal]');
+        if (targets.length === 0) {
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                entry.target.classList.toggle('is-visible', entry.isIntersecting);
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px 64px 0px' });
+
+        page.classList.add('home-reveal-ready');
+        targets.forEach((target) => observer.observe(target));
+    };
+
+    if (document.documentElement.dataset.homeLoading === 'true') {
+        window.addEventListener('home-loader-reveal', initializeHomeReveals, { once: true });
+    } else {
+        initializeHomeReveals();
     }
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            entry.target.classList.toggle('is-visible', entry.isIntersecting);
-        });
-    }, { threshold: 0.12, rootMargin: '0px 0px 64px 0px' });
-
-    page.classList.add('home-reveal-ready');
-    targets.forEach((target) => observer.observe(target));
 })();

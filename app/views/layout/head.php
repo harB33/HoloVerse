@@ -95,9 +95,12 @@ $pageLayout = $pageLayout ?? match ($pageScriptName) {
                 window.addEventListener("load", () => {
                     pageRoot.dataset.homeLoaderStarted = "true";
                     window.setTimeout(() => {
+                        window.dispatchEvent(new Event("home-loader-reveal"));
+                    }, 1320);
+                    window.setTimeout(() => {
                         delete pageRoot.dataset.homeLoading;
                         delete pageRoot.dataset.homeLoaderStarted;
-                    }, 1500);
+                    }, 2120);
                 }, { once: true });
             }
             const cameFromSameOrigin = document.referrer !== "" &&

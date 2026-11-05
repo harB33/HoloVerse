@@ -420,9 +420,16 @@ require __DIR__ . '/app/views/layout/head.php';
         <span class="home-loading-panel home-loading-panel--top-right" aria-hidden="true"></span>
         <span class="home-loading-panel home-loading-panel--bottom-left" aria-hidden="true"></span>
         <span class="home-loading-panel home-loading-panel--bottom-right" aria-hidden="true"></span>
+        <span class="home-loading-orbit home-loading-orbit--outer" aria-hidden="true"></span>
         <span class="home-loading-mark" aria-hidden="true">
             <img src="assets/images/logo.svg" alt="">
         </span>
+        <span class="home-loading-wordmark" aria-hidden="true">
+            <span>HoloVerse</span>
+            <small>OFFICIAL SHOP</small>
+        </span>
+        <span class="home-loading-caption" aria-hidden="true">Your oshi. Your collection.</span>
+        <span class="home-loading-signal" aria-hidden="true"></span>
     </div>
     <div class="page-shell home-landing">
         <?php require __DIR__ . '/app/views/components/watermark.php'; ?>
