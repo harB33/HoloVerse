@@ -340,13 +340,13 @@ require __DIR__ . '/../app/views/layout/head.php';
         require __DIR__ . '/../app/views/components/site-header.php';
         ?>
 
-        <main class="profile-settings-main" data-initial-tab="<?= store_escape($activeSettingsTab) ?>">
+        <main
+            class="profile-settings-main"
+            data-initial-tab="<?= store_escape($activeSettingsTab) ?>"
             <?php if ($notice !== ''): ?>
-                <div class="profile-notice is-<?= store_escape($noticeType) ?>" role="<?= $noticeType === 'error' ? 'alert' : 'status' ?>">
-                    <span class="profile-notice-icon" aria-hidden="true"><?= $noticeType === 'error' ? '!' : '✓' ?></span>
-                    <p><?= store_escape($notice) ?></p>
-                </div>
-            <?php endif; ?>
+                data-profile-notice="<?= store_escape($notice) ?>"
+                data-profile-notice-type="<?= store_escape($noticeType) ?>"
+            <?php endif; ?>>
             <?php if ($profileMessage !== ''): ?>
                 <div class="profile-notice is-error" role="alert">
                     <span class="profile-notice-icon" aria-hidden="true">!</span>
