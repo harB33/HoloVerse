@@ -3,8 +3,11 @@ $siteRoot = $siteRoot ?? '';
 $footerLogoUrl = $siteRoot === '/' ? '/assets/images/logo.png' : ($siteRoot . 'assets/images/logo.png');
 $footerCartAction = $siteRoot === '/' ? '/cart' : ($siteRoot . 'cart');
 $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
+$footerSuiseiUrl = $siteRoot === '/' ? '/assets/images/suichanfooter.png' : ($siteRoot . 'assets/images/suichanfooter.png');
+$footerParallaxScript = $siteRoot === '/' ? '/assets/js/footer-parallax.js' : ($siteRoot . 'assets/js/footer-parallax.js');
 ?>
 <footer class="footer site-footer">
+    <img class="footer-suisei-art" src="<?= store_escape($footerSuiseiUrl) ?>" alt="" aria-hidden="true" loading="lazy" decoding="async">
     <div class="footer-main landing-shell">
         <div class="footer-brand-column">
             <a class="footer-brand" href="<?= store_escape(($siteRoot === '/' ? '/home' : $siteRoot . 'home') . '#top') ?>" aria-label="HoloVerse Store home">
@@ -52,6 +55,8 @@ $footerProductsUrl = $siteRoot === '/' ? '/products' : ($siteRoot . 'products');
         </nav>
     </div>
 </footer>
+
+<script src="<?= store_escape($footerParallaxScript) ?>?v=<?= filemtime(__DIR__ . '/../../../assets/js/footer-parallax.js') ?>" defer></script>
 
 <?php if (($activePage ?? '') !== 'home' && function_exists('store_csrf_token')): ?>
 <div class="modal-wrap" data-quick-view-modal hidden role="dialog" aria-modal="true" aria-labelledby="global-quick-view-title">

@@ -2398,12 +2398,33 @@ html[data-theme="dark"] .home-product-card .product-meta {
 footer.site-footer {
   position: relative;
   z-index: 10;
+  isolation: isolate;
+  overflow: hidden;
   padding: 0;
   color: #a6b2c1;
   background: #08111e;
+  --footer-art-progress: 0;
+  --footer-art-parallax: 28px;
+}
+
+.site-footer .footer-suisei-art {
+  position: absolute;
+  z-index: 0;
+  right: clamp(18px, 8vw, 150px);
+  bottom: -34%;
+  width: clamp(250px, 30vw, 430px);
+  max-width: none;
+  opacity: calc(var(--footer-art-progress) * 0.84);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transform: translate3d(calc((1 - var(--footer-art-progress)) * 36px), var(--footer-art-parallax), 0);
+  transform-origin: bottom center;
+  transition: opacity 120ms linear;
 }
 
 .site-footer .footer-main {
+  position: relative;
+  z-index: 1;
   max-width: none;
   padding-top: 78px;
   padding-bottom: 70px;
@@ -2505,6 +2526,8 @@ footer.site-footer {
 }
 
 .site-footer .footer-bottom {
+  position: relative;
+  z-index: 1;
   max-width: none;
   padding-top: 21px;
   padding-bottom: 24px;
