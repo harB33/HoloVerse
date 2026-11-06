@@ -5268,7 +5268,7 @@ html[data-home-loader-started="true"] .home-loading-signal::after {
 }
 .site-header-wrap {
   position: sticky;
-  top: -50px;
+  top: 0;
   z-index: 40;
   background: transparent;
   isolation: isolate;
