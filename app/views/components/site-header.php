@@ -784,6 +784,16 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                 statusSpan.className = `cart-product-status status-${item.status || "ready"}`;
                 statusSpan.textContent = `${item.status_label || "Ready to ship"}${item.ship_window ? ` · ${item.ship_window}` : ""}`;
 
+                let holdTimer;
+                if (item.hold_expires_at_epoch !== null && item.hold_expires_at_epoch !== undefined) {
+                    holdTimer = document.createElement("span");
+                    holdTimer.className = "cart-hold-timer";
+                    holdTimer.dataset.cartHoldExpiry = String(item.hold_expires_at_epoch);
+                    holdTimer.append("Flash-sale reservation expires in ");
+                    const holdTime = document.createElement("time");
+                    holdTimer.append(holdTime);
+                }
+
                 const priceStrong = document.createElement("strong");
                 priceStrong.textContent = item.line_total || item.unit_price || "";
 
@@ -823,7 +833,11 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                 });
 
                 quantityControl.append(minusBtn, qtySpan, plusBtn, removeBtn);
-                details.append(talent, title, statusSpan, priceStrong, quantityControl);
+                details.append(talent, title, statusSpan);
+                if (holdTimer) {
+                    details.append(holdTimer);
+                }
+                details.append(priceStrong, quantityControl);
                 line.append(itemCheckbox, image, details);
                 cartLinesContainer.append(line);
             });
@@ -884,6 +898,39 @@ $headerAvatarPath = is_string($_SESSION['profile_picture'] ?? null) && $_SESSION
                 console.warn("Unable to sync shopping bag.", error);
             }
         };
+
+        const updateCartHoldTimers = () => {
+            let expired = false;
+            document.querySelectorAll("[data-cart-hold-expiry]").forEach((timer) => {
+                const secondsLeft = Number(timer.dataset.cartHoldExpiry) - Math.floor(Date.now() / 1000);
+                const time = timer.querySelector("time");
+                if (!time) {
+                    return;
+                }
+                if (secondsLeft <= 0) {
+                    time.textContent = "Expired";
+                    expired = true;
+                    return;
+                }
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
+                time.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+            });
+            return expired;
+        };
+        let lastExpiredCartSyncAt = 0;
+        const refreshExpiredCartHold = () => {
+            if (!updateCartHoldTimers()) {
+                return;
+            }
+            const now = Date.now();
+            if (now - lastExpiredCartSyncAt >= 5000) {
+                lastExpiredCartSyncAt = now;
+                void syncCartState();
+            }
+        };
+        updateCartHoldTimers();
+        window.setInterval(refreshExpiredCartHold, 1000);
 
         const matchesAddCartForm = (form) => {
             if (form.classList.contains("cart-drawer-checkout-form")) {

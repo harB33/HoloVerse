@@ -451,6 +451,9 @@ function store_cart_drawer_payload(DatabaseConnection $conn, int $cartId): array
             'image_url' => (string) ($item['image_url'] ?: 'assets/images/logo.png'),
             'status' => $status,
             'status_label' => $statusLabel,
+            'hold_expires_at_epoch' => $item['hold_expires_at_epoch'] === null
+                ? null
+                : (int) $item['hold_expires_at_epoch'],
             'ship_window' => $shipWindow,
         ];
     }

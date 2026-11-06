@@ -15,12 +15,14 @@ $flashSaleProducts = $flashSaleSchedulingAvailable
 
 $favoriteProductIds = store_collector_favorite_ids($conn, (int) ($_SESSION['user_id'] ?? 0));
 $heroDrop = null;
-foreach ($flashSaleProducts['live'] as $liveRow) {
-    $liveVariantId = (int) ($liveRow['variant_id'] ?? 0);
-    if ($liveVariantId > 0) {
-        $liveRow['_drop_state'] = 'live';
-        $heroDrop = $liveRow;
-        break;
+foreach (['live', 'starting', 'tomorrow', 'archive'] as $dropState) {
+    foreach ($flashSaleProducts[$dropState] as $dropRow) {
+        $dropVariantId = (int) ($dropRow['variant_id'] ?? 0);
+        if ($dropVariantId > 0) {
+            $dropRow['_drop_state'] = $dropState;
+            $heroDrop = $dropRow;
+            break 2;
+        }
     }
 }
 
@@ -164,6 +166,7 @@ require __DIR__ . '/../app/views/layout/head.php';
         <div
             class="flash-sale-hero-backdrop"
             style="--hero-theme: <?= store_escape($saleSelection['themeColor']) ?>; --hero-accent: <?= store_escape($saleSelection['accentColor']) ?>; --hero-glow: <?= store_escape($saleSelection['glowColor']) ?>;"
+            <?= $saleSelection['state'] === 'live' ? '' : 'hidden' ?>
         >
             <section
                     id="flash-drop-spotlight"

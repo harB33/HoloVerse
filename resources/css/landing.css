@@ -3964,6 +3964,24 @@ footer.site-footer {
   color: #d8558a;
 }
 
+.cart-line .cart-hold-timer {
+  display: block;
+  margin: 0 0 8px;
+  color: #087fa8;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.cart-line .cart-hold-timer time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-line > div > strong {
+  display: block;
+}
+
 .cart-preorder-note {
   width: 100%;
   margin-bottom: 18px;

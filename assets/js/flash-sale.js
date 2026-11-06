@@ -515,6 +515,10 @@ const applySaleProductToHero = (product, sourceEl = null) => {
         return;
     }
 
+    if (flashSaleHeroBackdrop) {
+        flashSaleHeroBackdrop.hidden = false;
+    }
+
     const stock = Number(product.stock) || 0;
     const live = product.state === "live" && stock > 0;
     const startStatus = product.startsLabel ? `Starts ${product.startsLabel}` : "Sale starts soon";

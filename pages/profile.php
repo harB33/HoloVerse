@@ -335,6 +335,7 @@ require __DIR__ . '/../app/views/layout/head.php';
 
 <body class="profile-settings-page">
     <div class="page-shell">
+        <?php require __DIR__ . '/../app/views/components/watermark.php'; ?>
         <?php
         $activePage = 'profile';
         require __DIR__ . '/../app/views/components/site-header.php';
